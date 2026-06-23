@@ -1,0 +1,1689 @@
+<div [class.dark]="isDarkMode" class="min-h-screen font-sans antialiased text-slate-800 dark:text-slate-100 transition-colors duration-300">
+  <div class="flex h-screen overflow-hidden bg-slate-50 dark:bg-navy-950">
+    
+    <!-- LEFT SIDEBAR -->
+    <aside class="hidden md:flex md:flex-col md:w-64 bg-white dark:bg-navy-900 border-r border-slate-200 dark:border-navy-850 flex-shrink-0 z-20 transition-all duration-300">
+      <!-- Sidebar Header -->
+      <div class="h-16 flex items-center justify-between px-5 border-b border-slate-100 dark:border-navy-800">
+        <div class="flex items-center space-x-2.5">
+          <div class="w-8 h-8 rounded-lg bg-gradient-to-tr from-brand-500 to-rose-600 flex items-center justify-center text-white font-bold shadow-md shadow-brand-500/20">
+            SL
+          </div>
+          <div>
+            <h1 class="text-sm font-black tracking-tight text-slate-900 dark:text-white uppercase leading-none">Southlake</h1>
+            <span class="text-[9px] text-brand-500 font-bold uppercase tracking-widest">Accounting</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Navigation -->
+      <nav class="flex-1 overflow-y-auto px-4 py-4 space-y-7">
+        
+        <!-- CORE ACCOUNTING MENU -->
+        <div class="space-y-1">
+          <span class="px-2 text-[9px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest block mb-2">Advanced Accounting</span>
+          
+          <button (click)="setActiveTab('overview')" [ngClass] = "{'bg-brand-500/10 text-brand-500': activeTab === 'overview'}" class="w-full flex items-center px-2.5 py-2.5 text-xs font-bold rounded-xl hover:bg-slate-100 dark:hover:bg-navy-800 transition-all text-left">
+            <svg class="w-4 h-4 mr-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2H6a2 2 0 01-2-2v-4zM14 16a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2a2 2 0 01-2-2v-4z"></path></svg>
+            <span>Overview Dashboard</span>
+          </button>
+
+          <button (click)="setActiveTab('coa')" [ngClass] = "{'bg-brand-500/10 text-brand-500': activeTab === 'coa'}" class="w-full flex items-center px-2.5 py-2.5 text-xs font-bold rounded-xl hover:bg-slate-100 dark:hover:bg-navy-800 transition-all text-left">
+            <svg class="w-4 h-4 mr-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+            <span>Chart of Accounts</span>
+          </button>
+
+          <div class="space-y-1">
+            <button (click)="setActiveTab('admin_tools')" [ngClass] = "{'bg-brand-500/10 text-brand-500': activeTab === 'admin_tools'}" class="w-full flex items-center px-2.5 py-2.5 text-xs font-bold rounded-xl hover:bg-slate-100 dark:hover:bg-navy-800 transition-all text-left">
+              <svg class="w-4 h-4 mr-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+              <span>Admin Tools</span>
+              <svg [class.rotate-180]="isAdminToolsOpen" class="w-3.5 h-3.5 ml-auto transform transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+            </button>
+            
+            <!-- Collapsible Sub-menu -->
+            <div *ngIf="isAdminToolsOpen" class="pl-5 pr-1 py-1 space-y-1 border-l-2 border-slate-200 dark:border-navy-800 ml-4.5 animate-fade-in text-[10px] font-bold">
+              <button (click)="selectAdminSubTab('apptype')" [ngClass]="{'text-brand-500 bg-brand-500/5': adminActiveTab === 'apptype' && activeTab === 'admin_tools', 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-350': adminActiveTab !== 'apptype' || activeTab !== 'admin_tools'}" class="w-full flex items-center px-2 py-2 rounded-lg text-left transition-all">
+                Application Type
+              </button>
+              <button (click)="selectAdminSubTab('lob')" [ngClass]="{'text-brand-500 bg-brand-500/5': adminActiveTab === 'lob' && activeTab === 'admin_tools', 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-350': adminActiveTab !== 'lob' || activeTab !== 'admin_tools'}" class="w-full flex items-center px-2 py-2 rounded-lg text-left transition-all">
+                Lob
+              </button>
+              <button (click)="selectAdminSubTab('coa_master')" [ngClass]="{'text-brand-500 bg-brand-500/5': adminActiveTab === 'coa_master' && activeTab === 'admin_tools', 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-350': adminActiveTab !== 'coa_master' || activeTab !== 'admin_tools'}" class="w-full flex items-center px-2 py-2 rounded-lg text-left transition-all">
+                Chart of Account
+              </button>
+              <button (click)="selectAdminSubTab('sub_coa')" [ngClass]="{'text-brand-500 bg-brand-500/5': adminActiveTab === 'sub_coa' && activeTab === 'admin_tools', 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-350': adminActiveTab !== 'sub_coa' || activeTab !== 'admin_tools'}" class="w-full flex items-center px-2 py-2 rounded-lg text-left transition-all">
+                Sub COA
+              </button>
+              <button (click)="selectAdminSubTab('gl_map')" [ngClass]="{'text-brand-500 bg-brand-500/5': adminActiveTab === 'gl_map' && activeTab === 'admin_tools', 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-350': adminActiveTab !== 'gl_map' || activeTab !== 'admin_tools'}" class="w-full flex items-center px-2 py-2 rounded-lg text-left transition-all">
+                GL Map
+              </button>
+              <button (click)="selectAdminSubTab('states')" [ngClass]="{'text-brand-500 bg-brand-500/5': adminActiveTab === 'states' && activeTab === 'admin_tools', 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-350': adminActiveTab !== 'states' || activeTab !== 'admin_tools'}" class="w-full flex items-center px-2 py-2 rounded-lg text-left transition-all">
+                State
+              </button>
+              <button (click)="selectAdminSubTab('mgas')" [ngClass]="{'text-brand-500 bg-brand-500/5': adminActiveTab === 'mgas' && activeTab === 'admin_tools', 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-350': adminActiveTab !== 'mgas' || activeTab !== 'admin_tools'}" class="w-full flex items-center px-2 py-2 rounded-lg text-left transition-all">
+                MGA
+              </button>
+            </div>
+          </div>
+
+          <button (click)="setActiveTab('treaties')" [ngClass] = "{'bg-brand-500/10 text-brand-500': activeTab === 'treaties'}" class="w-full flex items-center px-2.5 py-2.5 text-xs font-bold rounded-xl hover:bg-slate-100 dark:hover:bg-navy-800 transition-all text-left">
+            <svg class="w-4 h-4 mr-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
+            <span>Treaty Registry</span>
+          </button>
+
+          <button (click)="setActiveTab('ingestion')" [ngClass] = "{'bg-brand-500/10 text-brand-500': activeTab === 'ingestion'}" class="w-full flex items-center px-2.5 py-2.5 text-xs font-bold rounded-xl hover:bg-slate-100 dark:hover:bg-navy-800 transition-all text-left">
+            <svg class="w-4 h-4 mr-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg>
+            <span>Journal Ingestion (CSV/Excel)</span>
+          </button>
+
+          <button (click)="setActiveTab('ledger')" [ngClass] = "{'bg-brand-500/10 text-brand-500': activeTab === 'ledger'}" class="w-full flex items-center px-2.5 py-2.5 text-xs font-bold rounded-xl hover:bg-slate-100 dark:hover:bg-navy-800 transition-all text-left">
+            <svg class="w-4 h-4 mr-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
+            <span>Ledger & Posting History</span>
+          </button>
+        </div>
+      </nav>
+
+      <!-- Sidebar Footer -->
+      <div class="p-4 border-t border-slate-100 dark:border-navy-800 flex flex-col space-y-3.5">
+        <div class="flex items-center space-x-3">
+          <div class="w-8 h-8 rounded-full bg-slate-100 dark:bg-navy-800 border border-slate-200 dark:border-navy-700 flex items-center justify-center font-bold text-slate-500 text-xs uppercase">
+            SA
+          </div>
+          <div>
+            <h4 class="text-xs font-extrabold text-slate-900 dark:text-white leading-tight">Super Admin</h4>
+            <span class="text-[9px] text-slate-400 font-semibold block uppercase">SECURED SESSION</span>
+          </div>
+        </div>
+
+        <!-- Clear DB Button -->
+        <button (click)="clearDatabase()" class="w-full flex items-center justify-between px-3 py-2 text-[10px] font-bold rounded-xl border border-slate-200 dark:border-navy-850 hover:bg-slate-50 dark:hover:bg-navy-800 transition-all text-slate-500 dark:text-slate-400">
+          <span>CLEAR DATABASE (TRUNCATE)</span>
+          <svg class="w-3.5 h-3.5 text-slate-400 dark:text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+        </button>
+
+        <!-- Reset DB Button -->
+        <button (click)="resetDatabase()" class="w-full flex items-center justify-between px-3 py-2 text-[10px] font-bold rounded-xl border border-rose-250 hover:bg-rose-50 dark:border-rose-950 dark:hover:bg-rose-950/20 text-rose-500 transition-all">
+          <span>RESET & SEED DATABASE</span>
+          <svg class="w-3.5 h-3.5 text-rose-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+        </button>
+
+        <!-- Dark mode toggle -->
+        <button (click)="toggleDarkMode()" class="w-full flex items-center justify-between px-3 py-2 text-[10px] font-bold rounded-xl border border-slate-200 dark:border-navy-850 hover:bg-slate-50 dark:hover:bg-navy-800 transition-all text-slate-500 dark:text-slate-400">
+          <span>{{ isDarkMode ? 'SWITCH TO LIGHT MODE' : 'SWITCH TO DARK MODE' }}</span>
+          <svg *ngIf="isDarkMode" class="w-3.5 h-3.5 text-amber-400" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.46 5.05L5.75 4.343a1 1 0 10-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 100 2h1z" clip-rule="evenodd"></path></svg>
+          <svg *ngIf="!isDarkMode" class="w-3.5 h-3.5 text-navy-800" fill="currentColor" viewBox="0 0 20 20"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path></svg>
+        </button>
+      </div>
+    </aside>
+
+    <!-- MAIN CONTAINER -->
+    <div class="flex-1 flex flex-col min-w-0 overflow-hidden">
+      
+      <!-- TOP HEADER -->
+      <header class="h-16 bg-white dark:bg-navy-900 border-b border-slate-200 dark:border-navy-850 flex items-center justify-between px-6 flex-shrink-0 z-10 transition-all duration-300">
+        <div class="flex items-center space-x-3">
+          <h2 class="text-lg font-black tracking-tight text-slate-900 dark:text-white capitalize">
+            {{ activeTab === 'overview' ? 'Overview Console' : activeTab === 'coa' ? 'Chart of Accounts' : activeTab === 'admin_tools' ? 'Admin Tools' : activeTab === 'treaties' ? 'Treaties Management' : activeTab === 'ingestion' ? 'Bordereau Ingestion Hub' : 'Ledger postings' }}
+          </h2>
+          <span class="hidden sm:inline-flex px-2 py-0.5 rounded-full text-[9px] font-bold bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
+            API Live
+          </span>
+        </div>
+
+        <div class="flex items-center space-x-4">
+          <!-- Session Auditing Details -->
+          <div class="hidden lg:flex flex-col items-end text-[10px]">
+            <span class="text-slate-400 font-semibold uppercase">SECURE SHELL IP</span>
+            <strong class="text-slate-600 dark:text-slate-350">127.0.0.1 (Localhost)</strong>
+          </div>
+          
+          <button (click)="loadAll()" [disabled]="isLoading" class="p-2 text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-white rounded-xl border border-slate-200 dark:border-navy-850 transition-all">
+            <svg [class.animate-spin]="isLoading" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 7.89H18"></path></svg>
+          </button>
+        </div>
+      </header>
+
+      <!-- MAIN SCROLLABLE CONTENT -->
+      <main class="flex-1 overflow-y-auto p-6 space-y-6">
+        
+        <!-- ================================================================================= -->
+        <!-- VIEW: OVERVIEW DASHBOARD -->
+        <!-- ================================================================================= -->
+        <div *ngIf="activeTab === 'overview'" class="space-y-6 animate-fade-in">
+          
+          <!-- Key Metrics Grid -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+            <!-- Metric 1: Ceded Premium YTD -->
+            <div class="bg-white dark:bg-navy-900 border border-slate-200 dark:border-navy-850 rounded-2xl p-5 shadow-sm hover:border-brand-500/30 transition-all group">
+              <span class="text-[9px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest block mb-1">CEDED PREMIUM YTD</span>
+              <div class="flex items-baseline space-x-1.5">
+                <span class="text-2xl font-black text-slate-900 dark:text-white font-mono">${{ totalCededPremium | number:'1.2-2' }}</span>
+              </div>
+              <p class="text-[10px] text-emerald-500 mt-2 font-bold flex items-center">
+                <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>
+                <span>Automated splits active</span>
+              </p>
+            </div>
+
+            <!-- Metric 2: Ceded Recoverables -->
+            <div class="bg-white dark:bg-navy-900 border border-slate-200 dark:border-navy-850 rounded-2xl p-5 shadow-sm hover:border-brand-500/30 transition-all">
+              <span class="text-[9px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest block mb-1">CEDED RECOVERABLES</span>
+              <div class="flex items-baseline space-x-1.5">
+                <span class="text-2xl font-black text-emerald-500 font-mono">${{ totalRecoverables | number:'1.2-2' }}</span>
+              </div>
+              <p class="text-[10px] text-slate-400 dark:text-slate-500 mt-2">Outstanding claims balances</p>
+            </div>
+
+            <!-- Metric 3: Active COA Accounts -->
+            <div class="bg-white dark:bg-navy-900 border border-slate-200 dark:border-navy-850 rounded-2xl p-5 shadow-sm hover:border-brand-500/30 transition-all">
+              <span class="text-[9px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest block mb-1">ACTIVE LEDGER ACCOUNTS</span>
+              <div class="flex items-baseline space-x-1.5">
+                <span class="text-2xl font-black text-slate-900 dark:text-white font-mono">{{ activeAccountsCount }}</span>
+              </div>
+              <p class="text-[10px] text-slate-400 dark:text-slate-500 mt-2">Of {{ coaAccounts.length }} registered accounts</p>
+            </div>
+
+            <!-- Metric 4: Treaties Registry -->
+            <div class="bg-white dark:bg-navy-900 border border-slate-200 dark:border-navy-850 rounded-2xl p-5 shadow-sm hover:border-brand-500/30 transition-all">
+              <span class="text-[9px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest block mb-1">ACTIVE CARRIER TREATIES</span>
+              <div class="flex items-baseline space-x-1.5">
+                <span class="text-2xl font-black text-brand-500 font-mono">{{ activeTreatiesCount }}</span>
+              </div>
+              <p class="text-[10px] text-slate-400 dark:text-slate-500 mt-2">Active quota share and excess bounds</p>
+            </div>
+          </div>
+
+          <!-- Quick Navigation Panel -->
+          <div class="bg-white dark:bg-navy-900 border border-slate-200 dark:border-navy-850 rounded-2xl p-6 shadow-sm space-y-4">
+            <h3 class="text-sm font-black text-slate-900 dark:text-white uppercase tracking-wider">Advanced Accounting Actions</h3>
+            <p class="text-xs text-slate-400 dark:text-slate-500">Enterprise portal for ledger controls, treaty setup, and automated premium splits execution.</p>
+            
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2">
+              <button (click)="setActiveTab('ingestion')" class="bg-brand-500 hover:bg-brand-600 text-white font-bold p-4 rounded-xl text-xs text-left transition-all flex flex-col justify-between shadow-md shadow-brand-500/10 min-h-[110px]">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg>
+                <span>Upload Monthly Bordereau</span>
+              </button>
+
+              <button (click)="setActiveTab('coa')" class="bg-slate-100 hover:bg-slate-200 dark:bg-navy-800 dark:hover:bg-navy-750 text-slate-900 dark:text-white font-bold p-4 rounded-xl text-xs text-left transition-all flex flex-col justify-between min-h-[110px] border border-slate-200 dark:border-navy-700">
+                <svg class="w-6 h-6 text-brand-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                <span>Propose New GL Account</span>
+              </button>
+
+              <button (click)="setActiveTab('treaties')" class="bg-slate-100 hover:bg-slate-200 dark:bg-navy-800 dark:hover:bg-navy-750 text-slate-900 dark:text-white font-bold p-4 rounded-xl text-xs text-left transition-all flex flex-col justify-between min-h-[110px] border border-slate-200 dark:border-navy-700">
+                <svg class="w-6 h-6 text-brand-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
+                <span>Sign & Bind Treaties</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ================================================================================= -->
+        <!-- VIEW: CHART OF ACCOUNTS -->
+        <!-- ================================================================================= -->
+        <div *ngIf="activeTab === 'coa'" class="space-y-6 animate-fade-in flex flex-col h-[calc(100vh-12rem)]">
+          
+          <!-- Sub-tabs bar (Falcon style) -->
+          <div class="flex border-b border-slate-200 dark:border-navy-800 flex-shrink-0">
+            <button type="button" (click)="coaSubTab = 'listing'" [ngClass]="coaSubTab === 'listing' ? 'bg-white dark:bg-navy-900 border-t border-l border-r border-slate-200 dark:border-navy-800 text-brand-500 font-bold -mb-[1px]' : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-350'" class="px-5 py-2.5 text-xs rounded-t-xl transition-all border-b border-transparent">
+              Listing
+            </button>
+            <button type="button" (click)="coaSubTab = 'details'" [ngClass]="coaSubTab === 'details' ? 'bg-white dark:bg-navy-900 border-t border-l border-r border-slate-200 dark:border-navy-800 text-brand-500 font-bold -mb-[1px]' : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-300'" class="px-5 py-2.5 text-xs rounded-t-xl transition-all border-b border-transparent">
+              Details
+            </button>
+          </div>
+
+          <!-- Tab Contents -->
+          <div class="flex-1 min-h-0 relative">
+            
+            <!-- 1. LISTING TAB -->
+            <div *ngIf="coaSubTab === 'listing'" class="absolute inset-0 bg-white dark:bg-navy-900 border border-slate-200 dark:border-navy-850 rounded-b-2xl rounded-tr-2xl p-5 shadow-sm flex flex-col h-full overflow-hidden animate-fade-in">
+              <!-- Controls bar -->
+              <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-slate-100 dark:border-navy-850 pb-4 mb-4 flex-shrink-0">
+                <!-- Search -->
+                <div class="relative w-full sm:w-64">
+                  <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                  </span>
+                  <input [(ngModel)]="coaSearchQuery" placeholder="Search number or name..." class="w-full pl-9 pr-3 py-2 text-xs rounded-xl bg-slate-50 dark:bg-navy-950 border border-slate-200 dark:border-navy-800 text-slate-700 dark:text-slate-200 focus:outline-none focus:border-brand-500 transition-all">
+                </div>
+
+                <!-- Filters -->
+                <div class="flex items-center space-x-2.5">
+                  <!-- Status Filter Toggle (3-Way: All / Active / Inactive) -->
+                  <div class="flex bg-slate-50 dark:bg-navy-950 p-1 rounded-xl border border-slate-200 dark:border-navy-800">
+                    <button type="button" (click)="coaStatusFilter = 'All'" [ngClass] = "{'bg-white dark:bg-navy-850 shadow-sm': coaStatusFilter === 'All'}" class="px-2.5 py-1 text-[10px] font-bold rounded-lg transition-all">ALL</button>
+                    <button type="button" (click)="coaStatusFilter = 'Active'" [ngClass] = "{'bg-white dark:bg-navy-850 shadow-sm': coaStatusFilter === 'Active'}" class="px-2.5 py-1 text-[10px] font-bold rounded-lg transition-all text-emerald-500">ACTIVE</button>
+                    <button type="button" (click)="coaStatusFilter = 'Inactive'" [ngClass] = "{'bg-white dark:bg-navy-850 shadow-sm': coaStatusFilter === 'Inactive'}" class="px-2.5 py-1 text-[10px] font-bold rounded-lg transition-all text-red-500">INACTIVE</button>
+                  </div>
+
+                  <!-- GAAP Filter -->
+                  <select [(ngModel)]="coaGaapFilter" class="px-3 py-2 text-[10px] font-bold rounded-xl bg-slate-50 dark:bg-navy-950 border border-slate-200 dark:border-navy-800 text-slate-700 dark:text-slate-200 focus:outline-none focus:border-brand-500">
+                    <option value="All">GAAP / IFRS (All)</option>
+                    <option value="GAAP">GAAP</option>
+                    <option value="IFRS">IFRS</option>
+                    <option value="STAT">STAT/SAP</option>
+                  </select>
+
+                  <!-- Propose Button -->
+                  <button type="button" (click)="coaSubTab = 'details'; resetCoaForm()" class="bg-brand-500 hover:bg-brand-600 text-white font-bold px-3.5 py-2 rounded-xl text-xs transition-all shadow-md shadow-brand-500/10 flex items-center space-x-1.5">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"></path></svg>
+                    <span>Propose Account</span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Scrollable Grid Table -->
+              <div class="flex-1 overflow-y-auto">
+                <table class="w-full text-left text-xs border-collapse">
+                  <thead>
+                    <tr class="text-slate-400 dark:text-slate-500 border-b border-slate-100 dark:border-navy-850 font-bold uppercase tracking-wider text-[10px]">
+                      <th class="py-3 px-3">Comp</th>
+                      <th class="py-3 px-3">Account Number</th>
+                      <th class="py-3 px-3">Account Name</th>
+                      <th class="py-3 px-3">Account Type</th>
+                      <th class="py-3 px-3">MGA Mapping</th>
+                      <th class="py-3 px-3">LOB Mapping</th>
+                      <th class="py-3 px-3">State Mapping</th>
+                      <th class="py-3 px-3">Standard</th>
+                      <th class="py-3 px-3 text-right">Status Toggle</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-50 dark:divide-navy-850 text-slate-700 dark:text-slate-250">
+                    <tr *ngFor="let item of filteredCoaAccounts" class="hover:bg-slate-50/50 dark:hover:bg-navy-850/30 transition-all">
+                      <td class="py-3 px-3 font-bold text-slate-400">{{ item.company }}</td>
+                      <td class="py-3 px-3 font-mono font-bold text-slate-900 dark:text-white">{{ item.accountNumber }}</td>
+                      <td class="py-3 px-3 font-semibold">{{ item.accountName }}</td>
+                      <td class="py-3 px-3">
+                        <span [ngClass]="{
+                          'bg-blue-500/10 text-blue-500 border-blue-500/20': item.accountType === 'Asset',
+                          'bg-amber-500/10 text-amber-500 border-amber-500/20': item.accountType === 'Liability',
+                          'bg-emerald-500/10 text-emerald-500 border-emerald-500/20': item.accountType === 'Revenue',
+                          'bg-rose-500/10 text-rose-500 border-rose-500/20': item.accountType === 'Expense'
+                        }" class="px-2 py-0.5 rounded-full text-[9px] font-bold border">{{ item.accountType }}</span>
+                      </td>
+                      <td class="py-3 px-3 font-semibold text-slate-400">{{ item.mga ? item.mga.name : '-' }}</td>
+                      <td class="py-3 px-3 font-semibold text-slate-400">{{ item.lob ? item.lob.lobName : '-' }}</td>
+                      <td class="py-3 px-3 font-mono font-bold text-slate-400">{{ item.state ? item.state.code : '-' }}</td>
+                      <td class="py-3 px-3 font-semibold text-slate-400">{{ item.gaapStandard }}</td>
+                      <td class="py-3 px-3 text-right">
+                        <!-- sliding premium switch -->
+                        <div class="flex items-center justify-end">
+                          <button type="button" (click)="toggleCoaStatus(item)" [ngClass] = "{'bg-emerald-500': item.status === 'Active', 'bg-slate-200 dark:bg-navy-800': item.status !== 'Active'}" class="relative inline-flex h-5 w-9 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none">
+                            <span [class.translate-x-4]="item.status === 'Active'" [class.translate-x-0]="item.status !== 'Active'" class="pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out"></span>
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                    <tr *ngIf="filteredCoaAccounts.length === 0">
+                      <td colspan="9" class="py-8 text-center text-slate-400 dark:text-slate-500 font-bold">No accounts found matching current query and filters.</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- 2. DETAILS TAB -->
+            <div *ngIf="coaSubTab === 'details'" class="absolute inset-0 bg-white dark:bg-navy-900 border border-slate-200 dark:border-navy-850 rounded-b-2xl rounded-tr-2xl p-6 shadow-sm flex flex-col h-full overflow-y-auto animate-fade-in">
+              
+              <!-- Collapsible Card Structure (as requested by screenshot) -->
+              <div class="border border-slate-200 dark:border-navy-800 rounded-xl overflow-hidden bg-white dark:bg-navy-900">
+                <div class="bg-slate-50 dark:bg-navy-850 px-5 py-3 border-b border-slate-200 dark:border-navy-800 flex justify-between items-center">
+                  <span class="text-xs font-black text-slate-800 dark:text-white uppercase tracking-wider">Chart Of Account</span>
+                  <span class="text-slate-400 text-[10px]">>></span>
+                </div>
+                
+                <div class="p-6">
+                  <!-- Form -->
+                  <form (submit)="proposeAccount()" class="max-w-3xl space-y-5 text-xs">
+                    <div *ngIf="coaFormError" class="p-3 bg-red-500/10 border border-red-500/20 text-red-500 rounded-xl font-bold">
+                      {{ coaFormError }}
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                      
+                      <!-- Account Number / Code -->
+                      <div class="space-y-1">
+                        <label class="block font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest text-[9px]">Account Code *</label>
+                        <input [(ngModel)]="newCoaForm.accountNumber" name="accountNumber" placeholder="e.g. 210004" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-navy-950 border border-slate-200 dark:border-navy-800 focus:outline-none focus:border-brand-500 text-slate-800 dark:text-slate-200 font-mono font-bold">
+                      </div>
+
+                      <!-- Account Name / Description -->
+                      <div class="space-y-1">
+                        <label class="block font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest text-[9px]">Description *</label>
+                        <input [(ngModel)]="newCoaForm.accountName" name="accountName" placeholder="e.g. Premiums Payable" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-navy-950 border border-slate-200 dark:border-navy-800 focus:outline-none focus:border-brand-500 text-slate-800 dark:text-slate-200 font-semibold">
+                      </div>
+
+                      <!-- Parent Account Dropdown + '+' Add Parent button -->
+                      <div class="space-y-1">
+                        <label class="block font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest text-[9px]">Parent Account *</label>
+                        <div class="flex space-x-2">
+                          <select [(ngModel)]="newCoaForm.parentAccount" name="parentAccount" (change)="onParentAccountChange()" class="flex-1 px-3 py-2 rounded-xl bg-slate-50 dark:bg-navy-950 border border-slate-200 dark:border-navy-800 focus:outline-none focus:border-brand-500 text-slate-800 dark:text-slate-200">
+                            <option value="">Select Parent Account</option>
+                            <option *ngFor="let coa of chartOfAccounts" [value]="coa.subCoaId">{{ coa.subCoaId }} - {{ coa.subCoaName }}</option>
+                          </select>
+                          <button type="button" (click)="openAddParentFromPropose()" title="Add New Parent Account" class="px-3.5 py-2 rounded-xl bg-brand-500 hover:bg-brand-600 text-white font-bold transition-all shadow-md flex items-center justify-center">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"></path></svg>
+                          </button>
+                        </div>
+                      </div>
+
+                      <!-- Account Group (Auto-populated, disabled) -->
+                      <div class="space-y-1">
+                        <label class="block font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest text-[9px]">Account Group *</label>
+                        <input [(ngModel)]="newCoaForm.accountGroup" name="accountGroup" [disabled]="true" placeholder="Selected parent group" class="w-full px-3 py-2 rounded-xl bg-slate-100 dark:bg-navy-950 border border-slate-200 dark:border-navy-800 focus:outline-none disabled:opacity-75 text-slate-500 font-semibold">
+                      </div>
+
+                      <!-- Account Type (Summary / Actual) -->
+                      <div class="space-y-1">
+                        <label class="block font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest text-[9px]">Account Type *</label>
+                        <div class="flex items-center space-x-6 py-2">
+                          <label class="flex items-center space-x-2 cursor-pointer font-semibold text-slate-700 dark:text-slate-350">
+                            <input type="radio" [(ngModel)]="newCoaForm.summaryOrActual" name="summaryOrActual" value="Actual Account" class="rounded-full border-slate-350 dark:border-navy-800 text-brand-500 focus:ring-brand-500 h-4 w-4">
+                            <span>Actual Account</span>
+                          </label>
+                          <label class="flex items-center space-x-2 cursor-pointer font-semibold text-slate-700 dark:text-slate-350">
+                            <input type="radio" [(ngModel)]="newCoaForm.summaryOrActual" name="summaryOrActual" value="Summary Account" class="rounded-full border-slate-350 dark:border-navy-800 text-brand-500 focus:ring-brand-500 h-4 w-4">
+                            <span>Summary Account</span>
+                          </label>
+                        </div>
+                      </div>
+
+                      <!-- Earning Account -->
+                      <div class="space-y-1">
+                        <label class="block font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest text-[9px]">Earning Account</label>
+                        <input [(ngModel)]="newCoaForm.earningAccount" name="earningAccount" placeholder="e.g. Retained Earnings" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-navy-950 border border-slate-200 dark:border-navy-800 focus:outline-none focus:border-brand-500 text-slate-800 dark:text-slate-200">
+                      </div>
+
+                      <!-- Ledger Category Type (Read-only) -->
+                      <div class="space-y-1">
+                        <label class="block font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest text-[9px]">Ledger Category Type</label>
+                        <input [value]="newCoaForm.accountType" [disabled]="true" class="w-full px-3 py-2 rounded-xl bg-slate-100 dark:bg-navy-950 border border-slate-200 dark:border-navy-800 focus:outline-none disabled:opacity-75 text-slate-500 font-semibold">
+                      </div>
+
+                      <!-- GAAP / IFRS Standard -->
+                      <div class="space-y-1">
+                        <label class="block font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest text-[9px]">Accounting Standard</label>
+                        <select [(ngModel)]="newCoaForm.gaapStandard" name="gaapStandard" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-navy-950 border border-slate-200 dark:border-navy-800 focus:outline-none focus:border-brand-500 text-slate-800 dark:text-slate-200 font-semibold">
+                          <option value="GAAP">GAAP (US Standards)</option>
+                          <option value="IFRS">IFRS (International)</option>
+                          <option value="STAT">STAT / SAP (Regulatory Statutory)</option>
+                        </select>
+                      </div>
+
+                      <!-- Company Code -->
+                      <div class="space-y-1">
+                        <label class="block font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest text-[9px]">Company Code (Comp)</label>
+                        <select [(ngModel)]="newCoaForm.company" name="company" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-navy-950 border border-slate-200 dark:border-navy-800 focus:outline-none focus:border-brand-500 text-slate-800 dark:text-slate-200 font-semibold">
+                          <option value="100">100 - Operating Unit</option>
+                          <option value="200">200 - Reinsurance Entity</option>
+                          <option value="300">300 - Risk Retention Group</option>
+                        </select>
+                      </div>
+
+                      <!-- Status (IsActive checkbox) -->
+                      <div class="flex items-center space-x-2 py-3">
+                        <input type="checkbox" id="isActive" name="isActive" [checked]="newCoaForm.status === 'Active'" (change)="newCoaForm.status = $any($event.target).checked ? 'Active' : 'Inactive'" class="rounded border-slate-300 dark:border-navy-800 text-brand-500 focus:ring-brand-500 h-4 w-4">
+                        <label for="isActive" class="block font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest text-[9px] cursor-pointer">IsActive</label>
+                      </div>
+
+                    </div>
+
+                    <!-- Optional subledger mappings -->
+                    <div class="border-t border-slate-100 dark:border-navy-850 pt-5 mt-3 space-y-4">
+                      <span class="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest block">Optional Subledger Mappings</span>
+
+                      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <!-- MGA Mapping -->
+                        <div class="space-y-1">
+                          <label class="block font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest text-[9px]">MGA Association</label>
+                          <select [(ngModel)]="newCoaForm.mgaId" name="mgaId" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-navy-950 border border-slate-200 dark:border-navy-800 focus:outline-none focus:border-brand-500 text-slate-800 dark:text-slate-200 font-semibold">
+                            <option value="">No MGA Mapping (General Ledger)</option>
+                            <option *ngFor="let m of mgas" [value]="m.id">{{ m.name }}</option>
+                          </select>
+                        </div>
+
+                        <!-- LOB Mapping -->
+                        <div class="space-y-1">
+                          <label class="block font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest text-[9px]">LOB Segment</label>
+                          <select [(ngModel)]="newCoaForm.lobId" name="lobId" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-navy-950 border border-slate-200 dark:border-navy-800 focus:outline-none focus:border-brand-500 text-slate-800 dark:text-slate-200 font-semibold">
+                            <option value="">No LOB Mapping (Corporate)</option>
+                            <option *ngFor="let l of lobs" [value]="l.lobId">{{ l.lobName }}</option>
+                          </select>
+                        </div>
+
+                        <!-- State Mapping -->
+                        <div class="space-y-1">
+                          <label class="block font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest text-[9px]">State Jurisdiction</label>
+                          <select [(ngModel)]="newCoaForm.stateId" name="stateId" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-navy-950 border border-slate-200 dark:border-navy-800 focus:outline-none focus:border-brand-500 text-slate-800 dark:text-slate-200 font-semibold">
+                            <option value="">No State Mapping (All / Shared)</option>
+                            <option *ngFor="let s of states" [value]="s.id">{{ s.name }} ({{ s.code }})</option>
+                          </select>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Submit / Cancel buttons -->
+                    <div class="flex items-center space-x-3 pt-5 border-t border-slate-100 dark:border-navy-850">
+                      <button type="submit" class="bg-brand-500 hover:bg-brand-600 text-white font-extrabold px-6 py-2.5 rounded-xl transition-all shadow-md shadow-brand-500/10">
+                        Save
+                      </button>
+                      <button type="button" (click)="coaSubTab = 'listing'; resetCoaForm()" class="bg-slate-100 hover:bg-slate-200 dark:bg-navy-800 dark:hover:bg-navy-750 text-slate-700 dark:text-slate-350 font-extrabold px-6 py-2.5 rounded-xl border border-slate-200 dark:border-navy-700 transition-all">
+                        Cancel
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- ================================================================================= -->
+        <!-- VIEW: ADMIN TOOLS -->
+        <!-- ================================================================================= -->
+        <div *ngIf="activeTab === 'admin_tools'" class="space-y-6 animate-fade-in">
+          
+
+
+          <!-- 1. Application Type master view -->
+          <div *ngIf="adminActiveTab === 'apptype' && !showTreatySequenceView" class="space-y-4">
+            <div class="flex justify-between items-center pb-2">
+              <h3 class="text-xs font-bold uppercase tracking-widest text-slate-400">Admin Tool / <span class="text-slate-900 dark:text-white capitalize">Application Master</span></h3>
+              <div class="flex gap-2">
+                <button (click)="loadTreatySequences()" class="bg-blue-500 hover:bg-blue-600 text-white font-bold px-3 py-1.5 rounded-xl text-xs transition-all shadow-md">Treaty Sequence Master</button>
+                <button (click)="showAddAppTypeModal = true; editingAppType = null" class="bg-brand-500 hover:bg-brand-600 text-white font-bold px-3 py-1.5 rounded-xl text-xs transition-all shadow-md flex items-center space-x-1">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"></path></svg>
+                  <span>Add Application Type</span>
+                </button>
+              </div>
+            </div>
+            
+            <div class="bg-white dark:bg-navy-900 border border-slate-200 dark:border-navy-850 rounded-2xl p-5 shadow-sm overflow-x-auto">
+              <table class="w-full text-left text-xs border-collapse">
+                <thead>
+                  <tr class="text-slate-400 border-b border-slate-100 dark:border-navy-850 font-bold uppercase tracking-wider text-[10px]">
+                    <th class="py-2.5 px-3">App Type ID</th>
+                    <th class="py-2.5 px-3">App Type</th>
+                    <th class="py-2.5 px-3">Class Xref</th>
+                    <th class="py-2.5 px-3">Market #</th>
+                    <th class="py-2.5 px-3">LOB #</th>
+                    <th class="py-2.5 px-3">Risk #</th>
+                    <th class="py-2.5 px-3">Rater</th>
+                    <th class="py-2.5 px-3">Multiline</th>
+                    <th class="py-2.5 px-3">Fee Classes</th>
+                    <th class="py-2.5 px-3 text-right">Action</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100 dark:divide-navy-850">
+                  <tr *ngFor="let item of appTypes" class="hover:bg-slate-50/50 dark:hover:bg-navy-850/30 transition-all text-slate-700 dark:text-slate-350">
+                    <td class="py-3 px-3 font-mono font-bold">{{ item.applicationTypeId }}</td>
+                    <td class="py-3 px-3 font-semibold text-slate-900 dark:text-white">{{ item.applicationType }}</td>
+                    <td class="py-3 px-3 font-mono">{{ item.classId || '-' }}</td>
+                    <td class="py-3 px-3 font-mono">{{ item.marketCompanyId }}</td>
+                    <td class="py-3 px-3 font-mono">{{ item.lobId }}</td>
+                    <td class="py-3 px-3 font-mono">{{ item.riskCompanyId }}</td>
+                    <td class="py-3 px-3">{{ item.raterType }}</td>
+                    <td class="py-3 px-3">{{ item.appTypeMultiline }}</td>
+                    <td class="py-3 px-3 font-mono text-slate-500">{{ item.fees || '-' }}</td>
+                    <td class="py-3 px-3 text-right text-nowrap space-x-1">
+                      <button (click)="loadAll()" class="px-2 py-1 text-[10px] rounded border border-slate-200 dark:border-navy-800 hover:bg-slate-50 dark:hover:bg-navy-800 text-slate-650 dark:text-slate-300">Document</button>
+                      <button (click)="loadAll()" class="px-2 py-1 text-[10px] rounded border border-slate-200 dark:border-navy-800 hover:bg-slate-50 dark:hover:bg-navy-800 text-slate-650 dark:text-slate-300">Notes</button>
+                      <button (click)="loadAll()" class="px-2 py-1 text-[10px] rounded border border-slate-200 dark:border-navy-800 hover:bg-slate-50 dark:hover:bg-navy-800 text-slate-650 dark:text-slate-300">Treaty</button>
+                      <button (click)="openEditAppType(item)" class="px-2 py-1 text-[10px] rounded border border-brand-500 text-brand-500 hover:bg-brand-500 hover:text-white transition-all font-bold">Edit</button>
+                    </td>
+                  </tr>
+                  <tr *ngIf="appTypes.length === 0">
+                    <td colspan="10" class="py-8 text-center text-slate-400 font-bold">No application types configured.</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Treaty Sequence Master view -->
+          <div *ngIf="adminActiveTab === 'apptype' && showTreatySequenceView" class="space-y-4">
+            <div class="flex justify-between items-center pb-2">
+              <h3 class="text-xs font-bold uppercase tracking-widest text-slate-400">Admin Tool /Application Master / <span class="text-slate-900 dark:text-white capitalize font-bold">Treaty Sequence</span></h3>
+              <div>
+                <button (click)="showTreatySequenceView = false" class="bg-[#0f2c59] hover:bg-[#0a1e3f] text-white font-semibold px-4 py-2 rounded-lg text-xs transition-all shadow-md">Back to List</button>
+              </div>
+            </div>
+            
+            <div class="bg-white dark:bg-navy-900 border border-slate-200 dark:border-navy-850 rounded-2xl p-5 shadow-sm space-y-4">
+              <div class="flex justify-between items-center text-slate-500 dark:text-slate-400 text-xs">
+                <div class="flex items-center gap-1.5">
+                  <span>Show</span>
+                  <select class="bg-slate-50 dark:bg-navy-850 border border-slate-200 dark:border-navy-800 rounded-lg px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-brand-500">
+                    <option value="10">10</option>
+                    <option value="25" selected>25</option>
+                    <option value="50">50</option>
+                    <option value="100">100</option>
+                  </select>
+                  <span>entries</span>
+                </div>
+                <div class="flex items-center gap-1.5">
+                  <span class="text-slate-500 dark:text-slate-400">Search here:</span>
+                  <input type="text" class="bg-slate-50 dark:bg-navy-850 border border-slate-200 dark:border-navy-800 rounded-lg px-3 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-brand-500" placeholder="Search...">
+                </div>
+              </div>
+
+              <div class="overflow-x-auto">
+                <table class="w-full text-left text-xs border-collapse">
+                  <thead>
+                    <tr class="text-slate-400 border-b border-slate-100 dark:border-navy-850 font-bold uppercase tracking-wider text-[10px]">
+                      <th class="py-2.5 px-3">Sequence Number</th>
+                      <th class="py-2.5 px-3">Description</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-100 dark:divide-navy-850">
+                    <tr *ngFor="let item of treatySequences" class="hover:bg-slate-50/50 dark:hover:bg-navy-850/30 transition-all text-slate-700 dark:text-slate-350">
+                      <td class="py-3 px-3 font-mono font-bold">{{ item.sequenceNumber }}</td>
+                      <td class="py-3 px-3 text-slate-900 dark:text-white font-semibold">{{ item.description }}</td>
+                    </tr>
+                    <tr *ngIf="treatySequences.length === 0">
+                      <td colspan="2" class="py-8 text-center text-slate-400 font-bold">No treaty sequences configured.</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <div class="flex justify-between items-center text-slate-500 dark:text-slate-400 text-xs pt-4 border-t border-slate-100 dark:border-navy-850 mt-4">
+                <div>Showing 1 to {{ treatySequences.length }} of {{ treatySequences.length }} entries</div>
+                <div class="flex gap-1">
+                  <button class="px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-navy-800 hover:bg-slate-50 dark:hover:bg-navy-800 disabled:opacity-50 text-[11px]" disabled>Previous</button>
+                  <button class="px-3 py-1.5 rounded-lg bg-brand-500 text-white font-bold text-[11px]">1</button>
+                  <button class="px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-navy-800 hover:bg-slate-50 dark:hover:bg-navy-800 disabled:opacity-50 text-[11px]" disabled>Next</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 2. LOB master view -->
+          <div *ngIf="adminActiveTab === 'lob'" class="space-y-4">
+            <div class="flex justify-between items-center pb-2">
+              <h3 class="text-xs font-bold uppercase tracking-widest text-slate-400">Admin Tool / <span class="text-slate-900 dark:text-white capitalize">Lob Master</span></h3>
+              <button (click)="showAddLobModal = true; editingLob = null" class="bg-brand-500 hover:bg-brand-600 text-white font-bold px-3 py-1.5 rounded-xl text-xs transition-all shadow-md flex items-center space-x-1">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"></path></svg>
+                <span>Add Lob</span>
+              </button>
+            </div>
+            
+            <div class="bg-white dark:bg-navy-900 border border-slate-200 dark:border-navy-850 rounded-2xl p-5 shadow-sm overflow-x-auto">
+              <table class="w-full text-left text-xs border-collapse">
+                <thead>
+                  <tr class="text-slate-400 border-b border-slate-100 dark:border-navy-850 font-bold uppercase tracking-wider text-[10px]">
+                    <th class="py-2.5 px-3">Lob Id</th>
+                    <th class="py-2.5 px-3">Lob Name</th>
+                    <th class="py-2.5 px-3">Description</th>
+                    <th class="py-2.5 px-3 text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100 dark:divide-navy-850">
+                  <tr *ngFor="let item of lobs" class="hover:bg-slate-50/50 dark:hover:bg-navy-850/30 transition-all text-slate-700 dark:text-slate-350">
+                    <td class="py-3 px-3 font-mono font-bold">{{ item.lobId }}</td>
+                    <td class="py-3 px-3 font-semibold text-slate-900 dark:text-white">{{ item.lobName }}</td>
+                    <td class="py-3 px-3 text-slate-500 dark:text-slate-400 font-semibold">{{ item.description || '-' }}</td>
+                    <td class="py-3 px-3 text-right text-nowrap space-x-1">
+                      <button (click)="openEditLob(item)" class="px-2 py-1 text-[10px] rounded border border-brand-500 text-brand-500 hover:bg-brand-500 hover:text-white transition-all font-bold">Edit</button>
+                    </td>
+                  </tr>
+                  <tr *ngIf="lobs.length === 0">
+                    <td colspan="4" class="py-8 text-center text-slate-400 font-bold">No lines of business configured.</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- 3. Chart of Account Master view -->
+          <div *ngIf="adminActiveTab === 'coa_master'" class="space-y-4">
+            <div class="flex justify-between items-center pb-2">
+              <h3 class="text-xs font-bold uppercase tracking-widest text-slate-400">Admin Tool / <span class="text-slate-900 dark:text-white capitalize">Chart of Account Master</span></h3>
+              <button (click)="showAddChartOfAccountModal = true; editingChartOfAccount = null" class="bg-brand-500 hover:bg-brand-600 text-white font-bold px-3 py-1.5 rounded-xl text-xs transition-all shadow-md flex items-center space-x-1">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"></path></svg>
+                <span>Add Chart of Account</span>
+              </button>
+            </div>
+
+            <!-- Category Filter Legend/Badges -->
+            <div class="flex flex-wrap gap-2 pb-1 text-[10px] font-bold uppercase tracking-wider">
+              <button (click)="coaMasterFilter = 0" [ngClass]="coaMasterFilter === 0 ? 'bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 shadow-md' : 'bg-slate-100 hover:bg-slate-200 dark:bg-navy-800 dark:hover:bg-navy-750 text-slate-650 dark:text-slate-300'" class="px-3 py-1.5 rounded-xl transition-all font-bold">All</button>
+              <button (click)="coaMasterFilter = 1" [ngClass]="coaMasterFilter === 1 ? 'bg-blue-500 text-white shadow-md' : 'bg-blue-500/10 text-blue-500 hover:bg-blue-500/20'" class="px-3 py-1.5 rounded-xl transition-all font-bold">1 - Asset</button>
+              <button (click)="coaMasterFilter = 2" [ngClass]="coaMasterFilter === 2 ? 'bg-amber-500 text-white shadow-md' : 'bg-amber-500/10 text-amber-500 hover:bg-amber-500/20'" class="px-3 py-1.5 rounded-xl transition-all font-bold">2 - Liability</button>
+              <button (click)="coaMasterFilter = 3" [ngClass]="coaMasterFilter === 3 ? 'bg-emerald-500 text-white shadow-md' : 'bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20'" class="px-3 py-1.5 rounded-xl transition-all font-bold">3 - Revenue</button>
+              <button (click)="coaMasterFilter = 4" [ngClass]="coaMasterFilter === 4 ? 'bg-rose-500 text-white shadow-md' : 'bg-rose-500/10 text-rose-500 hover:bg-rose-500/20'" class="px-3 py-1.5 rounded-xl transition-all font-bold">4 - Expense</button>
+              <button (click)="coaMasterFilter = 5" [ngClass]="coaMasterFilter === 5 ? 'bg-purple-500 text-white shadow-md' : 'bg-purple-500/10 text-purple-500 hover:bg-purple-500/20'" class="px-3 py-1.5 rounded-xl transition-all font-bold">5 - Capital & Equity</button>
+            </div>
+            
+            <div class="bg-white dark:bg-navy-900 border border-slate-200 dark:border-navy-850 rounded-2xl p-5 shadow-sm overflow-x-auto">
+              <table class="w-full text-left text-xs border-collapse">
+                <thead>
+                  <tr class="text-slate-400 border-b border-slate-100 dark:border-navy-850 font-bold uppercase tracking-wider text-[10px]">
+                    <th class="py-2.5 px-3">Parent COA ID</th>
+                    <th class="py-2.5 px-3">Sub COA ID</th>
+                    <th class="py-2.5 px-3">Sub COA Name</th>
+                    <th class="py-2.5 px-3">Sub COA Key</th>
+                    <th class="py-2.5 px-3">Next Available Number</th>
+                    <th class="py-2.5 px-3 text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100 dark:divide-navy-850">
+                  <tr *ngFor="let item of filteredChartOfAccounts" class="hover:bg-slate-50/50 dark:hover:bg-navy-850/30 transition-all text-slate-700 dark:text-slate-350">
+                    <td class="py-3 px-3 font-mono font-bold">
+                      {{ item.parentCoaId === 1 ? '1 - Asset' :
+                         item.parentCoaId === 2 ? '2 - Liability' :
+                         item.parentCoaId === 3 ? '3 - Revenue' :
+                         item.parentCoaId === 4 ? '4 - Expense' :
+                         item.parentCoaId === 5 ? '5 - Capital & Equity' :
+                         item.parentCoaId }}
+                    </td>
+                    <td class="py-3 px-3 font-mono font-bold text-slate-900 dark:text-white">{{ item.subCoaId }}</td>
+                    <td class="py-3 px-3 font-semibold">{{ item.subCoaName }}</td>
+                    <td class="py-3 px-3 font-mono">{{ item.subCoaKey }}</td>
+                    <td class="py-3 px-3 font-mono">{{ item.nextAvailableNumber }}</td>
+                    <td class="py-3 px-3 text-right text-nowrap space-x-1">
+                      <button (click)="loadAll()" class="px-2 py-1 text-[10px] rounded border border-slate-200 dark:border-navy-800 hover:bg-slate-50 dark:hover:bg-navy-800 text-slate-650 dark:text-slate-300">Document</button>
+                      <button (click)="loadAll()" class="px-2 py-1 text-[10px] rounded border border-slate-200 dark:border-navy-800 hover:bg-slate-50 dark:hover:bg-navy-800 text-slate-650 dark:text-slate-300">Notes</button>
+                      <button (click)="openEditChartOfAccount(item)" class="px-2 py-1 text-[10px] rounded border border-brand-500 text-brand-500 hover:bg-brand-500 hover:text-white transition-all font-bold">Edit</button>
+                    </td>
+                  </tr>
+                  <tr *ngIf="filteredChartOfAccounts.length === 0">
+                    <td colspan="6" class="py-8 text-center text-slate-400 font-bold">No parent accounts configured.</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- 4. Sub COA (Category Master) view -->
+          <div *ngIf="adminActiveTab === 'sub_coa'" class="space-y-4">
+            <div class="flex justify-between items-center pb-2">
+              <h3 class="text-xs font-bold uppercase tracking-widest text-slate-400">Admin Tool / <span class="text-slate-900 dark:text-white capitalize">Category Master</span></h3>
+              <button (click)="showAddSubCoaModal = true; editingSubCoa = null" class="bg-brand-500 hover:bg-brand-600 text-white font-bold px-3 py-1.5 rounded-xl text-xs transition-all shadow-md flex items-center space-x-1">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"></path></svg>
+                <span>Add Category</span>
+              </button>
+            </div>
+            
+            <div class="bg-white dark:bg-navy-900 border border-slate-200 dark:border-navy-850 rounded-2xl p-5 shadow-sm overflow-x-auto">
+              <table class="w-full text-left text-xs border-collapse">
+                <thead>
+                  <tr class="text-slate-400 border-b border-slate-100 dark:border-navy-850 font-bold uppercase tracking-wider text-[10px]">
+                    <th class="py-2.5 px-3">Category Id</th>
+                    <th class="py-2.5 px-3">Category Name</th>
+                    <th class="py-2.5 px-3 text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100 dark:divide-navy-850">
+                  <tr *ngFor="let item of subCoas" class="hover:bg-slate-50/50 dark:hover:bg-navy-850/30 transition-all text-slate-700 dark:text-slate-350">
+                    <td class="py-3 px-3 font-mono font-bold">{{ item.categoryId }}</td>
+                    <td class="py-3 px-3 font-semibold text-slate-900 dark:text-white">{{ item.categoryName }}</td>
+                    <td class="py-3 px-3 text-right text-nowrap space-x-1">
+                      <button (click)="loadAll()" class="px-2 py-1 text-[10px] rounded border border-slate-200 dark:border-navy-800 hover:bg-slate-50 dark:hover:bg-navy-800 text-slate-650 dark:text-slate-300">Document</button>
+                      <button (click)="loadAll()" class="px-2 py-1 text-[10px] rounded border border-slate-200 dark:border-navy-800 hover:bg-slate-50 dark:hover:bg-navy-800 text-slate-650 dark:text-slate-300">Notes</button>
+                      <button (click)="openEditSubCoa(item)" class="px-2 py-1 text-[10px] rounded border border-brand-500 text-brand-500 hover:bg-brand-500 hover:text-white transition-all font-bold">Edit</button>
+                    </td>
+                  </tr>
+                  <tr *ngIf="subCoas.length === 0">
+                    <td colspan="3" class="py-8 text-center text-slate-400 font-bold">No categories configured.</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- 5. GL Map view -->
+          <div *ngIf="adminActiveTab === 'gl_map'" class="space-y-4">
+            <div class="flex justify-between items-center pb-2">
+              <h3 class="text-xs font-bold uppercase tracking-widest text-slate-400">Admin Tool / <span class="text-slate-900 dark:text-white capitalize">GL Map</span></h3>
+              <button (click)="showAddGlMapModal = true; editingGlMap = null" class="bg-brand-500 hover:bg-brand-600 text-white font-bold px-3 py-1.5 rounded-xl text-xs transition-all shadow-md flex items-center space-x-1">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"></path></svg>
+                <span>Add Mapping</span>
+              </button>
+            </div>
+            
+            <div class="bg-white dark:bg-navy-900 border border-slate-200 dark:border-navy-850 rounded-2xl p-5 shadow-sm overflow-x-auto">
+              <table class="w-full text-left text-xs border-collapse">
+                <thead>
+                  <tr class="text-slate-400 border-b border-slate-100 dark:border-navy-850 font-bold uppercase tracking-wider text-[10px]">
+                    <th class="py-2.5 px-3">GL Number</th>
+                    <th class="py-2.5 px-3">Type</th>
+                    <th class="py-2.5 px-3 text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100 dark:divide-navy-850">
+                  <tr *ngFor="let item of glMaps" class="hover:bg-slate-50/50 dark:hover:bg-navy-850/30 transition-all text-slate-700 dark:text-slate-350">
+                    <td class="py-3 px-3 font-semibold text-slate-900 dark:text-white">{{ item.glNumber }}</td>
+                    <td class="py-3 px-3 font-mono font-bold text-brand-500">{{ item.type }}</td>
+                    <td class="py-3 px-3 text-right text-nowrap space-x-1">
+                      <button (click)="openEditGlMap(item)" class="px-2 py-1 text-[10px] rounded border border-brand-500 text-brand-500 hover:bg-brand-500 hover:text-white transition-all font-bold">Edit</button>
+                    </td>
+                  </tr>
+                  <tr *ngIf="glMaps.length === 0">
+                    <td colspan="3" class="py-8 text-center text-slate-400 font-bold">No GL mappings configured.</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- 6. State Jurisdiction master view -->
+          <div *ngIf="adminActiveTab === 'states'" class="space-y-4">
+            <div class="flex justify-between items-center pb-2">
+              <h3 class="text-xs font-bold uppercase tracking-widest text-slate-400">Admin Tool / <span class="text-slate-900 dark:text-white capitalize">State Jurisdiction Master</span></h3>
+              <button (click)="showAddStateModal = true" class="bg-brand-500 hover:bg-brand-600 text-white font-bold px-3 py-1.5 rounded-xl text-xs transition-all shadow-md flex items-center space-x-1">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"></path></svg>
+                <span>Add State</span>
+              </button>
+            </div>
+            
+            <div class="bg-white dark:bg-navy-900 border border-slate-200 dark:border-navy-850 rounded-2xl p-5 shadow-sm overflow-x-auto">
+              <table class="w-full text-left text-xs border-collapse">
+                <thead>
+                  <tr class="text-slate-400 border-b border-slate-100 dark:border-navy-850 font-bold uppercase tracking-wider text-[10px]">
+                    <th class="py-2.5 px-3">State Jurisdiction</th>
+                    <th class="py-2.5 px-3">State Code</th>
+                    <th class="py-2.5 px-3">Premium Tax</th>
+                    <th class="py-2.5 px-3">Surplus Tax</th>
+                    <th class="py-2.5 px-3">Stamping Fee</th>
+                    <th class="py-2.5 px-3 text-right">Workflow Rule State</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100 dark:divide-navy-850">
+                  <tr *ngFor="let item of states" class="hover:bg-slate-50/50 dark:hover:bg-navy-850/30 transition-all text-slate-700 dark:text-slate-350">
+                    <td class="py-3 px-3 font-bold text-slate-900 dark:text-white">{{ item.name }}</td>
+                    <td class="py-3 px-3 font-mono font-bold text-slate-450">{{ item.code }}</td>
+                    <td class="py-3 px-3 font-mono text-slate-600 dark:text-slate-350">{{ item.premiumTax }}%</td>
+                    <td class="py-3 px-3 font-mono text-slate-600 dark:text-slate-350">{{ item.surplusTax }}%</td>
+                    <td class="py-3 px-3 font-mono text-slate-600 dark:text-slate-350">{{ item.stampingFee }}%</td>
+                    <td class="py-3 px-3 text-right">
+                      <span [ngClass]="{
+                        'bg-emerald-500/10 text-emerald-500 border-emerald-500/20': item.status === 'Active',
+                        'bg-blue-500/10 text-blue-500 border-blue-500/20': item.status === 'Configured',
+                        'bg-slate-500/10 text-slate-400 border-slate-500/10': item.status === 'Draft'
+                      }" class="px-2.5 py-0.5 rounded-full text-[9px] font-bold border">{{ item.status }}</span>
+                    </td>
+                  </tr>
+                  <tr *ngIf="states.length === 0">
+                    <td colspan="6" class="py-8 text-center text-slate-400 font-bold">No states configured.</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- 7. MGA master view -->
+          <!-- MGA Grid View -->
+          <div *ngIf="adminActiveTab === 'mgas' && !showMgaTreatiesView" class="space-y-4">
+            <div class="flex justify-between items-center pb-2">
+              <h3 class="text-xs font-bold uppercase tracking-widest text-slate-400">Admin Tool / <span class="text-slate-900 dark:text-white capitalize">MGA Master</span></h3>
+              <button (click)="showAddMgaModal = true" class="bg-brand-500 hover:bg-brand-600 text-white font-bold px-3 py-1.5 rounded-xl text-xs transition-all shadow-md flex items-center space-x-1">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"></path></svg>
+                <span>Add MGA</span>
+              </button>
+            </div>
+            
+            <div class="bg-white dark:bg-navy-900 border border-slate-200 dark:border-navy-850 rounded-2xl p-5 shadow-sm overflow-x-auto">
+              <table class="w-full text-left text-xs border-collapse">
+                <thead>
+                  <tr class="text-slate-400 border-b border-slate-100 dark:border-navy-850 font-bold uppercase tracking-wider text-[10px]">
+                    <th class="py-2.5 px-3">MGA Partner</th>
+                    <th class="py-2.5 px-3">Code</th>
+                    <th class="py-2.5 px-3">Status</th>
+                    <th class="py-2.5 px-3 text-right">Action</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100 dark:divide-navy-850">
+                  <tr *ngFor="let item of mgas" class="hover:bg-slate-50/50 dark:hover:bg-navy-850/30 transition-all text-slate-700 dark:text-slate-350">
+                    <td class="py-3 px-3 font-bold text-slate-900 dark:text-white">{{ item.name }}</td>
+                    <td class="py-3 px-3 font-mono font-bold text-slate-450">{{ item.code }}</td>
+                    <td class="py-3 px-3">
+                      <span class="px-2 py-0.5 rounded-full text-[9px] font-bold bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">{{ item.status }}</span>
+                    </td>
+                    <td class="py-3 px-3 text-right">
+                      <button (click)="viewMgaTreaties(item)" class="px-2 py-1 text-[10px] rounded border border-brand-500 text-brand-500 hover:bg-brand-500 hover:text-white transition-all font-bold">Treaties</button>
+                    </td>
+                  </tr>
+                  <tr *ngIf="mgas.length === 0">
+                    <td colspan="4" class="py-8 text-center text-slate-400 font-bold">No MGAs configured.</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- MGA Treaties View -->
+          <div *ngIf="adminActiveTab === 'mgas' && showMgaTreatiesView" class="space-y-4">
+            <div class="flex justify-between items-center pb-2">
+              <div class="flex items-center space-x-2">
+                <button (click)="showMgaTreatiesView = false" class="p-1.5 rounded-xl border border-slate-200 dark:border-navy-800 hover:bg-slate-50 dark:hover:bg-navy-800 text-slate-500 transition-all">
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"></path></svg>
+                </button>
+                <h3 class="text-xs font-bold uppercase tracking-widest text-slate-400">Admin Tool / MGA Master / <span class="text-slate-900 dark:text-white capitalize">Treaties - {{ selectedMga?.name }}</span></h3>
+              </div>
+            </div>
+
+            <div class="bg-white dark:bg-navy-900 border border-slate-200 dark:border-navy-850 rounded-2xl p-5 shadow-sm overflow-x-auto">
+              <table class="w-full text-left text-xs border-collapse">
+                <thead>
+                  <tr class="text-slate-400 border-b border-slate-100 dark:border-navy-850 font-bold uppercase tracking-wider text-[10px]">
+                    <th class="py-2.5 px-3">Treaty Name</th>
+                    <th class="py-2.5 px-3">Agreement Type</th>
+                    <th class="py-2.5 px-3">Risk Carrier Partner</th>
+                    <th class="py-2.5 px-3">Risk Limit ($)</th>
+                    <th class="py-2.5 px-3">Cession Share (%)</th>
+                    <th class="py-2.5 px-3">Comm. Rate (%)</th>
+                    <th class="py-2.5 px-3 text-right">Workflow State</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100 dark:divide-navy-850">
+                  <tr *ngFor="let t of getTreatiesForSelectedMga()" class="hover:bg-slate-50/50 dark:hover:bg-navy-850/30 transition-all text-slate-700 dark:text-slate-350">
+                    <td class="py-3 px-3 font-bold text-slate-900 dark:text-white">{{ t.name }}</td>
+                    <td class="py-3 px-3 font-semibold text-slate-650 dark:text-slate-450">{{ t.type }}</td>
+                    <td class="py-3 px-3 font-extrabold">{{ t.carrier }} <span class="ml-1 text-[9px] bg-slate-150 dark:bg-navy-800 text-slate-500 border border-slate-200 dark:border-navy-700 px-1.5 py-0.5 rounded-full font-bold">{{ t.rating }}</span></td>
+                    <td class="py-3 px-3 font-mono">${{ t.limit | number:'1.2-2' }}</td>
+                    <td class="py-3 px-3 font-mono font-bold">{{ t.cessionPercentage }}%</td>
+                    <td class="py-3 px-3 font-mono">{{ t.commissionPercentage }}%</td>
+                    <td class="py-3 px-3 text-right">
+                      <span [ngClass]="{
+                        'bg-emerald-500/10 text-emerald-500 border-emerald-500/20': t.status === 'Active' || t.status === 'In-Force',
+                        'bg-amber-500/10 text-amber-500 border-amber-500/20': t.status === 'Draft',
+                        'bg-slate-500/10 text-slate-450 border-slate-500/10': t.status === 'Run-off'
+                      }" class="px-2 py-0.5 rounded-full text-[9px] font-bold border">{{ t.status }}</span>
+                    </td>
+                  </tr>
+                  <tr *ngIf="getTreatiesForSelectedMga().length === 0">
+                    <td colspan="7" class="py-8 text-center text-slate-400 font-bold">No treaties registered for this MGA partner.</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- ========================================== -->
+          <!-- DIALOG MODALS FOR CREATING & EDITING -->
+          <!-- ========================================== -->
+
+          <!-- ADD/EDIT APPLICATION TYPE MODAL -->
+          <div *ngIf="showAddAppTypeModal" class="fixed inset-0 bg-slate-900/60 dark:bg-navy-950/80 flex items-center justify-center z-50 p-4 transition-all animate-fade-in">
+            <div class="bg-white dark:bg-navy-900 border border-slate-200 dark:border-navy-850 rounded-2xl max-w-4xl w-full p-6 shadow-2xl relative space-y-4 text-slate-800 dark:text-slate-200 overflow-y-auto max-h-[90vh]">
+              <h3 class="text-sm font-black uppercase tracking-wider text-slate-900 dark:text-white">Admin Tool / Application Master / {{ editingAppType ? 'Edit' : 'Add' }} / {{ newAppTypeForm.applicationTypeId || 'New' }}</h3>
+              
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
+                <!-- Row 1 -->
+                <div class="space-y-1">
+                  <label class="block font-bold text-slate-400 uppercase tracking-widest text-[9px]">Application Type Id</label>
+                  <input type="number" [(ngModel)]="newAppTypeForm.applicationTypeId" [disabled]="!!editingAppType" placeholder="e.g. 483" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-navy-950 border border-slate-200 dark:border-navy-800 focus:outline-none focus:border-brand-500 disabled:opacity-50 text-slate-800 dark:text-slate-200">
+                </div>
+
+                <div class="space-y-1">
+                  <label class="block font-bold text-slate-400 uppercase tracking-widest text-[9px]">Application Type</label>
+                  <input [(ngModel)]="newAppTypeForm.applicationType" placeholder="e.g. Digital Rater (AL,PD,Cargo)" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-navy-950 border border-slate-200 dark:border-navy-800 focus:outline-none focus:border-brand-500 text-slate-800 dark:text-slate-200">
+                </div>
+
+                <div class="space-y-1">
+                  <label class="block font-bold text-slate-400 uppercase tracking-widest text-[9px]">Risk Company</label>
+                  <select [(ngModel)]="newAppTypeForm.riskCompanyId" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-navy-950 border border-slate-200 dark:border-navy-800 focus:outline-none focus:border-brand-500 text-slate-800 dark:text-slate-200">
+                    <option [value]="210">SOUTHLAKE SPECIALTY INSURANCE CO</option>
+                    <option [value]="211">FALCON INSURANCE CO</option>
+                  </select>
+                </div>
+
+                <!-- Row 2 -->
+                <div class="space-y-1">
+                  <label class="block font-bold text-slate-400 uppercase tracking-widest text-[9px]">Lob Id</label>
+                  <select [(ngModel)]="newAppTypeForm.lobId" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-navy-950 border border-slate-200 dark:border-navy-800 focus:outline-none focus:border-brand-500 text-slate-800 dark:text-slate-200">
+                    <option *ngFor="let l of lobs" [value]="l.lobId">{{ l.lobName }}</option>
+                  </select>
+                </div>
+
+                <div class="space-y-1">
+                  <label class="block font-bold text-slate-400 uppercase tracking-widest text-[9px]">Market Company</label>
+                  <select [(ngModel)]="newAppTypeForm.marketCompanyId" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-navy-950 border border-slate-200 dark:border-navy-800 focus:outline-none focus:border-brand-500 text-slate-800 dark:text-slate-200">
+                    <option [value]="450">Futuristic Underwriters LLC</option>
+                    <option [value]="451">NTA Financial Corp</option>
+                    <option [value]="452">ACCL Programs LLC</option>
+                  </select>
+                </div>
+
+                <div class="space-y-1">
+                  <label class="block font-bold text-slate-400 uppercase tracking-widest text-[9px]">Class Xref</label>
+                  <input [(ngModel)]="newAppTypeForm.classId" placeholder="e.g. 20,40" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-navy-950 border border-slate-200 dark:border-navy-800 focus:outline-none focus:border-brand-500 text-slate-800 dark:text-slate-200">
+                </div>
+
+                <!-- Row 3 -->
+                <div class="space-y-1">
+                  <label class="block font-bold text-slate-400 uppercase tracking-widest text-[9px]">Application Type Multiline</label>
+                  <div class="flex items-center space-x-4 py-2">
+                    <label class="flex items-center space-x-1.5 cursor-pointer">
+                      <input type="radio" [(ngModel)]="newAppTypeForm.appTypeMultiline" value="Yes" class="rounded-full border-slate-350 dark:border-navy-800 text-brand-500 focus:ring-brand-500 h-3.5 w-3.5">
+                      <span>Yes</span>
+                    </label>
+                    <label class="flex items-center space-x-1.5 cursor-pointer">
+                      <input type="radio" [(ngModel)]="newAppTypeForm.appTypeMultiline" value="No" class="rounded-full border-slate-350 dark:border-navy-800 text-brand-500 focus:ring-brand-500 h-3.5 w-3.5">
+                      <span>No</span>
+                    </label>
+                  </div>
+                </div>
+
+                <div class="space-y-1">
+                  <label class="block font-bold text-slate-400 uppercase tracking-widest text-[9px]">Rater Type</label>
+                  <select [(ngModel)]="newAppTypeForm.raterType" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-navy-950 border border-slate-200 dark:border-navy-800 focus:outline-none focus:border-brand-500 text-slate-800 dark:text-slate-200">
+                    <option value="Custom">Custom</option>
+                    <option value="Generic">Generic</option>
+                  </select>
+                </div>
+
+                <div class="space-y-1">
+                  <label class="block font-bold text-slate-400 uppercase tracking-widest text-[9px]">Forms</label>
+                  <div class="flex items-center space-x-4 py-2">
+                    <label class="flex items-center space-x-1.5 cursor-pointer">
+                      <input type="radio" [(ngModel)]="newAppTypeForm.forms" value="Yes" class="rounded-full border-slate-350 dark:border-navy-800 text-brand-500 focus:ring-brand-500 h-3.5 w-3.5">
+                      <span>Yes</span>
+                    </label>
+                    <label class="flex items-center space-x-1.5 cursor-pointer">
+                      <input type="radio" [(ngModel)]="newAppTypeForm.forms" value="No" class="rounded-full border-slate-350 dark:border-navy-800 text-brand-500 focus:ring-brand-500 h-3.5 w-3.5">
+                      <span>No</span>
+                    </label>
+                  </div>
+                </div>
+
+                <!-- Row 4 -->
+                <div class="space-y-1">
+                  <label class="block font-bold text-slate-400 uppercase tracking-widest text-[9px]">Manager</label>
+                  <input [(ngModel)]="newAppTypeForm.manager" placeholder="e.g. Carolyn Rupp, Indor Randhawa" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-navy-950 border border-slate-200 dark:border-navy-800 focus:outline-none focus:border-brand-500 text-slate-800 dark:text-slate-200">
+                </div>
+
+                <div class="space-y-1">
+                  <label class="block font-bold text-slate-400 uppercase tracking-widest text-[9px]">Underwriter</label>
+                  <input [(ngModel)]="newAppTypeForm.underwriter" placeholder="e.g. Carolyn Rupp, Enedina martinez" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-navy-950 border border-slate-200 dark:border-navy-800 focus:outline-none focus:border-brand-500 text-slate-800 dark:text-slate-200">
+                </div>
+
+                <div class="space-y-1">
+                  <label class="block font-bold text-slate-400 uppercase tracking-widest text-[9px]">Category</label>
+                  <div class="flex items-center space-x-4 py-2">
+                    <label class="flex items-center space-x-1.5 cursor-pointer">
+                      <input type="radio" [(ngModel)]="newAppTypeForm.category" value="Personal" class="rounded-full border-slate-350 dark:border-navy-800 text-brand-500 focus:ring-brand-500 h-3.5 w-3.5">
+                      <span>Personal</span>
+                    </label>
+                    <label class="flex items-center space-x-1.5 cursor-pointer">
+                      <input type="radio" [(ngModel)]="newAppTypeForm.category" value="Commercial" class="rounded-full border-slate-350 dark:border-navy-800 text-brand-500 focus:ring-brand-500 h-3.5 w-3.5">
+                      <span>Commercial</span>
+                    </label>
+                  </div>
+                </div>
+
+                <!-- Row 5 -->
+                <div class="space-y-1">
+                  <label class="block font-bold text-slate-400 uppercase tracking-widest text-[9px]">Department</label>
+                  <input [(ngModel)]="newAppTypeForm.department" placeholder="e.g. Underwriting" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-navy-950 border border-slate-200 dark:border-navy-800 focus:outline-none focus:border-brand-500 text-slate-800 dark:text-slate-200">
+                </div>
+
+                <div class="space-y-1">
+                  <label class="block font-bold text-slate-400 uppercase tracking-widest text-[9px]">Active</label>
+                  <div class="flex items-center space-x-4 py-2">
+                    <label class="flex items-center space-x-1.5 cursor-pointer">
+                      <input type="radio" [(ngModel)]="newAppTypeForm.active" value="Yes" class="rounded-full border-slate-350 dark:border-navy-800 text-brand-500 focus:ring-brand-500 h-3.5 w-3.5">
+                      <span>Yes</span>
+                    </label>
+                    <label class="flex items-center space-x-1.5 cursor-pointer">
+                      <input type="radio" [(ngModel)]="newAppTypeForm.active" value="No" class="rounded-full border-slate-350 dark:border-navy-800 text-brand-500 focus:ring-brand-500 h-3.5 w-3.5">
+                      <span>No</span>
+                    </label>
+                  </div>
+                </div>
+
+                <div class="space-y-1">
+                  <label class="block font-bold text-slate-400 uppercase tracking-widest text-[9px]">Applicable Fees</label>
+                  <input [(ngModel)]="newAppTypeForm.fees" placeholder="e.g. 1007,94,83,88" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-navy-950 border border-slate-200 dark:border-navy-800 focus:outline-none focus:border-brand-500 text-slate-800 dark:text-slate-200">
+                </div>
+              </div>
+
+              <!-- Mappings Grid -->
+              <div class="border-t border-slate-100 dark:border-navy-850 pt-4 mt-2 space-y-3">
+                <span class="text-[9px] font-bold text-slate-400 uppercase tracking-widest block">Class of Business & Xref Mapping</span>
+                
+                <div class="bg-slate-50 dark:bg-navy-950 rounded-xl p-3 border border-slate-200 dark:border-navy-800 space-y-2">
+                  <div class="grid grid-cols-2 gap-4 text-[9px] font-bold text-slate-400 uppercase tracking-widest px-2">
+                    <div>Class of Business</div>
+                    <div>Application Type Xref</div>
+                  </div>
+                  
+                  <div *ngFor="let mapping of newAppTypeClassMappings; let idx = index" class="flex items-center space-x-2">
+                    <select [(ngModel)]="mapping.lobId" name="mappingLob-{{idx}}" class="w-1/2 px-3 py-2 rounded-xl bg-white dark:bg-navy-900 border border-slate-200 dark:border-navy-800 text-xs focus:outline-none focus:border-brand-500 text-slate-800 dark:text-slate-200">
+                      <option *ngFor="let l of lobs" [value]="l.lobId">{{ l.lobName }}</option>
+                    </select>
+                    <select [(ngModel)]="mapping.appTypeId" name="mappingApp-{{idx}}" class="w-1/2 px-3 py-2 rounded-xl bg-white dark:bg-navy-900 border border-slate-200 dark:border-navy-800 text-xs focus:outline-none focus:border-brand-500 text-slate-800 dark:text-slate-200">
+                      <option *ngFor="let at of appTypes" [value]="at.applicationTypeId">{{ at.applicationType }}</option>
+                    </select>
+                    <button (click)="removeAppTypeClassMapping(idx)" class="p-2 text-rose-500 hover:text-rose-600 transition-all">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-4v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                    </button>
+                  </div>
+                  
+                  <div *ngIf="newAppTypeClassMappings.length === 0" class="text-center py-4 text-slate-400 text-xs font-bold">
+                    No multiline mappings defined.
+                  </div>
+                  
+                  <button (click)="addAppTypeClassMapping()" class="text-xs text-brand-500 hover:text-brand-600 font-bold flex items-center space-x-1 pt-1">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"></path></svg>
+                    <span>Add New Mapping</span>
+                  </button>
+                </div>
+              </div>
+
+              <div class="flex items-center justify-end space-x-3 pt-2">
+                <button (click)="showAddAppTypeModal = false" class="px-4 py-2 rounded-xl border border-slate-200 dark:border-navy-800 text-xs font-bold hover:bg-slate-50 dark:hover:bg-navy-800 transition-all text-slate-500">Cancel</button>
+                <button (click)="submitAppType()" class="px-5 py-2 bg-brand-500 hover:bg-brand-600 text-white font-bold text-xs rounded-xl shadow-md transition-all">Save</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- ADD/EDIT LOB MODAL -->
+          <div *ngIf="showAddLobModal" class="fixed inset-0 bg-slate-900/60 dark:bg-navy-950/80 flex items-center justify-center z-50 p-4 transition-all animate-fade-in">
+            <div class="bg-white dark:bg-navy-900 border border-slate-200 dark:border-navy-850 rounded-2xl max-w-sm w-full p-6 shadow-2xl space-y-4">
+              <h3 class="text-sm font-black uppercase tracking-wider text-slate-900 dark:text-white">{{ editingLob ? 'Edit' : 'Add' }} Line of Business</h3>
+              
+              <div class="space-y-4 text-xs">
+                <div class="space-y-1">
+                  <label class="block font-bold text-slate-400 uppercase tracking-widest text-[9px]">Lob ID</label>
+                  <input type="number" [(ngModel)]="newLobForm.lobId" [disabled]="!!editingLob" placeholder="e.g. 101" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-navy-950 border border-slate-200 dark:border-navy-800 focus:outline-none focus:border-brand-500 disabled:opacity-50 text-slate-800 dark:text-slate-200">
+                </div>
+
+                <div class="space-y-1">
+                  <label class="block font-bold text-slate-400 uppercase tracking-widest text-[9px]">Lob Name</label>
+                  <input [(ngModel)]="newLobForm.lobName" placeholder="e.g. TRUC-AL" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-navy-950 border border-slate-200 dark:border-navy-800 focus:outline-none focus:border-brand-500 text-slate-800 dark:text-slate-200">
+                </div>
+
+                <div class="space-y-1">
+                  <label class="block font-bold text-slate-400 uppercase tracking-widest text-[9px]">Description</label>
+                  <textarea [(ngModel)]="newLobForm.description" rows="3" placeholder="e.g. Auto Liability" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-navy-950 border border-slate-200 dark:border-navy-800 focus:outline-none focus:border-brand-500 text-slate-800 dark:text-slate-200"></textarea>
+                </div>
+              </div>
+
+              <div class="flex items-center justify-end space-x-3 pt-2">
+                <button (click)="showAddLobModal = false" class="px-4 py-2 rounded-xl border border-slate-200 dark:border-navy-800 text-xs font-bold hover:bg-slate-50 dark:hover:bg-navy-800 transition-all text-slate-500">Cancel</button>
+                <button (click)="submitLob()" class="px-4 py-2 bg-brand-500 hover:bg-brand-600 text-white font-bold text-xs rounded-xl shadow-md transition-all">{{ editingLob ? 'Save Changes' : 'Add LOB' }}</button>
+              </div>
+            </div>
+          </div>
+
+
+
+          <!-- ADD/EDIT SUB COA (CATEGORY MASTER) MODAL -->
+          <div *ngIf="showAddSubCoaModal" class="fixed inset-0 bg-slate-900/60 dark:bg-navy-950/80 flex items-center justify-center z-50 p-4 transition-all animate-fade-in">
+            <div class="bg-white dark:bg-navy-900 border border-slate-200 dark:border-navy-850 rounded-2xl max-w-sm w-full p-6 shadow-2xl space-y-4">
+              <h3 class="text-sm font-black uppercase tracking-wider text-slate-900 dark:text-white">{{ editingSubCoa ? 'Edit' : 'Add' }} Category</h3>
+              
+              <div class="space-y-4 text-xs">
+                <div class="space-y-1">
+                  <label class="block font-bold text-slate-400 uppercase tracking-widest text-[9px]">Category Id</label>
+                  <input type="number" [(ngModel)]="newSubCoaForm.categoryId" [disabled]="!!editingSubCoa" placeholder="e.g. 1" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-navy-950 border border-slate-200 dark:border-navy-800 focus:outline-none focus:border-brand-500 disabled:opacity-50 text-slate-800 dark:text-slate-200">
+                </div>
+
+                <div class="space-y-1">
+                  <label class="block font-bold text-slate-400 uppercase tracking-widest text-[9px]">Category Name</label>
+                  <input [(ngModel)]="newSubCoaForm.categoryName" placeholder="e.g. BANK ACCOUNTS" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-navy-950 border border-slate-200 dark:border-navy-800 focus:outline-none focus:border-brand-500 text-slate-800 dark:text-slate-200">
+                </div>
+              </div>
+
+              <div class="flex items-center justify-end space-x-3 pt-2">
+                <button (click)="showAddSubCoaModal = false" class="px-4 py-2 rounded-xl border border-slate-200 dark:border-navy-800 text-xs font-bold hover:bg-slate-50 dark:hover:bg-navy-800 transition-all text-slate-500">Cancel</button>
+                <button (click)="submitSubCoa()" class="px-4 py-2 bg-brand-500 hover:bg-brand-600 text-white font-bold text-xs rounded-xl shadow-md transition-all">{{ editingSubCoa ? 'Save Changes' : 'Add Category' }}</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- ADD/EDIT GL MAP MODAL -->
+          <div *ngIf="showAddGlMapModal" class="fixed inset-0 bg-slate-900/60 dark:bg-navy-950/80 flex items-center justify-center z-50 p-4 transition-all animate-fade-in">
+            <div class="bg-white dark:bg-navy-900 border border-slate-200 dark:border-navy-850 rounded-2xl max-w-sm w-full p-6 shadow-2xl space-y-4">
+              <h3 class="text-sm font-black uppercase tracking-wider text-slate-900 dark:text-white">GI Mapping / {{ editingGlMap ? 'Edit' : 'Add' }} GL Map</h3>
+              
+              <div class="space-y-4 text-xs">
+                <div class="space-y-1">
+                  <label class="block font-bold text-slate-400 uppercase tracking-widest text-[9px]">GL</label>
+                  <select [(ngModel)]="newGlMapForm.glNumber" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-navy-950 border border-slate-200 dark:border-navy-800 focus:outline-none focus:border-brand-500 text-slate-800 dark:text-slate-200">
+                    <option value="">Search by GL</option>
+                    <option *ngFor="let acct of coaAccounts" [value]="acct.accountNumber + ' - ' + acct.accountName">
+                      {{ acct.accountName }} ({{ acct.accountNumber }})
+                    </option>
+                  </select>
+                </div>
+
+                <div class="space-y-1">
+                  <label class="block font-bold text-slate-400 uppercase tracking-widest text-[9px]">Type</label>
+                  <select [(ngModel)]="newGlMapForm.type" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-navy-950 border border-slate-200 dark:border-navy-800 focus:outline-none focus:border-brand-500 text-slate-800 dark:text-slate-200">
+                    <option value="">Search by Type</option>
+                    <option value="AR">AR</option>
+                    <option value="AP">AP</option>
+                    <option value="MGA">MGA</option>
+                    <option value="BRK">BRK</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="flex items-center justify-end space-x-3 pt-2">
+                <button (click)="showAddGlMapModal = false" class="px-4 py-2 rounded-xl border border-slate-200 dark:border-navy-800 text-xs font-bold hover:bg-slate-50 dark:hover:bg-navy-800 transition-all text-slate-500">Cancel</button>
+                <button (click)="submitGlMap()" class="px-4 py-2 bg-brand-500 hover:bg-brand-600 text-white font-bold text-xs rounded-xl shadow-md transition-all">Save</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- ADD STATE MODAL -->
+          <div *ngIf="showAddStateModal" class="fixed inset-0 bg-slate-900/60 dark:bg-navy-950/80 flex items-center justify-center z-50 p-4 transition-all animate-fade-in">
+            <div class="bg-white dark:bg-navy-900 border border-slate-200 dark:border-navy-850 rounded-2xl max-w-sm w-full p-6 shadow-2xl space-y-4">
+              <h3 class="text-sm font-black text-slate-900 dark:text-white uppercase tracking-wider">Configure State Jurisdiction</h3>
+              
+              <div class="space-y-4 text-xs">
+                <div class="space-y-1">
+                  <label class="block font-bold text-slate-400 uppercase tracking-widest text-[9px]">State Name</label>
+                  <input [(ngModel)]="newStateForm.name" placeholder="e.g. Texas" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-navy-950 border border-slate-200 dark:border-navy-800 focus:outline-none focus:border-brand-500 text-slate-800 dark:text-slate-250">
+                </div>
+
+                <div class="space-y-1">
+                  <label class="block font-bold text-slate-400 uppercase tracking-widest text-[9px]">State Code (2 Characters)</label>
+                  <input [(ngModel)]="newStateForm.code" maxlength="2" placeholder="e.g. TX" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-navy-950 border border-slate-200 dark:border-navy-800 focus:outline-none focus:border-brand-500 text-slate-800 dark:text-slate-250">
+                </div>
+
+                <div class="grid grid-cols-3 gap-2">
+                  <div class="space-y-1">
+                    <label class="block font-bold text-slate-400 uppercase tracking-widest text-[8px]">Prem. Tax (%)</label>
+                    <input type="number" step="0.001" [(ngModel)]="newStateForm.premiumTax" class="w-full px-2 py-2 rounded-xl bg-slate-50 dark:bg-navy-950 border border-slate-200 dark:border-navy-800 text-slate-800 dark:text-slate-250">
+                  </div>
+                  <div class="space-y-1">
+                    <label class="block font-bold text-slate-400 uppercase tracking-widest text-[8px]">Surp. Tax (%)</label>
+                    <input type="number" step="0.001" [(ngModel)]="newStateForm.surplusTax" class="w-full px-2 py-2 rounded-xl bg-slate-50 dark:bg-navy-950 border border-slate-200 dark:border-navy-800 text-slate-800 dark:text-slate-250">
+                  </div>
+                  <div class="space-y-1">
+                    <label class="block font-bold text-slate-400 uppercase tracking-widest text-[8px]">Stamp Fee (%)</label>
+                    <input type="number" step="0.001" [(ngModel)]="newStateForm.stampingFee" class="w-full px-2 py-2 rounded-xl bg-slate-50 dark:bg-navy-950 border border-slate-200 dark:border-navy-800 text-slate-800 dark:text-slate-250">
+                  </div>
+                </div>
+
+                <div class="space-y-1">
+                  <label class="block font-bold text-slate-400 uppercase tracking-widest text-[9px]">Workflow Rule Status</label>
+                  <select [(ngModel)]="newStateForm.status" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-navy-950 border border-slate-200 dark:border-navy-800 focus:outline-none focus:border-brand-500">
+                    <option value="Draft">Draft</option>
+                    <option value="Configured">Configured (Sandbox)</option>
+                    <option value="Active">Active (Locked)</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="flex items-center justify-end space-x-3 pt-2">
+                <button (click)="showAddStateModal = false" class="px-4 py-2 rounded-xl border border-slate-200 dark:border-navy-800 text-xs font-bold hover:bg-slate-50 dark:hover:bg-navy-800 transition-all text-slate-500">Cancel</button>
+                <button (click)="submitState()" class="px-4 py-2 bg-brand-500 hover:bg-brand-600 text-white font-bold text-xs rounded-xl shadow-md transition-all">Configure</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- ADD MGA MODAL -->
+          <div *ngIf="showAddMgaModal" class="fixed inset-0 bg-slate-900/60 dark:bg-navy-950/80 flex items-center justify-center z-50 p-4 transition-all animate-fade-in">
+            <div class="bg-white dark:bg-navy-900 border border-slate-200 dark:border-navy-850 rounded-2xl max-w-sm w-full p-6 shadow-2xl space-y-4">
+              <h3 class="text-sm font-black text-slate-900 dark:text-white uppercase tracking-wider">Add Managing General Agent</h3>
+              
+              <div class="space-y-4 text-xs">
+                <div class="space-y-1">
+                  <label class="block font-bold text-slate-400 uppercase tracking-widest text-[9px]">MGA Name</label>
+                  <input [(ngModel)]="newMgaForm.name" placeholder="e.g. Futuristic Insurance Services" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-navy-950 border border-slate-200 dark:border-navy-800 focus:outline-none focus:border-brand-500 text-slate-800 dark:text-slate-250">
+                </div>
+
+                <div class="space-y-1">
+                  <label class="block font-bold text-slate-400 uppercase tracking-widest text-[9px]">MGA Identifier Code</label>
+                  <input [(ngModel)]="newMgaForm.code" placeholder="e.g. FIS" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-navy-950 border border-slate-200 dark:border-navy-800 focus:outline-none focus:border-brand-500 text-slate-800 dark:text-slate-250">
+                </div>
+              </div>
+
+              <div class="flex items-center justify-end space-x-3 pt-2">
+                <button (click)="showAddMgaModal = false" class="px-4 py-2 rounded-xl border border-slate-200 dark:border-navy-800 text-xs font-bold hover:bg-slate-50 dark:hover:bg-navy-800 transition-all text-slate-500">Cancel</button>
+                <button (click)="submitMga()" class="px-4 py-2 bg-brand-500 hover:bg-brand-600 text-white font-bold text-xs rounded-xl shadow-md transition-all">Add MGA</button>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- ================================================================================= -->
+        <!-- VIEW: TREATY REGISTRY -->
+        <!-- ================================================================================= -->
+        <div *ngIf="activeTab === 'treaties'" class="space-y-6 animate-fade-in">
+          
+          <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            
+            <!-- Treaties List Panel -->
+            <div class="lg:col-span-2 bg-white dark:bg-navy-900 border border-slate-200 dark:border-navy-850 rounded-2xl p-5 shadow-sm space-y-4">
+              <div class="flex justify-between items-center pb-2 border-b border-slate-100 dark:border-navy-850">
+                <h3 class="text-xs font-bold uppercase tracking-widest text-slate-400">Reinsurance Treaties Registry</h3>
+                <button (click)="showAddTreatyModal = true" class="bg-brand-500 hover:bg-brand-600 text-white font-bold px-3 py-1.5 rounded-xl text-xs transition-all shadow-md flex items-center space-x-1">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"></path></svg>
+                  <span>Add Treaty</span>
+                </button>
+              </div>
+
+              <div class="overflow-x-auto">
+                <table class="w-full text-left text-xs border-collapse">
+                  <thead>
+                    <tr class="text-slate-400 border-b border-slate-100 dark:border-navy-850 font-bold uppercase tracking-wider text-[10px]">
+                      <th class="py-2.5 px-3">Treaty Name</th>
+                      <th class="py-2.5 px-3">Type</th>
+                      <th class="py-2.5 px-3">MGA Partner</th>
+                      <th class="py-2.5 px-3">Carrier Partner</th>
+                      <th class="py-2.5 px-3">Ceded Premium YTD</th>
+                      <th class="py-2.5 px-3 text-right">Workflow State</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-100 dark:divide-navy-850">
+                    <tr *ngFor="let item of treaties" (click)="selectTreaty(item)" [ngClass] = "{'bg-slate-50 dark:bg-navy-800/30': selectedTreaty?.id === item.id}" class="hover:bg-slate-50/50 dark:hover:bg-navy-850/30 transition-all cursor-pointer">
+                      <td class="py-3.5 px-3 font-bold text-slate-900 dark:text-white">{{ item.name }}</td>
+                      <td class="py-3.5 px-3 text-slate-600 dark:text-slate-400 font-semibold">{{ item.type }}</td>
+                      <td class="py-3.5 px-3 text-slate-700 dark:text-slate-350 font-medium">{{ item.mga?.name || 'SDL (Southlake Direct)' }}</td>
+                      <td class="py-3.5 px-3 font-extrabold">{{ item.carrier }} <span class="ml-1 text-[9px] bg-slate-150 dark:bg-navy-800 text-slate-500 border border-slate-200 dark:border-navy-700 px-1.5 py-0.5 rounded-full font-bold">{{ item.rating }}</span></td>
+                      <td class="py-3.5 px-3 font-mono font-bold text-slate-600 dark:text-slate-350">${{ item.cededPremiumYtd | number:'1.2-2' }}</td>
+                      <td class="py-3.5 px-3 text-right">
+                        <span [ngClass]="{
+                          'bg-emerald-500/10 text-emerald-500 border-emerald-500/20': item.status === 'Active' || item.status === 'In-Force',
+                          'bg-amber-500/10 text-amber-500 border-amber-500/20': item.status === 'Draft',
+                          'bg-slate-500/10 text-slate-450 border-slate-500/10': item.status === 'Run-off'
+                        }" class="px-2.5 py-0.5 rounded-full text-[9px] font-bold border">{{ item.status }}</span>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- Treaty Details & digital signing block -->
+            <div class="space-y-6">
+              <div *ngIf="selectedTreaty" class="bg-white dark:bg-navy-900 border border-slate-200 dark:border-navy-850 rounded-2xl p-5 shadow-sm space-y-4">
+                <div class="border-b border-slate-100 dark:border-navy-850 pb-3 flex justify-between items-center">
+                  <span class="text-xs font-bold text-slate-900 dark:text-white">Active Reinsurance Parameters</span>
+                  <span *ngIf="selectedTreaty.status === 'Draft'" class="text-[9px] bg-amber-500/10 text-amber-500 border border-amber-500/20 px-2 py-0.5 rounded-full font-bold uppercase">Pending Execution</span>
+                  <span *ngIf="selectedTreaty.status === 'Active'" class="text-[9px] bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 px-2 py-0.5 rounded-full font-bold uppercase">Live in production</span>
+                </div>
+
+                <div class="text-xs space-y-3">
+                  <div class="flex justify-between border-b border-dashed border-slate-100 dark:border-navy-850 pb-1.5"><span class="text-slate-400">Carrier Partner:</span> <strong class="text-slate-900 dark:text-white">{{ selectedTreaty.carrier }}</strong></div>
+                  <div class="flex justify-between border-b border-dashed border-slate-100 dark:border-navy-850 pb-1.5"><span class="text-slate-400">Treaty Cession Share:</span> <strong class="text-brand-500">{{ selectedTreaty.cessionPercentage }}%</strong></div>
+                  <div class="flex justify-between border-b border-dashed border-slate-100 dark:border-navy-850 pb-1.5"><span class="text-slate-400">Ceding Commission:</span> <strong class="text-slate-900 dark:text-white">{{ selectedTreaty.commissionPercentage }}%</strong></div>
+                  <div class="flex justify-between border-b border-dashed border-slate-100 dark:border-navy-850 pb-1.5"><span class="text-slate-400">Ceded Limit:</span> <strong class="font-mono text-slate-900 dark:text-white">${{ selectedTreaty.limit | number:'1.0-0' }}</strong></div>
+                  <div class="flex justify-between border-b border-dashed border-slate-100 dark:border-navy-850 pb-1.5"><span class="text-slate-400">Carrier Rating:</span> <strong class="text-slate-900 dark:text-white">{{ selectedTreaty.rating }}</strong></div>
+                  <div class="flex justify-between border-b border-dashed border-slate-100 dark:border-navy-850 pb-1.5"><span class="text-slate-400">Collateral:</span> <strong class="text-slate-900 dark:text-white">{{ selectedTreaty.collateral }}</strong></div>
+                </div>
+
+                <!-- Covered App Types Mapping ("App type k under treaty") -->
+                <div class="border-t border-slate-100 dark:border-navy-850 pt-3 space-y-2">
+                  <span class="text-[9px] font-bold text-slate-400 uppercase tracking-widest block">Covered Application Types</span>
+                  
+                  <div class="space-y-1.5 max-h-40 overflow-y-auto pr-1">
+                    <div *ngFor="let at of appTypes" class="flex items-center justify-between p-2 rounded-xl bg-slate-50 dark:bg-navy-950 border border-slate-200 dark:border-navy-800">
+                      <div class="flex items-center space-x-2">
+                        <input type="checkbox" [checked]="isAppTypeCovered(at.applicationTypeId)" (change)="toggleAppTypeCoverage(at)" [disabled]="selectedTreaty.status !== 'Draft'" class="rounded border-slate-350 dark:border-navy-800 text-brand-500 focus:ring-brand-500 h-3.5 w-3.5">
+                        <span class="text-[11px] font-bold text-slate-900 dark:text-white">{{ at.applicationType }}</span>
+                      </div>
+                      <span class="text-[9px] font-mono text-slate-400">ID: {{ at.applicationTypeId }}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- DOCUSIGN SIGNING BLOCK (Maker-Checker Simulator) -->
+                <div class="border-t border-slate-100 dark:border-navy-850 pt-4 space-y-3">
+                  <div class="flex items-center space-x-2 text-brand-500">
+                    <svg class="h-4.5 w-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
+                    <span class="text-[9px] font-bold uppercase tracking-widest text-slate-400">DocuSign Digital Seal Block</span>
+                  </div>
+
+                  <div *ngIf="selectedTreaty.status === 'Draft'">
+                    <button (click)="executeTreatyBinder()" class="w-full bg-brand-500 hover:bg-brand-600 text-white font-bold py-2.5 rounded-xl text-xs transition-all shadow-md flex items-center justify-center space-x-2">
+                      <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+                      <span>Sign & Bind Treaty</span>
+                    </button>
+                  </div>
+
+                  <div *ngIf="selectedTreaty.status === 'Active' || selectedTreaty.status === 'In-Force'" class="p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-xl space-y-1 text-center">
+                    <p class="text-[11px] text-emerald-500 font-black flex items-center justify-center">
+                      <svg class="h-3.5 w-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+                      TREATY BINDER EXECUTED
+                    </p>
+                    <p class="text-[9px] text-slate-400 font-semibold font-mono">SECURE IP SEALED SHA-256 REGISTERED</p>
+                  </div>
+                </div>
+
+              </div>
+
+              <!-- Default state when no treaty selected -->
+              <div *ngIf="!selectedTreaty" class="bg-white dark:bg-navy-900 border border-slate-200 dark:border-navy-850 rounded-2xl p-8 shadow-sm text-center text-slate-400 dark:text-slate-500">
+                <svg class="w-10 h-10 mx-auto mb-3 text-slate-350 dark:text-slate-650" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                <p class="text-xs font-bold">Select a treaty agreement from the list to view active split rules and execute signature controls.</p>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- ADD TREATY MODAL -->
+          <div *ngIf="showAddTreatyModal" class="fixed inset-0 bg-slate-900/60 dark:bg-navy-950/80 flex items-center justify-center z-50 p-4 transition-all">
+            <div class="bg-white dark:bg-navy-900 border border-slate-200 dark:border-navy-850 rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4">
+              <h3 class="text-sm font-black text-slate-900 dark:text-white uppercase tracking-wider">Register Reinsurance Treaty</h3>
+              
+              <div class="grid grid-cols-2 gap-4 text-xs">
+                <div class="space-y-1 col-span-2">
+                  <label class="block font-bold text-slate-400 uppercase tracking-widest text-[9px]">Treaty Agreement Name</label>
+                  <input [(ngModel)]="newTreatyForm.name" placeholder="e.g. Casualty Quota Share 2026" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-navy-950 border border-slate-200 dark:border-navy-800 text-slate-800 dark:text-slate-250">
+                </div>
+
+                <div class="space-y-1 col-span-2">
+                  <label class="block font-bold text-slate-400 uppercase tracking-widest text-[9px]">MGA Partner</label>
+                  <select [(ngModel)]="newTreatyForm.mgaId" class="w-full px-3 py-2.5 rounded-xl bg-slate-50 dark:bg-navy-950 border border-slate-200 dark:border-navy-800 focus:outline-none focus:border-brand-500 text-slate-800 dark:text-slate-250">
+                    <option value="">-- Direct Business / SDL --</option>
+                    <option *ngFor="let m of mgas" [value]="m.id">{{ m.name }} ({{ m.code }})</option>
+                  </select>
+                </div>
+
+                <div class="space-y-1">
+                  <label class="block font-bold text-slate-400 uppercase tracking-widest text-[9px]">Agreement Type</label>
+                  <select [(ngModel)]="newTreatyForm.type" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-navy-950 border border-slate-200 dark:border-navy-800">
+                    <option value="Quota Share">Quota Share</option>
+                    <option value="Excess of Loss">Excess of Loss</option>
+                    <option value="Catastrophe XOL">Catastrophe XOL</option>
+                    <option value="Facultative">Facultative</option>
+                  </select>
+                </div>
+
+                <div class="space-y-1">
+                  <label class="block font-bold text-slate-400 uppercase tracking-widest text-[9px]">Risk Carrier Partner</label>
+                  <input [(ngModel)]="newTreatyForm.carrier" placeholder="e.g. Swiss Re" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-navy-950 border border-slate-200 dark:border-navy-800 text-slate-800 dark:text-slate-250">
+                </div>
+
+                <div class="space-y-1">
+                  <label class="block font-bold text-slate-400 uppercase tracking-widest text-[9px]">Risk Limit ($)</label>
+                  <input type="number" [(ngModel)]="newTreatyForm.limit" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-navy-950 border border-slate-200 dark:border-navy-800 text-slate-800 dark:text-slate-250">
+                </div>
+
+                <div class="space-y-1">
+                  <label class="block font-bold text-slate-400 uppercase tracking-widest text-[9px]">Retention Share (%)</label>
+                  <input type="number" [(ngModel)]="newTreatyForm.retentionPercentage" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-navy-950 border border-slate-200 dark:border-navy-800 text-slate-800 dark:text-slate-250">
+                </div>
+
+                <div class="space-y-1">
+                  <label class="block font-bold text-slate-400 uppercase tracking-widest text-[9px]">Cession Share (%)</label>
+                  <input type="number" [(ngModel)]="newTreatyForm.cessionPercentage" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-navy-950 border border-slate-200 dark:border-navy-800 text-slate-800 dark:text-slate-250">
+                </div>
+
+                <div class="space-y-1">
+                  <label class="block font-bold text-slate-400 uppercase tracking-widest text-[9px]">Comm. Rate (%)</label>
+                  <input type="number" [(ngModel)]="newTreatyForm.commissionPercentage" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-navy-950 border border-slate-200 dark:border-navy-800 text-slate-800 dark:text-slate-250">
+                </div>
+
+                <div class="space-y-1">
+                  <label class="block font-bold text-slate-400 uppercase tracking-widest text-[9px]">Carrier Rating</label>
+                  <input [(ngModel)]="newTreatyForm.rating" placeholder="e.g. AA-" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-navy-950 border border-slate-200 dark:border-navy-800 text-slate-800 dark:text-slate-250">
+                </div>
+
+                <div class="space-y-1">
+                  <label class="block font-bold text-slate-400 uppercase tracking-widest text-[9px]">Collateral Model</label>
+                  <input [(ngModel)]="newTreatyForm.collateral" placeholder="e.g. Valid LOC" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-navy-950 border border-slate-200 dark:border-navy-800 text-slate-800 dark:text-slate-250">
+                </div>
+              </div>
+
+              <div class="flex items-center justify-end space-x-3 pt-2">
+                <button (click)="showAddTreatyModal = false" class="px-4 py-2 rounded-xl border border-slate-200 dark:border-navy-800 text-xs font-bold hover:bg-slate-50 dark:hover:bg-navy-800 transition-all text-slate-500">Cancel</button>
+                <button (click)="submitTreaty()" class="px-4 py-2 bg-brand-500 hover:bg-brand-600 text-white font-bold text-xs rounded-xl shadow-md transition-all">Bind Draft</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ================================================================================= -->
+        <!-- VIEW: JOURNAL INGESTION (CSV) -->
+        <!-- ================================================================================= -->
+        <div *ngIf="activeTab === 'ingestion'" class="space-y-6 animate-fade-in">
+          
+          <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            
+            <!-- Upload controls panel -->
+            <div class="bg-white dark:bg-navy-900 border border-slate-200 dark:border-navy-850 rounded-2xl p-5 shadow-sm space-y-4">
+              <h3 class="text-xs font-bold uppercase tracking-widest text-slate-400">Monthly Bordereau Upload Portal</h3>
+              
+              <div class="space-y-4 text-xs">
+                <!-- Select Treaty -->
+                <div class="space-y-1">
+                  <label class="block font-bold text-slate-400 uppercase tracking-widest text-[9px]">Associated Treaty (Active Only)</label>
+                  <select [(ngModel)]="ingestionSelectedTreatyId" class="w-full px-3 py-2.5 rounded-xl bg-slate-50 dark:bg-navy-950 border border-slate-200 dark:border-navy-800 focus:outline-none focus:border-brand-500 text-slate-800 dark:text-slate-250">
+                    <option value="">-- Choose Reinsurance Treaty --</option>
+                    <!-- Show active/inforce treaties only -->
+                    <option *ngFor="let t of treaties" [value]="t.id">{{ t.name }} ({{ t.carrier }} QS)</option>
+                  </select>
+                </div>
+
+                <!-- Drag-and-drop / Ingestion Zone -->
+                <div (click)="triggerFileInput()" class="border-2 border-dashed border-slate-200 dark:border-navy-800 hover:border-brand-500 dark:hover:border-brand-500 rounded-2xl p-6 text-center cursor-pointer transition-all bg-slate-50/50 dark:bg-navy-950/20 hover:bg-slate-100/50 dark:hover:bg-navy-950/50 group">
+                  <input type="file" id="csvFileInput" (change)="onFileSelected($event)" accept=".csv,.xlsx,.xls" class="hidden">
+                  
+                  <svg class="mx-auto h-8 w-8 text-slate-350 dark:text-slate-650 group-hover:text-brand-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg>
+                  
+                  <p class="mt-2 text-xs font-bold text-slate-700 dark:text-slate-300">
+                    {{ uploadedFileName ? uploadedFileName : 'Drag & Drop CSV or Excel file here' }}
+                  </p>
+                  <p class="mt-1 text-[10px] text-slate-400">Supports standard premiums/claims bordereau .csv and .xlsx files</p>
+                </div>
+
+                <!-- Progress indicators -->
+                <div *ngIf="isUploading" class="space-y-1.5">
+                  <div class="flex justify-between text-[10px] font-bold text-slate-400">
+                    <span>PROCESSING TRANSACTIONS...</span>
+                    <span>{{ uploadProgress }}%</span>
+                  </div>
+                  <div class="w-full bg-slate-100 dark:bg-navy-950 rounded-full h-1.5 overflow-hidden border border-slate-200 dark:border-navy-800">
+                    <div class="bg-brand-500 h-1.5 rounded-full transition-all duration-150" [style.width.%]="uploadProgress"></div>
+                  </div>
+                </div>
+
+                <!-- Parse Button -->
+                <button (click)="ingestMonthlyFile()" [disabled]="isUploading" class="w-full bg-brand-500 hover:bg-brand-600 text-white font-bold py-2.5 rounded-xl text-xs transition-all shadow-md shadow-brand-500/10 flex items-center justify-center space-x-1.5">
+                  <svg class="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"></path></svg>
+                  <span>Ingest & Run Calculations</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Ingestion Calculations Summary Grid -->
+            <div class="lg:col-span-2 space-y-6">
+              
+              <!-- Ingestion dry run results -->
+              <div *ngIf="draftJournalEntry" class="bg-white dark:bg-navy-900 border border-slate-200 dark:border-navy-850 rounded-2xl p-5 shadow-sm space-y-5 animate-fade-in">
+                <div class="flex justify-between items-center border-b border-slate-100 dark:border-navy-850 pb-3">
+                  <div>
+                    <h4 class="text-xs font-black text-slate-900 dark:text-white uppercase tracking-wider">Calculated Treaty Split Results</h4>
+                    <span class="text-[9px] text-slate-400 font-semibold block uppercase">PROPOSED ENTRY REFERENCE: {{ draftJournalEntry.referenceNumber }}</span>
+                  </div>
+                  <button (click)="postDraftToLedger()" [disabled]="isDraftSaving" class="bg-emerald-500 hover:bg-emerald-600 text-white font-bold px-4 py-2 rounded-xl text-xs transition-all shadow-md flex items-center space-x-1.5">
+                    <svg *ngIf="!isDraftSaving" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
+                    <svg *ngIf="isDraftSaving" class="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 7.89H18"></path></svg>
+                    <span>Post to Ledger ("Hit Ledger")</span>
+                  </button>
+                </div>
+
+                <!-- Aggregated totals Cards -->
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 text-center">
+                  <div class="bg-slate-50 dark:bg-navy-950 border border-slate-200 dark:border-navy-800 p-3 rounded-xl">
+                    <span class="text-[8px] font-bold text-slate-400 uppercase tracking-widest block mb-0.5">Gross Premium</span>
+                    <strong class="text-sm font-mono text-slate-900 dark:text-white">${{ draftJournalEntry.totals.grossPremium | number:'1.2-2' }}</strong>
+                  </div>
+                  <div class="bg-slate-50 dark:bg-navy-950 border border-slate-200 dark:border-navy-800 p-3 rounded-xl">
+                    <span class="text-[8px] font-bold text-slate-400 uppercase tracking-widest block mb-0.5">Ceded Premium</span>
+                    <strong class="text-sm font-mono text-brand-500">${{ draftJournalEntry.totals.cededPremium | number:'1.2-2' }}</strong>
+                  </div>
+                  <div class="bg-slate-50 dark:bg-navy-950 border border-slate-200 dark:border-navy-800 p-3 rounded-xl">
+                    <span class="text-[8px] font-bold text-slate-400 uppercase tracking-widest block mb-0.5">Ceded Commission</span>
+                    <strong class="text-sm font-mono text-slate-900 dark:text-white">${{ draftJournalEntry.totals.cededCommission | number:'1.2-2' }}</strong>
+                  </div>
+                  <div class="bg-slate-50 dark:bg-navy-950 border border-slate-200 dark:border-navy-800 p-3 rounded-xl col-span-1">
+                    <span class="text-[8px] font-bold text-slate-400 uppercase tracking-widest block mb-0.5">Ceded Claims</span>
+                    <strong class="text-sm font-mono text-emerald-500">${{ draftJournalEntry.totals.cededClaims | number:'1.2-2' }}</strong>
+                  </div>
+                </div>
+
+                <!-- Calculated Double-Entry Ledger Lines -->
+                <div class="space-y-2">
+                  <span class="text-[9px] font-bold text-slate-400 uppercase tracking-widest block">Proposed Double-Entry Splits</span>
+                  
+                  <div class="border border-slate-200 dark:border-navy-800 rounded-xl overflow-hidden text-[11px]">
+                    <div class="grid grid-cols-12 bg-slate-50 dark:bg-navy-950 p-2.5 font-bold border-b border-slate-200 dark:border-navy-800 text-slate-400 uppercase tracking-wider text-[9px]">
+                      <div class="col-span-2">GL Account</div>
+                      <div class="col-span-5">description</div>
+                      <div class="col-span-2 text-right">debit ($)</div>
+                      <div class="col-span-2 text-right">credit ($)</div>
+                      <div class="col-span-1 text-right">Comp</div>
+                    </div>
+
+                    <div class="divide-y divide-slate-100 dark:divide-navy-850">
+                      <div *ngFor="let l of draftJournalEntry.lines" class="grid grid-cols-12 p-2.5 hover:bg-slate-50/20 dark:hover:bg-navy-850/10">
+                        <div class="col-span-2 font-mono font-bold text-slate-900 dark:text-white">{{ l.coaAccount.accountNumber }}</div>
+                        <div class="col-span-5 font-semibold text-slate-500 dark:text-slate-400">{{ l.description }}</div>
+                        <div class="col-span-2 text-right font-mono font-bold text-slate-700 dark:text-slate-200">{{ l.debit > 0 ? (l.debit | number:'1.2-2') : '' }}</div>
+                        <div class="col-span-2 text-right font-mono font-bold text-brand-500">{{ l.credit > 0 ? (l.credit | number:'1.2-2') : '' }}</div>
+                        <div class="col-span-1 text-right font-mono text-slate-400">{{ l.coaAccount.company }}</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Default placeholder state -->
+              <div *ngIf="!draftJournalEntry" class="bg-white dark:bg-navy-900 border border-slate-200 dark:border-navy-850 rounded-2xl p-8 shadow-sm text-center text-slate-400 dark:text-slate-500">
+                <svg class="w-10 h-10 mx-auto mb-3 text-slate-350 dark:text-slate-650" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 17v-2a2 2 0 00-2-2H5a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v8m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
+                <p class="text-xs font-bold">Choose an active treaty, upload the monthly premium transaction bordereau file, and run calculations to review splits and post to the general ledger.</p>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- ================================================================================= -->
+        <!-- VIEW: LEDGER BALANCES & HISTORY -->
+        <!-- ================================================================================= -->
+        <div *ngIf="activeTab === 'ledger'" class="space-y-6 animate-fade-in">
+          
+          <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            
+            <!-- Ledger Account Balances Grid -->
+            <div class="lg:col-span-2 bg-white dark:bg-navy-900 border border-slate-200 dark:border-navy-850 rounded-2xl p-5 shadow-sm space-y-4">
+              <h3 class="text-xs font-bold uppercase tracking-widest text-slate-400 border-b border-slate-100 dark:border-navy-850 pb-2.5">Trial Balance &amp; Ledger Summary</h3>
+              
+              <div class="overflow-x-auto">
+                <table class="w-full text-left text-xs border-collapse">
+                  <thead>
+                    <tr class="text-slate-400 border-b border-slate-100 dark:border-navy-850 font-bold uppercase tracking-wider text-[10px]">
+                      <th class="py-2 px-3">GL Code</th>
+                      <th class="py-2 px-3">Account Name</th>
+                      <th class="py-2 px-3 text-right">Debits ($)</th>
+                      <th class="py-2 px-3 text-right">Credits ($)</th>
+                      <th class="py-2 px-3 text-right">Balance ($)</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-100 dark:divide-navy-850 font-mono text-[11px]">
+                    <tr *ngFor="let item of ledgerBalances" class="hover:bg-slate-50/50 dark:hover:bg-navy-850/30 transition-all">
+                      <td class="py-3 px-3 font-bold text-slate-900 dark:text-white">{{ item.accountNumber }}</td>
+                      <td class="py-3 px-3 font-semibold font-sans text-slate-700 dark:text-slate-350">{{ item.accountName }}</td>
+                      <td class="py-3 px-3 text-right font-semibold text-slate-500">{{ item.debit ? (item.debit | number:'1.2-2') : '0.00' }}</td>
+                      <td class="py-3 px-3 text-right font-semibold text-slate-500">{{ item.credit ? (item.credit | number:'1.2-2') : '0.00' }}</td>
+                      <td class="py-3 px-3 text-right font-black" [class.text-emerald-500]="item.balance! >= 0" [class.text-brand-500]="item.balance! < 0">${{ item.balance | number:'1.2-2' }}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- Posted Journal Entries History Timeline -->
+            <div class="bg-white dark:bg-navy-900 border border-slate-200 dark:border-navy-850 rounded-2xl p-5 shadow-sm space-y-4">
+              <h3 class="text-xs font-bold uppercase tracking-widest text-slate-400 border-b border-slate-100 dark:border-navy-850 pb-2.5">Posted Journal Entries</h3>
+              
+              <div class="space-y-4 max-h-[500px] overflow-y-auto pr-1">
+                <div *ngFor="let je of journalEntries" class="p-3 bg-slate-50 dark:bg-navy-950 border border-slate-200 dark:border-navy-850 rounded-xl space-y-2 text-xs">
+                  <div class="flex justify-between items-center border-b border-dashed border-slate-200 dark:border-navy-800 pb-1.5">
+                    <span class="font-mono font-bold text-slate-900 dark:text-white">{{ je.referenceNumber }}</span>
+                    <span class="text-[9px] bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 px-1.5 py-0.5 rounded-full font-bold uppercase">{{ je.status }}</span>
+                  </div>
+                  
+                  <p class="font-semibold text-slate-600 dark:text-slate-400 text-[11px]">{{ je.description }}</p>
+                  
+                  <div class="text-[10px] space-y-1">
+                    <p class="flex justify-between"><span class="text-slate-400">Date Posted:</span> <strong class="text-slate-500 font-mono">{{ je.entryDate | date:'yyyy-MM-dd' }}</strong></p>
+                    <p class="flex justify-between"><span class="text-slate-400">Source:</span> <strong class="text-slate-500">{{ je.source }}</strong></p>
+                  </div>
+                  
+                  <!-- lines list mini -->
+                  <div class="border-t border-slate-200 dark:border-navy-850 pt-2 space-y-1">
+                    <div *ngFor="let l of je.lines" class="flex justify-between text-[9px] font-mono">
+                      <span class="text-slate-450">{{ l.coaAccount?.accountNumber }} - {{ l.description | slice:0:22 }}...</span>
+                      <strong class="text-slate-900 dark:text-white" *ngIf="l.debit > 0">Dr: ${{ l.debit | number:'1.2-2' }}</strong>
+                      <strong class="text-brand-500" *ngIf="l.credit > 0">Cr: ${{ l.credit | number:'1.2-2' }}</strong>
+                    </div>
+                  </div>
+                </div>
+
+                <div *ngIf="journalEntries.length === 0" class="py-8 text-center text-slate-400 dark:text-slate-500 font-bold">No posted journal entries recorded.</div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+      </main>
+    </div>
+
+  </div>
+
+  <!-- ADD/EDIT CHART OF ACCOUNT MASTER MODAL -->
+  <div *ngIf="showAddChartOfAccountModal" class="fixed inset-0 bg-slate-900/60 dark:bg-navy-950/80 flex items-center justify-center z-50 p-4 transition-all animate-fade-in">
+    <div class="bg-white dark:bg-navy-900 border border-slate-200 dark:border-navy-850 rounded-2xl max-w-sm w-full p-6 shadow-2xl space-y-4">
+      <h3 class="text-sm font-black uppercase tracking-wider text-slate-900 dark:text-white">Admin Tool / Chart of Account Master / {{ editingChartOfAccount ? 'Edit' : 'Add' }} / {{ newChartOfAccountForm.subCoaId || 'New' }}</h3>
+      
+      <div class="space-y-4 text-xs">
+        <div class="space-y-1">
+          <label class="block font-bold text-slate-400 uppercase tracking-widest text-[9px]">Parent COA Id</label>
+          <select [(ngModel)]="newChartOfAccountForm.parentCoaId" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-navy-950 border border-slate-200 dark:border-navy-800 focus:outline-none focus:border-brand-500 text-slate-800 dark:text-slate-200">
+            <option [value]="1">Asset</option>
+            <option [value]="2">Liability</option>
+            <option [value]="3">Revenue</option>
+            <option [value]="4">Expense</option>
+            <option [value]="5">Capital & Equity</option>
+          </select>
+        </div>
+
+        <div class="space-y-1">
+          <label class="block font-bold text-slate-400 uppercase tracking-widest text-[9px]">Sub COA Id (Account #)</label>
+          <input type="number" [(ngModel)]="newChartOfAccountForm.subCoaId" [disabled]="!!editingChartOfAccount" placeholder="e.g. 210000" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-navy-950 border border-slate-200 dark:border-navy-800 focus:outline-none focus:border-brand-500 disabled:opacity-50 text-slate-800 dark:text-slate-200">
+        </div>
+
+        <div class="space-y-1">
+          <label class="block font-bold text-slate-400 uppercase tracking-widest text-[9px]">Sub COA Name</label>
+          <input [(ngModel)]="newChartOfAccountForm.subCoaName" placeholder="e.g. Current Liabilities" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-navy-950 border border-slate-200 dark:border-navy-800 focus:outline-none focus:border-brand-500 text-slate-800 dark:text-slate-200">
+        </div>
+
+        <div class="space-y-1">
+          <label class="block font-bold text-slate-400 uppercase tracking-widest text-[9px]">Sub COA Key</label>
+          <input [(ngModel)]="newChartOfAccountForm.subCoaKey" placeholder="e.g. CURRENT_LIABILITIES" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-navy-950 border border-slate-200 dark:border-navy-800 focus:outline-none focus:border-brand-500 text-slate-800 dark:text-slate-200">
+        </div>
+
+        <div class="space-y-1">
+          <label class="block font-bold text-slate-400 uppercase tracking-widest text-[9px]">Next Available Number</label>
+          <input type="number" [(ngModel)]="newChartOfAccountForm.nextAvailableNumber" placeholder="e.g. 210007" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-navy-950 border border-slate-200 dark:border-navy-800 focus:outline-none focus:border-brand-500 text-slate-800 dark:text-slate-200">
+        </div>
+
+        <div class="space-y-1">
+          <label class="block font-bold text-slate-400 uppercase tracking-widest text-[9px]">Category</label>
+          <select [(ngModel)]="newChartOfAccountForm.categoryId" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-navy-950 border border-slate-200 dark:border-navy-800 focus:outline-none focus:border-brand-500 text-slate-800 dark:text-slate-200">
+            <option [ngValue]="undefined">Select Category</option>
+            <option *ngFor="let cat of subCoas" [value]="cat.categoryId">{{ cat.categoryName }}</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="flex items-center justify-end space-x-3 pt-2">
+        <button (click)="showAddChartOfAccountModal = false" class="px-4 py-2 rounded-xl border border-slate-200 dark:border-navy-800 text-xs font-bold hover:bg-slate-50 dark:hover:bg-navy-800 transition-all text-slate-500">Cancel</button>
+        <button (click)="submitChartOfAccount()" class="px-4 py-2 bg-brand-500 hover:bg-brand-600 text-white font-bold text-xs rounded-xl shadow-md transition-all">Update</button>
+      </div>
+    </div>
+  </div>
+</div>
