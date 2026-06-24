@@ -107,6 +107,24 @@
       (deactivateUser)="onDeactivateUser($event)"
       (selectionChanged)="onSelectionChanged($event)"
     />
+
+    @if (totalPages > 1) {
+      <div class="pagination">
+        <button class="page-btn" [disabled]="currentPage === 1" (click)="goToPage(currentPage - 1)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <polyline points="15 18 9 12 15 6"/>
+          </svg>
+        </button>
+        @for (p of pageNumbers; track p) {
+          <button class="page-btn" [class.active]="p === currentPage" (click)="goToPage(p)">{{ p }}</button>
+        }
+        <button class="page-btn" [disabled]="currentPage === totalPages" (click)="goToPage(currentPage + 1)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <polyline points="9 18 15 12 9 6"/>
+          </svg>
+        </button>
+      </div>
+    }
   </div>
 
   @if (pendingInvites.length > 0) {
@@ -130,9 +148,13 @@
               <td>{{ invite.email }}</td>
               <td>{{ invite.name }}</td>
               <td>
-                <span class="role-badge" [style.background]="hexToRgba(invite.role.color, 0.1)" [style.color]="invite.role.color">
-                  {{ invite.role.label }}
-                </span>
+                @if (invite.role) {
+                  <span class="role-badge" [style.background]="hexToRgba(invite.role.color, 0.1)" [style.color]="invite.role.color">
+                    {{ invite.role.label }}
+                  </span>
+                } @else {
+                  <span class="text-muted">-</span>
+                }
               </td>
               <td><span class="status-badge status-pending">Pending</span></td>
               <td class="text-muted">{{ formatDate(invite.invited_at) }}</td>

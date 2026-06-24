@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
-import { Observable, tap } from 'rxjs';
+import { Observable } from 'rxjs';
 import { SessionToken } from '../models/session.model';
 import { environment } from '../../../environments/environment';
 
@@ -13,31 +13,32 @@ export class AuthService {
   private http = inject(HttpClient);
   private router = inject(Router);
 
-  requestOtp(email: string): Observable<{ message: string }> {
-    return this.http.post<{ message: string }>(`${environment.apiUrl}/auth/request-otp`, { email });
+  login(email: string, password: string): Observable<{ message: string }> {
+    return this.http.post<{ message: string }>(`${environment.apiUrl}/auth/login`, { email, password });
   }
 
   verifyOtp(email: string, otp: string): Observable<SessionToken> {
     return this.http.post<SessionToken>(`${environment.apiUrl}/auth/verify-otp`, { email, otp });
   }
 
-  resolveChallenge(session_id: string, force_logout: boolean): Observable<SessionToken> {
+  resolveChallenge(challengeToken: string, accept: boolean): Observable<SessionToken> {
     return this.http.post<SessionToken>(`${environment.apiUrl}/auth/resolve-challenge`, {
-      session_id,
-      force_logout
+      challenge_token: challengeToken,
+      accept,
     });
   }
 
-  storeSession(session: SessionToken): void {
-    localStorage.setItem(SESSION_TOKEN_KEY, session.token);
-    if (session.user) {
-      localStorage.setItem(CURRENT_USER_KEY, JSON.stringify(session.user));
+  storeSession(data: { session_token?: string; user?: any }): void {
+    if (data.session_token) {
+      localStorage.setItem(SESSION_TOKEN_KEY, data.session_token);
+    }
+    if (data.user) {
+      localStorage.setItem(CURRENT_USER_KEY, JSON.stringify(data.user));
     }
   }
 
   isLoggedIn(): boolean {
-    const token = this.getToken();
-    return !!token;
+    return !!this.getToken();
   }
 
   getToken(): string | null {
@@ -57,9 +58,7 @@ export class AuthService {
   logout(): void {
     const token = this.getToken();
     if (token) {
-      this.http.post(`${environment.apiUrl}/auth/logout`, {}).subscribe({
-        error: () => {}
-      });
+      this.http.post(`${environment.apiUrl}/auth/logout`, {}).subscribe({ error: () => {} });
     }
     localStorage.removeItem(SESSION_TOKEN_KEY);
     localStorage.removeItem(CURRENT_USER_KEY);

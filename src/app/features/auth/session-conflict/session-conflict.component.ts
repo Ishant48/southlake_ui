@@ -14,23 +14,26 @@ export class SessionConflictComponent {
   private router = inject(Router);
   private auth = inject(AuthService);
 
-  challengeData: { session_id: string; device_label: string; ip_address: string; created_at: string } | null = null;
+  challengeToken = '';
+  existingDevice: { label: string; ip: string; created_at: string } | null = null;
   loading = false;
   errorMsg = '';
 
   constructor() {
     const nav = this.router.getCurrentNavigation();
-    const state = nav?.extras?.state as Record<string, unknown> | null;
-    const session = (state?.['session'] as SessionToken) ?? (history.state as Record<string, unknown>)?.['session'] as SessionToken;
-    if (session?.challenge_data) {
-      this.challengeData = session.challenge_data;
+    const state = (nav?.extras?.state ?? history.state) as Record<string, unknown>;
+    const session = state?.['session'] as SessionToken | undefined;
+    if (session?.challenge_token) {
+      this.challengeToken = session.challenge_token;
+      this.existingDevice = session.existing_device ?? null;
+    } else {
+      this.router.navigate(['/auth/login']);
     }
   }
 
   formatDate(dateStr: string): string {
     try {
-      const d = new Date(dateStr);
-      return d.toLocaleString('en-US', {
+      return new Date(dateStr).toLocaleString('en-US', {
         month: 'short', day: 'numeric', year: 'numeric',
         hour: '2-digit', minute: '2-digit'
       });
@@ -40,10 +43,10 @@ export class SessionConflictComponent {
   }
 
   signInHere(): void {
-    if (!this.challengeData || this.loading) return;
+    if (!this.challengeToken || this.loading) return;
     this.loading = true;
     this.errorMsg = '';
-    this.auth.resolveChallenge(this.challengeData.session_id, true).subscribe({
+    this.auth.resolveChallenge(this.challengeToken, true).subscribe({
       next: (session) => {
         this.loading = false;
         this.auth.storeSession(session);

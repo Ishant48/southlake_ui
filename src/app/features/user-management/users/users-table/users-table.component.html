@@ -80,9 +80,13 @@
               </div>
             </td>
             <td>
-              <span class="role-badge" [style.background]="hexToRgba(user.role.color, 0.1)" [style.color]="user.role.color">
-                {{ user.role.label }}
-              </span>
+              @if (user.role) {
+                <span class="role-badge" [style.background]="hexToRgba(user.role?.color, 0.1)" [style.color]="user.role?.color">
+                  {{ user.role?.label }}
+                </span>
+              } @else {
+                <span class="text-muted">-</span>
+              }
             </td>
             <td class="text-muted">{{ user.department ?? '-' }}</td>
             <td class="text-muted">{{ user.title ?? '-' }}</td>

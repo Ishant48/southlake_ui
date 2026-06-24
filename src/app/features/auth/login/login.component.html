@@ -1,25 +1,32 @@
-<div class="auth-shell">
-  <div class="auth-left">
-    <div class="auth-left-content">
-      <div class="auth-logo-mark">
-        <svg width="56" height="56" viewBox="0 0 56 56" fill="none">
-          <rect width="56" height="56" rx="12" fill="#e05470"/>
-          <path d="M28 10L40 20V30L28 40L16 30V20L28 10Z" fill="white" opacity="0.9"/>
-          <path d="M28 18L36 25V33L28 40L20 33V25L28 18Z" fill="#e05470"/>
-        </svg>
-      </div>
-      <h1 class="auth-brand">SOUTHLAKE<br>INSURANCE</h1>
-      <p class="auth-tagline">Secure. Reliable. Trusted.</p>
-    </div>
-  </div>
-  <div class="auth-right">
-    <div class="auth-card">
-      <h2 class="auth-title">Sign In</h2>
-      <p class="auth-subtitle">Enter your email to receive a one-time password</p>
+<div class="auth-wrap">
+  <div class="auth-panel">
 
-      <form [formGroup]="form" (ngSubmit)="onSubmit()" class="auth-form" novalidate>
-        <div class="form-field">
-          <label class="form-label" for="email">Email Address</label>
+    <div class="auth-left">
+      <div class="auth-left-bg-text">$</div>
+      <div class="auth-left-content">
+        <svg class="auth-logo-mark" width="80" height="80" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M20 2 A18 18 0 0 0 2 20 A18 18 0 0 0 20 38" stroke="#0d1b4b" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+          <path d="M20 7 A13 13 0 0 0 7 20 A13 13 0 0 0 20 33" stroke="#0d1b4b" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+          <path d="M20 12 A8 8 0 0 0 12 20 A8 8 0 0 0 20 28" stroke="#e05470" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+          <path d="M20 17 A3 3 0 0 0 17 20 A3 3 0 0 0 20 23" stroke="#e05470" stroke-width="3" fill="none" stroke-linecap="round"/>
+          <path d="M20 2 A18 18 0 0 1 38 20" stroke="#e05470" stroke-width="2" fill="none" stroke-linecap="round" opacity="0.4"/>
+          <path d="M20 7 A13 13 0 0 1 33 20" stroke="#e05470" stroke-width="2" fill="none" stroke-linecap="round" opacity="0.3"/>
+        </svg>
+        <div>
+          <div class="auth-brand-name">SOUTHLAKE</div>
+          <div class="auth-brand-sub">INSURANCE</div>
+        </div>
+        <div class="auth-left-tagline">Accounting &amp; Reporting</div>
+      </div>
+    </div>
+
+    <div class="auth-right">
+      <div class="auth-title">Welcome</div>
+      <div class="auth-subtitle">Let's get you signed in</div>
+
+      <form (ngSubmit)="onSubmit()" [formGroup]="form" novalidate>
+        <div class="auth-form-group">
+          <label class="auth-label" for="email">Email *</label>
           <input
             id="email"
             type="email"
@@ -34,14 +41,46 @@
           }
         </div>
 
+        <div class="auth-form-group">
+          <label class="auth-label" for="password">Password *</label>
+          <div class="input-wrapper">
+            <input
+              id="password"
+              [type]="showPassword ? 'text' : 'password'"
+              class="auth-input"
+              formControlName="password"
+              placeholder="Enter your password"
+              autocomplete="current-password"
+              [class.input-error]="form.get('password')?.invalid && form.get('password')?.touched"
+            >
+            <button type="button" class="toggle-password" (click)="togglePassword()" tabindex="-1">
+              @if (showPassword) {
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"/>
+                  <line x1="1" y1="1" x2="23" y2="23"/>
+                </svg>
+              } @else {
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                  <circle cx="12" cy="12" r="3"/>
+                </svg>
+              }
+            </button>
+          </div>
+          @if (form.get('password')?.invalid && form.get('password')?.touched) {
+            <span class="field-error">Password is required</span>
+          }
+        </div>
+
         @if (errorMsg) {
           <div class="auth-error">{{ errorMsg }}</div>
         }
 
         <button type="submit" class="auth-btn" [disabled]="loading || form.invalid">
-          @if (loading) { Sending... } @else { Send OTP }
+          @if (loading) { Verifying... } @else { Sign In → }
         </button>
       </form>
     </div>
+
   </div>
 </div>

@@ -16,26 +16,33 @@ export class LoginComponent {
   private router = inject(Router);
 
   form = this.fb.group({
-    email: ['', [Validators.required, Validators.email]]
+    email: ['', [Validators.required, Validators.email]],
+    password: ['', [Validators.required]]
   });
 
   loading = false;
   errorMsg = '';
+  showPassword = false;
+
+  togglePassword(): void {
+    this.showPassword = !this.showPassword;
+  }
 
   onSubmit(): void {
     if (this.form.invalid || this.loading) return;
     this.loading = true;
     this.errorMsg = '';
     const email = this.form.value.email as string;
+    const password = this.form.value.password as string;
 
-    this.auth.requestOtp(email).subscribe({
+    this.auth.login(email, password).subscribe({
       next: () => {
         this.loading = false;
-        this.router.navigate(['/auth/otp'], { state: { email } });
+        this.router.navigate(['/auth/otp'], { state: { email, password } });
       },
       error: (err) => {
         this.loading = false;
-        this.errorMsg = err?.error?.message ?? 'Failed to send OTP. Please try again.';
+        this.errorMsg = err?.error?.message ?? 'Invalid email or password.';
       }
     });
   }

@@ -16,6 +16,7 @@ export class OtpComponent implements AfterViewInit {
   private auth = inject(AuthService);
 
   email = '';
+  password = '';
   digits: string[] = ['', '', '', '', '', ''];
   loading = false;
   resending = false;
@@ -23,10 +24,11 @@ export class OtpComponent implements AfterViewInit {
 
   constructor() {
     const nav = this.router.getCurrentNavigation();
-    this.email = (nav?.extras?.state as Record<string, string>)?.['email'] ?? '';
+    const navState = (nav?.extras?.state ?? history.state) as Record<string, string>;
+    this.email = navState?.['email'] ?? '';
+    this.password = navState?.['password'] ?? '';
     if (!this.email) {
-      const state = history.state as Record<string, string>;
-      this.email = state?.['email'] ?? '';
+      this.router.navigate(['/auth/login']);
     }
   }
 
@@ -128,10 +130,10 @@ export class OtpComponent implements AfterViewInit {
   }
 
   resend(): void {
-    if (this.resending || !this.email) return;
+    if (this.resending || !this.email || !this.password) return;
     this.resending = true;
     this.errorMsg = '';
-    this.auth.requestOtp(this.email).subscribe({
+    this.auth.login(this.email, this.password).subscribe({
       next: () => { this.resending = false; },
       error: () => { this.resending = false; }
     });

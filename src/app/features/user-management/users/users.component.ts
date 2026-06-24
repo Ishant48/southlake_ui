@@ -43,6 +43,19 @@ export class UsersComponent implements OnInit {
   statusFilter = '';
   selectedIds: string[] = [];
 
+  currentPage = 1;
+  perPage = 20;
+  total = 0;
+  totalPages = 1;
+
+  get pageNumbers(): number[] {
+    const pages: number[] = [];
+    const start = Math.max(1, this.currentPage - 2);
+    const end = Math.min(this.totalPages, this.currentPage + 2);
+    for (let i = start; i <= end; i++) pages.push(i);
+    return pages;
+  }
+
   invitePanelOpen = false;
   detailPanelOpen = false;
   selectedUser: User | null = null;
@@ -63,7 +76,10 @@ export class UsersComponent implements OnInit {
     this.searchSubject.pipe(
       debounceTime(300),
       distinctUntilChanged()
-    ).subscribe(() => this.loadUsers());
+    ).subscribe(() => {
+      this.currentPage = 1;
+      this.loadUsers();
+    });
   }
 
   loadStats(): void {
@@ -76,12 +92,17 @@ export class UsersComponent implements OnInit {
   loadUsers(): void {
     this.loading = true;
     this.usersService.getUsers({
+      page: this.currentPage,
+      per_page: this.perPage,
       search: this.searchTerm || undefined,
       role_id: this.roleFilter || undefined,
       status: this.statusFilter || undefined,
     }).subscribe({
       next: (result) => {
         this.users = result.data;
+        this.total = result.total;
+        this.totalPages = result.total_pages;
+        this.currentPage = result.page;
         this.loading = false;
       },
       error: () => {
@@ -91,9 +112,15 @@ export class UsersComponent implements OnInit {
     });
   }
 
+  goToPage(page: number): void {
+    if (page < 1 || page > this.totalPages) return;
+    this.currentPage = page;
+    this.loadUsers();
+  }
+
   loadRoles(): void {
-    this.rolesService.getRoles().subscribe({
-      next: (roles) => (this.roles = roles),
+    this.rolesService.getRoles({ per_page: 100 }).subscribe({
+      next: (result) => (this.roles = result.data),
       error: () => {}
     });
   }
@@ -110,6 +137,7 @@ export class UsersComponent implements OnInit {
   }
 
   onFilterChange(): void {
+    this.currentPage = 1;
     this.loadUsers();
   }
 
@@ -207,7 +235,8 @@ export class UsersComponent implements OnInit {
     }
   }
 
-  hexToRgba(hex: string, alpha: number): string {
+  hexToRgba(hex: string | null | undefined, alpha: number): string {
+    if (!hex || hex.length < 7) return `rgba(13,27,75,${alpha})`;
     const r = parseInt(hex.slice(1, 3), 16);
     const g = parseInt(hex.slice(3, 5), 16);
     const b = parseInt(hex.slice(5, 7), 16);

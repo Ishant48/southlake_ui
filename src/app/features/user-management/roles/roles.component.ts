@@ -26,15 +26,31 @@ export class RolesComponent implements OnInit {
   confirmMessage = '';
   deletingRoleId: string | null = null;
 
+  currentPage = 1;
+  perPage = 20;
+  total = 0;
+  totalPages = 1;
+
+  get pageNumbers(): number[] {
+    const pages: number[] = [];
+    const start = Math.max(1, this.currentPage - 2);
+    const end = Math.min(this.totalPages, this.currentPage + 2);
+    for (let i = start; i <= end; i++) pages.push(i);
+    return pages;
+  }
+
   ngOnInit(): void {
     this.loadRoles();
   }
 
   loadRoles(): void {
     this.loading = true;
-    this.rolesService.getRoles().subscribe({
-      next: (roles) => {
-        this.roles = roles;
+    this.rolesService.getRoles({ page: this.currentPage, per_page: this.perPage }).subscribe({
+      next: (result) => {
+        this.roles = result.data;
+        this.total = result.total;
+        this.totalPages = result.total_pages;
+        this.currentPage = result.page;
         this.loading = false;
       },
       error: () => {
@@ -42,6 +58,12 @@ export class RolesComponent implements OnInit {
         this.toast.error('Failed to load roles');
       }
     });
+  }
+
+  goToPage(page: number): void {
+    if (page < 1 || page > this.totalPages) return;
+    this.currentPage = page;
+    this.loadRoles();
   }
 
   openCreateModal(): void {

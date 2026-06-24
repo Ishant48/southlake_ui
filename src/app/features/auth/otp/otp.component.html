@@ -1,24 +1,30 @@
-<div class="auth-shell">
-  <div class="auth-left">
-    <div class="auth-left-content">
-      <div class="auth-logo-mark">
-        <svg width="56" height="56" viewBox="0 0 56 56" fill="none">
-          <rect width="56" height="56" rx="12" fill="#e05470"/>
-          <path d="M28 10L40 20V30L28 40L16 30V20L28 10Z" fill="white" opacity="0.9"/>
-          <path d="M28 18L36 25V33L28 40L20 33V25L28 18Z" fill="#e05470"/>
+<div class="auth-wrap">
+  <div class="auth-panel">
+
+    <div class="auth-left">
+      <div class="auth-left-bg-text">✓</div>
+      <div class="auth-left-content">
+        <svg class="auth-logo-mark" width="80" height="80" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M20 2 A18 18 0 0 0 2 20 A18 18 0 0 0 20 38" stroke="#0d1b4b" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+          <path d="M20 7 A13 13 0 0 0 7 20 A13 13 0 0 0 20 33" stroke="#0d1b4b" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+          <path d="M20 12 A8 8 0 0 0 12 20 A8 8 0 0 0 20 28" stroke="#e05470" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+          <path d="M20 17 A3 3 0 0 0 17 20 A3 3 0 0 0 20 23" stroke="#e05470" stroke-width="3" fill="none" stroke-linecap="round"/>
+          <path d="M20 2 A18 18 0 0 1 38 20" stroke="#e05470" stroke-width="2" fill="none" stroke-linecap="round" opacity="0.4"/>
+          <path d="M20 7 A13 13 0 0 1 33 20" stroke="#e05470" stroke-width="2" fill="none" stroke-linecap="round" opacity="0.3"/>
         </svg>
+        <div>
+          <div class="auth-brand-name">SOUTHLAKE</div>
+          <div class="auth-brand-sub">INSURANCE</div>
+        </div>
+        <div class="auth-left-tagline">Two-Factor Authentication</div>
       </div>
-      <h1 class="auth-brand">SOUTHLAKE<br>INSURANCE</h1>
-      <p class="auth-tagline">Secure. Reliable. Trusted.</p>
     </div>
-  </div>
-  <div class="auth-right">
-    <div class="auth-card">
-      <h2 class="auth-title">Verify OTP</h2>
-      <p class="auth-subtitle">
-        Enter the 6-digit code sent to<br>
-        <strong>{{ email }}</strong>
-      </p>
+
+    <div class="auth-right">
+      <div class="auth-title">Verify your OTP</div>
+      <div class="auth-subtitle">Please enter the code.</div>
+
+      <div class="otp-email-hint">Enter OTP sent to {{ email }}</div>
 
       <div class="otp-inputs">
         @for (digit of digits; track $index; let i = $index) {
@@ -28,7 +34,7 @@
             inputmode="numeric"
             pattern="[0-9]"
             maxlength="1"
-            class="otp-input"
+            class="otp-digit"
             [value]="digit"
             (keydown)="onKeyDown($event, i)"
             (input)="onInput($event, i)"
@@ -43,15 +49,18 @@
       }
 
       <button class="auth-btn" [disabled]="loading || !isComplete()" (click)="submit()">
-        @if (loading) { Verifying... } @else { Verify Code }
+        @if (loading) { Verifying... } @else { Verify }
       </button>
 
-      <div class="auth-links">
-        <button class="link-btn" (click)="resend()" [disabled]="resending">
+      <div class="otp-resend">
+        Don't receive the OTP? &nbsp;
+        <button (click)="resend()" [disabled]="resending">
           @if (resending) { Sending... } @else { Resend Code }
         </button>
-        <a class="link-btn" routerLink="/auth/login">Back to Sign In</a>
       </div>
+
+      <a class="auth-back-link" routerLink="/auth/login">← Back to Sign In</a>
     </div>
+
   </div>
 </div>
