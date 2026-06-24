@@ -1,0 +1,111 @@
+@if (open) {
+  <div class="modal-overlay" (click)="closeModal()">
+    <div class="modal-box" (click)="$event.stopPropagation()" role="dialog">
+      <div class="modal-header">
+        <h3 class="modal-title">{{ role ? 'Edit Role: ' + role.name : 'Create Role' }}</h3>
+        <button class="modal-close" (click)="closeModal()" aria-label="Close">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <form [formGroup]="form" novalidate>
+          <div class="form-row">
+            <div class="form-field">
+              <label class="form-label">Role Name *</label>
+              <input type="text" class="form-input" formControlName="name" placeholder="e.g. underwriter"
+                [class.input-error]="isInvalid('name')">
+              @if (isInvalid('name')) { <span class="field-error">Required</span> }
+            </div>
+            <div class="form-field">
+              <label class="form-label">Display Label *</label>
+              <input type="text" class="form-input" formControlName="label" placeholder="e.g. Underwriter"
+                [class.input-error]="isInvalid('label')">
+              @if (isInvalid('label')) { <span class="field-error">Required</span> }
+            </div>
+          </div>
+
+          <div class="form-field">
+            <label class="form-label">Color</label>
+            <div class="color-swatches">
+              @for (color of swatches; track color) {
+                <button type="button" class="color-swatch" [style.background]="color"
+                  [class.selected]="form.value.color === color"
+                  (click)="form.patchValue({ color })">
+                  @if (form.value.color === color) {
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3">
+                      <polyline points="20 6 9 17 4 12"/>
+                    </svg>
+                  }
+                </button>
+              }
+            </div>
+          </div>
+
+          <div class="form-field">
+            <label class="form-label">Description</label>
+            <textarea class="form-input form-textarea" formControlName="description" placeholder="Describe this role's responsibilities..." rows="2"></textarea>
+          </div>
+        </form>
+
+        <div class="perm-summary">
+          @for (card of permSummary; track card.label) {
+            <div class="summary-card">
+              <span class="summary-count" [style.color]="card.color">{{ card.count }}</span>
+              <span class="summary-label">{{ card.label }}</span>
+            </div>
+          }
+        </div>
+
+        <div class="perm-section-title">Module Permissions</div>
+        <div class="perm-table-wrap">
+          <table class="perm-table">
+            <thead>
+              <tr>
+                <th class="module-col">Module</th>
+                @for (action of allActions; track action.key) {
+                  <th>{{ action.label }}</th>
+                }
+                <th>Presets</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (mod of modules; track mod.id) {
+                <tr>
+                  <td class="module-name">{{ mod.label }}</td>
+                  @for (action of allActions; track action.key) {
+                    <td class="check-cell">
+                      <input type="checkbox"
+                        [checked]="getPermValue(mod.id, action.key)"
+                        (change)="setPermValue(mod.id, action.key, $event)">
+                    </td>
+                  }
+                  <td>
+                    <div class="preset-btns">
+                      <button class="preset-btn" (click)="setPreset(mod.id, 'full')">Full</button>
+                      <button class="preset-btn" (click)="setPreset(mod.id, 'read')">Read</button>
+                      <button class="preset-btn" (click)="setPreset(mod.id, 'none')">None</button>
+                    </div>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+
+        @if (errorMsg) {
+          <div class="form-error-box">{{ errorMsg }}</div>
+        }
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn-ghost" (click)="closeModal()">Cancel</button>
+        <button class="btn-primary" [disabled]="loading || form.invalid" (click)="onSave()">
+          @if (loading) { Saving... } @else { {{ role ? 'Save Changes' : 'Create Role' }} }
+        </button>
+      </div>
+    </div>
+  </div>
+}

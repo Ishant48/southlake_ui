@@ -1,0 +1,47 @@
+<div class="auth-shell">
+  <div class="auth-left">
+    <div class="auth-left-content">
+      <div class="auth-logo-mark">
+        <svg width="56" height="56" viewBox="0 0 56 56" fill="none">
+          <rect width="56" height="56" rx="12" fill="#e05470"/>
+          <path d="M28 10L40 20V30L28 40L16 30V20L28 10Z" fill="white" opacity="0.9"/>
+          <path d="M28 18L36 25V33L28 40L20 33V25L28 18Z" fill="#e05470"/>
+        </svg>
+      </div>
+      <h1 class="auth-brand">SOUTHLAKE<br>INSURANCE</h1>
+      <p class="auth-tagline">Secure. Reliable. Trusted.</p>
+    </div>
+  </div>
+  <div class="auth-right">
+    <div class="auth-card">
+      <h2 class="auth-title">Sign In</h2>
+      <p class="auth-subtitle">Enter your email to receive a one-time password</p>
+
+      <form [formGroup]="form" (ngSubmit)="onSubmit()" class="auth-form" novalidate>
+        <div class="form-field">
+          <label class="form-label" for="email">Email Address</label>
+          <input
+            id="email"
+            type="email"
+            class="auth-input"
+            formControlName="email"
+            placeholder="you@example.com"
+            autocomplete="email"
+            [class.input-error]="form.get('email')?.invalid && form.get('email')?.touched"
+          >
+          @if (form.get('email')?.invalid && form.get('email')?.touched) {
+            <span class="field-error">Please enter a valid email address</span>
+          }
+        </div>
+
+        @if (errorMsg) {
+          <div class="auth-error">{{ errorMsg }}</div>
+        }
+
+        <button type="submit" class="auth-btn" [disabled]="loading || form.invalid">
+          @if (loading) { Sending... } @else { Send OTP }
+        </button>
+      </form>
+    </div>
+  </div>
+</div>

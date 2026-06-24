@@ -1,0 +1,173 @@
+<div class="um-page">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">User Management</h1>
+      <p class="page-subtitle">Manage users, roles, and permissions across your organization.</p>
+    </div>
+    <button class="btn-primary" (click)="invitePanelOpen = true">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+      </svg>
+      Invite User
+    </button>
+  </div>
+
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-icon stat-icon-navy">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/>
+          <path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/>
+        </svg>
+      </div>
+      <div class="stat-info">
+        <span class="stat-label">Total Users</span>
+        <span class="stat-value">{{ stats?.total ?? '-' }}</span>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon stat-icon-green">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="20 6 9 17 4 12"/>
+        </svg>
+      </div>
+      <div class="stat-info">
+        <span class="stat-label">Active Users</span>
+        <span class="stat-value">{{ stats?.active ?? '-' }}</span>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon stat-icon-blue">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+        </svg>
+      </div>
+      <div class="stat-info">
+        <span class="stat-label">Roles Defined</span>
+        <span class="stat-value">{{ stats?.roles_defined ?? '-' }}</span>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon stat-icon-orange">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+          <polyline points="22,6 12,13 2,6"/>
+        </svg>
+      </div>
+      <div class="stat-info">
+        <span class="stat-label">Pending Invites</span>
+        <span class="stat-value">{{ stats?.pending_invites ?? '-' }}</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="tab-bar">
+    <a class="tab-link" routerLink="/user-management/users" routerLinkActive="active">Users</a>
+    <a class="tab-link" routerLink="/user-management/roles" routerLinkActive="active">Roles &amp; Permissions</a>
+    <a class="tab-link" routerLink="/user-management/activity-logs" routerLinkActive="active">Activity Logs</a>
+  </div>
+
+  <div class="content-card">
+    <div class="filters-bar">
+      <div class="search-wrap">
+        <svg class="search-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+        <input class="search-input" type="text" placeholder="Search users..." [(ngModel)]="searchTerm" (ngModelChange)="onSearch($event)">
+      </div>
+      <select class="filter-select" [(ngModel)]="roleFilter" (ngModelChange)="onFilterChange()">
+        <option value="">All Roles</option>
+        @for (role of roles; track role.id) {
+          <option [value]="role.id">{{ role.label }}</option>
+        }
+      </select>
+      <select class="filter-select" [(ngModel)]="statusFilter" (ngModelChange)="onFilterChange()">
+        <option value="">All Statuses</option>
+        <option value="active">Active</option>
+        <option value="inactive">Inactive</option>
+        <option value="pending">Pending</option>
+      </select>
+    </div>
+
+    @if (selectedIds.length > 0) {
+      <div class="bulk-bar">
+        <span class="bulk-count">{{ selectedIds.length }} selected</span>
+        <button class="btn-danger-outline" (click)="openBulkDeactivate()">
+          Deactivate Selected
+        </button>
+        <button class="btn-ghost-sm" (click)="clearSelection()">Clear</button>
+      </div>
+    }
+
+    <app-users-table
+      [users]="users"
+      [loading]="loading"
+      (viewUser)="onViewUser($event)"
+      (editUser)="onEditUser($event)"
+      (deactivateUser)="onDeactivateUser($event)"
+      (selectionChanged)="onSelectionChanged($event)"
+    />
+  </div>
+
+  @if (pendingInvites.length > 0) {
+    <div class="content-card invites-section">
+      <h3 class="section-title">Pending Invitations ({{ pendingInvites.length }})</h3>
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Email</th>
+            <th>Name</th>
+            <th>Role</th>
+            <th>Status</th>
+            <th>Invited</th>
+            <th>Expires</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (invite of pendingInvites; track invite.id) {
+            <tr>
+              <td>{{ invite.email }}</td>
+              <td>{{ invite.name }}</td>
+              <td>
+                <span class="role-badge" [style.background]="hexToRgba(invite.role.color, 0.1)" [style.color]="invite.role.color">
+                  {{ invite.role.label }}
+                </span>
+              </td>
+              <td><span class="status-badge status-pending">Pending</span></td>
+              <td class="text-muted">{{ formatDate(invite.invited_at) }}</td>
+              <td class="text-muted">{{ formatDate(invite.expires_at) }}</td>
+              <td>
+                <button class="btn-danger-xs" (click)="onRevokeInvite(invite.id)">Revoke</button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</div>
+
+<app-invite-panel
+  [open]="invitePanelOpen"
+  [roles]="roles"
+  (closed)="invitePanelOpen = false"
+  (invited)="onInvited()"
+/>
+
+<app-user-detail-panel
+  [user]="selectedUser"
+  [open]="detailPanelOpen"
+  (closed)="detailPanelOpen = false"
+  (updated)="onUserUpdated($event)"
+/>
+
+<app-confirm-dialog
+  [open]="confirmOpen"
+  [title]="confirmTitle"
+  [message]="confirmMessage"
+  confirmLabel="Deactivate"
+  type="danger"
+  (confirmed)="onConfirmed()"
+  (cancelled)="confirmOpen = false"
+/>

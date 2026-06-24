@@ -1,0 +1,138 @@
+@if (open) {
+  <div class="panel-overlay" (click)="closePanel()"></div>
+}
+<div class="slide-panel detail-panel" [class.open]="open">
+  @if (user) {
+    <div class="panel-header">
+      <div class="header-user">
+        <div class="user-avatar-lg" [style.background]="user.avatar_color">{{ user.initials }}</div>
+        <div class="header-user-info">
+          <span class="header-user-name">{{ user.name }}</span>
+          <span class="role-badge-sm" [style.background]="hexToRgba(user.role.color, 0.1)" [style.color]="user.role.color">
+            {{ user.role.label }}
+          </span>
+        </div>
+      </div>
+      <button class="panel-close" (click)="closePanel()" aria-label="Close">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+
+    <div class="panel-tabs">
+      <button class="tab-btn" [class.active]="activeTab === 'profile'" (click)="activeTab = 'profile'">Profile</button>
+      <button class="tab-btn" [class.active]="activeTab === 'permissions'" (click)="loadPermissionsTab()">Permissions</button>
+    </div>
+
+    <div class="panel-body">
+      @if (activeTab === 'profile') {
+        <div class="profile-tab">
+          <div class="info-grid">
+            <div class="info-row">
+              <span class="info-label">Email</span>
+              <span class="info-value">{{ user.email }}</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">Department</span>
+              <span class="info-value">{{ user.department ?? 'Not set' }}</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">Title</span>
+              <span class="info-value">{{ user.title ?? 'Not set' }}</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">User Type</span>
+              <span class="info-value">{{ formatUserType(user.user_type) }}</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">Joined</span>
+              <span class="info-value">{{ formatDate(user.joined_date) }}</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">Last Login</span>
+              <span class="info-value">{{ formatDate(user.last_login_at) }}</span>
+            </div>
+          </div>
+
+          <div class="status-section">
+            <span class="info-label">Account Status</span>
+            <div class="status-toggle-row">
+              <app-user-status-badge [status]="editStatus" />
+              <button class="toggle-btn" [class.active]="editStatus === 'active'"
+                (click)="editStatus = editStatus === 'active' ? 'inactive' : 'active'">
+                {{ editStatus === 'active' ? 'Deactivate' : 'Activate' }}
+              </button>
+            </div>
+          </div>
+
+          @if (profileError) {
+            <div class="form-error-box">{{ profileError }}</div>
+          }
+        </div>
+      }
+
+      @if (activeTab === 'permissions') {
+        <div class="permissions-tab">
+          @if (permsLoading) {
+            <div class="loading-row">Loading permissions...</div>
+          } @else {
+            <div class="perm-table-wrap">
+              <table class="perm-table">
+                <thead>
+                  <tr>
+                    <th class="module-col">Module</th>
+                    @for (action of visibleActions; track action.key) {
+                      <th>{{ action.label }}</th>
+                    }
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (mod of modules; track mod.id) {
+                    <tr>
+                      <td class="module-name">{{ mod.label }}</td>
+                      @for (action of visibleActions; track action.key) {
+                        <td class="check-cell">
+                          <input type="checkbox"
+                            [checked]="getPermValue(mod.id, action.key)"
+                            (change)="setPermValue(mod.id, action.key, $event)">
+                        </td>
+                      }
+                      <td>
+                        <div class="preset-btns">
+                          <button class="preset-btn" (click)="setPreset(mod.id, 'full')">Full</button>
+                          <button class="preset-btn" (click)="setPreset(mod.id, 'read')">Read</button>
+                          <button class="preset-btn" (click)="setPreset(mod.id, 'none')">None</button>
+                        </div>
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+            @if (permsError) {
+              <div class="form-error-box">{{ permsError }}</div>
+            }
+          }
+        </div>
+      }
+    </div>
+
+    <div class="panel-footer">
+      <button class="btn-ghost" (click)="closePanel()">Cancel</button>
+      @if (activeTab === 'profile') {
+        <button class="btn-primary" [disabled]="savingProfile" (click)="saveProfile()">
+          @if (savingProfile) { Saving... } @else { Save Changes }
+        </button>
+      }
+      @if (activeTab === 'permissions') {
+        <button class="btn-primary" [disabled]="savingPerms || permsLoading" (click)="savePermissions()">
+          @if (savingPerms) { Saving... } @else { Save Permissions }
+        </button>
+      }
+    </div>
+  } @else {
+    <div class="panel-empty">Select a user to view details.</div>
+  }
+</div>

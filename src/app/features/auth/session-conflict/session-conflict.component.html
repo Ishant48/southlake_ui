@@ -1,0 +1,60 @@
+<div class="auth-shell">
+  <div class="auth-left">
+    <div class="auth-left-content">
+      <div class="auth-logo-mark">
+        <svg width="56" height="56" viewBox="0 0 56 56" fill="none">
+          <rect width="56" height="56" rx="12" fill="#e05470"/>
+          <path d="M28 10L40 20V30L28 40L16 30V20L28 10Z" fill="white" opacity="0.9"/>
+          <path d="M28 18L36 25V33L28 40L20 33V25L28 18Z" fill="#e05470"/>
+        </svg>
+      </div>
+      <h1 class="auth-brand">SOUTHLAKE<br>INSURANCE</h1>
+      <p class="auth-tagline">Secure. Reliable. Trusted.</p>
+    </div>
+  </div>
+  <div class="auth-right">
+    <div class="auth-card">
+      <div class="conflict-icon">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#e65100" stroke-width="2">
+          <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+          <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+        </svg>
+      </div>
+      <h2 class="auth-title">Already Signed In</h2>
+      <p class="auth-subtitle">Your account is already active on another device.</p>
+
+      @if (challengeData) {
+        <div class="device-card">
+          <div class="device-row">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/>
+            </svg>
+            <span>{{ challengeData.device_label }}</span>
+          </div>
+          <div class="device-row">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/>
+              <path d="M12 2a15.3 15.3 0 010 20M12 2a15.3 15.3 0 000 20"/>
+            </svg>
+            <span>{{ challengeData.ip_address }}</span>
+          </div>
+          <div class="device-row">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+            </svg>
+            <span>Since {{ formatDate(challengeData.created_at) }}</span>
+          </div>
+        </div>
+      }
+
+      @if (errorMsg) {
+        <div class="auth-error">{{ errorMsg }}</div>
+      }
+
+      <button class="auth-btn" [disabled]="loading" (click)="signInHere()">
+        @if (loading) { Signing in... } @else { Sign In Here }
+      </button>
+      <button class="btn-cancel" routerLink="/auth/login">Cancel</button>
+    </div>
+  </div>
+</div>
