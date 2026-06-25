@@ -1,0 +1,144 @@
+export interface StateDocument {
+  id: string;
+  state_id: string;
+  file_name: string;
+  file_url: string;
+  uploaded_at: string;
+  uploaded_by?: string | null;
+}
+
+export interface StateMaster {
+  id: string;
+  state_code: number | null;
+  state_abbr: string;
+  name: string;
+  notes?: string | null;
+  is_active: boolean;
+  created_at?: string;
+  updated_at?: string | null;
+  documents?: StateDocument[];
+}
+
+export interface MgaDocument {
+  id: string;
+  mga_id: string;
+  file_name: string;
+  file_url: string;
+  uploaded_at: string;
+  uploaded_by?: string | null;
+}
+
+export interface MgaMaster {
+  id: string;
+  mga_code: string;
+  name: string;
+  tax_payable_inhouse: boolean;
+  is_active: boolean;
+  ledger_amount?: number;
+  created_at?: string;
+  updated_at?: string | null;
+  documents?: MgaDocument[];
+}
+
+export interface ReinsurerCompany {
+  id: string;
+  reinsurer_company_id: string;
+  name: string;
+  is_active: boolean;
+  created_at?: string;
+  updated_at?: string | null;
+}
+
+export interface RiskCompanyDocument {
+  id: string;
+  risk_company_id: string;
+  file_name: string;
+  file_url: string;
+  uploaded_at: string;
+  uploaded_by?: string | null;
+}
+
+export interface RiskCompany {
+  id: string;
+  risk_company_id: string;
+  company_id: number | null;
+  id_name: string | null;
+  name: string;
+  phone?: string | null;
+  is_admitted: boolean;
+  state?: string | null;
+  notes?: string | null;
+  is_active: boolean;
+  created_at?: string;
+  updated_at?: string | null;
+  documents?: RiskCompanyDocument[];
+}
+
+export interface LineOfBusiness {
+  id: string;
+  lob_code: string;
+  name: string;
+  is_active: boolean;
+  created_at?: string;
+  updated_at?: string | null;
+}
+
+export interface CobMaster {
+  id: string;
+  cob_code: string;
+  name: string;
+  is_active: boolean;
+  created_at?: string;
+  updated_at?: string | null;
+}
+
+export interface TreatyState {
+  id: string;
+  treaty_id: string;
+  state_id: string;
+  state?: StateMaster;
+}
+
+export interface TreatyLobCob {
+  id: string;
+  treaty_lob_id: string;
+  cob_id: string;
+  cob?: CobMaster;
+}
+
+export interface TreatyLob {
+  id: string;
+  treaty_id: string;
+  lob_id: string;
+  lob?: LineOfBusiness;
+  treaty_lob_cobs?: TreatyLobCob[];
+}
+
+export interface Treaty {
+  id: string;
+  treaty_code: string;
+  name: string;
+  mga_id: string;
+  mga?: MgaMaster;
+  reinsurer_id?: string | null;
+  reinsurer?: ReinsurerCompany | null;
+  risk_company_id?: string | null;
+  risk_company?: RiskCompany | null;
+  effective_date?: string | null;
+  expiration_date?: string | null;
+  qs_pct?: number | null;
+  cf_pct?: number | null;
+  comm_pct?: number | null;
+  bb_pct?: number | null;
+  ulae_pct?: number | null;
+  xol_pct?: number | null;
+  lr_cap_pct?: number | null;
+  ibnr_pct?: number | null;
+  carrier_retention_pct?: number | null;
+  reinsurer_cession_pct?: number | null;
+  is_active: boolean;
+  created_at?: string;
+  updated_at?: string | null;
+  treaty_states?: TreatyState[];
+  treaty_lobs?: TreatyLob[];
+}

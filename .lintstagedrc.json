@@ -1,0 +1,12 @@
+{
+  "src/**/*.ts": [
+    "eslint --fix --max-warnings 0",
+    "prettier --write"
+  ],
+  "src/**/*.html": [
+    "prettier --write"
+  ],
+  "src/**/*.scss": [
+    "prettier --write"
+  ]
+}
