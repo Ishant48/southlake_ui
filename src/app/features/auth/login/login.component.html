@@ -1,0 +1,175 @@
+<div class="auth-wrap">
+  <div class="auth-panel">
+
+    <div class="auth-left">
+      <div class="auth-left-bg-text">$</div>
+      <div class="auth-left-content">
+        <svg class="auth-logo-mark" width="80" height="80" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M20 2 A18 18 0 0 0 2 20 A18 18 0 0 0 20 38" stroke="#0d1b4b" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+          <path d="M20 7 A13 13 0 0 0 7 20 A13 13 0 0 0 20 33" stroke="#0d1b4b" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+          <path d="M20 12 A8 8 0 0 0 12 20 A8 8 0 0 0 20 28" stroke="#e05470" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+          <path d="M20 17 A3 3 0 0 0 17 20 A3 3 0 0 0 20 23" stroke="#e05470" stroke-width="3" fill="none" stroke-linecap="round"/>
+          <path d="M20 2 A18 18 0 0 1 38 20" stroke="#e05470" stroke-width="2" fill="none" stroke-linecap="round" opacity="0.4"/>
+          <path d="M20 7 A13 13 0 0 1 33 20" stroke="#e05470" stroke-width="2" fill="none" stroke-linecap="round" opacity="0.3"/>
+        </svg>
+        <div>
+          <div class="auth-brand-name">SOUTHLAKE</div>
+          <div class="auth-brand-sub">INSURANCE</div>
+        </div>
+        <div class="auth-left-tagline">Accounting &amp; Reporting</div>
+      </div>
+    </div>
+
+    <div class="auth-right">
+      @if (isInviteFlow) {
+        @if (inviteLoading) {
+          <div class="auth-title">Verifying...</div>
+          <div class="auth-subtitle">Checking your invitation details</div>
+          <div class="spinner-container">
+            <div class="spinner"></div>
+          </div>
+        } @else if (inviteError) {
+          <div class="auth-title" style="color: var(--red);">Invitation Error</div>
+          <div class="auth-subtitle">{{ inviteError }}</div>
+          <a routerLink="/auth/login" class="btn-cancel">Back to Sign In</a>
+        } @else {
+          <div class="auth-title">Welcome</div>
+          <div class="auth-subtitle">Let's set up your password, <strong>{{ inviteName }}</strong></div>
+
+          <form (ngSubmit)="onAcceptInviteSubmit()" [formGroup]="inviteForm" novalidate>
+            <div class="auth-form-group">
+              <label class="auth-label">Email Address</label>
+              <input
+                type="text"
+                class="auth-input"
+                [value]="inviteEmail"
+                disabled
+                style="opacity: 0.6; cursor: not-allowed;"
+              >
+            </div>
+
+            <div class="auth-form-group">
+              <label class="auth-label" for="new-password">Password *</label>
+              <div class="input-wrapper">
+                <input
+                  id="new-password"
+                  [type]="showPassword ? 'text' : 'password'"
+                  class="auth-input"
+                  formControlName="password"
+                  placeholder="Min 8 characters"
+                  autocomplete="new-password"
+                  [class.input-error]="inviteForm.get('password')?.invalid && inviteForm.get('password')?.touched"
+                >
+                <button type="button" class="toggle-password" (click)="togglePassword()" tabindex="-1">
+                  @if (showPassword) {
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"/>
+                      <line x1="1" y1="1" x2="23" y2="23"/>
+                    </svg>
+                  } @else {
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                      <circle cx="12" cy="12" r="3"/>
+                    </svg>
+                  }
+                </button>
+              </div>
+              @if (inviteForm.get('password')?.invalid && inviteForm.get('password')?.touched) {
+                <span class="field-error">Password must be at least 8 characters long</span>
+              }
+            </div>
+
+            <div class="auth-form-group">
+              <label class="auth-label" for="confirm-password">Confirm Password *</label>
+              <div class="input-wrapper">
+                <input
+                  id="confirm-password"
+                  [type]="showPassword ? 'text' : 'password'"
+                  class="auth-input"
+                  formControlName="confirmPassword"
+                  placeholder="Confirm your password"
+                  autocomplete="new-password"
+                  [class.input-error]="inviteForm.get('confirmPassword')?.touched && (inviteForm.get('confirmPassword')?.invalid || inviteForm.hasError('notSame'))"
+                >
+              </div>
+              @if (inviteForm.get('confirmPassword')?.touched && inviteForm.hasError('notSame')) {
+                <span class="field-error">Passwords do not match</span>
+              }
+            </div>
+
+            @if (errorMsg) {
+              <div class="auth-error">{{ errorMsg }}</div>
+            }
+
+            <button type="submit" class="auth-btn" [disabled]="loading || inviteForm.invalid">
+              @if (loading) { Saving... } @else { Create Password & Sign In → }
+            </button>
+
+            <a routerLink="/auth/login" class="auth-back-link">Back to Sign In</a>
+          </form>
+        }
+      } @else {
+        <div class="auth-title">Welcome</div>
+        <div class="auth-subtitle">Let's get you signed in</div>
+
+        <form (ngSubmit)="onSubmit()" [formGroup]="form" novalidate>
+          <div class="auth-form-group">
+            <label class="auth-label" for="email">Email *</label>
+            <input
+              id="email"
+              type="email"
+              class="auth-input"
+              formControlName="email"
+              placeholder="you@example.com"
+              autocomplete="email"
+              [class.input-error]="form.get('email')?.invalid && form.get('email')?.touched"
+            >
+            @if (form.get('email')?.invalid && form.get('email')?.touched) {
+              <span class="field-error">Please enter a valid email address</span>
+            }
+          </div>
+
+          <div class="auth-form-group">
+            <label class="auth-label" for="password">Password *</label>
+            <div class="input-wrapper">
+              <input
+                id="password"
+                [type]="showPassword ? 'text' : 'password'"
+                class="auth-input"
+                formControlName="password"
+                placeholder="Enter your password"
+                autocomplete="current-password"
+                [class.input-error]="form.get('password')?.invalid && form.get('password')?.touched"
+              >
+              <button type="button" class="toggle-password" (click)="togglePassword()" tabindex="-1">
+                @if (showPassword) {
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"/>
+                    <line x1="1" y1="1" x2="23" y2="23"/>
+                  </svg>
+                } @else {
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                    <circle cx="12" cy="12" r="3"/>
+                  </svg>
+                }
+              </button>
+            </div>
+            @if (form.get('password')?.invalid && form.get('password')?.touched) {
+              <span class="field-error">Password is required</span>
+            }
+          </div>
+
+          @if (errorMsg) {
+            <div class="auth-error">{{ errorMsg }}</div>
+          }
+
+          <button type="submit" class="auth-btn" [disabled]="loading || form.invalid">
+            @if (loading) { Verifying... } @else { Sign In → }
+          </button>
+        </form>
+      }
+    </div>
+
+  </div>
+</div>

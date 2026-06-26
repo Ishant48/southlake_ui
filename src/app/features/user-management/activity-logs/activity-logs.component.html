@@ -1,0 +1,140 @@
+<div class="um-page">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Activity Logs</h1>
+      <p class="page-subtitle">Track all user actions across the platform.</p>
+    </div>
+    @if (hasPermission('activity_log.export')) {
+      <button class="btn-export" (click)="exportLogs()">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+          <polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+        </svg>
+        Export
+      </button>
+    }
+  </div>
+
+  <div class="tab-bar">
+    <a class="tab-link" routerLink="/user-management/users" routerLinkActive="active">Users</a>
+    <a class="tab-link" routerLink="/user-management/roles" routerLinkActive="active">Roles &amp; Permissions</a>
+    <a class="tab-link" routerLink="/user-management/activity-logs" routerLinkActive="active">Activity Logs</a>
+  </div>
+
+  <div class="content-card">
+    <div class="filters-bar">
+      <div class="search-wrap">
+        <svg class="search-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+        <input class="search-input" type="text" placeholder="Search logs..." [(ngModel)]="filter.search" (ngModelChange)="onFilterChange()">
+      </div>
+      <select class="filter-select" [(ngModel)]="filter.action" (ngModelChange)="onFilterChange()">
+        <option value="">All Actions</option>
+        <option value="login">Login</option>
+        <option value="logout">Logout</option>
+        <option value="create">Create</option>
+        <option value="update">Update</option>
+        <option value="delete">Delete</option>
+        <option value="approve">Approve</option>
+        <option value="export">Export</option>
+      </select>
+      <select class="filter-select" [(ngModel)]="filter.module_id" (ngModelChange)="onFilterChange()">
+        <option value="">All Modules</option>
+        @for (mod of modules; track mod.id) {
+          <option [value]="mod.id">{{ mod.label }}</option>
+        }
+      </select>
+      <input class="filter-date" type="date" [(ngModel)]="filter.date_from" (ngModelChange)="onFilterChange()" placeholder="From">
+      <input class="filter-date" type="date" [(ngModel)]="filter.date_to" (ngModelChange)="onFilterChange()" placeholder="To">
+    </div>
+
+    <div class="table-wrapper">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>User</th>
+            <th>Action</th>
+            <th>Module</th>
+            <th>Entity</th>
+            <th>Description</th>
+            <th>IP Address</th>
+            <th>Date / Time</th>
+          </tr>
+        </thead>
+        <tbody>
+          @if (loading) {
+            @for (i of skeletonRows; track i) {
+              <tr class="skeleton-row">
+                <td><div class="user-cell"><div class="skel skel-avatar"></div><div class="user-cell-text"><div class="skel skel-line"></div><div class="skel skel-line-sm"></div></div></div></td>
+                <td><div class="skel skel-badge"></div></td>
+                <td><div class="skel skel-line-sm"></div></td>
+                <td><div class="skel skel-line-sm"></div></td>
+                <td><div class="skel skel-line"></div></td>
+                <td><div class="skel skel-line-sm"></div></td>
+                <td><div class="skel skel-line-sm"></div></td>
+              </tr>
+            }
+          } @else if (logs.length === 0) {
+            <tr>
+              <td colspan="7" class="empty-cell">
+                <div class="empty-state">
+                  <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#d1d5db" stroke-width="1.5">
+                    <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+                  </svg>
+                  <p>No activity logs found</p>
+                </div>
+              </td>
+            </tr>
+          } @else {
+            @for (log of logs; track log.id) {
+              <tr>
+                <td>
+                  @if (log.user) {
+                    <div class="user-cell">
+                      <div class="user-avatar" [style.background]="log.user.avatar_color">{{ log.user.initials }}</div>
+                      <div class="user-cell-text">
+                        <span class="user-name">{{ log.user.name }}</span>
+                        <span class="user-email">{{ log.user.email }}</span>
+                      </div>
+                    </div>
+                  } @else {
+                    <span class="text-muted">System</span>
+                  }
+                </td>
+                <td>
+                  <span class="action-badge" [style.background]="getActionStyle(log.action).bg" [style.color]="getActionStyle(log.action).text">
+                    {{ log.action }}
+                  </span>
+                </td>
+                <td class="text-muted">{{ formatModule(log.module_id) }}</td>
+                <td class="text-muted">{{ log.entity_type ?? '-' }}</td>
+                <td class="description-cell">{{ log.description ?? '-' }}</td>
+                <td class="text-mono">{{ log.ip_address ?? '-' }}</td>
+                <td class="text-muted">{{ formatDate(log.created_at) }}</td>
+              </tr>
+            }
+          }
+        </tbody>
+      </table>
+    </div>
+
+    @if (totalPages > 1) {
+      <div class="pagination">
+        <button class="page-btn" [disabled]="currentPage === 1" (click)="goToPage(currentPage - 1)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <polyline points="15 18 9 12 15 6"/>
+          </svg>
+        </button>
+        @for (p of pageNumbers; track p) {
+          <button class="page-btn" [class.active]="p === currentPage" (click)="goToPage(p)">{{ p }}</button>
+        }
+        <button class="page-btn" [disabled]="currentPage === totalPages" (click)="goToPage(currentPage + 1)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <polyline points="9 18 15 12 9 6"/>
+          </svg>
+        </button>
+      </div>
+    }
+  </div>
+</div>

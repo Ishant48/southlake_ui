@@ -1,0 +1,183 @@
+import {
+  Component,
+  Input,
+  Output,
+  EventEmitter,
+  inject,
+  OnChanges,
+  SimpleChanges,
+  ChangeDetectorRef,
+} from '@angular/core';
+import { FormsModule } from '@angular/forms';
+import { User } from '../../../../core/models/user.model';
+import { Permission } from '../../../../core/models/permission.model';
+import { AuthService } from '../../../../core/services/auth.service';
+import { UsersService } from '../../../../core/services/users.service';
+import { PermissionsService } from '../../../../core/services/permissions.service';
+import { ToastService } from '../../../../shared/components/toast/toast.service';
+import { UserStatusBadgeComponent } from '../user-status-badge/user-status-badge.component';
+
+@Component({
+  selector: 'app-user-detail-panel',
+  standalone: true,
+  imports: [FormsModule, UserStatusBadgeComponent],
+  templateUrl: './user-detail-panel.component.html',
+  styleUrl: './user-detail-panel.component.scss',
+})
+export class UserDetailPanelComponent implements OnChanges {
+  @Input() user: User | null = null;
+  @Input() open = false;
+  @Output() closed = new EventEmitter<void>();
+  @Output() updated = new EventEmitter<User>();
+
+  private authService = inject(AuthService);
+  private usersService = inject(UsersService);
+  private permissionsService = inject(PermissionsService);
+  private toast = inject(ToastService);
+  private cdr = inject(ChangeDetectorRef);
+
+  activeTab: 'profile' | 'permissions' = 'profile';
+  editStatus: 'active' | 'inactive' | 'pending' = 'active';
+
+  allPermissions: Permission[] = [];
+  selectedIds = new Set<string>();
+  permsLoading = false;
+  permsError = '';
+
+  savingProfile = false;
+  savingPerms = false;
+  profileError = '';
+
+  hasPermission(permission: string): boolean {
+    return this.authService.hasPermission(permission);
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['user'] && this.user) {
+      this.editStatus = this.user.status;
+      this.activeTab = 'profile';
+      this.profileError = '';
+    }
+    if (changes['open'] && !this.open) {
+      this.allPermissions = [];
+      this.selectedIds = new Set();
+      this.permsError = '';
+      this.profileError = '';
+    }
+  }
+
+  loadPermissionsTab(): void {
+    this.activeTab = 'permissions';
+    this.permsLoading = true;
+    this.permissionsService.getPermissions().subscribe({
+      next: perms => {
+        this.allPermissions = perms;
+        if (this.user) {
+          this.usersService.getUserPermissions(this.user.id).subscribe({
+            next: userPerms => {
+              this.selectedIds = new Set(userPerms.map(p => p.id));
+              this.permsLoading = false;
+              this.cdr.markForCheck();
+            },
+            error: () => {
+              this.selectedIds = new Set();
+              this.permsLoading = false;
+              this.toast.error('Failed to load user permissions');
+              this.cdr.markForCheck();
+            },
+          });
+        } else {
+          this.selectedIds = new Set();
+          this.permsLoading = false;
+          this.cdr.markForCheck();
+        }
+      },
+      error: () => {
+        this.allPermissions = [];
+        this.selectedIds = new Set();
+        this.permsLoading = false;
+        this.toast.error('Failed to load permission definitions');
+        this.cdr.markForCheck();
+      },
+    });
+  }
+
+  togglePermission(id: string): void {
+    if (this.selectedIds.has(id)) {
+      this.selectedIds.delete(id);
+    } else {
+      this.selectedIds.add(id);
+    }
+  }
+
+  saveProfile(): void {
+    if (!this.user || this.savingProfile) return;
+    this.savingProfile = true;
+    this.profileError = '';
+    this.usersService.updateUser(this.user.id, { status: this.editStatus }).subscribe({
+      next: updated => {
+        this.savingProfile = false;
+        this.toast.success('User updated successfully');
+        this.updated.emit(updated);
+        this.cdr.markForCheck();
+      },
+      error: err => {
+        this.savingProfile = false;
+        this.profileError = err?.error?.message ?? 'Failed to update user.';
+        this.cdr.markForCheck();
+      },
+    });
+  }
+
+  savePermissions(): void {
+    if (!this.user || this.savingPerms) return;
+    this.savingPerms = true;
+    this.permsError = '';
+    this.usersService.updateUserPermissions(this.user.id, Array.from(this.selectedIds)).subscribe({
+      next: () => {
+        this.savingPerms = false;
+        this.toast.success('Permissions updated');
+        this.cdr.markForCheck();
+      },
+      error: err => {
+        this.savingPerms = false;
+        this.permsError = err?.error?.message ?? 'Failed to save permissions.';
+        this.cdr.markForCheck();
+      },
+    });
+  }
+
+  closePanel(): void {
+    this.closed.emit();
+  }
+
+  hexToRgba(hex: string, alpha: number): string {
+    const r = parseInt(hex.slice(1, 3), 16);
+    const g = parseInt(hex.slice(3, 5), 16);
+    const b = parseInt(hex.slice(5, 7), 16);
+    return `rgba(${r},${g},${b},${alpha})`;
+  }
+
+  formatDate(dateStr?: string): string {
+    if (!dateStr) return 'N/A';
+    try {
+      return new Date(dateStr).toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+      });
+    } catch {
+      return dateStr;
+    }
+  }
+
+  formatUserType(type: string): string {
+    const map: Record<string, string> = {
+      staff: 'Staff',
+      mga_user: 'MGA User',
+      broker_user: 'Broker User',
+      customer_user: 'Customer',
+    };
+    return map[type] ?? type;
+  }
+}
