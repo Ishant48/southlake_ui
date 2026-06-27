@@ -303,29 +303,29 @@
             <tbody>
               @for (item of paginatedItems; track item.id) {
                 <tr [style.background]="!item.is_active ? 'var(--gray-50)' : 'transparent'">
-                  <td style="font-family: monospace; font-weight: 600;">{{ item.lob_code }}</td>
+                  <td><span class="code-cell">{{ item.lob_code }}</span></td>
                   <td>
-                    <div style="font-weight: 500;">{{ item.name }}</div>
+                    <div class="name-cell">{{ item.name }}</div>
                     @if (item.description) {
-                      <div style="font-size: 11px; color: var(--gray-500); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 220px;" [title]="item.description">
+                      <div class="desc-cell" [title]="item.description">
                         {{ item.description }}
                       </div>
                     }
                   </td>
                   <td>{{ item.type || '-' }}</td>
                   <td>
-                    <span [class]="item.taxable ? 'status-badge status-active' : 'status-badge status-inactive'" style="padding: 2px 8px; font-size: 11px;">
+                    <span [class]="item.taxable ? 'status-badge status-active' : 'status-badge status-inactive'">
                       {{ item.taxable ? 'Yes' : 'No' }}
                     </span>
                   </td>
                   <td>{{ item.priority }}</td>
                   <td>
-                    <span [class]="item.fully_earned ? 'status-badge status-active' : 'status-badge status-inactive'" style="padding: 2px 8px; font-size: 11px;">
+                    <span [class]="item.fully_earned ? 'status-badge status-active' : 'status-badge status-inactive'">
                       {{ item.fully_earned ? 'Yes' : 'No' }}
                     </span>
                   </td>
                   <td>
-                    <span [class]="item.is_active ? 'status-badge status-active' : 'status-badge status-inactive'" style="padding: 2px 8px; font-size: 11px;">
+                    <span [class]="item.is_active ? 'status-badge status-active' : 'status-badge status-inactive'">
                       {{ item.is_active ? 'Active' : 'Inactive' }}
                     </span>
                   </td>
@@ -359,29 +359,29 @@
             <tbody>
               @for (item of paginatedItems; track item.id) {
                 <tr [style.background]="!item.is_active ? 'var(--gray-50)' : 'transparent'">
-                  <td style="font-family: monospace; font-weight: 600;">{{ item.cob_code }}</td>
+                  <td><span class="code-cell">{{ item.cob_code }}</span></td>
                   <td>
-                    <div style="font-weight: 500;">{{ item.name }}</div>
+                    <div class="name-cell">{{ item.name }}</div>
                     @if (item.description) {
-                      <div style="font-size: 11px; color: var(--gray-500); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 220px;" [title]="item.description">
+                      <div class="desc-cell" [title]="item.description">
                         {{ item.description }}
                       </div>
                     }
                   </td>
                   <td>{{ item.type || '-' }}</td>
                   <td>
-                    <span [class]="item.taxable ? 'status-badge status-active' : 'status-badge status-inactive'" style="padding: 2px 8px; font-size: 11px;">
+                    <span [class]="item.taxable ? 'status-badge status-active' : 'status-badge status-inactive'">
                       {{ item.taxable ? 'Yes' : 'No' }}
                     </span>
                   </td>
                   <td>{{ item.priority }}</td>
                   <td>
-                    <span [class]="item.fully_earned ? 'status-badge status-active' : 'status-badge status-inactive'" style="padding: 2px 8px; font-size: 11px;">
+                    <span [class]="item.fully_earned ? 'status-badge status-active' : 'status-badge status-inactive'">
                       {{ item.fully_earned ? 'Yes' : 'No' }}
                     </span>
                   </td>
                   <td>
-                    <span [class]="item.is_active ? 'status-badge status-active' : 'status-badge status-inactive'" style="padding: 2px 8px; font-size: 11px;">
+                    <span [class]="item.is_active ? 'status-badge status-active' : 'status-badge status-inactive'">
                       {{ item.is_active ? 'Active' : 'Inactive' }}
                     </span>
                   </td>
