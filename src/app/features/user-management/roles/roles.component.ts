@@ -1,6 +1,7 @@
 import { Component, inject, OnInit, ChangeDetectorRef } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { Role, RoleDetail } from '../../../core/models/role.model';
+import { AuthService } from '../../../core/services/auth.service';
 import { RolesService } from '../../../core/services/roles.service';
 import { ToastService } from '../../../shared/components/toast/toast.service';
 import { RolePermissionsModalComponent } from './role-permissions-modal/role-permissions-modal.component';
@@ -14,12 +15,17 @@ import { ConfirmDialogComponent } from '../../../shared/components/confirm-dialo
   styleUrl: './roles.component.scss',
 })
 export class RolesComponent implements OnInit {
+  private authService = inject(AuthService);
   private rolesService = inject(RolesService);
   private toast = inject(ToastService);
   private cdr = inject(ChangeDetectorRef);
 
   roles: Role[] = [];
   loading = false;
+
+  hasPermission(permission: string): boolean {
+    return this.authService.hasPermission(permission);
+  }
   modalOpen = false;
   editingRole: RoleDetail | null = null;
 

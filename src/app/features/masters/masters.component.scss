@@ -233,3 +233,73 @@
     transform: translateY(0);
   }
 }
+
+/* Form sections formatting for MGA Master */
+.form-section-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--navy, #1e293b);
+  margin-top: 20px;
+  margin-bottom: 12px;
+  padding-bottom: 6px;
+  border-bottom: 1.5px solid var(--gray-200);
+}
+
+.radio-group {
+  display: flex;
+  gap: 20px;
+  margin-top: 8px;
+  
+  label {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13.5px;
+    font-weight: 500;
+    color: var(--gray-700);
+    cursor: pointer;
+    
+    input[type="radio"] {
+      width: 16px;
+      height: 16px;
+      cursor: pointer;
+    }
+  }
+}
+
+.type-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 10px;
+  font-size: 11px;
+  font-weight: 700;
+  border-radius: 4px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+
+  &.ar {
+    background-color: rgba(13, 27, 75, 0.08);
+    color: var(--navy);
+    border: 1px solid rgba(13, 27, 75, 0.15);
+  }
+
+  &.ap {
+    background-color: rgba(224, 84, 112, 0.08);
+    color: var(--coral);
+    border: 1px solid rgba(224, 84, 112, 0.15);
+  }
+
+  &.mga {
+    background-color: rgba(79, 70, 229, 0.08);
+    color: #4f46e5;
+    border: 1px solid rgba(79, 70, 229, 0.15);
+  }
+
+  &.brk {
+    background-color: rgba(16, 185, 129, 0.08);
+    color: #10b981;
+    border: 1px solid rgba(16, 185, 129, 0.15);
+  }
+}
+

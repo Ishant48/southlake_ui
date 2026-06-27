@@ -3,6 +3,7 @@ import { FormsModule } from '@angular/forms';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { ActivityLog, ActivityLogsFilter } from '../../../core/models/activity-log.model';
 import { Module } from '../../../core/models/permission.model';
+import { AuthService } from '../../../core/services/auth.service';
 import { ActivityLogsService } from '../../../core/services/activity-logs.service';
 import { PermissionsService } from '../../../core/services/permissions.service';
 import { ToastService } from '../../../shared/components/toast/toast.service';
@@ -23,6 +24,7 @@ const ACTION_COLORS: Record<string, { bg: string; text: string }> = {
   styleUrl: './activity-logs.component.scss',
 })
 export class ActivityLogsComponent implements OnInit {
+  private authService = inject(AuthService);
   private logsService = inject(ActivityLogsService);
   private permissionsService = inject(PermissionsService);
   private toast = inject(ToastService);
@@ -32,6 +34,10 @@ export class ActivityLogsComponent implements OnInit {
   loading = false;
   modules: Module[] = [];
   skeletonRows = [1, 2, 3, 4, 5, 6, 7];
+
+  hasPermission(permission: string): boolean {
+    return this.authService.hasPermission(permission);
+  }
 
   filter: ActivityLogsFilter = {
     page: 1,

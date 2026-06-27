@@ -6,6 +6,7 @@ import { FormsModule } from '@angular/forms';
 import { MastersService } from '../../core/services/masters.service';
 import { ToastService } from '../../shared/components/toast/toast.service';
 import { ConfirmDialogComponent } from '../../shared/components/confirm-dialog/confirm-dialog.component';
+import { DropdownSearchComponent } from '../../shared/components/dropdown-search/dropdown-search.component';
 import { environment } from '../../../environments/environment';
 import {
   StateMaster,
@@ -21,24 +22,64 @@ import {
   TreatyState,
   TreatyLob,
 } from '../../core/models/master.model';
+import { GlMappingsService } from '../../core/services/gl-mappings.service';
+import { ChartOfAccountsService } from '../../core/services/chart-of-accounts.service';
+import { GlMapping } from '../../core/models/gl-mapping.model';
+import { ChartOfAccount } from '../../core/models/chart-of-account.model';
 
-type MasterTab = 'treaties' | 'mgas' | 'lobs' | 'cobs' | 'states' | 'reinsurers' | 'risk-companies';
+type MasterTab = 'treaties' | 'mgas' | 'lobs' | 'cobs' | 'states' | 'reinsurers' | 'risk-companies' | 'gl-mappings';
 
 @Component({
   selector: 'app-masters',
   standalone: true,
-  imports: [CommonModule, FormsModule, ConfirmDialogComponent],
+  imports: [CommonModule, FormsModule, ConfirmDialogComponent, DropdownSearchComponent],
   templateUrl: './masters.component.html',
   styleUrl: './masters.component.scss',
 })
 export class MastersComponent implements OnInit {
+  // Label formatters for searchable dropdowns
+  mgaLabelFn = (item: any) => item ? `${item.name} (${item.mga_code})` : '';
+  riskCompanyLabelFn = (item: any) => item ? `${item.name} (${item.risk_company_id})` : '';
+  reinsurerLabelFn = (item: any) => item ? `${item.name} (${item.reinsurer_company_id})` : '';
+  stateLabelFn = (item: any) => item ? `${item.state_code} - ${item.name}` : '';
+  stateAbbrLabelFn = (item: any) => item ? `${item.state_abbr} - ${item.name}` : '';
+  lobLabelFn = (item: any) => item ? `${item.name} (${item.lob_code})` : '';
+  cobLabelFn = (item: any) => item ? `${item.name} (${item.cob_code})` : '';
+  coaLabelFn = (item: any) => item ? `${item.account_code} - ${item.description}` : '';
+  nameLabelFn = (item: any) => item ? item.name : '';
+
+  simpleFormTypeOptions = [
+    { id: 'Property', name: 'Property' },
+    { id: 'Liability', name: 'Liability' },
+    { id: 'Automobile', name: 'Automobile' },
+    { id: 'Workers Comp', name: 'Workers Comp' },
+    { id: 'Other', name: 'Other' }
+  ];
+
+  glMappingTypeOptionsList = [
+    { id: 'AR', name: 'AR' },
+    { id: 'AP', name: 'AP' },
+    { id: 'MGA', name: 'MGA' },
+    { id: 'BRK', name: 'BRK' }
+  ];
   private service = inject(MastersService);
   private toast = inject(ToastService);
   private cdr = inject(ChangeDetectorRef);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
+  private glMappingsService = inject(GlMappingsService);
+  private coaService = inject(ChartOfAccountsService);
 
   currentTab: MasterTab = 'treaties';
+  glMappings: GlMapping[] = [];
+  coaOptions: ChartOfAccount[] = [];
+  showGlMappingModal = false;
+  glMappingModalTitle = 'Add GL Mapping';
+  glMappingForm: Partial<GlMapping> = {
+    coa_id: '',
+    type: '',
+  };
+  glMappingTypeOptions = ['AR', 'AP', 'MGA', 'BRK'];
   loading = false;
   searchTerm = '';
   statusFilter: 'all' | 'active' | 'inactive' = 'all';
@@ -69,7 +110,21 @@ export class MastersComponent implements OnInit {
     code: string;
     name: string;
     is_active: boolean;
-  } = { code: '', name: '', is_active: true };
+    description: string;
+    type: string;
+    taxable: boolean;
+    priority: number;
+    fully_earned: boolean;
+  } = {
+    code: '',
+    name: '',
+    is_active: true,
+    description: '',
+    type: '',
+    taxable: false,
+    priority: 1,
+    fully_earned: false
+  };
 
   // MGA Modal
   showMgaModal = false;
@@ -81,7 +136,33 @@ export class MastersComponent implements OnInit {
     tax_payable_inhouse: boolean;
     ledger_amount: number;
     is_active: boolean;
-  } = { mga_code: '', name: '', tax_payable_inhouse: false, ledger_amount: 0, is_active: true };
+    company_id: number | null;
+    id_name: string;
+    address: string;
+    zip: string;
+    city: string;
+    state: string;
+    phone: string;
+    open_item: boolean;
+    op_start_date: string;
+    other_names: { state: string; displayName: string }[];
+  } = {
+    mga_code: '',
+    name: '',
+    tax_payable_inhouse: false,
+    ledger_amount: 0,
+    is_active: true,
+    company_id: null,
+    id_name: '',
+    address: '',
+    zip: '',
+    city: '',
+    state: '',
+    phone: '',
+    open_item: false,
+    op_start_date: '',
+    other_names: []
+  };
 
   // State Modal
   showStateModal = false;
@@ -107,6 +188,9 @@ export class MastersComponent implements OnInit {
     phone: string;
     is_admitted: boolean;
     state: string;
+    address: string;
+    zip: string;
+    city: string;
     notes: string;
     is_active: boolean;
   } = {
@@ -117,6 +201,9 @@ export class MastersComponent implements OnInit {
     phone: '',
     is_admitted: true,
     state: '',
+    address: '',
+    zip: '',
+    city: '',
     notes: '',
     is_active: true,
   };
@@ -172,7 +259,9 @@ export class MastersComponent implements OnInit {
 
   // Treaty UI selectors
   treatySelectedStates: { [stateId: string]: boolean } = {};
+  treatySelectedMgas: { [mgaId: string]: boolean } = {};
   treatySelectedLobs: { [lobId: string]: boolean } = {};
+  treatySelectedCobs: { [cobId: string]: boolean } = {};
   treatyLobCobs: { [lobId: string]: { [cobId: string]: boolean } } = {};
 
   // Confirm dialog control
@@ -184,7 +273,7 @@ export class MastersComponent implements OnInit {
   ngOnInit(): void {
     this.route.queryParams.subscribe(params => {
       const tab = params['tab'] as MasterTab;
-      if (tab && ['treaties', 'mgas', 'lobs', 'cobs', 'states', 'reinsurers', 'risk-companies'].includes(tab)) {
+      if (tab && ['treaties', 'mgas', 'lobs', 'cobs', 'states', 'reinsurers', 'risk-companies', 'gl-mappings'].includes(tab)) {
         this.currentTab = tab;
       } else {
         this.currentTab = 'treaties';
@@ -258,6 +347,9 @@ export class MastersComponent implements OnInit {
           error: () => { this.toast.error('Failed to load Risk Companies'); this.loading = false; this.cdr.markForCheck(); }
         });
         break;
+      case 'gl-mappings':
+        this.loadGlMappings();
+        break;
     }
   }
 
@@ -282,6 +374,7 @@ export class MastersComponent implements OnInit {
       case 'states': return this.states;
       case 'reinsurers': return this.reinsurers;
       case 'risk-companies': return this.riskCompanies;
+      case 'gl-mappings': return this.glMappings;
     }
   }
 
@@ -308,7 +401,16 @@ export class MastersComponent implements OnInit {
     this.simpleMode = mode;
     this.isEditMode = false;
     this.simpleModalTitle = `Add New ${this.getMasterLabel(mode)}`;
-    this.simpleForm = { code: '', name: '', is_active: true };
+    this.simpleForm = {
+      code: '',
+      name: '',
+      is_active: true,
+      description: '',
+      type: '',
+      taxable: false,
+      priority: 1,
+      fully_earned: false
+    };
     this.showSimpleModal = true;
   }
 
@@ -321,6 +423,11 @@ export class MastersComponent implements OnInit {
       code: item.lob_code || item.cob_code || item.reinsurer_company_id || '',
       name: item.name,
       is_active: item.is_active,
+      description: item.description || '',
+      type: item.type || '',
+      taxable: item.taxable || false,
+      priority: item.priority || 1,
+      fully_earned: item.fully_earned || false
     };
     this.showSimpleModal = true;
   }
@@ -338,6 +445,14 @@ export class MastersComponent implements OnInit {
       name: this.simpleForm.name,
       is_active: this.simpleForm.is_active,
     };
+
+    if (this.simpleMode === 'lob' || this.simpleMode === 'cob') {
+      payload.description = this.simpleForm.description || null;
+      payload.type = this.simpleForm.type || null;
+      payload.taxable = this.simpleForm.taxable || false;
+      payload.priority = Number(this.simpleForm.priority || 1);
+      payload.fully_earned = this.simpleForm.fully_earned || false;
+    }
 
     let request!: Observable<any>;
     if (this.isEditMode) {
@@ -399,13 +514,31 @@ export class MastersComponent implements OnInit {
   openMgaAdd(): void {
     this.isEditMode = false;
     this.mgaModalTitle = 'Add MGA';
-    this.mgaForm = { mga_code: '', name: '', tax_payable_inhouse: false, ledger_amount: 0, is_active: true };
+    this.loadTreatyOptions();
+    this.mgaForm = {
+      mga_code: '',
+      name: '',
+      tax_payable_inhouse: false,
+      ledger_amount: 0,
+      is_active: true,
+      company_id: null,
+      id_name: '',
+      address: '',
+      zip: '',
+      city: '',
+      state: '',
+      phone: '',
+      open_item: false,
+      op_start_date: '',
+      other_names: []
+    };
     this.showMgaModal = true;
   }
 
   openMgaEdit(mga: MgaMaster): void {
     this.isEditMode = true;
     this.mgaModalTitle = `Edit MGA: ${mga.name}`;
+    this.loadTreatyOptions();
     this.mgaForm = {
       id: mga.id,
       mga_code: mga.mga_code,
@@ -413,8 +546,33 @@ export class MastersComponent implements OnInit {
       tax_payable_inhouse: mga.tax_payable_inhouse,
       ledger_amount: mga.ledger_amount || 0,
       is_active: mga.is_active,
+      company_id: mga.company_id ? Number(mga.company_id) : null,
+      id_name: mga.id_name || '',
+      address: mga.address || '',
+      zip: mga.zip || '',
+      city: mga.city || '',
+      state: mga.state || '',
+      phone: mga.phone || '',
+      open_item: mga.open_item || false,
+      op_start_date: mga.op_start_date ? mga.op_start_date.substring(0, 10) : '',
+      other_names: mga.other_names ? JSON.parse(JSON.stringify(mga.other_names)) : []
     };
     this.showMgaModal = true;
+  }
+
+  addOtherNameRow(): void {
+    if (!this.mgaForm.other_names) {
+      this.mgaForm.other_names = [];
+    }
+    this.mgaForm.other_names.push({ state: '', displayName: '' });
+    this.cdr.markForCheck();
+  }
+
+  removeOtherNameRow(index: number): void {
+    if (this.mgaForm.other_names) {
+      this.mgaForm.other_names.splice(index, 1);
+    }
+    this.cdr.markForCheck();
   }
 
   submitMga(): void {
@@ -427,6 +585,8 @@ export class MastersComponent implements OnInit {
     const payload = {
       ...this.mgaForm,
       ledger_amount: Number(this.mgaForm.ledger_amount || 0),
+      company_id: this.mgaForm.company_id ? Number(this.mgaForm.company_id) : null,
+      other_names: this.mgaForm.other_names && this.mgaForm.other_names.length > 0 ? this.mgaForm.other_names : null
     };
 
     if (this.isEditMode) {
@@ -671,6 +831,9 @@ export class MastersComponent implements OnInit {
       phone: '',
       is_admitted: true,
       state: '',
+      address: '',
+      zip: '',
+      city: '',
       notes: '',
       is_active: true,
     };
@@ -689,6 +852,9 @@ export class MastersComponent implements OnInit {
       phone: rc.phone || '',
       is_admitted: rc.is_admitted,
       state: rc.state || '',
+      address: rc.address || '',
+      zip: rc.zip || '',
+      city: rc.city || '',
       notes: rc.notes || '',
       is_active: rc.is_active,
     };
@@ -696,8 +862,11 @@ export class MastersComponent implements OnInit {
   }
 
   submitRiskCompany(): void {
-    if (!this.riskCompanyForm.risk_company_id || !this.riskCompanyForm.name) {
-      this.toast.error('Risk Company Code and Name are required');
+    if (!this.riskCompanyForm.risk_company_id) {
+      this.riskCompanyForm.risk_company_id = this.riskCompanyForm.company_id ? 'RC-' + this.riskCompanyForm.company_id : 'RC-' + Date.now();
+    }
+    if (!this.riskCompanyForm.name) {
+      this.toast.error('Name is required');
       return;
     }
     this.submitting = true;
@@ -710,6 +879,9 @@ export class MastersComponent implements OnInit {
       phone: this.riskCompanyForm.phone || null,
       is_admitted: this.riskCompanyForm.is_admitted,
       state: this.riskCompanyForm.state || null,
+      address: this.riskCompanyForm.address || null,
+      zip: this.riskCompanyForm.zip || null,
+      city: this.riskCompanyForm.city || null,
       notes: this.riskCompanyForm.notes || null,
       is_active: this.riskCompanyForm.is_active,
     };
@@ -807,7 +979,9 @@ export class MastersComponent implements OnInit {
     };
 
     this.treatySelectedStates = {};
+    this.treatySelectedMgas = {};
     this.treatySelectedLobs = {};
+    this.treatySelectedCobs = {};
     this.treatyLobCobs = {};
     this.showTreatyModal = true;
   }
@@ -849,7 +1023,17 @@ export class MastersComponent implements OnInit {
       });
     }
 
+    this.treatySelectedMgas = {};
+    if (treaty.treaty_mgas && treaty.treaty_mgas.length > 0) {
+      treaty.treaty_mgas.forEach(tm => {
+        this.treatySelectedMgas[tm.mga_id] = true;
+      });
+    } else if (treaty.mga_id) {
+      this.treatySelectedMgas[treaty.mga_id] = true;
+    }
+
     this.treatySelectedLobs = {};
+    this.treatySelectedCobs = {};
     this.treatyLobCobs = {};
     if (treaty.treaty_lobs) {
       treaty.treaty_lobs.forEach(tl => {
@@ -858,6 +1042,7 @@ export class MastersComponent implements OnInit {
         if (tl.treaty_lob_cobs) {
           tl.treaty_lob_cobs.forEach(tlc => {
             this.treatyLobCobs[tl.lob_id][tlc.cob_id] = true;
+            this.treatySelectedCobs[tlc.cob_id] = true;
           });
         }
       });
@@ -868,28 +1053,30 @@ export class MastersComponent implements OnInit {
 
   submitTreaty(): void {
     if (!this.treatyForm.treaty_code || !this.treatyForm.name || !this.treatyForm.mga_id) {
-      this.toast.error('Treaty Code, Name and MGA are required');
+      this.toast.error('Treaty Code, Name and MGA Underwriter are required');
       return;
     }
     this.submitting = true;
+    const mga_ids = [this.treatyForm.mga_id];
 
     // Build state_ids
     const state_ids = Object.keys(this.treatySelectedStates).filter(k => this.treatySelectedStates[k]);
 
     // Build lobs structure
-    const lobs = Object.keys(this.treatySelectedLobs)
-      .filter(lobId => this.treatySelectedLobs[lobId])
-      .map(lobId => {
-        const cobsForLob = this.treatyLobCobs[lobId] || {};
-        const cob_ids = Object.keys(cobsForLob).filter(cobId => cobsForLob[cobId]);
-        return {
-          lob_id: lobId,
-          cob_ids,
-        };
-      });
+    const selectedLobIds = Object.keys(this.treatySelectedLobs).filter(lobId => this.treatySelectedLobs[lobId]);
+    const selectedCobIds = Object.keys(this.treatySelectedCobs).filter(cobId => this.treatySelectedCobs[cobId]);
+
+    const lobs = selectedLobIds.map(lobId => {
+      return {
+        lob_id: lobId,
+        cob_ids: selectedCobIds,
+      };
+    });
 
     const payload = {
       ...this.treatyForm,
+      mga_id: mga_ids[0],
+      mga_ids,
       effective_date: this.treatyForm.effective_date || null,
       expiration_date: this.treatyForm.expiration_date || null,
       state_ids,
@@ -933,6 +1120,13 @@ export class MastersComponent implements OnInit {
       });
     };
     this.confirmOpen = true;
+  }
+
+  getMgasListDisplay(treaty: Treaty): string {
+    if (treaty.treaty_mgas && treaty.treaty_mgas.length > 0) {
+      return treaty.treaty_mgas.map(m => m.mga?.name).filter(Boolean).join(', ');
+    }
+    return treaty.mga?.name || '-';
   }
 
   getStatesListDisplay(states?: TreatyState[]): string {
@@ -999,7 +1193,7 @@ export class MastersComponent implements OnInit {
         rows = this.treaties.map(t => [
           t.treaty_code,
           t.name,
-          t.mga?.name || '-',
+          this.getMgasListDisplay(t),
           t.risk_company?.name || '-',
           this.getStatesListDisplay(t.treaty_states),
           this.getLobsListDisplay(t.treaty_lobs),
@@ -1032,7 +1226,7 @@ export class MastersComponent implements OnInit {
         break;
 
       case 'risk-companies':
-        headers = ['Company', 'ID Name', 'Name', 'Phone', 'Admitted', 'State', 'Status'];
+        headers = ['Company', 'ID Name', 'Name', 'Phone', 'Admitted', 'State', 'Address 1', 'Zip', 'City', 'Status'];
         rows = this.riskCompanies.map(r => [
           r.company_id,
           r.id_name || '-',
@@ -1040,27 +1234,40 @@ export class MastersComponent implements OnInit {
           r.phone || '-',
           r.is_admitted ? 'Yes' : 'No',
           r.state || '-',
+          r.address || '-',
+          r.zip || '-',
+          r.city || '-',
           r.is_active ? 'Active' : 'Inactive'
         ]);
         filename = 'risk_companies.csv';
         break;
 
       case 'lobs':
-        headers = ['Code ID', 'Name', 'Status'];
+        headers = ['LOB Code', 'LOB Name', 'LOB Type', 'Taxable', 'Priority', 'Fully Earned', 'Status', 'Description'];
         rows = this.lobs.map(l => [
           l.lob_code,
           l.name,
-          l.is_active ? 'Active' : 'Inactive'
+          l.type || '-',
+          l.taxable ? 'Yes' : 'No',
+          l.priority,
+          l.fully_earned ? 'Yes' : 'No',
+          l.is_active ? 'Active' : 'Inactive',
+          l.description || '-'
         ]);
         filename = 'lobs.csv';
         break;
 
       case 'cobs':
-        headers = ['Code ID', 'Name', 'Status'];
+        headers = ['Class Code', 'Class Name', 'Class Type', 'Taxable', 'Priority', 'Fully Earned', 'Status', 'Description'];
         rows = this.cobs.map(c => [
           c.cob_code,
           c.name,
-          c.is_active ? 'Active' : 'Inactive'
+          c.type || '-',
+          c.taxable ? 'Yes' : 'No',
+          c.priority,
+          c.fully_earned ? 'Yes' : 'No',
+          c.is_active ? 'Active' : 'Inactive',
+          c.description || '-'
         ]);
         filename = 'cobs.csv';
         break;
@@ -1073,6 +1280,15 @@ export class MastersComponent implements OnInit {
           r.is_active ? 'Active' : 'Inactive'
         ]);
         filename = 'reinsurers.csv';
+        break;
+
+      case 'gl-mappings':
+        headers = ['GL Number', 'Type'];
+        rows = this.glMappings.map(m => [
+          this.getGLNumberDisplay(m),
+          m.type
+        ]);
+        filename = 'gl_mappings.csv';
         break;
     }
 
@@ -1097,5 +1313,138 @@ export class MastersComponent implements OnInit {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+  }
+
+  // ==========================================
+  // GL MAPPINGS ACTIONS
+  // ==========================================
+  loadGlMappings(): void {
+    this.glMappingsService.getMappings().subscribe({
+      next: (data) => {
+        if (this.searchTerm) {
+          const term = this.searchTerm.toLowerCase();
+          this.glMappings = data.filter((m) => {
+            const typeMatch = m.type.toLowerCase().includes(term);
+            const code = m.coa?.account_code?.toString() || '';
+            const desc = m.coa?.description?.toLowerCase() || '';
+            return typeMatch || code.includes(term) || desc.includes(term);
+          });
+        } else {
+          this.glMappings = data;
+        }
+        this.loading = false;
+        this.cdr.markForCheck();
+      },
+      error: () => {
+        this.toast.error('Failed to load GL mappings');
+        this.loading = false;
+        this.cdr.markForCheck();
+      },
+    });
+  }
+
+  loadCoaOptions(): void {
+    this.coaService.getAccounts(undefined, true).subscribe({
+      next: (data) => {
+        this.coaOptions = data.filter((coa) => !coa.is_parent);
+        this.cdr.markForCheck();
+      },
+      error: () => {
+        this.toast.error('Failed to load Chart of Accounts options');
+      },
+    });
+  }
+
+  openGlMappingAdd(): void {
+    this.isEditMode = false;
+    this.glMappingModalTitle = 'Add GL Mapping';
+    this.glMappingForm = {
+      coa_id: '',
+      type: '',
+    };
+    this.loadCoaOptions();
+    this.showGlMappingModal = true;
+    this.cdr.markForCheck();
+  }
+
+  openGlMappingEdit(mapping: GlMapping): void {
+    this.isEditMode = true;
+    this.glMappingModalTitle = 'Edit GL Mapping';
+    this.glMappingForm = {
+      id: mapping.id,
+      coa_id: mapping.coa_id,
+      type: mapping.type,
+    };
+    this.loadCoaOptions();
+    this.showGlMappingModal = true;
+    this.cdr.markForCheck();
+  }
+
+  submitGlMapping(): void {
+    if (!this.glMappingForm.coa_id || !this.glMappingForm.type) {
+      this.toast.error('Both Chart of Account and Mapping Type are required');
+      return;
+    }
+
+    this.submitting = true;
+    this.cdr.markForCheck();
+
+    const payload = {
+      coa_id: this.glMappingForm.coa_id,
+      type: this.glMappingForm.type,
+    };
+
+    if (this.isEditMode && this.glMappingForm.id) {
+      this.glMappingsService.updateMapping(this.glMappingForm.id, payload).subscribe({
+        next: () => {
+          this.toast.success('GL Mapping updated successfully');
+          this.showGlMappingModal = false;
+          this.submitting = false;
+          this.loadGlMappings();
+        },
+        error: (err) => {
+          const msg = err.error?.message || 'Failed to update GL mapping';
+          this.toast.error(msg);
+          this.submitting = false;
+          this.cdr.markForCheck();
+        },
+      });
+    } else {
+      this.glMappingsService.createMapping(payload).subscribe({
+        next: () => {
+          this.toast.success('GL Mapping created successfully');
+          this.showGlMappingModal = false;
+          this.submitting = false;
+          this.loadGlMappings();
+        },
+        error: (err) => {
+          const msg = err.error?.message || 'Failed to create GL mapping';
+          this.toast.error(msg);
+          this.submitting = false;
+          this.cdr.markForCheck();
+        },
+      });
+    }
+  }
+
+  deleteGlMapping(mapping: GlMapping): void {
+    this.confirmOpen = true;
+    this.pendingAction = () => {
+      this.glMappingsService.deleteMapping(mapping.id).subscribe({
+        next: () => {
+          this.toast.success('GL Mapping deleted successfully');
+          this.loadGlMappings();
+        },
+        error: () => {
+          this.toast.error('Failed to delete GL mapping');
+        },
+      });
+    };
+    this.cdr.markForCheck();
+  }
+
+  getGLNumberDisplay(mapping: GlMapping): string {
+    if (!mapping.coa) return '-';
+    return `${mapping.coa.account_code} - ${mapping.coa.description}`;
   }
 }

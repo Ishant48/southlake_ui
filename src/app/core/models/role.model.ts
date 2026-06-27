@@ -8,25 +8,9 @@ export interface Role {
   user_count?: number;
 }
 
-export interface RolePermission {
-  module_id: string;
-  view: boolean;
-  create: boolean;
-  edit: boolean;
-  approve: boolean;
-  export: boolean;
-  post: boolean;
-  file: boolean;
-  lock: boolean;
-  override: boolean;
-  reconcile: boolean;
-  void: boolean;
-  reverse: boolean;
-}
-
 export interface RoleDetail extends Role {
   user_count: number;
-  permissions: RolePermission[];
+  permissions: { id: string; action: string }[];
 }
 
 export interface CreateRolePayload {
@@ -34,5 +18,5 @@ export interface CreateRolePayload {
   label: string;
   color: string;
   description?: string;
-  permissions: RolePermission[];
+  permissions: string[];
 }

@@ -4,6 +4,7 @@ import { RouterLink, RouterLinkActive } from '@angular/router';
 import { debounceTime, distinctUntilChanged, Subject } from 'rxjs';
 import { User, UserStats, PendingInvite } from '../../../core/models/user.model';
 import { Role } from '../../../core/models/role.model';
+import { AuthService } from '../../../core/services/auth.service';
 import { UsersService } from '../../../core/services/users.service';
 import { RolesService } from '../../../core/services/roles.service';
 import { ToastService } from '../../../shared/components/toast/toast.service';
@@ -28,6 +29,7 @@ import { ConfirmDialogComponent } from '../../../shared/components/confirm-dialo
   styleUrl: './users.component.scss',
 })
 export class UsersComponent implements OnInit {
+  private authService = inject(AuthService);
   private usersService = inject(UsersService);
   private rolesService = inject(RolesService);
   private toast = inject(ToastService);
@@ -38,6 +40,10 @@ export class UsersComponent implements OnInit {
   pendingInvites: PendingInvite[] = [];
   stats: UserStats | null = null;
   loading = false;
+
+  hasPermission(permission: string): boolean {
+    return this.authService.hasPermission(permission);
+  }
 
   searchTerm = '';
   roleFilter = '';

@@ -35,6 +35,16 @@ export interface MgaMaster {
   tax_payable_inhouse: boolean;
   is_active: boolean;
   ledger_amount?: number;
+  company_id?: number | string | null;
+  id_name?: string | null;
+  address?: string | null;
+  zip?: string | null;
+  city?: string | null;
+  state?: string | null;
+  phone?: string | null;
+  open_item?: boolean;
+  op_start_date?: string | null;
+  other_names?: { state: string; displayName: string }[] | null;
   created_at?: string;
   updated_at?: string | null;
   documents?: MgaDocument[];
@@ -67,6 +77,9 @@ export interface RiskCompany {
   phone?: string | null;
   is_admitted: boolean;
   state?: string | null;
+  address?: string | null;
+  zip?: string | null;
+  city?: string | null;
   notes?: string | null;
   is_active: boolean;
   created_at?: string;
@@ -79,6 +92,11 @@ export interface LineOfBusiness {
   lob_code: string;
   name: string;
   is_active: boolean;
+  description?: string | null;
+  type?: string | null;
+  taxable?: boolean;
+  priority?: number;
+  fully_earned?: boolean;
   created_at?: string;
   updated_at?: string | null;
 }
@@ -88,6 +106,11 @@ export interface CobMaster {
   cob_code: string;
   name: string;
   is_active: boolean;
+  description?: string | null;
+  type?: string | null;
+  taxable?: boolean;
+  priority?: number;
+  fully_earned?: boolean;
   created_at?: string;
   updated_at?: string | null;
 }
@@ -97,6 +120,13 @@ export interface TreatyState {
   treaty_id: string;
   state_id: string;
   state?: StateMaster;
+}
+
+export interface TreatyMga {
+  id: string;
+  treaty_id: string;
+  mga_id: string;
+  mga?: MgaMaster;
 }
 
 export interface TreatyLobCob {
@@ -141,4 +171,5 @@ export interface Treaty {
   updated_at?: string | null;
   treaty_states?: TreatyState[];
   treaty_lobs?: TreatyLob[];
+  treaty_mgas?: TreatyMga[];
 }

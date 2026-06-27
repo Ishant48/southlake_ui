@@ -50,49 +50,24 @@
           </div>
         </form>
 
-        <div class="perm-summary">
-          @for (card of permSummary; track card.label) {
-            <div class="summary-card">
-              <span class="summary-count" [style.color]="card.color">{{ card.count }}</span>
-              <span class="summary-label">{{ card.label }}</span>
+        <div class="permissions-container">
+          <div class="perm-section-title">Permissions</div>
+          @for (group of groupedPermissions; track group.moduleName) {
+            <div class="perm-module-group">
+              <div class="perm-module-title">{{ group.moduleName }}</div>
+              <div class="perm-list">
+                @for (perm of group.permissions; track perm.id) {
+                  <label class="perm-item" [class.checked]="selectedIds.has(perm.id)">
+                    <input type="checkbox"
+                      [checked]="selectedIds.has(perm.id)"
+                      (change)="togglePermission(perm.id)">
+                    <span class="perm-label">{{ perm.label }}</span>
+                    <span class="perm-action">{{ perm.action }}</span>
+                  </label>
+                }
+              </div>
             </div>
           }
-        </div>
-
-        <div class="perm-section-title">Module Permissions</div>
-        <div class="perm-table-wrap">
-          <table class="perm-table">
-            <thead>
-              <tr>
-                <th class="module-col">Module</th>
-                @for (action of allActions; track action.key) {
-                  <th>{{ action.label }}</th>
-                }
-                <th>Presets</th>
-              </tr>
-            </thead>
-            <tbody>
-              @for (mod of modules; track mod.id) {
-                <tr>
-                  <td class="module-name">{{ mod.label }}</td>
-                  @for (action of allActions; track action.key) {
-                    <td class="check-cell">
-                      <input type="checkbox"
-                        [checked]="getPermValue(mod.id, action.key)"
-                        (change)="setPermValue(mod.id, action.key, $event)">
-                    </td>
-                  }
-                  <td>
-                    <div class="preset-btns">
-                      <button class="preset-btn" (click)="setPreset(mod.id, 'full')">Full</button>
-                      <button class="preset-btn" (click)="setPreset(mod.id, 'read')">Read</button>
-                      <button class="preset-btn" (click)="setPreset(mod.id, 'none')">None</button>
-                    </div>
-                  </td>
-                </tr>
-              }
-            </tbody>
-          </table>
         </div>
 
         @if (errorMsg) {

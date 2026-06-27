@@ -9,10 +9,9 @@ import {
   ChangeDetectorRef,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { forkJoin, of } from 'rxjs';
 import { User } from '../../../../core/models/user.model';
-import { RolePermission } from '../../../../core/models/role.model';
-import { PermissionActionKey, Module } from '../../../../core/models/permission.model';
+import { Permission } from '../../../../core/models/permission.model';
+import { AuthService } from '../../../../core/services/auth.service';
 import { UsersService } from '../../../../core/services/users.service';
 import { PermissionsService } from '../../../../core/services/permissions.service';
 import { ToastService } from '../../../../shared/components/toast/toast.service';
@@ -31,6 +30,7 @@ export class UserDetailPanelComponent implements OnChanges {
   @Output() closed = new EventEmitter<void>();
   @Output() updated = new EventEmitter<User>();
 
+  private authService = inject(AuthService);
   private usersService = inject(UsersService);
   private permissionsService = inject(PermissionsService);
   private toast = inject(ToastService);
@@ -39,7 +39,35 @@ export class UserDetailPanelComponent implements OnChanges {
   activeTab: 'profile' | 'permissions' = 'profile';
   editStatus: 'active' | 'inactive' | 'pending' = 'active';
 
-  permissions: RolePermission[] = [];
+  allPermissions: Permission[] = [];
+  selectedIds = new Set<string>();
+
+  get groupedPermissions(): { moduleName: string; permissions: Permission[] }[] {
+    const groups: Record<string, Permission[]> = {};
+    for (const perm of this.allPermissions) {
+      const parts = perm.action.split('.');
+      const prefix = parts.length > 1 ? parts[0] : 'general';
+      if (!groups[prefix]) {
+        groups[prefix] = [];
+      }
+      groups[prefix].push(perm);
+    }
+    const MODULE_NAMES: Record<string, string> = {
+      activity_log: 'Activity Logs',
+      permission: 'Permissions',
+      role: 'Roles',
+      user: 'Users',
+      user_management: 'User Management',
+      chart_of_accounts: 'Chart of Accounts',
+      master_data: 'Master Data',
+      journal_entry: 'Journal Entries',
+      general: 'General'
+    };
+    return Object.entries(groups).map(([prefix, perms]) => ({
+      moduleName: MODULE_NAMES[prefix] || (prefix.charAt(0).toUpperCase() + prefix.slice(1).replace(/_/g, ' ')),
+      permissions: perms
+    })).sort((a, b) => a.moduleName.localeCompare(b.moduleName));
+  }
   permsLoading = false;
   permsError = '';
 
@@ -47,8 +75,9 @@ export class UserDetailPanelComponent implements OnChanges {
   savingPerms = false;
   profileError = '';
 
-  modules: Module[] = [];
-  visibleActions: { key: string; label: string }[] = [];
+  hasPermission(permission: string): boolean {
+    return this.authService.hasPermission(permission);
+  }
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['user'] && this.user) {
@@ -57,7 +86,8 @@ export class UserDetailPanelComponent implements OnChanges {
       this.profileError = '';
     }
     if (changes['open'] && !this.open) {
-      this.permissions = [];
+      this.allPermissions = [];
+      this.selectedIds = new Set();
       this.permsError = '';
       this.profileError = '';
     }
@@ -66,35 +96,32 @@ export class UserDetailPanelComponent implements OnChanges {
   loadPermissionsTab(): void {
     this.activeTab = 'permissions';
     this.permsLoading = true;
-    forkJoin({
-      modules: this.permissionsService.getModules(),
-      actions: this.permissionsService.getPermissions(),
-      userPerms: this.user ? this.usersService.getUserPermissions(this.user.id) : of([]),
-    }).subscribe({
-      next: res => {
-        this.modules = res.modules;
-
-        // Define standard ordering array in frontend to ensure correct layout
-        const ACTION_ORDER = ['view', 'create', 'edit', 'approve', 'export', 'post', 'file', 'lock', 'override', 'reconcile', 'void', 'reverse'];
-        const sortedActions = [...res.actions].sort((a, b) => ACTION_ORDER.indexOf(a.action) - ACTION_ORDER.indexOf(b.action));
-        this.visibleActions = sortedActions.slice(0, 5).map(a => ({ key: a.action, label: a.label }));
-
-        this.permissions = res.userPerms;
-        
-        // Ensure default permissions exist for any new modules that are not configured yet
-        for (const mod of this.modules) {
-          if (!this.permissions.find(p => p.module_id === mod.id)) {
-            this.permissions.push(this.defaultPerm(mod.id));
-          }
+    this.permissionsService.getPermissions().subscribe({
+      next: perms => {
+        this.allPermissions = perms;
+        if (this.user) {
+          this.usersService.getUserPermissions(this.user.id).subscribe({
+            next: userPerms => {
+              this.selectedIds = new Set(userPerms.map(p => p.id));
+              this.permsLoading = false;
+              this.cdr.markForCheck();
+            },
+            error: () => {
+              this.selectedIds = new Set();
+              this.permsLoading = false;
+              this.toast.error('Failed to load user permissions');
+              this.cdr.markForCheck();
+            },
+          });
+        } else {
+          this.selectedIds = new Set();
+          this.permsLoading = false;
+          this.cdr.markForCheck();
         }
-
-        this.permsLoading = false;
-        this.cdr.markForCheck();
       },
       error: () => {
-        this.modules = [];
-        this.visibleActions = [];
-        this.permissions = [];
+        this.allPermissions = [];
+        this.selectedIds = new Set();
         this.permsLoading = false;
         this.toast.error('Failed to load permission definitions');
         this.cdr.markForCheck();
@@ -102,68 +129,12 @@ export class UserDetailPanelComponent implements OnChanges {
     });
   }
 
-  defaultPerm(module_id: string): RolePermission {
-    return {
-      module_id,
-      view: false,
-      create: false,
-      edit: false,
-      approve: false,
-      export: false,
-      post: false,
-      file: false,
-      lock: false,
-      override: false,
-      reconcile: false,
-      void: false,
-      reverse: false,
-    };
-  }
-
-  getPermRow(moduleId: string): RolePermission {
-    let row = this.permissions.find(p => p.module_id === moduleId);
-    if (!row) {
-      row = this.defaultPerm(moduleId);
-      this.permissions.push(row);
-    }
-    return row;
-  }
-
-  getPermValue(moduleId: string, action: string): boolean {
-    const row = this.getPermRow(moduleId);
-    return row[action as PermissionActionKey] as boolean;
-  }
-
-  setPermValue(moduleId: string, action: string, event: Event): void {
-    const checked = (event.target as HTMLInputElement).checked;
-    const row = this.getPermRow(moduleId);
-    (row as unknown as Record<string, boolean>)[action] = checked;
-  }
-
-  setPreset(moduleId: string, preset: 'full' | 'read' | 'none'): void {
-    const row = this.getPermRow(moduleId);
-    const allKeys: PermissionActionKey[] = [
-      'view',
-      'create',
-      'edit',
-      'approve',
-      'export',
-      'post',
-      'file',
-      'lock',
-      'override',
-      'reconcile',
-      'void',
-      'reverse',
-    ];
-    if (preset === 'full') {
-      allKeys.forEach(k => ((row as unknown as Record<string, unknown>)[k] = true));
-    } else if (preset === 'read') {
-      allKeys.forEach(k => ((row as unknown as Record<string, unknown>)[k] = k === 'view'));
+  togglePermission(id: string): void {
+    if (this.selectedIds.has(id)) {
+      this.selectedIds.delete(id);
     } else {
-      allKeys.forEach(k => ((row as unknown as Record<string, unknown>)[k] = false));
+      this.selectedIds.add(id);
     }
-    this.permissions = [...this.permissions];
   }
 
   saveProfile(): void {
@@ -189,7 +160,7 @@ export class UserDetailPanelComponent implements OnChanges {
     if (!this.user || this.savingPerms) return;
     this.savingPerms = true;
     this.permsError = '';
-    this.usersService.updateUserPermissions(this.user.id, this.permissions).subscribe({
+    this.usersService.updateUserPermissions(this.user.id, Array.from(this.selectedIds)).subscribe({
       next: () => {
         this.savingPerms = false;
         this.toast.success('Permissions updated');

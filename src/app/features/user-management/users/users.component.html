@@ -4,12 +4,14 @@
       <h1 class="page-title">User Management</h1>
       <p class="page-subtitle">Manage users, roles, and permissions across your organization.</p>
     </div>
-    <button class="btn-primary" (click)="invitePanelOpen = true">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-        <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
-      </svg>
-      Invite User
-    </button>
+    @if (hasPermission('user.create')) {
+      <button class="btn-primary" (click)="invitePanelOpen = true">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+        </svg>
+        Invite User
+      </button>
+    }
   </div>
 
   <div class="stats-grid">
@@ -87,20 +89,24 @@
         <option value="inactive">Inactive</option>
         <option value="pending">Pending</option>
       </select>
-      <button class="btn-action-outline" (click)="exportToExcel()" style="height: 38px; padding: 0 14px; display: inline-flex; align-items: center; gap: 6px; margin-left: 8px;">
+      @if (hasPermission('activity_log.export')) {
+        <button class="btn-action-outline" (click)="exportToExcel()" style="height: 38px; padding: 0 14px; display: inline-flex; align-items: center; gap: 6px; margin-left: 8px;">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
         </svg>
         <span>Export</span>
-      </button>
+        </button>
+      }
     </div>
 
     @if (selectedIds.length > 0) {
       <div class="bulk-bar">
         <span class="bulk-count">{{ selectedIds.length }} selected</span>
-        <button class="btn-danger-outline" (click)="openBulkDeactivate()">
-          Deactivate Selected
-        </button>
+        @if (hasPermission('user.edit')) {
+          <button class="btn-danger-outline" (click)="openBulkDeactivate()">
+            Deactivate Selected
+          </button>
+        }
         <button class="btn-ghost-sm" (click)="clearSelection()">Clear</button>
       </div>
     }
@@ -165,9 +171,11 @@
               <td><span class="status-badge status-pending">Pending</span></td>
               <td class="text-muted">{{ formatDate(invite.invited_at) }}</td>
               <td class="text-muted">{{ formatDate(invite.expires_at) }}</td>
-              <td>
-                <button class="btn-danger-xs" (click)="onRevokeInvite(invite.id)">Revoke</button>
-              </td>
+                <td>
+                  @if (hasPermission('user.edit')) {
+                    <button class="btn-danger-xs" (click)="onRevokeInvite(invite.id)">Revoke</button>
+                  }
+                </td>
             </tr>
           }
         </tbody>

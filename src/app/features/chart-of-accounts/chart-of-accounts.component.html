@@ -362,5 +362,5 @@
   }
 
   <!-- Confirm Delete dialog -->
-  <app-confirm-dialog [open]="confirmOpen" [title]="confirmTitle" [message]="confirmMessage" (confirm)="onConfirm()" (cancel)="onCancelConfirm()"/>
+  <app-confirm-dialog [open]="confirmOpen" [title]="confirmTitle" [message]="confirmMessage" (confirmed)="onConfirm()" (cancelled)="onCancelConfirm()"/>
 </div>

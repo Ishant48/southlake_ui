@@ -352,10 +352,10 @@ All design tokens are defined as CSS custom properties in `src/styles/_variables
 - Opens with a CSS transition (`right: 0`) and a blurred backdrop.
 - Closing plays the reverse slide-out transition.
 
-### Permission Matrix (`features/user-management/roles/role-permissions-modal/`)
-- Rows = modules, columns = actions (view, create, edit, delete, etc.).
-- **Full / Read / None** preset buttons per row for quick assignment.
-- Summary cards at the top count modules by access level.
+### Permission Checklist (`features/user-management/roles/role-permissions-modal/`, `users/user-detail-panel/`)
+- Replaces the grid matrix layout with a vertical scrollable checklist of flat permissions.
+- **Grouped & Modular Structure**: Dynamically parses the flat database permission actions and groups checkboxes under module/resource headers (e.g. Chart of Accounts, Master Data, Activity Logs, Users).
+- Toggling checkboxes updates role-level assignments or saves explicit user `grant` / `revoke` overrides to the backend.
 
 ### Session Conflict Dialog (`features/auth/session-conflict/`)
 - Shows information about the existing session (device label, IP, created date).

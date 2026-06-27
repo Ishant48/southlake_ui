@@ -29,6 +29,16 @@ export const routes: Routes = [
         loadComponent: () => import('./features/chart-of-accounts/chart-of-accounts.component').then(m => m.ChartOfAccountsComponent)
       },
       {
+        path: 'journal-entries',
+        canActivate: [permissionGuard('journal_entry')],
+        loadComponent: () => import('./features/journal-entries/journal-entries.component').then(m => m.JournalEntriesComponent)
+      },
+      {
+        path: 'test-balance',
+        canActivate: [permissionGuard('chart_of_accounts')],
+        loadComponent: () => import('./features/test-balance/test-balance.component').then(m => m.TestBalanceComponent)
+      },
+      {
         path: 'masters',
         canActivate: [permissionGuard('master_data')],
         loadChildren: () => import('./features/masters/masters.routes').then(m => m.mastersRoutes)
