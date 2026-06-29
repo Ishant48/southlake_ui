@@ -477,4 +477,11 @@ New dependencies may have been added by another developer.
 
 ---
 
+### Multiple Carriers, Reinsurers, & MGA Filters (Added June 2026)
+* **Multiple Carriers & Reinsurers**: The Treaty creation and edit modals now support dynamic addition of multiple Carrier Companies (with individual retention percentages) and Reinsurer Companies (with cession percentages).
+* **MGA filter dropdown**: A select dropdown was added on the Treaties master list to quickly filter records client-side by active underwriters.
+* **Truncated Writing States list**: Treaties with large lists of writing states are now cleanly truncated after 5 states (e.g. `3, 51, 6 (+26 more)`) with a native hover tooltip showing the complete list to keep list tables compact.
+
+---
+
 *Last updated: June 2026*
