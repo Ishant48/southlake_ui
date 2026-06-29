@@ -87,8 +87,8 @@
               @for (b of batches; track b.id; let idx = $index) {
                 <tr>
                   <td>{{ idx + 1 }}</td>
-                  <td><strong class="text-link" (click)="viewBatchDetails(b)">{{ b.batchNumber }}</strong></td>
-                  <td>{{ formatCurrency(b.totalAmount) }}</td>
+                  <td><strong class="text-link" (click)="viewBatchDetails(b)">{{ b.batch_number }}</strong></td>
+                  <td>{{ formatCurrency(b.total_amount) }}</td>
                   <td>{{ b.count }}</td>
                   <td style="text-align: right;">
                     <button class="btn-table" (click)="viewBatchDetails(b)">Edit</button>
@@ -131,7 +131,7 @@
         </div>
         <div class="metric-box">
           <span class="metric-label">Batch:</span>
-          <span class="metric-val">{{ selectedBatch?.batchNumber }}</span>
+          <span class="metric-val">{{ selectedBatch?.batch_number }}</span>
         </div>
         <div class="metric-box">
           <span class="metric-label">Debit:</span>
@@ -151,9 +151,6 @@
 
       <div class="header-actions-row">
         <button class="btn btn-primary" (click)="openAddEntryForm()">Add</button>
-        <button class="btn btn-secondary">Print Register</button>
-        <button class="btn btn-secondary">Auto Je</button>
-        <button class="btn btn-secondary">Upload Excel</button>
       </div>
     </div>
 
@@ -204,7 +201,7 @@
             } @else {
               @for (entry of entries; track entry.id) {
                 <tr>
-                  <td>{{ entry.jeNumber }}</td>
+                  <td>{{ entry.je_number }}</td>
                   <td>{{ entry.description }}</td>
                   <td>{{ entry.coa?.account_code }}</td>
                   <td>{{ entry.sub || '-' }}</td>

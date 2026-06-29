@@ -172,4 +172,22 @@ export interface Treaty {
   treaty_states?: TreatyState[];
   treaty_lobs?: TreatyLob[];
   treaty_mgas?: TreatyMga[];
+  treaty_carriers?: TreatyCarrier[];
+  treaty_reinsurers?: TreatyReinsurer[];
+}
+
+export interface TreatyCarrier {
+  id?: string;
+  treaty_id?: string;
+  risk_company_id: string;
+  risk_company?: RiskCompany;
+  retention_pct: number;
+}
+
+export interface TreatyReinsurer {
+  id?: string;
+  treaty_id?: string;
+  reinsurer_id: string;
+  reinsurer?: ReinsurerCompany;
+  cession_pct: number;
 }

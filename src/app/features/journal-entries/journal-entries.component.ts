@@ -1,6 +1,7 @@
 import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { ActivatedRoute, Router } from '@angular/router';
 import { JournalEntriesService } from '../../core/services/journal-entries.service';
 import { ChartOfAccountsService } from '../../core/services/chart-of-accounts.service';
 import { MastersService } from '../../core/services/masters.service';
@@ -9,6 +10,7 @@ import { ConfirmDialogComponent } from '../../shared/components/confirm-dialog/c
 import { DropdownSearchComponent } from '../../shared/components/dropdown-search/dropdown-search.component';
 import { JournalEntryBatch, JournalEntry } from '../../core/models/journal-entry.model';
 import { ChartOfAccount } from '../../core/models/chart-of-account.model';
+import { ReinsuranceService } from '../../core/services/reinsurance.service';
 
 @Component({
   selector: 'app-journal-entries',
@@ -23,6 +25,9 @@ export class JournalEntriesComponent implements OnInit {
   private mastersService = inject(MastersService);
   private toast = inject(ToastService);
   private cdr = inject(ChangeDetectorRef);
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
+  private reinsuranceService = inject(ReinsuranceService);
 
   // View state
   currentView: 'list' | 'detail' | 'form' = 'list';
@@ -71,6 +76,26 @@ export class JournalEntriesComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadInitialData();
+    this.checkQueryParameters();
+  }
+
+  checkQueryParameters(): void {
+    this.route.queryParams.subscribe(params => {
+      const batchId = params['batchId'];
+      if (batchId) {
+        this.service.getBatch(batchId).subscribe({
+          next: (batch) => {
+            this.selectedPeriod = batch.period;
+            this.selectedAgent = batch.agent_name;
+            this.viewBatchDetails(batch);
+            this.cdr.markForCheck();
+          },
+          error: () => {
+            this.toast.error('Failed to load journal batch from parameters');
+          }
+        });
+      }
+    });
   }
 
   loadInitialData(): void {
@@ -124,7 +149,7 @@ export class JournalEntriesComponent implements OnInit {
   }
 
   calculateTotalBatchesAmount(): void {
-    this.totalBatchesAmount = this.batches.reduce((sum, b) => sum + Number(b.totalAmount || 0), 0);
+    this.totalBatchesAmount = this.batches.reduce((sum, b) => sum + Number(b.total_amount || 0), 0);
   }
 
   onFilterChange(): void {
@@ -153,7 +178,7 @@ export class JournalEntriesComponent implements OnInit {
       agent_name: this.selectedAgent,
     }).subscribe({
       next: (res) => {
-        this.toast.success(`Batch ${res.batchNumber} created successfully`);
+        this.toast.success(`Batch ${res.batch_number} created successfully`);
         this.showAddBatchModal = false;
         this.submittingBatch = false;
         this.loadBatches();
@@ -218,7 +243,7 @@ export class JournalEntriesComponent implements OnInit {
 
     // Prefill the next JE Number (max JE Number + 1)
     if (this.entries.length > 0) {
-      const maxJe = Math.max(...this.entries.map(e => e.jeNumber));
+      const maxJe = Math.max(...this.entries.map(e => e.je_number));
       this.nextJeNumber = maxJe + 1;
     } else {
       this.nextJeNumber = 1;
@@ -260,15 +285,15 @@ export class JournalEntriesComponent implements OnInit {
   editJournalEntry(entry: JournalEntry): void {
     if (!this.selectedBatch) return;
     this.isEditingForm = true;
-    this.nextJeNumber = entry.jeNumber;
+    this.nextJeNumber = entry.je_number;
 
-    // Filter matching lines by jeNumber
-    const matchingEntries = this.entries.filter(e => e.jeNumber === entry.jeNumber);
+    // Filter matching lines by je_number
+    const matchingEntries = this.entries.filter(e => e.je_number === entry.je_number);
 
     this.formEntries = matchingEntries.map(e => ({
-      je_number: e.jeNumber,
+      je_number: e.je_number,
       description: e.description,
-      coa_id: e.coaId,
+      coa_id: e.coa_id,
       sub: e.sub || '',
       debit: e.debit || null,
       credit: e.credit || null,
@@ -431,10 +456,10 @@ export class JournalEntriesComponent implements OnInit {
   // ==========================================
   deleteBatch(batch: JournalEntryBatch, event: MouseEvent): void {
     event.stopPropagation(); // Prevent opening batch details
-    this.confirm('Delete Batch', `Are you sure you want to delete batch ${batch.batchNumber}?`, () => {
+    this.confirm('Delete Batch', `Are you sure you want to delete batch ${batch.batch_number}?`, () => {
       this.service.deleteBatch(batch.id).subscribe({
         next: () => {
-          this.toast.success(`Batch ${batch.batchNumber} deleted successfully`);
+          this.toast.success(`Batch ${batch.batch_number} deleted successfully`);
           this.loadBatches();
         },
         error: () => {
@@ -462,6 +487,48 @@ export class JournalEntriesComponent implements OnInit {
   onCancelled(): void {
     this.confirmOpen = false;
     this.pendingAction = null;
+  }
+
+  onUploadMonthlyExcel(event: any): void {
+    if (event.target.files && event.target.files.length > 0) {
+      const file = event.target.files[0];
+      if (!this.selectedBatch) return;
+
+      this.toast.info('Uploading monthly exhibit...');
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const url = `${this.reinsuranceService['apiUrl']}/workbooks/upload-to-batch/${this.selectedBatch.id}`;
+      this.reinsuranceService['http'].post<any>(url, formData).subscribe({
+        next: (res: any) => {
+          this.toast.success('Successfully uploaded monthly exhibit and generated ceding entries.');
+          this.loadBatchEntries();
+          this.cdr.markForCheck();
+        },
+        error: (err: any) => {
+          const msg = err.error?.message || 'Failed to upload monthly exhibit';
+          this.toast.error(msg);
+        }
+      });
+    }
+  }
+
+  onUploadITDExcel(event: any): void {
+    if (event.target.files && event.target.files.length > 0) {
+      const file = event.target.files[0];
+      this.toast.info('Uploading and seeding ITD baseline reserves...');
+      
+      this.reinsuranceService.uploadWorkbook(file, true).subscribe({
+        next: () => {
+          this.toast.success('ITD baseline reserves uploaded and seeded in database successfully.');
+          this.cdr.markForCheck();
+        },
+        error: (err: any) => {
+          const msg = err.error?.message || 'Failed to seed ITD baseline';
+          this.toast.error(msg);
+        }
+      });
+    }
   }
 
   // Format Helper

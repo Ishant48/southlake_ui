@@ -175,4 +175,8 @@ export class MastersService {
   deleteTreaty(id: string): Observable<void> {
     return this.http.delete<void>(`${this.base}/treaties/${id}`);
   }
+
+  addMgaToTreaties(mgaId: string, treatyIds: string[]): Observable<any> {
+    return this.http.post<any>(`${this.base}/mgas/${mgaId}/add-to-treaties`, { treaty_ids: treatyIds });
+  }
 }

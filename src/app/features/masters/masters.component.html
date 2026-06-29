@@ -7,9 +7,7 @@
     </div>
     <!-- Dynamic Header Buttons -->
     <div>
-      @if (currentTab === 'treaties') {
-        <button class="btn-primary" (click)="openTreatyAdd()">Create Treaty</button>
-      } @else if (currentTab === 'mgas') {
+      @if (currentTab === 'mgas') {
         <button class="btn-primary" (click)="openMgaAdd()">Add MGA</button>
       } @else if (currentTab === 'states') {
         <button class="btn-primary" (click)="openStateAdd()">Add State</button>
@@ -17,7 +15,7 @@
         <button class="btn-primary" (click)="openRiskCompanyAdd()">Add Risk Company</button>
       } @else if (currentTab === 'gl-mappings') {
         <button class="btn-primary" (click)="openGlMappingAdd()">Add Mapping</button>
-      } @else {
+      } @else if (currentTab === 'lobs' || currentTab === 'cobs' || currentTab === 'reinsurers') {
         <button class="btn-primary" (click)="openSimpleAdd(currentTab === 'lobs' ? 'lob' : currentTab === 'cobs' ? 'cob' : 'reinsurer')">
           Add {{ currentTab === 'lobs' ? 'LOB' : currentTab === 'cobs' ? 'COB' : 'Reinsurer' }}
         </button>
@@ -53,6 +51,15 @@
       </div>
 
       <div style="display: flex; gap: 12px; align-items: center;">
+        @if (currentTab === 'treaties') {
+          <select class="filter-select" [(ngModel)]="mgaFilter" (ngModelChange)="onFilterChange()">
+            <option value="all">All MGAs</option>
+            @for (mga of mgaOptions; track mga.id) {
+              <option [value]="mga.id">{{ mga.name }}</option>
+            }
+          </select>
+        }
+
         <select class="filter-select" [(ngModel)]="statusFilter" (ngModelChange)="onFilterChange()">
           <option value="all">All Statuses</option>
           <option value="active">Active</option>
@@ -97,13 +104,14 @@
           @if (currentTab === 'treaties') {
             <thead>
               <tr>
-                <th style="width: 12%;">Code</th>
-                <th style="width: 18%;">Treaty Name</th>
-                <th style="width: 15%;">MGA</th>
-                <th style="width: 15%;">Risk Company</th>
-                <th style="width: 15%;">States</th>
-                <th style="width: 15%;">LOBs (COBs)</th>
-                <th class="col-actions" style="width: 10%; text-align: center;">Actions</th>
+                <th style="width: 10%;">Code</th>
+                <th style="width: 15%;">Treaty Name</th>
+                <th style="width: 11%;">MGA</th>
+                <th style="width: 15%;">Carriers (Retention %)</th>
+                <th style="width: 11%;">States</th>
+                <th style="width: 11%;">LOBs (COBs)</th>
+                <th style="width: 9%;">Status</th>
+                <th class="col-actions" style="width: 21%; text-align: center;">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -112,11 +120,25 @@
                   <td style="font-family: monospace; font-weight: 600;">{{ treaty.treaty_code }}</td>
                   <td>{{ treaty.name }}</td>
                   <td>{{ getMgasListDisplay(treaty) }}</td>
-                  <td>{{ treaty.risk_company?.name || '-' }}</td>
-                  <td>{{ getStatesListDisplay(treaty.treaty_states) }}</td>
+                  <td>{{ getCarriersListDisplay(treaty) }}</td>
+                  <td [title]="getFullStatesList(treaty.treaty_states)">{{ getStatesListDisplay(treaty.treaty_states) }}</td>
                   <td>{{ getLobsListDisplay(treaty.treaty_lobs) }}</td>
+                  <td>
+                    @let status = getTreatyStatus(treaty.name);
+                    @if (status === 'Approved') {
+                      <span class="status-badge approved">Approved</span>
+                    } @else if (status === 'Pending') {
+                      <span class="status-badge pending">Pending</span>
+                    } @else {
+                      <span class="status-badge none">-</span>
+                    }
+                  </td>
                   <td class="col-actions" style="text-align: center;">
                     <div class="action-buttons-list">
+                      @if (hasITDSeeded(treaty.name)) {
+                        <button class="btn-action-outline" (click)="triggerTreatyMonthlyUpload(treaty, monthlyExcelInput)">Upload Excel</button>
+                      }
+                      <button class="btn-action-outline" (click)="triggerTreatyITDUpload(treaty, itdExcelInput)">Add ITD</button>
                       <button class="btn-action-outline" (click)="openTreatyEdit(treaty)">Edit</button>
                       <button class="btn-action-outline btn-action-danger-outline" (click)="deleteTreaty(treaty)">
                         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
@@ -132,12 +154,12 @@
           @if (currentTab === 'mgas') {
             <thead>
               <tr>
-                <th style="width: 15%;">MGA Code</th>
-                <th style="width: 30%;">MGA Name</th>
-                <th style="width: 20%;">Tax Payable In-house</th>
-                <th style="width: 15%;">Ledger Amount</th>
+                <th style="width: 10%;">MGA Code</th>
+                <th style="width: 25%;">MGA Name</th>
+                <th style="width: 18%;">Tax Payable In-house</th>
+                <th style="width: 12%;">Ledger Amount</th>
                 <th style="width: 10%;">Status</th>
-                <th class="col-actions" style="width: 10%; text-align: center;">Actions</th>
+                <th class="col-actions" style="width: 25%; text-align: center;">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -160,6 +182,7 @@
                   </td>
                   <td class="col-actions" style="text-align: center;">
                     <div class="action-buttons-list">
+                      <button class="btn-action-outline" (click)="openTreatyAdd(mga.id)">Add to Treaties</button>
                       <button class="btn-action-outline" (click)="openDocModal('mga', mga)">Document</button>
                       <button class="btn-action-outline" (click)="openMgaEdit(mga)">Edit</button>
                       <button class="btn-action-outline btn-action-danger-outline" (click)="deleteMga(mga)">
@@ -993,29 +1016,62 @@
             </div>
           </div>
 
-          <div class="form-row">
-            <div class="form-field">
-              <label class="form-label">Carrier Company (Risk Company)</label>
+          <h4 style="margin: 16px 0 12px 0; color: var(--navy); font-weight: 700; font-size: 14px; border-bottom: 1.5px solid var(--gray-200); padding-bottom: 6px; display: flex; justify-content: space-between; align-items: center;">
+            <span>Carrier Companies (Risk Companies) & Retention %</span>
+            <button type="button" class="btn btn-sm btn-primary" (click)="addCarrierRow()" style="font-size: 11px; padding: 4px 8px;">+ Add Carrier</button>
+          </h4>
+
+          <div *ngFor="let carrier of treatyForm.carriers; let i = index" class="form-row" style="align-items: flex-end; margin-bottom: 8px;">
+            <div class="form-field" style="flex: 2;">
+              <label class="form-label" *ngIf="i === 0">Carrier Company</label>
               <app-dropdown-search
                 [items]="riskCompanyOptions"
                 [isMultiSelect]="false"
                 bindValue="id"
-                placeholder="Select Carrier (Optional)"
+                placeholder="Select Carrier"
                 [itemLabelFn]="riskCompanyLabelFn"
-                [(selectedValue)]="treatyForm.risk_company_id"
+                [(selectedValue)]="carrier.risk_company_id"
               ></app-dropdown-search>
             </div>
-            <div class="form-field">
-              <label class="form-label">Reinsurer Company</label>
+            <div class="form-field" style="flex: 1;">
+              <label class="form-label" *ngIf="i === 0">Retention %</label>
+              <input [(ngModel)]="carrier.retention_pct" [name]="'carrierRet_' + i" type="number" step="0.01" class="form-input" placeholder="100.00">
+            </div>
+            <div style="margin-left: 8px; margin-bottom: 4px;">
+              <button type="button" class="btn btn-danger" (click)="removeCarrierRow(i)" style="padding: 6px 10px; font-size: 12px; height: 38px;">✕</button>
+            </div>
+          </div>
+          <div *ngIf="!treatyForm.carriers || treatyForm.carriers.length === 0" style="color: var(--gray-500); font-size: 12px; margin-bottom: 12px; font-style: italic;">
+            No carriers added yet. Click "+ Add Carrier" to define a carrier retention split.
+          </div>
+
+          <h4 style="margin: 16px 0 12px 0; color: var(--navy); font-weight: 700; font-size: 14px; border-bottom: 1.5px solid var(--gray-200); padding-bottom: 6px; display: flex; justify-content: space-between; align-items: center;">
+            <span>Reinsurer Companies & Cession %</span>
+            <button type="button" class="btn btn-sm btn-primary" (click)="addReinsurerRow()" style="font-size: 11px; padding: 4px 8px;">+ Add Reinsurer</button>
+          </h4>
+
+          <div *ngFor="let reinsurer of treatyForm.reinsurers; let i = index" class="form-row" style="align-items: flex-end; margin-bottom: 8px;">
+            <div class="form-field" style="flex: 2;">
+              <label class="form-label" *ngIf="i === 0">Reinsurer Company</label>
               <app-dropdown-search
                 [items]="reinsurerOptions"
                 [isMultiSelect]="false"
                 bindValue="id"
-                placeholder="Select Reinsurer (Optional)"
+                placeholder="Select Reinsurer"
                 [itemLabelFn]="reinsurerLabelFn"
-                [(selectedValue)]="treatyForm.reinsurer_id"
+                [(selectedValue)]="reinsurer.reinsurer_id"
               ></app-dropdown-search>
             </div>
+            <div class="form-field" style="flex: 1;">
+              <label class="form-label" *ngIf="i === 0">Cession %</label>
+              <input [(ngModel)]="reinsurer.cession_pct" [name]="'reinsurerCes_' + i" type="number" step="0.01" class="form-input" placeholder="0.00">
+            </div>
+            <div style="margin-left: 8px; margin-bottom: 4px;">
+              <button type="button" class="btn btn-danger" (click)="removeReinsurerRow(i)" style="padding: 6px 10px; font-size: 12px; height: 38px;">✕</button>
+            </div>
+          </div>
+          <div *ngIf="!treatyForm.reinsurers || treatyForm.reinsurers.length === 0" style="color: var(--gray-500); font-size: 12px; margin-bottom: 12px; font-style: italic;">
+            No reinsurers added yet. Click "+ Add Reinsurer" to define a reinsurer cession split.
           </div>
 
           <h4 style="margin: 16px 0 12px 0; color: var(--navy); font-weight: 700; font-size: 14px; border-bottom: 1.5px solid var(--gray-200); padding-bottom: 6px;">
@@ -1029,6 +1085,7 @@
               placeholder="Select MGA Underwriter"
               [itemLabelFn]="mgaLabelFn"
               [(selectedValue)]="treatyForm.mga_id"
+              [disabled]="isEditMode || !!treatyForm.mga_id"
             ></app-dropdown-search>
           </div>
 
@@ -1091,16 +1148,7 @@
             </div>
           </div>
 
-          <div class="form-row">
-            <div class="form-field">
-              <label class="form-label">Carrier Retention %</label>
-              <input [(ngModel)]="treatyForm.carrier_retention_pct" name="carrierRetPct" type="number" step="0.01" class="form-input" placeholder="100.00">
-            </div>
-            <div class="form-field">
-              <label class="form-label">Reinsurer Cession %</label>
-              <input [(ngModel)]="treatyForm.reinsurer_cession_pct" name="reinsCesPct" type="number" step="0.01" class="form-input" placeholder="0.00">
-            </div>
-          </div>
+
 
           <h4 style="margin: 16px 0 12px 0; color: var(--navy); font-weight: 700; font-size: 14px; border-bottom: 1.5px solid var(--gray-200); padding-bottom: 6px;">
             Authorized Writing States
@@ -1220,6 +1268,10 @@
     </div>
   }
 
+
   <!-- Confirm Dialog component binding -->
   <app-confirm-dialog [open]="confirmOpen" [title]="confirmTitle" [message]="confirmMessage" (confirmed)="onConfirm()" (cancelled)="onCancelConfirm()"/>
+
+  <input type="file" #monthlyExcelInput style="display: none;" (change)="onTreatyMonthlyUpload($event)" accept=".xlsx,.xls,.csv" />
+  <input type="file" #itdExcelInput style="display: none;" (change)="onTreatyITDUpload($event)" accept=".xlsx,.xls,.csv" />
 </div>

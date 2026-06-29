@@ -61,7 +61,7 @@ export class SidebarComponent implements OnInit {
     if (url.includes('/dashboard')) {
       this.dashboardExpanded = true;
     }
-    if (url.includes('/chart-of-accounts') || url.includes('/journal-entries') || url.includes('/test-balance')) {
+    if (url.includes('/chart-of-accounts') || url.includes('/journal-entries') || url.includes('/test-balance') || url.includes('/reinsurance-calculations')) {
       this.accountingExpanded = true;
     }
     if (url.includes('/user-management')) {

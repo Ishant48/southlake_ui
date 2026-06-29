@@ -1,4 +1,4 @@
-<div class="dropdown-search-container" [class.open]="isOpen">
+<div class="dropdown-search-container" [class.open]="isOpen" [class.disabled]="disabled">
   <!-- Trigger Button -->
   <div class="dropdown-search-trigger" (click)="toggleDropdown()">
     <span class="dropdown-trigger-text" [class.placeholder]="getDisplayText() === placeholder">

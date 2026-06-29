@@ -26,6 +26,7 @@ import { GlMappingsService } from '../../core/services/gl-mappings.service';
 import { ChartOfAccountsService } from '../../core/services/chart-of-accounts.service';
 import { GlMapping } from '../../core/models/gl-mapping.model';
 import { ChartOfAccount } from '../../core/models/chart-of-account.model';
+import { ReinsuranceService } from '../../core/services/reinsurance.service';
 
 type MasterTab = 'treaties' | 'mgas' | 'lobs' | 'cobs' | 'states' | 'reinsurers' | 'risk-companies' | 'gl-mappings';
 
@@ -63,6 +64,7 @@ export class MastersComponent implements OnInit {
     { id: 'BRK', name: 'BRK' }
   ];
   private service = inject(MastersService);
+  private reinsuranceService = inject(ReinsuranceService);
   private toast = inject(ToastService);
   private cdr = inject(ChangeDetectorRef);
   private route = inject(ActivatedRoute);
@@ -83,6 +85,10 @@ export class MastersComponent implements OnInit {
   loading = false;
   searchTerm = '';
   statusFilter: 'all' | 'active' | 'inactive' = 'all';
+  mgaFilter: string = 'all';
+  seededProgramITD = new Set<string>();
+  treatyWorkbookStatuses = new Map<string, string>();
+
 
   // Data lists
   treaties: Treaty[] = [];
@@ -226,6 +232,8 @@ export class MastersComponent implements OnInit {
   treatyForm: Partial<Treaty> & {
     state_ids: string[];
     lobs: { lob_id: string; cob_ids: string[] }[];
+    carriers: { risk_company_id: string; retention_pct: number }[];
+    reinsurers: { reinsurer_id: string; cession_pct: number }[];
   } = {
     treaty_code: '',
     name: '',
@@ -247,6 +255,8 @@ export class MastersComponent implements OnInit {
     is_active: true,
     state_ids: [],
     lobs: [],
+    carriers: [],
+    reinsurers: [],
   };
 
   // Treaty dropdown options
@@ -280,6 +290,7 @@ export class MastersComponent implements OnInit {
       }
       this.searchTerm = '';
       this.statusFilter = 'all';
+      this.mgaFilter = 'all';
       this.currentPage = 1;
       this.loadData();
     });
@@ -306,9 +317,30 @@ export class MastersComponent implements OnInit {
 
     switch (this.currentTab) {
       case 'treaties':
-        this.service.getTreaties(search, active).subscribe({
-          next: (res) => { this.treaties = res; this.loading = false; this.cdr.markForCheck(); },
-          error: () => { this.toast.error('Failed to load treaties'); this.loading = false; this.cdr.markForCheck(); }
+        this.reinsuranceService.getWorkbooks().subscribe({
+          next: (wbs) => {
+            this.seededProgramITD.clear();
+            this.treatyWorkbookStatuses.clear();
+            wbs.forEach(wb => {
+              if (wb.source === 'ITD') {
+                this.seededProgramITD.add(wb.program);
+              }
+              const existing = this.treatyWorkbookStatuses.get(wb.program);
+              if (existing !== 'Approved') {
+                this.treatyWorkbookStatuses.set(wb.program, wb.status || 'Pending');
+              }
+            });
+            this.service.getTreaties(search, active).subscribe({
+              next: (res) => { this.treaties = res; this.loading = false; this.cdr.markForCheck(); },
+              error: () => { this.toast.error('Failed to load treaties'); this.loading = false; this.cdr.markForCheck(); }
+            });
+          },
+          error: () => {
+            this.service.getTreaties(search, active).subscribe({
+              next: (res) => { this.treaties = res; this.loading = false; this.cdr.markForCheck(); },
+              error: () => { this.toast.error('Failed to load treaties'); this.loading = false; this.cdr.markForCheck(); }
+            });
+          }
         });
         break;
       case 'mgas':
@@ -367,7 +399,13 @@ export class MastersComponent implements OnInit {
 
   get currentList(): any[] {
     switch (this.currentTab) {
-      case 'treaties': return this.treaties;
+      case 'treaties': {
+        let list = this.treaties;
+        if (this.mgaFilter && this.mgaFilter !== 'all') {
+          list = list.filter(t => t.mga_id === this.mgaFilter || (t.treaty_mgas && t.treaty_mgas.some(tm => tm.mga_id === this.mgaFilter)));
+        }
+        return list;
+      }
       case 'mgas': return this.mgas;
       case 'lobs': return this.lobs;
       case 'cobs': return this.cobs;
@@ -636,6 +674,8 @@ export class MastersComponent implements OnInit {
     };
     this.confirmOpen = true;
   }
+
+
 
   // ==========================================
   // GENERIC DOCUMENTS DRAWER ACTIONS
@@ -950,7 +990,7 @@ export class MastersComponent implements OnInit {
     this.service.getStates(undefined, true).subscribe(res => { this.stateOptions = res; this.cdr.markForCheck(); });
   }
 
-  openTreatyAdd(): void {
+  openTreatyAdd(mgaId?: string): void {
     this.isEditMode = false;
     this.treatyModalTitle = 'Create Treaty';
     this.loadTreatyOptions();
@@ -958,7 +998,7 @@ export class MastersComponent implements OnInit {
     this.treatyForm = {
       treaty_code: '',
       name: '',
-      mga_id: '',
+      mga_id: mgaId || '',
       reinsurer_id: null,
       risk_company_id: null,
       effective_date: '',
@@ -976,10 +1016,15 @@ export class MastersComponent implements OnInit {
       is_active: true,
       state_ids: [],
       lobs: [],
+      carriers: [],
+      reinsurers: [],
     };
 
     this.treatySelectedStates = {};
     this.treatySelectedMgas = {};
+    if (mgaId) {
+      this.treatySelectedMgas[mgaId] = true;
+    }
     this.treatySelectedLobs = {};
     this.treatySelectedCobs = {};
     this.treatyLobCobs = {};
@@ -990,6 +1035,26 @@ export class MastersComponent implements OnInit {
     this.isEditMode = true;
     this.treatyModalTitle = `Edit Treaty: ${treaty.treaty_code}`;
     this.loadTreatyOptions();
+
+    let carriers: any[] = [];
+    if (treaty.treaty_carriers && treaty.treaty_carriers.length > 0) {
+      carriers = treaty.treaty_carriers.map(tc => ({
+        risk_company_id: tc.risk_company_id,
+        retention_pct: tc.retention_pct
+      }));
+    } else if (treaty.risk_company_id) {
+      carriers = [{ risk_company_id: treaty.risk_company_id, retention_pct: treaty.carrier_retention_pct ?? 100 }];
+    }
+
+    let reinsurers: any[] = [];
+    if (treaty.treaty_reinsurers && treaty.treaty_reinsurers.length > 0) {
+      reinsurers = treaty.treaty_reinsurers.map(tr => ({
+        reinsurer_id: tr.reinsurer_id,
+        cession_pct: tr.cession_pct
+      }));
+    } else if (treaty.reinsurer_id) {
+      reinsurers = [{ reinsurer_id: treaty.reinsurer_id, cession_pct: treaty.reinsurer_cession_pct ?? 100 }];
+    }
 
     this.treatyForm = {
       id: treaty.id,
@@ -1013,6 +1078,8 @@ export class MastersComponent implements OnInit {
       is_active: treaty.is_active,
       state_ids: [],
       lobs: [],
+      carriers,
+      reinsurers
     };
 
     // Prepopulate selections
@@ -1073,6 +1140,9 @@ export class MastersComponent implements OnInit {
       };
     });
 
+    const carriers = (this.treatyForm.carriers || []).filter(c => c.risk_company_id);
+    const reinsurers = (this.treatyForm.reinsurers || []).filter(r => r.reinsurer_id);
+
     const payload = {
       ...this.treatyForm,
       mga_id: mga_ids[0],
@@ -1081,6 +1151,8 @@ export class MastersComponent implements OnInit {
       expiration_date: this.treatyForm.expiration_date || null,
       state_ids,
       lobs,
+      carriers,
+      reinsurers
     };
 
     let request;
@@ -1103,6 +1175,42 @@ export class MastersComponent implements OnInit {
         this.cdr.markForCheck();
       }
     });
+  }
+
+  addCarrierRow(): void {
+    if (!this.treatyForm.carriers) {
+      this.treatyForm.carriers = [];
+    }
+    this.treatyForm.carriers.push({
+      risk_company_id: '',
+      retention_pct: 100
+    });
+    this.cdr.markForCheck();
+  }
+
+  removeCarrierRow(index: number): void {
+    if (this.treatyForm.carriers) {
+      this.treatyForm.carriers.splice(index, 1);
+    }
+    this.cdr.markForCheck();
+  }
+
+  addReinsurerRow(): void {
+    if (!this.treatyForm.reinsurers) {
+      this.treatyForm.reinsurers = [];
+    }
+    this.treatyForm.reinsurers.push({
+      reinsurer_id: '',
+      cession_pct: 0
+    });
+    this.cdr.markForCheck();
+  }
+
+  removeReinsurerRow(index: number): void {
+    if (this.treatyForm.reinsurers) {
+      this.treatyForm.reinsurers.splice(index, 1);
+    }
+    this.cdr.markForCheck();
   }
 
   deleteTreaty(treaty: Treaty): void {
@@ -1129,8 +1237,28 @@ export class MastersComponent implements OnInit {
     return treaty.mga?.name || '-';
   }
 
+  getCarriersListDisplay(treaty: Treaty): string {
+    if (treaty.treaty_carriers && treaty.treaty_carriers.length > 0) {
+      return treaty.treaty_carriers.map(tc => `${tc.risk_company?.name || 'Unknown'} (${tc.retention_pct}%)`).join(', ');
+    }
+    if (treaty.risk_company) {
+      return `${treaty.risk_company.name} (${treaty.carrier_retention_pct ?? 100}%)`;
+    }
+    return '-';
+  }
+
   getStatesListDisplay(states?: TreatyState[]): string {
     if (!states || states.length === 0) return '-';
+    const codes = states.map(s => s.state?.state_code).filter(Boolean);
+    if (codes.length === 0) return '-';
+    if (codes.length > 5) {
+      return codes.slice(0, 4).join(', ') + ` (+${codes.length - 4} more)`;
+    }
+    return codes.join(', ');
+  }
+
+  getFullStatesList(states?: TreatyState[]): string {
+    if (!states || states.length === 0) return '';
     return states.map(s => s.state?.state_code).filter(Boolean).join(', ');
   }
 
@@ -1443,8 +1571,74 @@ export class MastersComponent implements OnInit {
     this.cdr.markForCheck();
   }
 
+  hasITDSeeded(programName: string): boolean {
+    return this.seededProgramITD.has(programName);
+  }
+
+  getTreatyStatus(programName: string): string {
+    return this.treatyWorkbookStatuses.get(programName) || '-';
+  }
+
   getGLNumberDisplay(mapping: GlMapping): string {
     if (!mapping.coa) return '-';
     return `${mapping.coa.account_code} - ${mapping.coa.description}`;
+  }
+
+  selectedTreatyForUpload: any = null;
+
+  triggerTreatyMonthlyUpload(treaty: any, inputEl: HTMLInputElement): void {
+    this.selectedTreatyForUpload = treaty;
+    inputEl.click();
+  }
+
+  triggerTreatyITDUpload(treaty: any, inputEl: HTMLInputElement): void {
+    this.selectedTreatyForUpload = treaty;
+    inputEl.click();
+  }
+
+  onTreatyMonthlyUpload(event: any): void {
+    if (event.target.files && event.target.files.length > 0 && this.selectedTreatyForUpload) {
+      const file = event.target.files[0];
+      const programName = this.selectedTreatyForUpload.name;
+      this.toast.info(`Uploading monthly exhibit for treaty: ${programName}...`);
+
+      this.reinsuranceService.uploadWorkbook(file, false, programName).subscribe({
+        next: () => {
+          this.toast.success(`Successfully uploaded monthly exhibit for ${programName}.`);
+          this.selectedTreatyForUpload = null;
+          event.target.value = '';
+          this.loadData();
+        },
+        error: (err) => {
+          const msg = err.error?.message || 'Failed to upload monthly exhibit';
+          this.toast.error(msg);
+          this.selectedTreatyForUpload = null;
+          event.target.value = '';
+        }
+      });
+    }
+  }
+
+  onTreatyITDUpload(event: any): void {
+    if (event.target.files && event.target.files.length > 0 && this.selectedTreatyForUpload) {
+      const file = event.target.files[0];
+      const programName = this.selectedTreatyForUpload.name;
+      this.toast.info(`Uploading and seeding ITD baseline for treaty: ${programName}...`);
+
+      this.reinsuranceService.uploadWorkbook(file, true, programName).subscribe({
+        next: () => {
+          this.toast.success(`ITD baseline reserves uploaded and seeded for ${programName} successfully.`);
+          this.selectedTreatyForUpload = null;
+          event.target.value = '';
+          this.loadData();
+        },
+        error: (err) => {
+          const msg = err.error?.message || 'Failed to seed ITD baseline';
+          this.toast.error(msg);
+          this.selectedTreatyForUpload = null;
+          event.target.value = '';
+        }
+      });
+    }
   }
 }

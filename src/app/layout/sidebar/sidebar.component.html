@@ -69,6 +69,11 @@
                   <span>Journal Entries</span>
                 </a>
               }
+              @if (hasPermission('journal_entry', 'view')) {
+                <a class="nav-item sub-item" routerLink="/reinsurance-calculations" routerLinkActive="active">
+                  <span>Reinsurance Calculations</span>
+                </a>
+              }
               @if (hasPermission('chart_of_accounts', 'view')) {
                 <a class="nav-item sub-item" routerLink="/test-balance" routerLinkActive="active">
                   <span>Test Balance</span>

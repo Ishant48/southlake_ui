@@ -15,6 +15,7 @@ export class DropdownSearchComponent implements OnInit, OnChanges {
   @Input() bindValue: string = 'id';
   @Input() placeholder: string = 'Select option';
   @Input() itemLabelFn: (item: any) => string = (item) => item.name || '';
+  @Input() disabled: boolean = false;
 
   // Two-way bindings
   @Input() selectedValue: any = null; // For single select
@@ -40,6 +41,7 @@ export class DropdownSearchComponent implements OnInit, OnChanges {
   }
 
   toggleDropdown() {
+    if (this.disabled) return;
     this.isOpen = !this.isOpen;
     if (this.isOpen) {
       this.searchText = '';

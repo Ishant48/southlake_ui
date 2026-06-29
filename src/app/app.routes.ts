@@ -39,6 +39,11 @@ export const routes: Routes = [
         loadComponent: () => import('./features/test-balance/test-balance.component').then(m => m.TestBalanceComponent)
       },
       {
+        path: 'reinsurance-calculations',
+        canActivate: [permissionGuard('journal_entry')],
+        loadComponent: () => import('./features/reinsurance-calculations/reinsurance-calculations.component').then(m => m.ReinsuranceCalculationsComponent)
+      },
+      {
         path: 'masters',
         canActivate: [permissionGuard('master_data')],
         loadChildren: () => import('./features/masters/masters.routes').then(m => m.mastersRoutes)

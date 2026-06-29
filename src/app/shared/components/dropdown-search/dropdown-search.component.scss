@@ -193,3 +193,14 @@
     text-overflow: ellipsis;
   }
 }
+
+.dropdown-search-container.disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+
+  .dropdown-search-trigger {
+    pointer-events: none;
+    background-color: #f1f5f9;
+    border-color: #e2e8f0;
+  }
+}
