@@ -1,9 +1,10 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnInit, ChangeDetectorRef } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { debounceTime, distinctUntilChanged, Subject } from 'rxjs';
 import { User, UserStats, PendingInvite } from '../../../core/models/user.model';
 import { Role } from '../../../core/models/role.model';
+import { AuthService } from '../../../core/services/auth.service';
 import { UsersService } from '../../../core/services/users.service';
 import { RolesService } from '../../../core/services/roles.service';
 import { ToastService } from '../../../shared/components/toast/toast.service';
@@ -28,15 +29,21 @@ import { ConfirmDialogComponent } from '../../../shared/components/confirm-dialo
   styleUrl: './users.component.scss',
 })
 export class UsersComponent implements OnInit {
+  private authService = inject(AuthService);
   private usersService = inject(UsersService);
   private rolesService = inject(RolesService);
   private toast = inject(ToastService);
+  private cdr = inject(ChangeDetectorRef);
 
   users: User[] = [];
   roles: Role[] = [];
   pendingInvites: PendingInvite[] = [];
   stats: UserStats | null = null;
   loading = false;
+
+  hasPermission(permission: string): boolean {
+    return this.authService.hasPermission(permission);
+  }
 
   searchTerm = '';
   roleFilter = '';
@@ -84,7 +91,10 @@ export class UsersComponent implements OnInit {
 
   loadStats(): void {
     this.usersService.getStats().subscribe({
-      next: (s) => (this.stats = s),
+      next: (s) => {
+        this.stats = s;
+        this.cdr.markForCheck();
+      },
       error: () => {}
     });
   }
@@ -104,10 +114,12 @@ export class UsersComponent implements OnInit {
         this.totalPages = result.total_pages;
         this.currentPage = result.page;
         this.loading = false;
+        this.cdr.markForCheck();
       },
       error: () => {
         this.loading = false;
         this.toast.error('Failed to load users');
+        this.cdr.markForCheck();
       }
     });
   }
@@ -120,14 +132,20 @@ export class UsersComponent implements OnInit {
 
   loadRoles(): void {
     this.rolesService.getRoles({ per_page: 100 }).subscribe({
-      next: (result) => (this.roles = result.data),
+      next: (result) => {
+        this.roles = result.data;
+        this.cdr.markForCheck();
+      },
       error: () => {}
     });
   }
 
   loadPendingInvites(): void {
     this.usersService.getPendingInvites().subscribe({
-      next: (invites) => (this.pendingInvites = invites),
+      next: (invites) => {
+        this.pendingInvites = invites;
+        this.cdr.markForCheck();
+      },
       error: () => {}
     });
   }
@@ -241,5 +259,37 @@ export class UsersComponent implements OnInit {
     const g = parseInt(hex.slice(3, 5), 16);
     const b = parseInt(hex.slice(5, 7), 16);
     return `rgba(${r},${g},${b},${alpha})`;
+  }
+
+  exportToExcel(): void {
+    const headers = ['Name', 'Email', 'Role', 'Status'];
+    const rows = this.users.map(u => [
+      u.name || '',
+      u.email,
+      u.role?.label || '-',
+      u.status || '-'
+    ]);
+
+    this.downloadCSV(headers, rows, 'users.csv');
+  }
+
+  private downloadCSV(headers: string[], rows: any[][], filename: string): void {
+    const csvContent = [
+      headers.map(h => `"${h.replace(/"/g, '""')}"`).join(','),
+      ...rows.map(row => row.map(val => {
+        const str = val === null || val === undefined ? '' : String(val);
+        return `"${str.replace(/"/g, '""')}"`;
+      }).join(','))
+    ].join('\r\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', filename);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   }
 }

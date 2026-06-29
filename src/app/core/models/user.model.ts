@@ -13,6 +13,8 @@ export interface User {
   avatar_color: string;
   last_login_at?: string;
   joined_date?: string;
+  is_super_admin?: boolean;
+  effective_permissions?: string[];
 }
 
 export interface PaginatedResult<T> {

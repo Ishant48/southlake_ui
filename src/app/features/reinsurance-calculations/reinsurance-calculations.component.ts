@@ -1,0 +1,317 @@
+import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
+import { ReinsuranceService } from '../../core/services/reinsurance.service';
+import { ToastService } from '../../shared/components/toast/toast.service';
+
+@Component({
+  selector: 'app-reinsurance-calculations',
+  standalone: true,
+  imports: [CommonModule, FormsModule],
+  templateUrl: './reinsurance-calculations.component.html',
+  styleUrl: './reinsurance-calculations.component.scss'
+})
+export class ReinsuranceCalculationsComponent implements OnInit {
+  private service = inject(ReinsuranceService);
+  private toast = inject(ToastService);
+  private cdr = inject(ChangeDetectorRef);
+  private router = inject(Router);
+
+  workbooks: any[] = [];
+  selectedWorkbookId: number | null = null;
+  selectedWorkbook: any = null;
+  selectedState: string = 'TOTAL';
+  states: string[] = ['TOTAL'];
+  activeTab: 'statement' | 'glje' | 'cash' = 'statement';
+
+  statementRows: any[] = [];
+  gljeRows: any[] = [];
+  cashSettlement: any = null;
+
+  loading = false;
+  postingBatch = false;
+
+  // Forms
+  ratesForm: any = {};
+  mappingsForm: any = {};
+  paramsForm: any = {};
+
+  ngOnInit(): void {
+    this.loadWorkbooks();
+  }
+
+  loadWorkbooks(): void {
+    this.loading = true;
+    this.service.getWorkbooks().subscribe({
+      next: (res) => {
+        this.workbooks = res;
+        this.loading = false;
+        if (res.length > 0 && !this.selectedWorkbookId) {
+          this.selectedWorkbookId = res[0].id;
+          this.onWorkbookChange();
+        }
+        this.cdr.markForCheck();
+      },
+      error: () => {
+        this.toast.error('Failed to load workbooks');
+        this.loading = false;
+        this.cdr.markForCheck();
+      }
+    });
+  }
+
+  onWorkbookChange(): void {
+    if (!this.selectedWorkbookId) return;
+    this.loading = true;
+    this.service.getWorkbook(this.selectedWorkbookId).subscribe({
+      next: (res) => {
+        this.selectedWorkbook = res;
+        this.ratesForm = { ...res.rates };
+        this.mappingsForm = {
+          mga: res.mga,
+          lob: res.lob,
+          line_desc_suffix: res.line_desc_suffix,
+          comp: res.comp,
+          cc: res.cc,
+          ext: res.ext,
+          sub: res.sub
+        };
+
+        // Extract states from exhibits
+        if (res.state_exhibits) {
+          const codes = res.state_exhibits.map((e: any) => e.state_code);
+          this.states = ['TOTAL', ...codes.filter((c: string) => c !== 'TOTAL').sort()];
+        } else {
+          this.states = ['TOTAL'];
+        }
+
+        if (!this.states.includes(this.selectedState)) {
+          this.selectedState = 'TOTAL';
+        }
+
+        this.loadActiveTabCalculations();
+      },
+      error: () => {
+        this.toast.error('Failed to load workbook details');
+        this.loading = false;
+        this.cdr.markForCheck();
+      }
+    });
+  }
+
+  onStateChange(): void {
+    this.loadActiveTabCalculations();
+  }
+
+  setTab(tab: 'statement' | 'glje' | 'cash'): void {
+    this.activeTab = tab;
+    this.loadActiveTabCalculations();
+  }
+
+  loadActiveTabCalculations(): void {
+    if (!this.selectedWorkbookId) return;
+    this.loading = true;
+    this.cdr.markForCheck();
+
+    // Populate required parameters form from current state exhibit
+    const curEx = this.selectedWorkbook?.state_exhibits?.find((e: any) => e.state_code === this.selectedState);
+    if (curEx) {
+      this.paramsForm = {
+        pw: curEx.pw[1],
+        uep: curEx.uep[1],
+        lp: curEx.lp[1],
+        laep: curEx.laep[1],
+        ae_paid: curEx.ae_paid[1],
+        loss_reserves: curEx.loss_reserves[1],
+        loss_ibnr: curEx.loss_ibnr[1],
+        lae_reserves_dcc: curEx.lae_reserves_dcc[1],
+        lae_ibnr_dcc: curEx.lae_ibnr_dcc[1],
+        lae_reserves_aoe: curEx.lae_reserves_aoe[1],
+        lae_ibnr_aoe: curEx.lae_ibnr_aoe[1],
+        ulae_ibnr: curEx.ulae_ibnr[1]
+      };
+    }
+
+    if (this.activeTab === 'statement') {
+      this.service.getReinsuranceStatement(this.selectedWorkbookId, this.selectedState).subscribe({
+        next: (res) => {
+          this.statementRows = res;
+          this.loading = false;
+          this.cdr.markForCheck();
+        },
+        error: () => {
+          this.loading = false;
+          this.cdr.markForCheck();
+        }
+      });
+    } else if (this.activeTab === 'glje') {
+      this.service.getGLJournalEntries(this.selectedWorkbookId, this.selectedState).subscribe({
+        next: (res) => {
+          this.gljeRows = res;
+          this.loading = false;
+          this.cdr.markForCheck();
+        },
+        error: () => {
+          this.loading = false;
+          this.cdr.markForCheck();
+        }
+      });
+    } else if (this.activeTab === 'cash') {
+      this.service.getCashSettlementCalculations(this.selectedWorkbookId).subscribe({
+        next: (res) => {
+          this.cashSettlement = res;
+          this.loading = false;
+          this.cdr.markForCheck();
+        },
+        error: () => {
+          this.loading = false;
+          this.cdr.markForCheck();
+        }
+      });
+    } else {
+      this.loading = false;
+      this.cdr.markForCheck();
+    }
+  }
+
+  saveParams(): void {
+    if (!this.selectedWorkbookId) return;
+    this.loading = true;
+
+    // Map single values back to [Prior, Current, YTD] array format
+    const exData: any = {};
+    Object.keys(this.paramsForm).forEach(k => {
+      const curEx = this.selectedWorkbook?.state_exhibits?.find((e: any) => e.state_code === this.selectedState);
+      const prior = curEx ? curEx[k]?.[0] || 0 : 0;
+      const current = Number(this.paramsForm[k] || 0);
+      const ytd = prior + current;
+      exData[k] = [prior, current, ytd];
+    });
+
+    this.service.updateExhibit(this.selectedWorkbookId, this.selectedState, exData).subscribe({
+      next: () => {
+        this.toast.success('Required parameters updated successfully');
+        this.onWorkbookChange();
+      },
+      error: () => {
+        this.toast.error('Failed to update parameters');
+        this.loading = false;
+        this.cdr.markForCheck();
+      }
+    });
+  }
+
+  saveRates(): void {
+    if (!this.selectedWorkbookId) return;
+    this.loading = true;
+    this.service.updateRates(this.selectedWorkbookId, this.ratesForm).subscribe({
+      next: () => {
+        this.toast.success('Rates updated successfully');
+        this.onWorkbookChange();
+      },
+      error: () => {
+        this.toast.error('Failed to update rates');
+        this.loading = false;
+        this.cdr.markForCheck();
+      }
+    });
+  }
+
+  saveMappings(): void {
+    if (!this.selectedWorkbookId) return;
+    this.loading = true;
+    this.service.updateMappings(this.selectedWorkbookId, this.mappingsForm).subscribe({
+      next: () => {
+        this.toast.success('Mappings updated successfully');
+        this.onWorkbookChange();
+      },
+      error: () => {
+        this.toast.error('Failed to update mappings');
+        this.loading = false;
+        this.cdr.markForCheck();
+      }
+    });
+  }
+
+  saveCashParams(): void {
+    if (!this.selectedWorkbookId || !this.cashSettlement) return;
+    this.loading = true;
+    const data = {
+      begBal: Number(this.cashSettlement.beg_bal || 0),
+      amtPaid: Number(this.cashSettlement.amt_paid || 0)
+    };
+    this.service.updateCashSettlement(this.selectedWorkbookId, data).subscribe({
+      next: () => {
+        this.toast.success('Cash settlement balances updated');
+        this.onWorkbookChange();
+      },
+      error: () => {
+        this.toast.error('Failed to update cash settlement balances');
+        this.loading = false;
+        this.cdr.markForCheck();
+      }
+    });
+  }
+
+  postToJournalEntries(): void {
+    if (!this.selectedWorkbookId) return;
+    this.postingBatch = true;
+    this.cdr.markForCheck();
+
+    // Call post to journal entries endpoint directly
+    const url = `${this.service['apiUrl']}/workbooks/${this.selectedWorkbookId}/post-to-journal-entries/${this.selectedState}`;
+    this.service['http'].post<any>(url, {}).subscribe({
+      next: (batch) => {
+        this.toast.success(`Successfully posted ceding entries to Journal Entry batch: ${batch.batch_number}`);
+        this.postingBatch = false;
+        // Redirect to Manual Journal Entries Workspace with batchId query param
+        this.router.navigate(['/journal-entries'], { queryParams: { batchId: batch.id } });
+      },
+      error: (err) => {
+        const msg = err.error?.message || 'Failed to post to journal entries';
+        this.toast.error(msg);
+        this.postingBatch = false;
+        this.cdr.markForCheck();
+      }
+    });
+  }
+
+  exportGLJECSV(): void {
+    if (this.gljeRows.length === 0) return;
+    let csv = 'Account Description,Comp,ACCOUNT,CC,MGA,LOB,ST,EXT,Sub,Description,Debit,Credit\n';
+    
+    let totalDebit = 0;
+    let totalCredit = 0;
+
+    this.gljeRows.forEach(r => {
+      const debitStr = r.debit > 0 ? r.debit.toFixed(2) : '';
+      const creditStr = r.credit > 0 ? `-${r.credit.toFixed(2)}` : '';
+      totalDebit += Number(r.debit || 0);
+      totalCredit += Number(r.credit || 0);
+      csv += `"${r.desc}",${r.comp},${r.account},${r.cc},${r.mga},${r.lob},${r.st},${r.ext},${r.sub},"${r.lineDesc}",${debitStr},${creditStr}\n`;
+    });
+    csv += `JE Control Totals,,,,,,,,,,${totalDebit.toFixed(2)},-${totalCredit.toFixed(2)}\n`;
+
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.setAttribute(
+      'download',
+      `GL_JE_Mapping_${this.selectedWorkbook?.program || 'Treaty'}_${this.selectedWorkbook?.month_key || 'Period'}_${this.selectedState}.csv`
+    );
+    link.click();
+  }
+
+  formatCurrency(value: number | string | null): string {
+    if (value === null || value === undefined || value === '') return '-';
+    const num = Number(value);
+    if (isNaN(num)) return '-';
+    const isNegative = num < 0;
+    const formatted = new Intl.NumberFormat('en-US', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    }).format(Math.abs(num));
+    return isNegative ? `-$${formatted}` : `$${formatted}`;
+  }
+}

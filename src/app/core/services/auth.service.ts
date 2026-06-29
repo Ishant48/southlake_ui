@@ -45,7 +45,7 @@ export class AuthService {
     return localStorage.getItem(SESSION_TOKEN_KEY);
   }
 
-  getCurrentUser(): { id: string; name: string; email: string; role: string } | null {
+  getCurrentUser(): any {
     const raw = localStorage.getItem(CURRENT_USER_KEY);
     if (!raw) return null;
     try {
@@ -53,6 +53,50 @@ export class AuthService {
     } catch {
       return null;
     }
+  }
+
+  hasPermission(moduleOrPermission: string, action?: string): boolean {
+    const user = this.getCurrentUser();
+    if (!user) return false;
+    
+    // Super Admin has full access unconditionally
+    if (user.role && (user.role === 'superadmin' || user.role.name === 'superadmin' || user.is_super_admin)) {
+      return true;
+    }
+
+    // 1-argument signature: checks user.effective_permissions or user.permissions for a direct action name
+    if (!action) {
+      if (user.effective_permissions && Array.isArray(user.effective_permissions)) {
+        return user.effective_permissions.includes(moduleOrPermission);
+      }
+      if (user.permissions && Array.isArray(user.permissions)) {
+        return user.permissions.includes(moduleOrPermission) || 
+               user.permissions.some((p: any) => typeof p === 'object' && p.action === moduleOrPermission) ||
+               user.permissions.some((p: any) => typeof p === 'object' && `${p.module_id}.${p.action}` === moduleOrPermission);
+      }
+      return false;
+    }
+    
+    // 2-argument signature: checks user.permissions for module/action pair
+    if (!user.permissions) return false;
+    
+    // If permissions is an array of strings
+    if (Array.isArray(user.permissions) && typeof user.permissions[0] === 'string') {
+      return user.permissions.includes(`${moduleOrPermission}.${action}`) ||
+             user.permissions.includes(action);
+    }
+    
+    // If permissions is an array of objects
+    if (Array.isArray(user.permissions)) {
+      const modulePerm = user.permissions.find((p: any) => p.module_id === moduleOrPermission);
+      if (modulePerm && typeof modulePerm === 'object') {
+        return !!modulePerm[action];
+      }
+      // If it's flat permissions object array returned by akhil's service
+      return user.permissions.some((p: any) => p.action === `${moduleOrPermission}.${action}` || (p.module_id === moduleOrPermission && p.action === action));
+    }
+    
+    return false;
   }
 
   logout(): void {
@@ -63,5 +107,19 @@ export class AuthService {
     localStorage.removeItem(SESSION_TOKEN_KEY);
     localStorage.removeItem(CURRENT_USER_KEY);
     this.router.navigate(['/auth/login']);
+  }
+
+  getInviteDetails(token: string): Observable<{ email: string; name: string }> {
+    return this.http.get<{ email: string; name: string }>(`${environment.apiUrl}/auth/invite-details`, {
+      params: { token }
+    });
+  }
+
+  acceptInvite(token: string, password: string): Observable<SessionToken> {
+    return this.http.post<SessionToken>(`${environment.apiUrl}/auth/accept-invite`, { token, password });
+  }
+
+  fetchCurrentUser(): Observable<any> {
+    return this.http.get<any>(`${environment.apiUrl}/auth/me`);
   }
 }

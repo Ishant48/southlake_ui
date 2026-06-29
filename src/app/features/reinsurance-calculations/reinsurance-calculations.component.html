@@ -1,0 +1,351 @@
+<div class="calculations-view">
+  <div class="view-header">
+    <div class="header-text">
+      <h1>📊 Reinsurance Calculations Workspace</h1>
+      <p class="subtitle">Analyze ceding calculations, cash settlements, and GL segment mappings for uploaded programs.</p>
+    </div>
+  </div>
+
+  <div class="header-selectors card mb-4">
+    <div class="selection-grid">
+      <div class="select-group">
+        <label>Active Workbook & Month</label>
+        <select [(ngModel)]="selectedWorkbookId" (change)="onWorkbookChange()" class="form-control">
+          <option *ngFor="let wb of workbooks" [value]="wb.id">
+            {{ wb.program }} - {{ wb.month_label }} ({{ wb.source }})
+          </option>
+        </select>
+      </div>
+
+      <div class="select-group">
+        <label>Reporting State</label>
+        <select [(ngModel)]="selectedState" (change)="onStateChange()" class="form-control">
+          <option *ngFor="let st of states" [value]="st">{{ st }}</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <div class="workspace-layout-stacked" *ngIf="selectedWorkbook">
+    <!-- Top Settings Grid -->
+    <div class="settings-grid mb-4">
+      <!-- 1. Required Parameters Form -->
+      <div class="card settings-card">
+        <div class="card-header">
+          <h2>📝 Required Parameters ({{ selectedState }})</h2>
+        </div>
+        <div class="card-body">
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Premiums Written</label>
+              <input type="number" [(ngModel)]="paramsForm.pw" class="form-control" />
+            </div>
+            <div class="form-group">
+              <label>Unearned Premium Reserve</label>
+              <input type="number" [(ngModel)]="paramsForm.uep" class="form-control" />
+            </div>
+            <div class="form-group">
+              <label>Losses Paid (Net)</label>
+              <input type="number" [(ngModel)]="paramsForm.lp" class="form-control" />
+            </div>
+            <div class="form-group">
+              <label>DCC Paid (ALAE)</label>
+              <input type="number" [(ngModel)]="paramsForm.laep" class="form-control" />
+            </div>
+            <div class="form-group">
+              <label>AOE Paid (ULAE TPA)</label>
+              <input type="number" [(ngModel)]="paramsForm.ae_paid" class="form-control" />
+            </div>
+            <div class="form-group">
+              <label>Loss Reserves (Case)</label>
+              <input type="number" [(ngModel)]="paramsForm.loss_reserves" class="form-control" />
+            </div>
+            <div class="form-group" *ngIf="selectedWorkbook.source !== 'FUT'">
+              <label>Loss IBNR Reserves</label>
+              <input type="number" [(ngModel)]="paramsForm.loss_ibnr" class="form-control" />
+            </div>
+            <div class="form-group">
+              <label>LAE Reserves DCC</label>
+              <input type="number" [(ngModel)]="paramsForm.lae_reserves_dcc" class="form-control" />
+            </div>
+            <div class="form-group" *ngIf="selectedWorkbook.source !== 'FUT'">
+              <label>LAE IBNR DCC</label>
+              <input type="number" [(ngModel)]="paramsForm.lae_ibnr_dcc" class="form-control" />
+            </div>
+            <div class="form-group">
+              <label>LAE Reserves AOE</label>
+              <input type="number" [(ngModel)]="paramsForm.lae_reserves_aoe" class="form-control" />
+            </div>
+            <div class="form-group" *ngIf="selectedWorkbook.source !== 'FUT'">
+              <label>LAE IBNR AOE</label>
+              <input type="number" [(ngModel)]="paramsForm.lae_ibnr_aoe" class="form-control" />
+            </div>
+            <div class="form-group" *ngIf="selectedWorkbook.source !== 'FUT'">
+              <label>ULAE IBNR Reserves</label>
+              <input type="number" [(ngModel)]="paramsForm.ulae_ibnr" class="form-control" />
+            </div>
+          </div>
+          <div class="form-actions-row">
+            <button class="btn btn-primary" (click)="saveParams()">
+              Save Parameters
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2. Actuarial Rates Form -->
+      <div class="card settings-card">
+        <div class="card-header">
+          <h2>📊 Actuarial Rates & Commissions (%)</h2>
+        </div>
+        <div class="card-body">
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Quota Share (%)</label>
+              <input type="number" [(ngModel)]="ratesForm.qs" class="form-control" />
+            </div>
+            <div class="form-group">
+              <label>Ceding Fee (%)</label>
+              <input type="number" [(ngModel)]="ratesForm.cf" class="form-control" />
+            </div>
+            <div class="form-group">
+              <label>Ceding Commission (%)</label>
+              <input type="number" [(ngModel)]="ratesForm.comm" class="form-control" />
+            </div>
+            <div class="form-group">
+              <label>ULAE Rate (%)</label>
+              <input type="number" [(ngModel)]="ratesForm.ulae" class="form-control" />
+            </div>
+            <div class="form-group">
+              <label>Boards Charge (%)</label>
+              <input type="number" [(ngModel)]="ratesForm.boards_charge" class="form-control" />
+            </div>
+            <div class="form-group">
+              <label>Loss Ratio Cap (%)</label>
+              <input type="number" [(ngModel)]="ratesForm.loss_ratio_cap" class="form-control" />
+            </div>
+            <div class="form-group">
+              <label>Loss Pick (%)</label>
+              <input type="number" [(ngModel)]="ratesForm.loss_pick" class="form-control" />
+            </div>
+            <div class="form-group">
+              <label>LAE DCC (%)</label>
+              <input type="number" [(ngModel)]="ratesForm.lae_dcc" class="form-control" />
+            </div>
+            <div class="form-group">
+              <label>LAE AOE (%)</label>
+              <input type="number" [(ngModel)]="ratesForm.lae_aoe" class="form-control" />
+            </div>
+          </div>
+          <div class="form-actions-row">
+            <button class="btn btn-primary" (click)="saveRates()">
+              Save Rates
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3. GL Account Segment Mappings Form -->
+      <div class="card settings-card">
+        <div class="card-header">
+          <h2>💼 GL Segment Mappings</h2>
+        </div>
+        <div class="card-body">
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Company (Comp)</label>
+              <input type="text" [(ngModel)]="mappingsForm.comp" class="form-control" />
+            </div>
+            <div class="form-group">
+              <label>Cost Center (CC)</label>
+              <input type="text" [(ngModel)]="mappingsForm.cc" class="form-control" />
+            </div>
+            <div class="form-group">
+              <label>MGA Code</label>
+              <input type="text" [(ngModel)]="mappingsForm.mga" class="form-control" />
+            </div>
+            <div class="form-group">
+              <label>LOB Code</label>
+              <input type="text" [(ngModel)]="mappingsForm.lob" class="form-control" />
+            </div>
+            <div class="form-group">
+              <label>Extension (Ext)</label>
+              <input type="text" [(ngModel)]="mappingsForm.ext" class="form-control" />
+            </div>
+            <div class="form-group">
+              <label>Subledger (Sub)</label>
+              <input type="text" [(ngModel)]="mappingsForm.sub" class="form-control" />
+            </div>
+            <div class="form-group">
+              <label>Line Description Suffix</label>
+              <input type="text" [(ngModel)]="mappingsForm.line_desc_suffix" class="form-control" />
+            </div>
+          </div>
+          <div class="form-actions-row">
+            <button class="btn btn-primary" (click)="saveMappings()">
+              Save Mappings
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main outputs tabs panel -->
+    <main class="main-workspace card w-full">
+      <div class="tabs-header">
+        <button class="tab-btn" [class.active]="activeTab === 'statement'" (click)="setTab('statement')">
+          📊 Reinsurance Statement
+        </button>
+        <button class="tab-btn" [class.active]="activeTab === 'glje'" (click)="setTab('glje')">
+          💼 GL Journal Entries
+        </button>
+        <button class="tab-btn" [class.active]="activeTab === 'cash'" (click)="setTab('cash')">
+          💰 Cash Settlement
+        </button>
+      </div>
+
+      <!-- Tab Contents -->
+      <div class="tab-body" [class.loading-fade]="loading">
+        <!-- Loader -->
+        <div class="loader-overlay" *ngIf="loading">
+          <div class="spinner"></div>
+          <span>Loading ceding calculations...</span>
+        </div>
+
+        <!-- 1. Reinsurance Statement Tab -->
+        <div *ngIf="activeTab === 'statement'">
+          <div class="table-container">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Line Item Description</th>
+                  <th class="text-right">Reporting Month Value</th>
+                  <th>Formula / Source</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let row of statementRows" [class.header-row]="row.isHeader" [class.bold-row]="row.isBold" [class.underline-row]="row.borderClass === 'single-underline'">
+                  <td [class.pl-4]="!row.isHeader && !row.isBold">{{ row.label }}</td>
+                  <td class="text-right" [class.bold-text]="row.isBold">{{ row.isHeader ? '' : formatCurrency(row.value) }}</td>
+                  <td class="formula-text">{{ row.formula || '' }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- 2. GL Journal Entries Tab -->
+        <div *ngIf="activeTab === 'glje'">
+          <div class="export-bar flex-between">
+            <button class="btn btn-success" (click)="postToJournalEntries()" [disabled]="postingBatch">
+              🚀 Post to Journal Entries Batch
+            </button>
+            <button class="btn btn-primary" (click)="exportGLJECSV()">
+              📥 Export Mappings to CSV
+            </button>
+          </div>
+          <div class="table-container">
+            <table class="data-table font-mono">
+              <thead>
+                <tr>
+                  <th>Account Description</th>
+                  <th>Comp</th>
+                  <th>ACCOUNT</th>
+                  <th>CC</th>
+                  <th>MGA</th>
+                  <th>LOB</th>
+                  <th>ST</th>
+                  <th>EXT</th>
+                  <th>Sub</th>
+                  <th class="text-right">Debit</th>
+                  <th class="text-right">Credit</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let row of gljeRows">
+                  <td class="font-sans font-semibold">{{ row.desc }}</td>
+                  <td>{{ row.comp }}</td>
+                  <td>{{ row.account }}</td>
+                  <td>{{ row.cc }}</td>
+                  <td>{{ row.mga }}</td>
+                  <td>{{ row.lob }}</td>
+                  <td>{{ row.st }}</td>
+                  <td>{{ row.ext }}</td>
+                  <td>{{ row.sub || '-' }}</td>
+                  <td class="text-right text-green font-bold">{{ row.debit > 0 ? formatCurrency(row.debit) : '-' }}</td>
+                  <td class="text-right text-red font-bold">{{ row.credit > 0 ? formatCurrency(row.credit) : '-' }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- 3. Cash Settlement Tab -->
+        <div *ngIf="activeTab === 'cash' && cashSettlement">
+          <div class="cash-inputs-bar">
+            <div class="form-group-inline">
+              <label>Beginning Balance</label>
+              <input type="number" [(ngModel)]="cashSettlement.beg_bal" class="form-control-sm" />
+            </div>
+            <div class="form-group-inline">
+              <label>Amount Paid (Loss Funding)</label>
+              <input type="number" [(ngModel)]="cashSettlement.amt_paid" class="form-control-sm" />
+            </div>
+            <button class="btn btn-primary" (click)="saveCashParams()">
+              Update Balances
+            </button>
+          </div>
+
+          <div class="table-container mt-4">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Cash Settlement Metric</th>
+                  <th class="text-right">SSIC Cession (Carrier)</th>
+                  <th class="text-right">Reinsurer Cession (100%)</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Quota Share Percentage</td>
+                  <td class="text-right">{{ (100 - (selectedWorkbook.rates.qs || 100)) }}%</td>
+                  <td class="text-right">{{ (selectedWorkbook.rates.qs || 100) }}%</td>
+                </tr>
+                <tr class="bold-row">
+                  <td>Beginning Balance</td>
+                  <td class="text-right">-</td>
+                  <td class="text-right">{{ formatCurrency(cashSettlement.beg_bal) }}</td>
+                </tr>
+                <tr>
+                  <td>Premiums Written (Net Ceding Comm & Fee)</td>
+                  <td class="text-right">{{ formatCurrency(cashSettlement.premium_carrier) }}</td>
+                  <td class="text-right">{{ formatCurrency(cashSettlement.premium_reinsurer) }}</td>
+                </tr>
+                <tr>
+                  <td>Losses Paid (ALAE & ULAE)</td>
+                  <td class="text-right">{{ formatCurrency(cashSettlement.loss_paid_carrier) }}</td>
+                  <td class="text-right">{{ formatCurrency(cashSettlement.loss_paid_reinsurer) }}</td>
+                </tr>
+                <tr class="bold-row">
+                  <td>Net Cash Settlement</td>
+                  <td class="text-right">{{ formatCurrency(cashSettlement.net_carrier) }}</td>
+                  <td class="text-right">{{ formatCurrency(cashSettlement.net_reinsurer) }}</td>
+                </tr>
+                <tr>
+                  <td>Amount Paid (Loss Funding / Drawdowns)</td>
+                  <td class="text-right">-</td>
+                  <td class="text-right">{{ formatCurrency(cashSettlement.amt_paid) }}</td>
+                </tr>
+                <tr class="bold-row underline-row">
+                  <td>Ending Cash Settlement Balance</td>
+                  <td class="text-right">-</td>
+                  <td class="text-right text-green">{{ formatCurrency(cashSettlement.ending_balance) }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>

@@ -1,6 +1,7 @@
-import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { Component, Input, Output, EventEmitter, inject } from '@angular/core';
 import { User } from '../../../../core/models/user.model';
 import { UserStatusBadgeComponent } from '../user-status-badge/user-status-badge.component';
+import { AuthService } from '../../../../core/services/auth.service';
 
 @Component({
   selector: 'app-users-table',
@@ -10,6 +11,8 @@ import { UserStatusBadgeComponent } from '../user-status-badge/user-status-badge
   styleUrl: './users-table.component.scss',
 })
 export class UsersTableComponent {
+  private authService = inject(AuthService);
+
   @Input() users: User[] = [];
   @Input() loading = false;
   @Input() showCheckboxes = true;
@@ -20,6 +23,10 @@ export class UsersTableComponent {
   @Output() selectionChanged = new EventEmitter<string[]>();
 
   selectedIds = new Set<string>();
+
+  hasPermission(permission: string): boolean {
+    return this.authService.hasPermission(permission);
+  }
   skeletonRows = [1, 2, 3, 4, 5];
 
   isSelected(id: string): boolean {

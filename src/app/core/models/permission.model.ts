@@ -10,15 +10,9 @@ export interface Module {
 }
 
 export const MODULES: Module[] = [
-  { id: 'journal_entry', label: 'Journal Entry' },
-  { id: 'claims', label: 'Claims' },
-  { id: 'billing', label: 'Billing' },
-  { id: 'reinsurance', label: 'Reinsurance' },
-  { id: 'mga', label: 'MGA' },
-  { id: 'compliance', label: 'Compliance' },
-  { id: 'period_locking', label: 'Period Locking' },
-  { id: 'audit_trail', label: 'Audit Trail' },
+  { id: 'chart_of_accounts', label: 'Chart of Accounts' },
   { id: 'user_management', label: 'User Management' },
+  { id: 'master_data', label: 'Master Data' },
 ];
 
 export const PERMISSION_ACTIONS = [

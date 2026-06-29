@@ -6,11 +6,12 @@ import { AuthService } from '../services/auth.service';
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const auth = inject(AuthService);
 
-  const isAuthPath = req.url.includes('/auth/');
+  const publicAuthPaths = ['/auth/login', '/auth/verify-otp', '/auth/resolve-challenge', '/auth/accept-invite', '/auth/invite-details'];
+  const isPublicAuth = publicAuthPaths.some(p => req.url.includes(p));
   const token = auth.getToken();
 
   let cloned = req;
-  if (token && !isAuthPath) {
+  if (token && !isPublicAuth) {
     cloned = req.clone({
       setHeaders: { Authorization: `Bearer ${token}` }
     });
@@ -18,7 +19,7 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
 
   return next(cloned).pipe(
     catchError(err => {
-      if (err.status === 401 && !isAuthPath) {
+      if (err.status === 401 && !isPublicAuth) {
         auth.logout();
       }
       return throwError(() => err);

@@ -1,320 +1,375 @@
-# southlake-ui
+# Southlake UI — Angular Frontend
 
-Angular 22 frontend for the **Southlake Insurance** accounting platform.
-Covers the **User Management** domain: login (email OTP), single-device conflict handling, user list, invite flow, roles and permissions matrix, and activity audit log.
+The Angular 22 frontend for the **Southlake Insurance** platform. Provides the complete user interface for authentication (email + OTP), user management, role and permission configuration, chart of accounts, and master data — all communicating with the `southlake_service` NestJS backend.
 
 ---
 
-## Tech stack
+## Table of Contents
 
-| Layer | Choice |
-|---|---|
-| Framework | Angular 22 (standalone components throughout) |
-| Styling | Custom SCSS per component (no Angular Material) |
-| Forms | Angular Reactive Forms |
-| HTTP | Angular HttpClient with functional interceptor |
-| Routing | Angular Router with lazy-loaded feature routes |
-| Auth | Email OTP + opaque session token (stored in `localStorage`) |
-| Linting | ESLint 9 (flat config) + `angular-eslint` + Prettier 3 |
+- [Tech Stack](#tech-stack)
+- [Project Structure](#project-structure)
+- [Prerequisites](#prerequisites)
+- [Setup on a New Device](#setup-on-a-new-device)
+  - [Step 1 — Install Node.js](#step-1--install-nodejs)
+  - [Step 2 — Install Dependencies](#step-2--install-dependencies)
+  - [Step 3 — Configure the API URL](#step-3--configure-the-api-url)
+  - [Step 4 — Start the Dev Server](#step-4--start-the-dev-server)
+- [Environment Configuration](#environment-configuration)
+- [Available Scripts](#available-scripts)
+- [Application Features](#application-features)
+- [Routing Map](#routing-map)
+- [Authentication Flow](#authentication-flow)
+- [Permissions and Route Protection](#permissions-and-route-protection)
+- [Design System](#design-system)
+- [Key Components](#key-components)
+- [Code Quality](#code-quality)
+- [Generating New Components](#generating-new-components)
+- [Troubleshooting](#troubleshooting)
+
+---
+
+## Tech Stack
+
+| Layer        | Choice                                              |
+|--------------|-----------------------------------------------------|
+| Framework    | Angular 22 (standalone components throughout)       |
+| Language     | TypeScript >= 6.0                                   |
+| Runtime      | Node.js >= 24.0.0                                   |
+| Styling      | Custom SCSS per component (no Angular Material)     |
+| Forms        | Angular Reactive Forms                              |
+| HTTP         | Angular `HttpClient` with functional interceptors   |
+| Routing      | Angular Router with lazy-loaded feature routes      |
+| Auth         | Email OTP + JWT session token stored in `localStorage` |
+| Linting      | ESLint 9 (flat config) + `angular-eslint` + Prettier 3 |
+
+---
+
+## Project Structure
+
+```
+southlake_ui/
+├── angular.json                          Angular workspace config
+├── tsconfig.json
+├── package.json
+│
+└── src/
+    ├── main.ts                           Bootstrap entry point
+    ├── index.html
+    ├── styles.scss                       Global reset + @use partials
+    │
+    ├── styles/                           Global design tokens & shared styles
+    │   ├── _variables.scss               CSS custom properties (:root)
+    │   ├── _auth.scss                    Login / OTP / invite screens
+    │   ├── _layout.scss                  Sidebar, header, app shell
+    │   ├── _components.scss              Toast, modals, buttons, badges
+    │   └── _user-management.scss         Tables, stats cards, permission matrix
+    │
+    ├── environments/
+    │   ├── environment.ts                Development config (apiUrl)
+    │   └── environment.prod.ts           Production config (apiUrl)
+    │
+    └── app/
+        ├── app.config.ts                 provideRouter, provideHttpClient + interceptors
+        ├── app.routes.ts                 Top-level routes (lazy feature routes + guards)
+        ├── app.component.ts / .html
+        │
+        ├── core/                         Singleton services, guards, interceptors
+        │   ├── models/                   TypeScript interfaces
+        │   │   ├── user.model.ts
+        │   │   ├── role.model.ts
+        │   │   ├── permission.model.ts
+        │   │   ├── session.model.ts
+        │   │   └── activity-log.model.ts
+        │   ├── services/                 API service wrappers (all HTTP calls)
+        │   │   ├── auth.service.ts       Login, OTP, logout, fetchCurrentUser
+        │   │   ├── users.service.ts
+        │   │   ├── roles.service.ts
+        │   │   ├── permissions.service.ts
+        │   │   └── activity-logs.service.ts
+        │   ├── guards/
+        │   │   ├── auth.guard.ts         Redirects unauthenticated users to /auth/login
+        │   │   └── permission.guard.ts   Fetches /auth/me on navigation, enforces view access
+        │   └── interceptors/
+        │       └── auth.interceptor.ts   Attaches Bearer token; handles 401 auto-logout
+        │
+        ├── shared/                       Reusable UI components
+        │   └── components/
+        │       ├── toast/                Success / error / info toast notifications
+        │       ├── confirm-dialog/       Generic confirmation modal
+        │       └── loading-spinner/      Full-screen loading overlay
+        │
+        ├── layout/                       App shell
+        │   ├── main-layout/              Router outlet wrapper
+        │   ├── sidebar/                  Navigation with dynamic permission-based visibility
+        │   └── header/                   Topbar with user menu
+        │
+        └── features/                     Lazy-loaded feature modules
+            ├── auth/
+            │   ├── login/                Email entry page
+            │   ├── otp/                  6-digit OTP input
+            │   ├── session-conflict/     Single-device conflict resolution
+            │   └── accept-invite/        Password setup for newly invited users
+            │
+            ├── dashboard/                Main landing page after login
+            │
+            ├── user-management/
+            │   ├── users/                User list, invite panel, user detail panel
+            │   ├── roles/                Role cards, permission matrix modal
+            │   └── activity-logs/        Audit log table with filters
+            │
+            ├── chart-of-accounts/        COA hierarchy view
+            │
+            └── masters/                  Master data management
+```
 
 ---
 
 ## Prerequisites
 
-- Node.js >= 24
-- Angular CLI >= 22 (`npm install -g @angular/cli@^22`)
-- `southlake_service` backend running at `http://localhost:3000`
+| Tool           | Version   | Download / Install                                              |
+|----------------|-----------|-----------------------------------------------------------------|
+| Node.js        | >= 24.0.0 | https://nodejs.org                                              |
+| NVM (optional) | Latest    | https://github.com/coreybutler/nvm-windows/releases             |
+| Angular CLI    | >= 22.0.0 | `npm install -g @angular/cli`                                   |
+| Backend        | Running   | Start `southlake_service` first — see its README                |
 
 ---
 
-## Quick start
+## Setup on a New Device
+
+### Step 1 — Install Node.js
+
+**Using NVM (recommended):**
 
 ```bash
-# 1. Install dependencies
-npm install --legacy-peer-deps
+nvm install 24
+nvm use 24
 
-# 2. Start the dev server
-npm start
+# Verify
+node --version    # v24.x.x
+npm --version
 ```
 
-The app is available at `http://localhost:4200`.
-Unauthenticated users are redirected to `/auth/login` by the auth guard.
-
-For production:
-```bash
-npm run build:prod
-# Output in dist/southlake_ui/
-```
+**Without NVM:** Download Node.js 24 from https://nodejs.org.
 
 ---
 
-## Generating new components
-
-Always use the Angular CLI to generate new components so the correct file structure is created automatically:
+### Step 2 — Install Dependencies
 
 ```bash
-# Feature component
-ng generate component features/auth/my-feature --standalone --style=scss
-
-# Shared component
-ng generate component shared/components/my-widget --standalone --style=scss
-
-# Layout component
-ng generate component layout/my-panel --standalone --style=scss
-```
-
-Each `ng generate component` call creates four files:
-- `my-component.component.ts` (class + metadata pointing at `templateUrl` / `styleUrl`)
-- `my-component.component.html` (template)
-- `my-component.component.scss` (styles)
-- `my-component.component.spec.ts` (unit test)
-
----
-
-## Environment config
-
-| File | `apiUrl` |
-|---|---|
-| `src/environments/environment.ts` | `http://localhost:3000/api` |
-| `src/environments/environment.prod.ts` | Set to your production API URL |
-
-Edit `src/environments/environment.ts` to point at a different backend.
-
----
-
-## Project structure
-
-Every component follows the Angular CLI scaffold pattern:
-`<name>.component.ts` + `<name>.component.html` + `<name>.component.scss` + `<name>.component.spec.ts`
-
-```
-src/
-├── main.ts                               Bootstrap entry point
-├── index.html
-├── styles.scss                           Global reset + @use partials
-├── styles/
-│   ├── _variables.scss                   All CSS custom properties (:root)
-│   ├── _auth.scss                        Two-panel login / OTP / conflict pages
-│   ├── _layout.scss                      Sidebar, header, app shell
-│   ├── _components.scss                  Toast, slide panels, modals, buttons, badges
-│   └── _user-management.scss             Stats grid, table, permission matrix
-│
-├── environments/
-│   ├── environment.ts
-│   └── environment.prod.ts
-│
-└── app/
-    ├── app.config.ts                     provideRouter, provideHttpClient (+ interceptor)
-    ├── app.routes.ts                     Top-level routes (lazy feature routes)
-    ├── app.component.ts / .html / .scss / .spec.ts
-    │
-    ├── core/
-    │   ├── models/                       TypeScript interfaces
-    │   │   ├── user.model.ts
-    │   │   ├── role.model.ts
-    │   │   ├── permission.model.ts
-    │   │   ├── session.model.ts
-    │   │   └── activity-log.model.ts
-    │   ├── services/                     Injectable API service wrappers
-    │   │   ├── auth.service.ts
-    │   │   ├── users.service.ts
-    │   │   ├── roles.service.ts
-    │   │   ├── permissions.service.ts
-    │   │   └── activity-logs.service.ts
-    │   ├── guards/
-    │   │   └── auth.guard.ts             Functional CanActivateFn
-    │   └── interceptors/
-    │       └── auth.interceptor.ts       Attaches Bearer token; redirects on 401
-    │
-    ├── shared/
-    │   └── components/
-    │       ├── toast/
-    │       │   ├── toast.service.ts
-    │       │   ├── toast.component.ts
-    │       │   ├── toast.component.html
-    │       │   ├── toast.component.scss
-    │       │   └── toast.component.spec.ts
-    │       ├── confirm-dialog/
-    │       │   ├── confirm-dialog.component.ts
-    │       │   ├── confirm-dialog.component.html
-    │       │   ├── confirm-dialog.component.scss
-    │       │   └── confirm-dialog.component.spec.ts
-    │       └── loading-spinner/
-    │           ├── loading-spinner.component.ts
-    │           ├── loading-spinner.component.html
-    │           ├── loading-spinner.component.scss
-    │           └── loading-spinner.component.spec.ts
-    │
-    ├── layout/
-    │   ├── main-layout/
-    │   │   ├── main-layout.component.ts
-    │   │   ├── main-layout.component.html
-    │   │   ├── main-layout.component.scss
-    │   │   └── main-layout.component.spec.ts
-    │   ├── sidebar/
-    │   │   ├── sidebar.component.ts
-    │   │   ├── sidebar.component.html
-    │   │   ├── sidebar.component.scss
-    │   │   └── sidebar.component.spec.ts
-    │   └── header/
-    │       ├── header.component.ts
-    │       ├── header.component.html
-    │       ├── header.component.scss
-    │       └── header.component.spec.ts
-    │
-    └── features/
-        ├── auth/
-        │   ├── auth.routes.ts
-        │   ├── login/
-        │   │   ├── login.component.ts
-        │   │   ├── login.component.html
-        │   │   ├── login.component.scss
-        │   │   └── login.component.spec.ts
-        │   ├── otp/
-        │   │   ├── otp.component.ts
-        │   │   ├── otp.component.html
-        │   │   ├── otp.component.scss
-        │   │   └── otp.component.spec.ts
-        │   └── session-conflict/
-        │       ├── session-conflict.component.ts
-        │       ├── session-conflict.component.html
-        │       ├── session-conflict.component.scss
-        │       └── session-conflict.component.spec.ts
-        │
-        ├── dashboard/
-        │   ├── dashboard.component.ts
-        │   ├── dashboard.component.html
-        │   ├── dashboard.component.scss
-        │   └── dashboard.component.spec.ts
-        │
-        └── user-management/
-            ├── user-management.routes.ts
-            ├── users/
-            │   ├── users.component.ts            Stats cards, tab bar, search/filter
-            │   ├── users.component.html
-            │   ├── users.component.scss
-            │   ├── users.component.spec.ts
-            │   ├── users-table/
-            │   │   ├── users-table.component.ts  Table with avatar, role badge, bulk select
-            │   │   ├── users-table.component.html
-            │   │   ├── users-table.component.scss
-            │   │   └── users-table.component.spec.ts
-            │   ├── invite-panel/
-            │   │   ├── invite-panel.component.ts  468px slide panel, reactive form
-            │   │   ├── invite-panel.component.html
-            │   │   ├── invite-panel.component.scss
-            │   │   └── invite-panel.component.spec.ts
-            │   ├── user-detail-panel/
-            │   │   ├── user-detail-panel.component.ts  Profile + Permissions tabs
-            │   │   ├── user-detail-panel.component.html
-            │   │   ├── user-detail-panel.component.scss
-            │   │   └── user-detail-panel.component.spec.ts
-            │   └── user-status-badge/
-            │       ├── user-status-badge.component.ts   active / inactive / pending pills
-            │       ├── user-status-badge.component.html
-            │       ├── user-status-badge.component.scss
-            │       └── user-status-badge.component.spec.ts
-            ├── roles/
-            │   ├── roles.component.ts             Card grid, create / edit / delete
-            │   ├── roles.component.html
-            │   ├── roles.component.scss
-            │   ├── roles.component.spec.ts
-            │   └── role-permissions-modal/
-            │       ├── role-permissions-modal.component.ts  12-action x 9-module matrix
-            │       ├── role-permissions-modal.component.html
-            │       ├── role-permissions-modal.component.scss
-            │       └── role-permissions-modal.component.spec.ts
-            └── activity-logs/
-                ├── activity-logs.component.ts     Table, pagination, action filters
-                ├── activity-logs.component.html
-                ├── activity-logs.component.scss
-                └── activity-logs.component.spec.ts
+cd southlake_ui
+npm install
 ```
 
 ---
 
-## Authentication flow
+### Step 3 — Configure the API URL
+
+Open `src/environments/environment.ts` and set `apiUrl` to point at your running backend:
+
+```typescript
+export const environment = {
+  production: false,
+  apiUrl: 'http://localhost:3000'   // Default — backend on the same machine
+};
+```
+
+**If the backend is on a different machine (same network):**
+
+```typescript
+apiUrl: 'http://192.168.1.100:3000'   // Replace with the backend machine's IP
+```
+
+**For production**, update `src/environments/environment.prod.ts`:
+
+```typescript
+export const environment = {
+  production: true,
+  apiUrl: 'https://api.yourdomain.com'
+};
+```
+
+---
+
+### Step 4 — Start the Dev Server
+
+```bash
+npm run start
+```
+
+The app opens at **http://localhost:4200**.
+
+Unauthenticated users are automatically redirected to `/auth/login` by the auth guard.
+
+---
+
+## Environment Configuration
+
+| File                            | Purpose                          |
+|---------------------------------|----------------------------------|
+| `src/environments/environment.ts`      | Development — points to `http://localhost:3000` |
+| `src/environments/environment.prod.ts` | Production — set to your live API URL |
+
+Only `apiUrl` needs to be changed. Angular's build system automatically swaps the correct file based on the `--configuration` flag.
+
+---
+
+## Available Scripts
+
+| Script                   | Description                                            |
+|--------------------------|--------------------------------------------------------|
+| `npm run start`          | Start Angular dev server at http://localhost:4200      |
+| `npm run build`          | Build for development                                  |
+| `npm run build:prod`     | Build an optimized production bundle (output: `dist/`) |
+| `npm run lint`           | Run ESLint (zero warnings policy)                      |
+| `npm run lint:fix`       | Auto-fix all fixable ESLint violations                 |
+| `npm run format`         | Auto-format all TS, HTML, and SCSS files with Prettier |
+| `npm run format:check`   | Check formatting without writing changes               |
+
+---
+
+## Application Features
+
+| Module                  | Description                                                              |
+|-------------------------|--------------------------------------------------------------------------|
+| **Authentication**      | Email + OTP two-factor login with JWT session management                 |
+| **User Invitations**    | New users receive an email link and set their password on first access   |
+| **User Management**     | List, invite, view, edit, and deactivate user accounts                   |
+| **Roles & Permissions** | Create roles and assign per-module view/create/edit/delete permissions   |
+| **Chart of Accounts**   | Browse the full COA hierarchy with account type classifications           |
+| **Masters**             | Manage master data records                                               |
+| **Activity Logs**       | View a complete audit trail of all user actions                          |
+
+---
+
+## Routing Map
+
+| Path                                  | Component                  | Guard(s)                            |
+|---------------------------------------|----------------------------|-------------------------------------|
+| `/auth/login`                         | `LoginComponent`           | None                                |
+| `/auth/otp`                           | `OtpComponent`             | None                                |
+| `/auth/session-conflict`              | `SessionConflictComponent` | None                                |
+| `/auth/accept-invite`                 | `AcceptInviteComponent`    | None                                |
+| `/dashboard`                          | `DashboardComponent`       | `authGuard`                         |
+| `/user-management/users`              | `UsersComponent`           | `authGuard`, `permissionGuard`      |
+| `/user-management/roles`              | `RolesComponent`           | `authGuard`, `permissionGuard`      |
+| `/user-management/activity-logs`      | `ActivityLogsComponent`    | `authGuard`, `permissionGuard`      |
+| `/chart-of-accounts`                  | `ChartOfAccountsComponent` | `authGuard`, `permissionGuard`      |
+| `/masters`                            | `MastersComponent`         | `authGuard`, `permissionGuard`      |
+| `/`                                   | —                          | Redirect to `/dashboard`            |
+
+---
+
+## Authentication Flow
 
 ```
-/auth/login
-  POST /api/auth/request-otp { email }
-  navigate to /auth/otp (email in router state)
+1. /auth/login
+   → User enters email
+   → POST /auth/login (backend sends OTP)
+   → Navigate to /auth/otp
 
-/auth/otp
-  POST /api/auth/verify-otp { email, otp, device_label }
-  token_type === 'session'   -> store token, navigate to /user-management/users
-  token_type === 'challenge' -> navigate to /auth/session-conflict (challenge data in state)
+2. /auth/otp
+   → User enters 6-digit OTP
+   → POST /auth/verify-otp
+       • token_type = 'session'   → Store token in localStorage → Navigate to /dashboard
+       • token_type = 'challenge' → Navigate to /auth/session-conflict
 
-/auth/session-conflict
-  "Sign in here" -> POST /api/auth/resolve-challenge { challenge_token, accept: true }
-                 -> store new token, navigate to /user-management/users
-  "Cancel"       -> navigate back to /auth/login
+3. /auth/session-conflict
+   → User already logged in on another device
+   → "Sign in here" → POST /auth/resolve-challenge { accept: true }
+                    → Store new token → Navigate to /dashboard
+   → "Cancel"       → Back to /auth/login
+
+4. /auth/accept-invite (first-time users)
+   → User clicks the email invite link
+   → Lands on the "Create Your Password" screen
+   → POST /auth/accept-invite { token, password }
+   → Navigate to /auth/login to sign in
 ```
 
 Session token is stored as `sl_session_token` in `localStorage`.
-The `AuthInterceptor` adds `Authorization: Bearer <token>` to every outbound request.
-On a `401` response the interceptor clears storage and redirects to `/auth/login`.
+The `authInterceptor` automatically attaches `Authorization: Bearer <token>` to all outgoing requests.
+On a `401` response the interceptor clears localStorage and redirects to `/auth/login`.
 
 ---
 
-## Design system
+## Permissions and Route Protection
 
-All visual tokens live in `src/styles/_variables.scss` as CSS custom properties:
+The app uses **two guards** working together:
 
-| Token | Value | Usage |
-|---|---|---|
-| `--navy` | `#0d1b4b` | Primary brand, sidebar active, headings |
-| `--coral` | `#e05470` | CTAs, active tab underline, auth title |
-| `--bg` | `#f2f4f7` | Page background |
-| `--green` | `#2e7d32` | Active status, success toasts |
-| `--orange` | `#e65100` | Warning, pending invites |
-| `--red` | `#c62828` | Error toasts, destructive actions |
-| `--blue` | `#1565c0` | Info, read-access badges |
+### `authGuard`
+- Checks if a valid session token exists in localStorage.
+- If not, redirects to `/auth/login`.
 
-Font stack: `system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif`
+### `permissionGuard(module, action)`
+- Calls `GET /auth/me` on **every route navigation** to fetch the latest permissions from the server.
+- Updates localStorage with the fresh data.
+- If the user lacks the required permission (e.g., `view` on `user_management`), they are redirected to `/dashboard`.
+- This ensures that permission changes made by the Super Admin are **immediately enforced** — even if the user is already logged in.
+
+### Sidebar Visibility
+- The sidebar reads permissions from localStorage on each navigation.
+- Menu items are hidden if the user lacks `view` access for that module.
+- Super Admin always has full access and is never restricted.
 
 ---
 
-## Key component notes
+## Design System
 
-### OTP inputs (`otp/otp.component.ts`)
-Six individual `<input>` elements with `inputmode="numeric"` and `maxlength="1"`.
+All design tokens are defined as CSS custom properties in `src/styles/_variables.scss`:
+
+| Token          | Value     | Usage                                          |
+|----------------|-----------|------------------------------------------------|
+| `--navy`       | `#0d1b4b` | Primary brand, sidebar, active states, headings |
+| `--coral`      | `#e05470` | CTAs, active tab underline, auth title          |
+| `--bg`         | `#f2f4f7` | Page background                                |
+| `--green`      | `#2e7d32` | Active status badges, success toasts            |
+| `--orange`     | `#e65100` | Warning states, pending invite badges           |
+| `--red`        | `#c62828` | Error toasts, destructive action buttons        |
+| `--blue`       | `#1565c0` | Info states, read-access indicators            |
+
+**Font stack:** `system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif`
+
+---
+
+## Key Components
+
+### OTP Input (`features/auth/otp/`)
+- Six individual `<input>` elements with `inputmode="numeric"` and `maxlength="1"`.
 - Typing a digit auto-focuses the next input.
-- Backspace on an empty input moves focus back.
-- Pasting a 6-digit string distributes digits across all inputs.
+- Backspace on an empty field moves focus back.
+- Pasting a 6-digit string fills all inputs at once.
 - All six filled triggers auto-submit.
 
-### Slide panels (`invite-panel/`, `user-detail-panel/`)
-Fixed panel anchored to the right, off-screen by default (`right: -500px`).
-Opens with a CSS transition (`right: 0`) and a blurred backdrop overlay.
-Closing plays the reverse transition.
+### Accept Invite (`features/auth/accept-invite/`)
+- Shown to users clicking an invite link for the first time.
+- Displays a **"Create Your Password"** form.
+- Validates the invite token from the URL query params.
+- On success, redirects to `/auth/login`.
 
-### Permission matrix (`role-permissions-modal/`)
-Rows are modules (9), columns are actions (12: view, create, edit, approve, export, post, file, lock, override, reconcile, void, reverse).
-Each row has **Full / Read / None** preset buttons.
-Four summary cards at the top count modules by access level.
+### Slide Panels (`features/user-management/users/invite-panel/`, `user-detail-panel/`)
+- Fixed panels anchored to the right edge of the screen.
+- Opens with a CSS transition (`right: 0`) and a blurred backdrop.
+- Closing plays the reverse slide-out transition.
 
-### Single-device conflict dialog (`session-conflict/`)
-Receives `{ challenge_token, existing_device: { label, ip_address, created_at } }` via router state.
-"Sign in here" calls `POST /api/auth/resolve-challenge` with `accept: true`, displacing the old session.
+### Permission Checklist (`features/user-management/roles/role-permissions-modal/`, `users/user-detail-panel/`)
+- Replaces the grid matrix layout with a vertical scrollable checklist of flat permissions.
+- **Grouped & Modular Structure**: Dynamically parses the flat database permission actions and groups checkboxes under module/resource headers (e.g. Chart of Accounts, Master Data, Activity Logs, Users).
+- Toggling checkboxes updates role-level assignments or saves explicit user `grant` / `revoke` overrides to the backend.
 
----
+### Session Conflict Dialog (`features/auth/session-conflict/`)
+- Shows information about the existing session (device label, IP, created date).
+- "Sign in here" calls `POST /auth/resolve-challenge` to displace the old session.
+- "Cancel" returns the user to the login screen.
 
-## Routing map
-
-| Path | Component | Guard |
-|---|---|---|
-| `/auth/login` | `LoginComponent` | none |
-| `/auth/otp` | `OtpComponent` | none |
-| `/auth/session-conflict` | `SessionConflictComponent` | none |
-| `/user-management/users` | `UsersComponent` | `authGuard` |
-| `/user-management/roles` | `RolesComponent` | `authGuard` |
-| `/user-management/activity-logs` | `ActivityLogsComponent` | `authGuard` |
-| `/` | redirect | to `/user-management/users` |
+### Sidebar (`layout/sidebar/`)
+- Dynamically hides/shows menu items based on the user's current permissions.
+- Permissions are re-read from localStorage on every route navigation.
+- Super Admin always sees all items.
 
 ---
 
-## Code quality
+## Code Quality
 
 ```bash
 # Check for lint errors (zero warnings policy)
@@ -323,14 +378,14 @@ npm run lint
 # Auto-fix all fixable lint violations
 npm run lint:fix
 
-# Format all TS, HTML, and SCSS files with Prettier
+# Format all TypeScript, HTML, and SCSS files
 npm run format
 
-# Check formatting without writing
+# Check formatting without writing changes
 npm run format:check
 ```
 
-VSCode auto-formats and auto-fixes on save. Install the recommended extensions once:
+**Recommended VS Code extensions:**
 
 ```bash
 code --install-extension esbenp.prettier-vscode
@@ -338,7 +393,88 @@ code --install-extension dbaeumer.vscode-eslint
 code --install-extension Angular.ng-template
 ```
 
-The `.vscode/settings.json` in this repo enables:
-- `editor.formatOnSave: true` (Prettier)
+The `.vscode/settings.json` enables:
+- `editor.formatOnSave: true` (via Prettier)
 - `source.fixAll.eslint: "explicit"` (ESLint auto-fix on save)
-- ESLint flat config mode (`eslint.useFlatConfig: true`)
+- `eslint.useFlatConfig: true` (ESLint 9 flat config mode)
+
+---
+
+## Generating New Components
+
+Always use the Angular CLI so the correct file structure is created:
+
+```bash
+# Feature component
+ng generate component features/my-feature/my-component --standalone --style=scss
+
+# Shared component
+ng generate component shared/components/my-widget --standalone --style=scss
+
+# Layout component
+ng generate component layout/my-panel --standalone --style=scss
+```
+
+Each `ng generate component` creates four files:
+- `my-component.component.ts` — class + metadata
+- `my-component.component.html` — template
+- `my-component.component.scss` — component styles
+- `my-component.component.spec.ts` — unit test shell
+
+---
+
+## Troubleshooting
+
+### App shows blank screen or fails to load
+
+**Check:**
+1. Make sure `southlake_service` backend is running on port 3000.
+2. Verify `apiUrl` in `src/environments/environment.ts` is correct.
+3. Open the browser DevTools (F12) → Console for error messages.
+
+---
+
+### CORS error in the browser console
+
+**Fix:**
+1. Confirm the backend is running.
+2. Make sure `apiUrl` matches the backend's actual host and port (no trailing slash).
+3. If backend and frontend run on **different machines**, use the backend machine's IP address — not `localhost`.
+
+---
+
+### Permissions not updating after Super Admin makes changes
+
+**Fix:**
+1. The affected user should click any sidebar link to trigger a route navigation.
+2. The `permissionGuard` automatically calls `/auth/me` on every navigation to fetch fresh permissions.
+3. If still not reflected, the user can hard-refresh with **Ctrl + Shift + R**.
+
+---
+
+### npm install fails
+
+```bash
+npm cache clean --force
+npm install
+```
+
+Verify the Node.js version:
+
+```bash
+node --version   # Must be v24.x.x or higher
+```
+
+---
+
+### Cannot find module error after pulling changes
+
+```bash
+npm install
+```
+
+New dependencies may have been added by another developer.
+
+---
+
+*Last updated: June 2026*

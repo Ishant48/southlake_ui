@@ -9,7 +9,7 @@ export class PermissionsService {
   private http = inject(HttpClient);
 
   getModules(): Observable<Module[]> {
-    return of(MODULES);
+    return this.http.get<Module[]>(`${environment.apiUrl}/permissions/modules`);
   }
 
   getPermissions(): Observable<Permission[]> {

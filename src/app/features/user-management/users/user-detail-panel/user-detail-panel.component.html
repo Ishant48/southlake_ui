@@ -22,7 +22,9 @@
 
     <div class="panel-tabs">
       <button class="tab-btn" [class.active]="activeTab === 'profile'" (click)="activeTab = 'profile'">Profile</button>
-      <button class="tab-btn" [class.active]="activeTab === 'permissions'" (click)="loadPermissionsTab()">Permissions</button>
+      @if (hasPermission('permission.assign')) {
+        <button class="tab-btn" [class.active]="activeTab === 'permissions'" (click)="loadPermissionsTab()">Permissions</button>
+      }
     </div>
 
     <div class="panel-body">
@@ -77,40 +79,24 @@
           @if (permsLoading) {
             <div class="loading-row">Loading permissions...</div>
           } @else {
-            <div class="perm-table-wrap">
-              <table class="perm-table">
-                <thead>
-                  <tr>
-                    <th class="module-col">Module</th>
-                    @for (action of visibleActions; track action.key) {
-                      <th>{{ action.label }}</th>
-                    }
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  @for (mod of modules; track mod.id) {
-                    <tr>
-                      <td class="module-name">{{ mod.label }}</td>
-                      @for (action of visibleActions; track action.key) {
-                        <td class="check-cell">
-                          <input type="checkbox"
-                            [checked]="getPermValue(mod.id, action.key)"
-                            (change)="setPermValue(mod.id, action.key, $event)">
-                        </td>
-                      }
-                      <td>
-                        <div class="preset-btns">
-                          <button class="preset-btn" (click)="setPreset(mod.id, 'full')">Full</button>
-                          <button class="preset-btn" (click)="setPreset(mod.id, 'read')">Read</button>
-                          <button class="preset-btn" (click)="setPreset(mod.id, 'none')">None</button>
-                        </div>
-                      </td>
-                    </tr>
+            @for (group of groupedPermissions; track group.moduleName) {
+              <div class="perm-module-group">
+                <div class="perm-module-title">
+                  {{ group.moduleName }}
+                </div>
+                <div class="perm-list">
+                  @for (perm of group.permissions; track perm.id) {
+                    <label class="perm-item" [class.checked]="selectedIds.has(perm.id)">
+                      <input type="checkbox"
+                        [checked]="selectedIds.has(perm.id)"
+                        (change)="togglePermission(perm.id)">
+                      <span class="perm-label">{{ perm.label }}</span>
+                      <span class="perm-action">{{ perm.action }}</span>
+                    </label>
                   }
-                </tbody>
-              </table>
-            </div>
+                </div>
+              </div>
+            }
             @if (permsError) {
               <div class="form-error-box">{{ permsError }}</div>
             }

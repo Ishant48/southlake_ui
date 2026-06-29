@@ -1,6 +1,7 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnInit, ChangeDetectorRef } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { Role, RoleDetail } from '../../../core/models/role.model';
+import { AuthService } from '../../../core/services/auth.service';
 import { RolesService } from '../../../core/services/roles.service';
 import { ToastService } from '../../../shared/components/toast/toast.service';
 import { RolePermissionsModalComponent } from './role-permissions-modal/role-permissions-modal.component';
@@ -14,11 +15,17 @@ import { ConfirmDialogComponent } from '../../../shared/components/confirm-dialo
   styleUrl: './roles.component.scss',
 })
 export class RolesComponent implements OnInit {
+  private authService = inject(AuthService);
   private rolesService = inject(RolesService);
   private toast = inject(ToastService);
+  private cdr = inject(ChangeDetectorRef);
 
   roles: Role[] = [];
   loading = false;
+
+  hasPermission(permission: string): boolean {
+    return this.authService.hasPermission(permission);
+  }
   modalOpen = false;
   editingRole: RoleDetail | null = null;
 
@@ -52,10 +59,12 @@ export class RolesComponent implements OnInit {
         this.totalPages = result.total_pages;
         this.currentPage = result.page;
         this.loading = false;
+        this.cdr.markForCheck();
       },
       error: () => {
         this.loading = false;
         this.toast.error('Failed to load roles');
+        this.cdr.markForCheck();
       }
     });
   }
@@ -78,10 +87,12 @@ export class RolesComponent implements OnInit {
         this.editingRole = detail;
         this.loading = false;
         this.modalOpen = true;
+        this.cdr.markForCheck();
       },
       error: () => {
         this.loading = false;
         this.toast.error('Failed to load role details');
+        this.cdr.markForCheck();
       }
     });
   }
