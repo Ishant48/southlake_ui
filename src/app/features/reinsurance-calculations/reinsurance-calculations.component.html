@@ -255,24 +255,67 @@
                   <th>Sub</th>
                   <th class="text-right">Debit</th>
                   <th class="text-right">Credit</th>
+                  <th class="text-center">Action</th>
                 </tr>
               </thead>
               <tbody>
-                <tr *ngFor="let row of gljeRows">
-                  <td class="font-sans font-semibold">{{ row.desc }}</td>
-                  <td>{{ row.comp }}</td>
-                  <td>{{ row.account }}</td>
-                  <td>{{ row.cc }}</td>
-                  <td>{{ row.mga }}</td>
-                  <td>{{ row.lob }}</td>
-                  <td>{{ row.st }}</td>
-                  <td>{{ row.ext }}</td>
-                  <td>{{ row.sub || '-' }}</td>
-                  <td class="text-right text-green font-bold">{{ row.debit > 0 ? formatCurrency(row.debit) : '-' }}</td>
-                  <td class="text-right text-red font-bold">{{ row.credit > 0 ? formatCurrency(row.credit) : '-' }}</td>
+                <tr *ngFor="let row of gljeRows; let i = index">
+                  <td class="font-sans font-semibold">
+                    <ng-container *ngIf="!row.isNew">{{ row.desc }}</ng-container>
+                    <input *ngIf="row.isNew" type="text" [(ngModel)]="row.desc" class="form-control-sm" style="width: 100%; border: 1px solid var(--gray-300); font-family: sans-serif;" placeholder="Account description">
+                  </td>
+                  <td>
+                    <ng-container *ngIf="!row.isNew">{{ row.comp }}</ng-container>
+                    <input *ngIf="row.isNew" type="text" [(ngModel)]="row.comp" class="form-control-sm" style="width: 50px; border: 1px solid var(--gray-300);">
+                  </td>
+                  <td>
+                    <ng-container *ngIf="!row.isNew">{{ row.account }}</ng-container>
+                    <input *ngIf="row.isNew" type="text" [(ngModel)]="row.account" class="form-control-sm" style="width: 75px; border: 1px solid var(--gray-300);" placeholder="Code">
+                  </td>
+                  <td>
+                    <ng-container *ngIf="!row.isNew">{{ row.cc }}</ng-container>
+                    <input *ngIf="row.isNew" type="text" [(ngModel)]="row.cc" class="form-control-sm" style="width: 50px; border: 1px solid var(--gray-300);">
+                  </td>
+                  <td>
+                    <ng-container *ngIf="!row.isNew">{{ row.mga }}</ng-container>
+                    <input *ngIf="row.isNew" type="text" [(ngModel)]="row.mga" class="form-control-sm" style="width: 50px; border: 1px solid var(--gray-300);">
+                  </td>
+                  <td>
+                    <ng-container *ngIf="!row.isNew">{{ row.lob }}</ng-container>
+                    <input *ngIf="row.isNew" type="text" [(ngModel)]="row.lob" class="form-control-sm" style="width: 70px; border: 1px solid var(--gray-300);">
+                  </td>
+                  <td>
+                    <ng-container *ngIf="!row.isNew">{{ row.st }}</ng-container>
+                    <input *ngIf="row.isNew" type="text" [(ngModel)]="row.st" class="form-control-sm" style="width: 45px; border: 1px solid var(--gray-300);">
+                  </td>
+                  <td>
+                    <ng-container *ngIf="!row.isNew">{{ row.ext }}</ng-container>
+                    <input *ngIf="row.isNew" type="text" [(ngModel)]="row.ext" class="form-control-sm" style="width: 50px; border: 1px solid var(--gray-300);">
+                  </td>
+                  <td>
+                    <ng-container *ngIf="!row.isNew">{{ row.sub || '-' }}</ng-container>
+                    <input *ngIf="row.isNew" type="text" [(ngModel)]="row.sub" class="form-control-sm" style="width: 50px; border: 1px solid var(--gray-300);">
+                  </td>
+                  <td class="text-right text-green font-bold">
+                    <ng-container *ngIf="!row.isNew">{{ row.debit > 0 ? formatCurrency(row.debit) : '-' }}</ng-container>
+                    <input *ngIf="row.isNew" type="number" [(ngModel)]="row.debit" class="form-control-sm text-right" style="width: 90px; border: 1px solid var(--gray-300);" (change)="onRowAmountChange(row, 'debit')">
+                  </td>
+                  <td class="text-right text-red font-bold">
+                    <ng-container *ngIf="!row.isNew">{{ row.credit > 0 ? formatCurrency(row.credit) : '-' }}</ng-container>
+                    <input *ngIf="row.isNew" type="number" [(ngModel)]="row.credit" class="form-control-sm text-right" style="width: 90px; border: 1px solid var(--gray-300);" (change)="onRowAmountChange(row, 'credit')">
+                  </td>
+                  <td class="text-center">
+                    <button *ngIf="row.isNew" class="btn-table btn-table-danger" (click)="removeGLJERow(i)" style="padding: 2px 6px; font-size: 11px;">Delete</button>
+                    <span *ngIf="!row.isNew">-</span>
+                  </td>
                 </tr>
               </tbody>
             </table>
+          </div>
+          <div class="flex-start mt-2">
+            <button class="btn btn-primary" (click)="addGLJERow()">
+              ➕ Add Row
+            </button>
           </div>
         </div>
 
