@@ -308,7 +308,7 @@ export class ReinsuranceCalculationsComponent implements OnInit {
 
     // Call post to journal entries endpoint directly
     const url = `${this.service['apiUrl']}/workbooks/${this.selectedWorkbookId}/post-to-journal-entries/${this.selectedState}`;
-    this.service['http'].post<any>(url, {}).subscribe({
+    this.service['http'].post<any>(url, { customRows: this.gljeRows }).subscribe({
       next: (batch) => {
         this.toast.success(`Successfully posted ceding entries to Journal Entry batch: ${batch.batch_number}`);
         this.postingBatch = false;
@@ -322,6 +322,37 @@ export class ReinsuranceCalculationsComponent implements OnInit {
         this.cdr.markForCheck();
       }
     });
+  }
+
+  addGLJERow(): void {
+    this.gljeRows.push({
+      desc: '',
+      comp: this.selectedWorkbook?.comp || '',
+      account: '',
+      cc: this.selectedWorkbook?.cc || '',
+      mga: this.selectedWorkbook?.mga || '',
+      lob: this.selectedWorkbook?.lob || '',
+      st: this.selectedState === 'TOTAL' ? '00' : this.selectedState,
+      ext: this.selectedWorkbook?.ext || '',
+      sub: this.selectedWorkbook?.sub || '',
+      debit: 0,
+      credit: 0,
+      isNew: true
+    });
+    this.cdr.markForCheck();
+  }
+
+  removeGLJERow(index: number): void {
+    this.gljeRows.splice(index, 1);
+    this.cdr.markForCheck();
+  }
+
+  onRowAmountChange(row: any, field: 'debit' | 'credit'): void {
+    if (field === 'debit' && row.debit > 0) {
+      row.credit = 0;
+    } else if (field === 'credit' && row.credit > 0) {
+      row.debit = 0;
+    }
   }
 
   exportGLJECSV(): void {
