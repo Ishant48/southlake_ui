@@ -164,6 +164,8 @@ export interface Treaty {
   xol_pct?: number | null;
   lr_cap_pct?: number | null;
   ibnr_pct?: number | null;
+  lae_dcc_pct?: number | null;
+  lae_aoe_pct?: number | null;
   carrier_retention_pct?: number | null;
   reinsurer_cession_pct?: number | null;
   is_active: boolean;
