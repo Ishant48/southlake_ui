@@ -36,6 +36,7 @@ export class ReinsuranceCalculationsComponent implements OnInit {
   ratesForm: any = {};
   mappingsForm: any = {};
   paramsForm: any = {};
+  currentStateExhibitObj: any = null;
 
   parametersExpanded = false;
   ratesExpanded = false;
@@ -136,19 +137,15 @@ export class ReinsuranceCalculationsComponent implements OnInit {
     // Populate required parameters form from current state exhibit
     const curEx = this.selectedWorkbook?.state_exhibits?.find((e: any) => e.state_code === this.selectedState);
     if (curEx) {
+      this.currentStateExhibitObj = curEx;
       this.paramsForm = {
-        pw: curEx.pw[1],
-        uep: curEx.uep[1],
-        lp: curEx.lp[1],
-        laep: curEx.laep[1],
-        ae_paid: curEx.ae_paid[1],
-        loss_reserves: curEx.loss_reserves[1],
-        loss_ibnr: curEx.loss_ibnr[1],
-        lae_reserves_dcc: curEx.lae_reserves_dcc[1],
-        lae_ibnr_dcc: curEx.lae_ibnr_dcc[1],
-        lae_reserves_aoe: curEx.lae_reserves_aoe[1],
-        lae_ibnr_aoe: curEx.lae_ibnr_aoe[1],
-        ulae_ibnr: curEx.ulae_ibnr[1]
+        pw: curEx.pw?.[1] || 0,
+        prev_uep: curEx.uep?.[0] || 0,
+        curr_uep: curEx.uep?.[1] || 0,
+        loss_ibnr: curEx.loss_ibnr?.[0] || 0,
+        lae_ibnr_dcc: curEx.lae_ibnr_dcc?.[0] || 0,
+        lae_ibnr_aoe: curEx.lae_ibnr_aoe?.[0] || 0,
+        ulae_ibnr: curEx.ulae_ibnr?.[0] || 0
       };
     }
 
@@ -195,18 +192,49 @@ export class ReinsuranceCalculationsComponent implements OnInit {
   }
 
   saveParams(): void {
-    if (!this.selectedWorkbookId) return;
+    if (!this.selectedWorkbookId || !this.selectedState) return;
     this.loading = true;
 
-    // Map single values back to [Prior, Current, YTD] array format
-    const exData: any = {};
-    Object.keys(this.paramsForm).forEach(k => {
-      const curEx = this.selectedWorkbook?.state_exhibits?.find((e: any) => e.state_code === this.selectedState);
-      const prior = curEx ? curEx[k]?.[0] || 0 : 0;
-      const current = Number(this.paramsForm[k] || 0);
-      const ytd = prior + current;
-      exData[k] = [prior, current, ytd];
-    });
+    const curEx = this.selectedWorkbook?.state_exhibits?.find((e: any) => e.state_code === this.selectedState) || {};
+    const getArr = (arr: any) => arr && Array.isArray(arr) ? [...arr] : [0, 0, 0];
+
+    const pw = getArr(curEx.pw);
+    pw[1] = Number(this.paramsForm.pw || 0);
+    pw[2] = Number(pw[0] || 0) + pw[1];
+
+    const uep = getArr(curEx.uep);
+    uep[0] = Number(this.paramsForm.prev_uep || 0);
+    uep[1] = Number(this.paramsForm.curr_uep || 0);
+    uep[2] = uep[0] + uep[1];
+
+    const loss_ibnr = getArr(curEx.loss_ibnr);
+    loss_ibnr[0] = Number(this.paramsForm.loss_ibnr || 0);
+    loss_ibnr[1] = Number(loss_ibnr[1] || 0);
+    loss_ibnr[2] = loss_ibnr[0] + loss_ibnr[1];
+
+    const lae_ibnr_dcc = getArr(curEx.lae_ibnr_dcc);
+    lae_ibnr_dcc[0] = Number(this.paramsForm.lae_ibnr_dcc || 0);
+    lae_ibnr_dcc[1] = Number(lae_ibnr_dcc[1] || 0);
+    lae_ibnr_dcc[2] = lae_ibnr_dcc[0] + lae_ibnr_dcc[1];
+
+    const lae_ibnr_aoe = getArr(curEx.lae_ibnr_aoe);
+    lae_ibnr_aoe[0] = Number(this.paramsForm.lae_ibnr_aoe || 0);
+    lae_ibnr_aoe[1] = Number(lae_ibnr_aoe[1] || 0);
+    lae_ibnr_aoe[2] = lae_ibnr_aoe[0] + lae_ibnr_aoe[1];
+
+    const ulae_ibnr = getArr(curEx.ulae_ibnr);
+    ulae_ibnr[0] = Number(this.paramsForm.ulae_ibnr || 0);
+    ulae_ibnr[1] = Number(ulae_ibnr[1] || 0);
+    ulae_ibnr[2] = ulae_ibnr[0] + ulae_ibnr[1];
+
+    const exData = {
+      pw,
+      uep,
+      loss_ibnr,
+      lae_ibnr_dcc,
+      lae_ibnr_aoe,
+      ulae_ibnr
+    };
 
     this.service.updateExhibit(this.selectedWorkbookId, this.selectedState, exData).subscribe({
       next: () => {
