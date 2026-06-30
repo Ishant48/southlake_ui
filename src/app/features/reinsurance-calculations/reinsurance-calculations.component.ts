@@ -37,6 +37,10 @@ export class ReinsuranceCalculationsComponent implements OnInit {
   mappingsForm: any = {};
   paramsForm: any = {};
 
+  parametersExpanded = false;
+  ratesExpanded = false;
+  mappingsExpanded = false;
+
   ngOnInit(): void {
     this.loadWorkbooks();
   }
@@ -106,6 +110,17 @@ export class ReinsuranceCalculationsComponent implements OnInit {
 
   onStateChange(): void {
     this.loadActiveTabCalculations();
+  }
+
+  toggleAccordion(section: 'parameters' | 'rates' | 'mappings'): void {
+    if (section === 'parameters') {
+      this.parametersExpanded = !this.parametersExpanded;
+    } else if (section === 'rates') {
+      this.ratesExpanded = !this.ratesExpanded;
+    } else if (section === 'mappings') {
+      this.mappingsExpanded = !this.mappingsExpanded;
+    }
+    this.cdr.markForCheck();
   }
 
   setTab(tab: 'statement' | 'glje' | 'cash'): void {
