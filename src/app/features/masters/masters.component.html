@@ -1248,53 +1248,21 @@
           @if (itdForm.exhibits[itdSelectedStateCode]) {
             <div class="form-row">
               <div class="form-field">
-                <label class="form-label">Premiums Written</label>
-                <input type="number" class="form-input" [(ngModel)]="itdForm.exhibits[itdSelectedStateCode].pw">
-              </div>
-              <div class="form-field">
                 <label class="form-label">Unearned Premium Reserve</label>
                 <input type="number" class="form-input" [(ngModel)]="itdForm.exhibits[itdSelectedStateCode].uep">
               </div>
               <div class="form-field">
-                <label class="form-label">Losses Paid (Net)</label>
-                <input type="number" class="form-input" [(ngModel)]="itdForm.exhibits[itdSelectedStateCode].lp">
-              </div>
-            </div>
-            <div class="form-row">
-              <div class="form-field">
-                <label class="form-label">DCC Paid (ALAE)</label>
-                <input type="number" class="form-input" [(ngModel)]="itdForm.exhibits[itdSelectedStateCode].laep">
-              </div>
-              <div class="form-field">
-                <label class="form-label">AOE Paid (ULAE TPA)</label>
-                <input type="number" class="form-input" [(ngModel)]="itdForm.exhibits[itdSelectedStateCode].ae_paid">
-              </div>
-              <div class="form-field">
-                <label class="form-label">Loss Reserves (Case)</label>
-                <input type="number" class="form-input" [(ngModel)]="itdForm.exhibits[itdSelectedStateCode].loss_reserves">
-              </div>
-            </div>
-            <div class="form-row">
-              <div class="form-field">
                 <label class="form-label">Loss IBNR Reserves</label>
                 <input type="number" class="form-input" [(ngModel)]="itdForm.exhibits[itdSelectedStateCode].loss_ibnr">
-              </div>
-              <div class="form-field">
-                <label class="form-label">LAE Reserves DCC</label>
-                <input type="number" class="form-input" [(ngModel)]="itdForm.exhibits[itdSelectedStateCode].lae_reserves_dcc">
-              </div>
-              <div class="form-field">
-                <label class="form-label">LAE IBNR DCC</label>
-                <input type="number" class="form-input" [(ngModel)]="itdForm.exhibits[itdSelectedStateCode].lae_ibnr_dcc">
               </div>
             </div>
             <div class="form-row" style="margin-bottom: 20px;">
               <div class="form-field">
-                <label class="form-label">LAE Reserves AOE</label>
-                <input type="number" class="form-input" [(ngModel)]="itdForm.exhibits[itdSelectedStateCode].lae_reserves_aoe">
+                <label class="form-label">LAE IBNR Reserves - DCC</label>
+                <input type="number" class="form-input" [(ngModel)]="itdForm.exhibits[itdSelectedStateCode].lae_ibnr_dcc">
               </div>
               <div class="form-field">
-                <label class="form-label">LAE IBNR AOE</label>
+                <label class="form-label">LAE IBNR Reserves - AOE</label>
                 <input type="number" class="form-input" [(ngModel)]="itdForm.exhibits[itdSelectedStateCode].lae_ibnr_aoe">
               </div>
               <div class="form-field">

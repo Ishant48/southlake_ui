@@ -1670,12 +1670,9 @@ export class MastersComponent implements OnInit {
       });
     }
   }
-
   openAddItdModal(treaty: any): void {
     this.selectedTreatyForItd = treaty;
     this.itdForm.program = treaty.name;
-
-
 
     const codes = (treaty.treaty_states || []).map((s: any) => s.state?.state_code || s.state_code).filter(Boolean);
     this.itdStatesList = ['TOTAL', ...codes.filter((c: string) => c !== 'TOTAL').sort()];
@@ -1684,20 +1681,52 @@ export class MastersComponent implements OnInit {
     this.itdForm.exhibits = {};
     for (const code of this.itdStatesList) {
       this.itdForm.exhibits[code] = {
-        pw: 0,
         uep: 0,
-        lp: 0,
-        laep: 0,
-        ae_paid: 0,
-        loss_reserves: 0,
         loss_ibnr: 0,
-        lae_reserves_dcc: 0,
         lae_ibnr_dcc: 0,
-        lae_reserves_aoe: 0,
         lae_ibnr_aoe: 0,
         ulae_ibnr: 0
       };
     }
+
+    // Load existing ITD baseline workbook if it exists
+    this.reinsuranceService.getWorkbooks().subscribe({
+      next: (wbs) => {
+        const itdWb = wbs.find(w => w.program === treaty.name && w.source === 'ITD');
+        if (itdWb) {
+          this.reinsuranceService.getWorkbook(itdWb.id).subscribe({
+            next: (wbDetail) => {
+              if (wbDetail && wbDetail.stateExhibits) {
+                for (const ex of wbDetail.stateExhibits) {
+                  const targetState = this.itdStatesList.find(s => String(s) === String(ex.stateCode)) || 
+                                      (ex.stateCode === '5' ? 'CA' : null) || 
+                                      (ex.stateCode === 'CA' ? '5' : null);
+                  
+                  if (targetState && this.itdForm.exhibits[targetState]) {
+                    const val = (arr: any) => {
+                      if (!arr) return 0;
+                      if (Array.isArray(arr)) {
+                        return arr.length > 1 ? Number(arr[1] ?? 0) : Number(arr[0] ?? 0);
+                      }
+                      return Number(arr);
+                    };
+
+                    this.itdForm.exhibits[targetState] = {
+                      uep: val(ex.uep),
+                      loss_ibnr: val(ex.loss_ibnr),
+                      lae_ibnr_dcc: val(ex.lae_ibnr_dcc),
+                      lae_ibnr_aoe: val(ex.lae_ibnr_aoe),
+                      ulae_ibnr: val(ex.ulae_ibnr)
+                    };
+                  }
+                }
+                this.cdr.markForCheck();
+              }
+            }
+          });
+        }
+      }
+    });
 
     this.showItdModal = true;
     this.cdr.markForCheck();
@@ -1710,16 +1739,16 @@ export class MastersComponent implements OnInit {
       const ex = this.itdForm.exhibits[code];
       return {
         state_code: code,
-        pw: [0, Number(ex.pw || 0), Number(ex.pw || 0)],
+        pw: [0, 0, 0],
         uep: [0, Number(ex.uep || 0), Number(ex.uep || 0)],
-        lp: [0, Number(ex.lp || 0), Number(ex.lp || 0)],
-        laep: [0, Number(ex.laep || 0), Number(ex.laep || 0)],
-        ae_paid: [0, Number(ex.ae_paid || 0), Number(ex.ae_paid || 0)],
-        loss_reserves: [0, Number(ex.loss_reserves || 0), Number(ex.loss_reserves || 0)],
+        lp: [0, 0, 0],
+        laep: [0, 0, 0],
+        ae_paid: [0, 0, 0],
+        loss_reserves: [0, 0, 0],
         loss_ibnr: [0, Number(ex.loss_ibnr || 0), Number(ex.loss_ibnr || 0)],
-        lae_reserves_dcc: [0, Number(ex.lae_reserves_dcc || 0), Number(ex.lae_reserves_dcc || 0)],
+        lae_reserves_dcc: [0, 0, 0],
         lae_ibnr_dcc: [0, Number(ex.lae_ibnr_dcc || 0), Number(ex.lae_ibnr_dcc || 0)],
-        lae_reserves_aoe: [0, Number(ex.lae_reserves_aoe || 0), Number(ex.lae_reserves_aoe || 0)],
+        lae_reserves_aoe: [0, 0, 0],
         lae_ibnr_aoe: [0, Number(ex.lae_ibnr_aoe || 0), Number(ex.lae_ibnr_aoe || 0)],
         ulae_ibnr: [0, Number(ex.ulae_ibnr || 0), Number(ex.ulae_ibnr || 0)]
       };
