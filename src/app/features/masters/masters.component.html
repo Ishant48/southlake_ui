@@ -135,10 +135,8 @@
                   </td>
                   <td class="col-actions" style="text-align: center;">
                     <div class="action-buttons-list">
-                      @if (hasITDSeeded(treaty.name)) {
-                        <button class="btn-action-outline" (click)="triggerTreatyMonthlyUpload(treaty, monthlyExcelInput)">Upload Excel</button>
-                      }
-                      <button class="btn-action-outline" (click)="triggerTreatyITDUpload(treaty, itdExcelInput)">Add ITD</button>
+                      <button class="btn-action-outline" (click)="triggerTreatyMonthlyUpload(treaty, monthlyExcelInput)">Upload Excel</button>
+                      <button class="btn-action-outline" (click)="openAddItdModal(treaty)">Add ITD</button>
                       <button class="btn-action-outline" (click)="openTreatyEdit(treaty)">Edit</button>
                       <button class="btn-action-outline btn-action-danger-outline" (click)="deleteTreaty(treaty)">
                         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
@@ -1203,6 +1201,148 @@
               <span>Save Treaty</span>
             }
           </button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Add ITD Manual Modal -->
+  @if (showItdModal) {
+    <div class="modal-overlay" (click)="showItdModal = false">
+      <div class="modal-box" (click)="$event.stopPropagation()" style="max-width: 900px; width: 90%; max-height: 90vh; display: flex; flex-direction: column;">
+        <div class="panel-header" style="flex-shrink: 0;">
+          <h2>Add ITD Baseline for {{ itdForm.program }}</h2>
+          <button class="btn-close" (click)="showItdModal = false">×</button>
+        </div>
+
+        <div class="panel-body" style="overflow-y: auto; flex-grow: 1; padding: 20px;">
+          <!-- Month & Year -->
+          <div class="form-grid-2col" style="margin-bottom: 20px;">
+            <div class="form-field">
+              <label>Month Key</label>
+              <input type="text" class="form-control" [(ngModel)]="itdForm.month_key" readonly>
+            </div>
+            <div class="form-field">
+              <label>Month Label</label>
+              <input type="text" class="form-control" [(ngModel)]="itdForm.month_label" readonly>
+            </div>
+          </div>
+
+          <!-- Actuarial Rates section -->
+          <h4 style="margin: 0 0 12px 0; color: var(--navy); font-weight: 700; font-size: 14px; border-bottom: 1.5px solid var(--gray-200); padding-bottom: 6px;">
+            Actuarial Rates & Commissions (%)
+          </h4>
+          <div class="form-grid-3col" style="margin-bottom: 24px;">
+            <div class="form-field">
+              <label>Quota Share (%)</label>
+              <input type="number" class="form-control" [(ngModel)]="itdForm.rates.qs">
+            </div>
+            <div class="form-field">
+              <label>Ceding Fee (%)</label>
+              <input type="number" class="form-control" [(ngModel)]="itdForm.rates.cf">
+            </div>
+            <div class="form-field">
+              <label>Ceding Commission (%)</label>
+              <input type="number" class="form-control" [(ngModel)]="itdForm.rates.comm">
+            </div>
+            <div class="form-field">
+              <label>ULAE Rate (%)</label>
+              <input type="number" class="form-control" [(ngModel)]="itdForm.rates.ulae">
+            </div>
+            <div class="form-field">
+              <label>Boards Charge (%)</label>
+              <input type="number" class="form-control" [(ngModel)]="itdForm.rates.boards_charge">
+            </div>
+            <div class="form-field">
+              <label>Loss Ratio Cap (%)</label>
+              <input type="number" class="form-control" [(ngModel)]="itdForm.rates.loss_ratio_cap">
+            </div>
+            <div class="form-field">
+              <label>Loss Pick (%)</label>
+              <input type="number" class="form-control" [(ngModel)]="itdForm.rates.loss_pick">
+            </div>
+            <div class="form-field">
+              <label>LAE DCC (%)</label>
+              <input type="number" class="form-control" [(ngModel)]="itdForm.rates.lae_dcc">
+            </div>
+            <div class="form-field">
+              <label>LAE AOE (%)</label>
+              <input type="number" class="form-control" [(ngModel)]="itdForm.rates.lae_aoe">
+            </div>
+          </div>
+
+          <!-- State Exhibits section -->
+          <h4 style="margin: 0 0 12px 0; color: var(--navy); font-weight: 700; font-size: 14px; border-bottom: 1.5px solid var(--gray-200); padding-bottom: 6px;">
+            Reporting States Data Baseline
+          </h4>
+
+          <div style="display: flex; gap: 12px; margin-bottom: 16px; align-items: center;">
+            <label style="font-weight: 600; font-size: 13px; color: var(--navy);">Select State to Edit:</label>
+            <select class="form-control" [(ngModel)]="itdSelectedStateCode" style="max-width: 150px;">
+              @for (st of itdStatesList; track st) {
+                <option [value]="st">{{ st }}</option>
+              }
+            </select>
+          </div>
+
+          <!-- Fields editor for the selected state -->
+          @if (itdForm.exhibits[itdSelectedStateCode]) {
+            <div class="form-grid-3col">
+              <div class="form-field">
+                <label>Premiums Written</label>
+                <input type="number" class="form-control" [(ngModel)]="itdForm.exhibits[itdSelectedStateCode].pw">
+              </div>
+              <div class="form-field">
+                <label>Unearned Premium Reserve</label>
+                <input type="number" class="form-control" [(ngModel)]="itdForm.exhibits[itdSelectedStateCode].uep">
+              </div>
+              <div class="form-field">
+                <label>Losses Paid (Net)</label>
+                <input type="number" class="form-control" [(ngModel)]="itdForm.exhibits[itdSelectedStateCode].lp">
+              </div>
+              <div class="form-field">
+                <label>DCC Paid (ALAE)</label>
+                <input type="number" class="form-control" [(ngModel)]="itdForm.exhibits[itdSelectedStateCode].laep">
+              </div>
+              <div class="form-field">
+                <label>AOE Paid (ULAE TPA)</label>
+                <input type="number" class="form-control" [(ngModel)]="itdForm.exhibits[itdSelectedStateCode].ae_paid">
+              </div>
+              <div class="form-field">
+                <label>Loss Reserves (Case)</label>
+                <input type="number" class="form-control" [(ngModel)]="itdForm.exhibits[itdSelectedStateCode].loss_reserves">
+              </div>
+              <div class="form-field">
+                <label>Loss IBNR Reserves</label>
+                <input type="number" class="form-control" [(ngModel)]="itdForm.exhibits[itdSelectedStateCode].loss_ibnr">
+              </div>
+              <div class="form-field">
+                <label>LAE Reserves DCC</label>
+                <input type="number" class="form-control" [(ngModel)]="itdForm.exhibits[itdSelectedStateCode].lae_reserves_dcc">
+              </div>
+              <div class="form-field">
+                <label>LAE IBNR DCC</label>
+                <input type="number" class="form-control" [(ngModel)]="itdForm.exhibits[itdSelectedStateCode].lae_ibnr_dcc">
+              </div>
+              <div class="form-field">
+                <label>LAE Reserves AOE</label>
+                <input type="number" class="form-control" [(ngModel)]="itdForm.exhibits[itdSelectedStateCode].lae_reserves_aoe">
+              </div>
+              <div class="form-field">
+                <label>LAE IBNR AOE</label>
+                <input type="number" class="form-control" [(ngModel)]="itdForm.exhibits[itdSelectedStateCode].lae_ibnr_aoe">
+              </div>
+              <div class="form-field">
+                <label>ULAE IBNR Reserves</label>
+                <input type="number" class="form-control" [(ngModel)]="itdForm.exhibits[itdSelectedStateCode].ulae_ibnr">
+              </div>
+            </div>
+          }
+        </div>
+
+        <div class="panel-footer" style="flex-shrink: 0; border-top: 1px solid var(--gray-200); padding: 12px 20px;">
+          <button type="button" class="btn-ghost" (click)="showItdModal = false">Cancel</button>
+          <button type="button" class="btn-primary" (click)="saveManualITD()">Save ITD Baseline</button>
         </div>
       </div>
     </div>

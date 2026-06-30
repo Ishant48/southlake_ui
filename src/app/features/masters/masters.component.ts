@@ -226,6 +226,29 @@ export class MastersComponent implements OnInit {
   notesModalTitle = '';
   notesModalText = '';
 
+  // ITD Modal Control
+  showItdModal = false;
+  selectedTreatyForItd: any = null;
+  itdForm: any = {
+    program: '',
+    month_key: '2025-12',
+    month_label: 'December 2025',
+    rates: {
+      qs: 100,
+      cf: 5,
+      comm: 29,
+      ulae: 7,
+      boards_charge: 0.4,
+      loss_ratio_cap: 2,
+      loss_pick: 5,
+      lae_dcc: 7,
+      lae_aoe: 7
+    },
+    exhibits: {}
+  };
+  itdSelectedStateCode = 'TOTAL';
+  itdStatesList: string[] = ['TOTAL'];
+
   // Treaty Modal
   showTreatyModal = false;
   treatyModalTitle = '';
@@ -1646,5 +1669,90 @@ export class MastersComponent implements OnInit {
         }
       });
     }
+  }
+
+  openAddItdModal(treaty: any): void {
+    this.selectedTreatyForItd = treaty;
+    this.itdForm.program = treaty.name;
+
+    this.itdForm.rates = {
+      qs: 100,
+      cf: 5,
+      comm: 29,
+      ulae: 7,
+      boards_charge: 0.4,
+      loss_ratio_cap: 2,
+      loss_pick: 5,
+      lae_dcc: 7,
+      lae_aoe: 7
+    };
+
+    const codes = (treaty.treaty_states || []).map((s: any) => s.state_code);
+    this.itdStatesList = ['TOTAL', ...codes.filter((c: string) => c !== 'TOTAL').sort()];
+    this.itdSelectedStateCode = 'TOTAL';
+
+    this.itdForm.exhibits = {};
+    for (const code of this.itdStatesList) {
+      this.itdForm.exhibits[code] = {
+        pw: 0,
+        uep: 0,
+        lp: 0,
+        laep: 0,
+        ae_paid: 0,
+        loss_reserves: 0,
+        loss_ibnr: 0,
+        lae_reserves_dcc: 0,
+        lae_ibnr_dcc: 0,
+        lae_reserves_aoe: 0,
+        lae_ibnr_aoe: 0,
+        ulae_ibnr: 0
+      };
+    }
+
+    this.showItdModal = true;
+    this.cdr.markForCheck();
+  }
+
+  saveManualITD(): void {
+    if (!this.selectedTreatyForItd) return;
+
+    const exhibitsArray = Object.keys(this.itdForm.exhibits).map(code => {
+      const ex = this.itdForm.exhibits[code];
+      return {
+        state_code: code,
+        pw: [0, Number(ex.pw || 0), Number(ex.pw || 0)],
+        uep: [0, Number(ex.uep || 0), Number(ex.uep || 0)],
+        lp: [0, Number(ex.lp || 0), Number(ex.lp || 0)],
+        laep: [0, Number(ex.laep || 0), Number(ex.laep || 0)],
+        ae_paid: [0, Number(ex.ae_paid || 0), Number(ex.ae_paid || 0)],
+        loss_reserves: [0, Number(ex.loss_reserves || 0), Number(ex.loss_reserves || 0)],
+        loss_ibnr: [0, Number(ex.loss_ibnr || 0), Number(ex.loss_ibnr || 0)],
+        lae_reserves_dcc: [0, Number(ex.lae_reserves_dcc || 0), Number(ex.lae_reserves_dcc || 0)],
+        lae_ibnr_dcc: [0, Number(ex.lae_ibnr_dcc || 0), Number(ex.lae_ibnr_dcc || 0)],
+        lae_reserves_aoe: [0, Number(ex.lae_reserves_aoe || 0), Number(ex.lae_reserves_aoe || 0)],
+        lae_ibnr_aoe: [0, Number(ex.lae_ibnr_aoe || 0), Number(ex.lae_ibnr_aoe || 0)],
+        ulae_ibnr: [0, Number(ex.ulae_ibnr || 0), Number(ex.ulae_ibnr || 0)]
+      };
+    });
+
+    const payload = {
+      program: this.itdForm.program,
+      monthKey: this.itdForm.month_key,
+      monthLabel: this.itdForm.month_label,
+      rates: this.itdForm.rates,
+      exhibits: exhibitsArray
+    };
+
+    this.reinsuranceService.createManualITD(payload).subscribe({
+      next: () => {
+        this.toast.success(`Successfully saved manual ITD baseline for ${payload.program}`);
+        this.showItdModal = false;
+        this.selectedTreatyForItd = null;
+        this.loadData();
+      },
+      error: (err) => {
+        this.toast.error(err.error?.message || 'Failed to save manual ITD baseline');
+      }
+    });
   }
 }
