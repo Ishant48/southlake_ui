@@ -47,47 +47,27 @@
                 <input type="number" [(ngModel)]="paramsForm.pw" class="form-control" />
               </div>
               <div class="form-group">
-                <label>Unearned Premium Reserve</label>
-                <input type="number" [(ngModel)]="paramsForm.uep" class="form-control" />
+                <label>Previous Unearned Premium Reserve</label>
+                <input type="number" [(ngModel)]="paramsForm.prev_uep" class="form-control" />
               </div>
               <div class="form-group">
-                <label>Losses Paid (Net)</label>
-                <input type="number" [(ngModel)]="paramsForm.lp" class="form-control" />
+                <label>Current Unearned Premium Reserve</label>
+                <input type="number" [(ngModel)]="paramsForm.curr_uep" class="form-control" />
               </div>
               <div class="form-group">
-                <label>DCC Paid (ALAE)</label>
-                <input type="number" [(ngModel)]="paramsForm.laep" class="form-control" />
-              </div>
-              <div class="form-group">
-                <label>AOE Paid (ULAE TPA)</label>
-                <input type="number" [(ngModel)]="paramsForm.ae_paid" class="form-control" />
-              </div>
-              <div class="form-group">
-                <label>Loss Reserves (Case)</label>
-                <input type="number" [(ngModel)]="paramsForm.loss_reserves" class="form-control" />
-              </div>
-              <div class="form-group" *ngIf="selectedWorkbook.source !== 'FUT'">
-                <label>Loss IBNR Reserves</label>
+                <label>Previous Loss IBNR Reserves</label>
                 <input type="number" [(ngModel)]="paramsForm.loss_ibnr" class="form-control" />
               </div>
               <div class="form-group">
-                <label>LAE Reserves DCC</label>
-                <input type="number" [(ngModel)]="paramsForm.lae_reserves_dcc" class="form-control" />
-              </div>
-              <div class="form-group" *ngIf="selectedWorkbook.source !== 'FUT'">
-                <label>LAE IBNR DCC</label>
+                <label>Previous LAE IBNR Reserves - DCC</label>
                 <input type="number" [(ngModel)]="paramsForm.lae_ibnr_dcc" class="form-control" />
               </div>
               <div class="form-group">
-                <label>LAE Reserves AOE</label>
-                <input type="number" [(ngModel)]="paramsForm.lae_reserves_aoe" class="form-control" />
-              </div>
-              <div class="form-group" *ngIf="selectedWorkbook.source !== 'FUT'">
-                <label>LAE IBNR AOE</label>
+                <label>Previous LAE IBNR Reserves - AOE</label>
                 <input type="number" [(ngModel)]="paramsForm.lae_ibnr_aoe" class="form-control" />
               </div>
-              <div class="form-group" *ngIf="selectedWorkbook.source !== 'FUT'">
-                <label>ULAE IBNR Reserves</label>
+              <div class="form-group">
+                <label>Previous ULAE IBNR Reserves</label>
                 <input type="number" [(ngModel)]="paramsForm.ulae_ibnr" class="form-control" />
               </div>
             </div>
