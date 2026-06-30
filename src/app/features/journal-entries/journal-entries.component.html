@@ -262,7 +262,7 @@
             </tr>
           </thead>
           <tbody>
-            @for (row of formEntries; track $index; let idx = $index) {
+            @for (row of formEntries; track row.rowId; let idx = $index) {
               <tr>
                 <td>
                   <input type="number" class="form-control" [(ngModel)]="row.je_number" readonly>

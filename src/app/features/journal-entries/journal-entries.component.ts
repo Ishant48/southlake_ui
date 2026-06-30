@@ -56,6 +56,7 @@ export class JournalEntriesComponent implements OnInit {
   // Form view data
   nextJeNumber = 1;
   formEntries: any[] = [];
+  rowCounter = 0;
   coaOptions: ChartOfAccount[] = [];
   subOptions: string[] = ['705', 'MGA-100', 'MGA-200', 'AA'];
   subOptionsList: { id: string; name: string }[] = [
@@ -237,6 +238,25 @@ export class JournalEntriesComponent implements OnInit {
   // ==========================================
   // ADD JOURNAL ENTRY FORM ACTIONS
   // ==========================================
+  createBlankRow(values: Partial<any> = {}): any {
+    const todayStr = new Date().toISOString().split('T')[0];
+    this.rowCounter++;
+    return {
+      rowId: `row_${this.rowCounter}`,
+      je_number: this.nextJeNumber,
+      description: '',
+      coa_id: '',
+      sub: '',
+      debit: null,
+      credit: null,
+      date: todayStr,
+      dp: '',
+      policy: '',
+      memo: '',
+      ...values
+    };
+  }
+
   openAddEntryForm(): void {
     if (!this.selectedBatch) return;
     this.isEditingForm = false;
@@ -249,34 +269,10 @@ export class JournalEntriesComponent implements OnInit {
       this.nextJeNumber = 1;
     }
 
-    const todayStr = new Date().toISOString().split('T')[0];
-
     // Initialize with 2 blank rows
     this.formEntries = [
-      {
-        je_number: this.nextJeNumber,
-        description: '',
-        coa_id: '',
-        sub: '',
-        debit: null,
-        credit: null,
-        date: todayStr,
-        dp: '',
-        policy: '',
-        memo: '',
-      },
-      {
-        je_number: this.nextJeNumber,
-        description: '',
-        coa_id: '',
-        sub: '',
-        debit: null,
-        credit: null,
-        date: todayStr,
-        dp: '',
-        policy: '',
-        memo: '',
-      }
+      this.createBlankRow(),
+      this.createBlankRow()
     ];
 
     this.currentView = 'form';
@@ -290,7 +286,7 @@ export class JournalEntriesComponent implements OnInit {
     // Filter matching lines by je_number
     const matchingEntries = this.entries.filter(e => e.je_number === entry.je_number);
 
-    this.formEntries = matchingEntries.map(e => ({
+    this.formEntries = matchingEntries.map(e => this.createBlankRow({
       je_number: e.je_number,
       description: e.description,
       coa_id: e.coa_id,
@@ -311,7 +307,7 @@ export class JournalEntriesComponent implements OnInit {
     const todayStr = new Date().toISOString().split('T')[0];
     const prevRow = this.formEntries[this.formEntries.length - 1];
 
-    this.formEntries.push({
+    this.formEntries.push(this.createBlankRow({
       je_number: this.nextJeNumber,
       description: prevRow ? prevRow.description : '',
       coa_id: '',
@@ -322,13 +318,15 @@ export class JournalEntriesComponent implements OnInit {
       dp: prevRow ? prevRow.dp : '',
       policy: prevRow ? prevRow.policy : '',
       memo: prevRow ? prevRow.memo : '',
-    });
+    }));
   }
 
   copyRow(index: number): void {
     const source = this.formEntries[index];
-    // Create copy
-    const duplicate = { ...source };
+    // Create copy with new rowId
+    const duplicate = this.createBlankRow({
+      ...source,
+    });
     // Insert immediately after the source row
     this.formEntries.splice(index + 1, 0, duplicate);
   }
@@ -338,19 +336,7 @@ export class JournalEntriesComponent implements OnInit {
       this.formEntries.splice(index, 1);
     } else {
       // Just clear the single remaining row
-      const todayStr = new Date().toISOString().split('T')[0];
-      this.formEntries[0] = {
-        je_number: this.nextJeNumber,
-        description: '',
-        coa_id: '',
-        sub: '',
-        debit: null,
-        credit: null,
-        date: todayStr,
-        dp: '',
-        policy: '',
-        memo: '',
-      };
+      this.formEntries[0] = this.createBlankRow();
     }
   }
 
