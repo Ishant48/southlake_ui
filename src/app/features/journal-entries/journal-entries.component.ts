@@ -100,23 +100,56 @@ export class JournalEntriesComponent implements OnInit {
   }
 
   loadInitialData(): void {
-    // 1. Fetch active MGAs
-    this.mastersService.getMgas('', true).subscribe({
-      next: (res) => {
-        if (res.length > 0) {
-          this.agentsList = res.map(m => m.name);
-          // Prefer 'Futuristic Underwriters LLC' or default to first
-          const pref = this.agentsList.find(n => n.toLowerCase().includes('futuristic'));
-          this.selectedAgent = pref || this.agentsList[0];
-          // Use MGA codes as subledger codes
-          this.subOptions = ['705', ...res.map(m => m.mga_code)];
-          this.subOptionsList = this.subOptions.map(s => ({ id: s, name: s }));
+    // 1. Fetch all periods dynamically from batches first
+    this.service.getBatches('', '', '').subscribe({
+      next: (batches) => {
+        if (batches.length > 0) {
+          const uniquePeriods = Array.from(new Set(batches.map(b => b.period)));
+          // Sort or reverse to show newest/oldest
+          this.periods = uniquePeriods.sort((a, b) => b.localeCompare(a));
+          if (!this.periods.includes(this.selectedPeriod)) {
+            this.selectedPeriod = this.periods[0];
+          }
         }
-        this.loadBatches();
+
+        // 2. Fetch active MGAs
+        this.mastersService.getMgas('', true).subscribe({
+          next: (res) => {
+            if (res.length > 0) {
+              this.agentsList = res.map(m => m.name);
+              // Prefer 'Futuristic Underwriters LLC' or default to first
+              const pref = this.agentsList.find(n => n.toLowerCase().includes('futuristic'));
+              this.selectedAgent = pref || this.agentsList[0];
+              // Use MGA codes as subledger codes
+              this.subOptions = ['705', ...res.map(m => m.mga_code)];
+              this.subOptionsList = this.subOptions.map(s => ({ id: s, name: s }));
+            }
+            this.loadBatches();
+          },
+          error: () => {
+            this.toast.error('Failed to load MGAs, fallback to default');
+            this.loadBatches();
+          }
+        });
       },
       error: () => {
-        this.toast.error('Failed to load MGAs, fallback to default');
-        this.loadBatches();
+        // Fallback to static loading
+        this.mastersService.getMgas('', true).subscribe({
+          next: (res) => {
+            if (res.length > 0) {
+              this.agentsList = res.map(m => m.name);
+              const pref = this.agentsList.find(n => n.toLowerCase().includes('futuristic'));
+              this.selectedAgent = pref || this.agentsList[0];
+              this.subOptions = ['705', ...res.map(m => m.mga_code)];
+              this.subOptionsList = this.subOptions.map(s => ({ id: s, name: s }));
+            }
+            this.loadBatches();
+          },
+          error: () => {
+            this.toast.error('Failed to load MGAs, fallback to default');
+            this.loadBatches();
+          }
+        });
       }
     });
 
