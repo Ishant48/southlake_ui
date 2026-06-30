@@ -247,7 +247,31 @@ export class MastersComponent implements OnInit {
     exhibits: {}
   };
   itdSelectedStateCode = 'TOTAL';
-  itdStatesList: string[] = ['TOTAL'];
+  itdStatesList: any[] = [{ code: 'TOTAL', label: 'TOTAL' }];
+  itdSelectedMonth = '12';
+  itdSelectedYear = '2025';
+  monthsList = [
+    { value: '01', label: 'January' },
+    { value: '02', label: 'February' },
+    { value: '03', label: 'March' },
+    { value: '04', label: 'April' },
+    { value: '05', label: 'May' },
+    { value: '06', label: 'June' },
+    { value: '07', label: 'July' },
+    { value: '08', label: 'August' },
+    { value: '09', label: 'September' },
+    { value: '10', label: 'October' },
+    { value: '11', label: 'November' },
+    { value: '12', label: 'December' }
+  ];
+  yearsList = ['2020', '2021', '2022', '2023', '2024', '2025', '2026', '2027', '2028', '2029', '2030'];
+
+  onItdMonthYearChange(): void {
+    const monthObj = this.monthsList.find(m => m.value === this.itdSelectedMonth);
+    const monthLabel = monthObj ? monthObj.label : 'December';
+    this.itdForm.month_key = `${this.itdSelectedYear}-${this.itdSelectedMonth}`;
+    this.itdForm.month_label = `${monthLabel} ${this.itdSelectedYear}`;
+  }
 
   // Treaty Modal
   showTreatyModal = false;
@@ -1673,14 +1697,26 @@ export class MastersComponent implements OnInit {
   openAddItdModal(treaty: any): void {
     this.selectedTreatyForItd = treaty;
     this.itdForm.program = treaty.name;
+    this.itdSelectedMonth = '12';
+    this.itdSelectedYear = '2025';
+    this.itdForm.month_key = '2025-12';
+    this.itdForm.month_label = 'December 2025';
 
-    const codes = (treaty.treaty_states || []).map((s: any) => s.state?.state_code || s.state_code).filter(Boolean);
-    this.itdStatesList = ['TOTAL', ...codes.filter((c: string) => c !== 'TOTAL').sort()];
+    const states = (treaty.treaty_states || []).map((s: any) => {
+      const code = s.state?.state_code || s.state_code;
+      const abbr = s.state?.state_abbr || s.state_code;
+      return { code: String(code), label: String(abbr) };
+    }).filter((s: any) => s.code);
+
+    this.itdStatesList = [
+      { code: 'TOTAL', label: 'TOTAL' },
+      ...states.filter((s: any) => s.code !== 'TOTAL').sort((a: any, b: any) => a.label.localeCompare(b.label))
+    ];
     this.itdSelectedStateCode = 'TOTAL';
 
     this.itdForm.exhibits = {};
-    for (const code of this.itdStatesList) {
-      this.itdForm.exhibits[code] = {
+    for (const st of this.itdStatesList) {
+      this.itdForm.exhibits[st.code] = {
         uep: 0,
         loss_ibnr: 0,
         lae_ibnr_dcc: 0,
@@ -1697,13 +1733,23 @@ export class MastersComponent implements OnInit {
           w.source === 'ITD'
         );
         if (itdWb) {
+          const mKey = itdWb.month_key || itdWb.monthKey || '2025-12';
+          this.itdForm.month_key = mKey;
+          this.itdForm.month_label = itdWb.month_label || itdWb.monthLabel || 'December 2025';
+          const parts = mKey.split('-');
+          if (parts.length === 2) {
+            this.itdSelectedYear = parts[0];
+            this.itdSelectedMonth = parts[1];
+          }
+
           this.reinsuranceService.getWorkbook(itdWb.id).subscribe({
             next: (wbDetail) => {
               const exhibits = wbDetail?.state_exhibits || wbDetail?.stateExhibits;
               if (wbDetail && exhibits) {
                 for (const ex of exhibits) {
                   const stateCode = ex.state_code || ex.stateCode;
-                  const targetState = this.itdStatesList.find(s => String(s) === String(stateCode)) || 
+                  const matchedStateObj = this.itdStatesList.find(s => String(s.code) === String(stateCode));
+                  const targetState = matchedStateObj ? matchedStateObj.code : 
                                       (String(stateCode) === '5' ? 'CA' : null) || 
                                       (String(stateCode) === 'CA' ? '5' : null);
                   

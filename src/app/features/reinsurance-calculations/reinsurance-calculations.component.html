@@ -44,37 +44,32 @@
             <div class="form-grid">
               <div class="form-group">
                 <label>Premiums Written</label>
-                <input type="number" [(ngModel)]="paramsForm.pw" class="form-control" />
+                <input type="number" [(ngModel)]="paramsForm.pw" class="form-control" readonly />
               </div>
               <div class="form-group">
                 <label>Previous Unearned Premium Reserve</label>
-                <input type="number" [(ngModel)]="paramsForm.prev_uep" class="form-control" />
+                <input type="number" [(ngModel)]="paramsForm.prev_uep" class="form-control" readonly />
               </div>
               <div class="form-group">
                 <label>Current Unearned Premium Reserve</label>
-                <input type="number" [(ngModel)]="paramsForm.curr_uep" class="form-control" />
+                <input type="number" [(ngModel)]="paramsForm.curr_uep" class="form-control" readonly />
               </div>
               <div class="form-group">
                 <label>Previous Loss IBNR Reserves</label>
-                <input type="number" [(ngModel)]="paramsForm.loss_ibnr" class="form-control" />
+                <input type="number" [(ngModel)]="paramsForm.loss_ibnr" class="form-control" readonly />
               </div>
               <div class="form-group">
                 <label>Previous LAE IBNR Reserves - DCC</label>
-                <input type="number" [(ngModel)]="paramsForm.lae_ibnr_dcc" class="form-control" />
+                <input type="number" [(ngModel)]="paramsForm.lae_ibnr_dcc" class="form-control" readonly />
               </div>
               <div class="form-group">
                 <label>Previous LAE IBNR Reserves - AOE</label>
-                <input type="number" [(ngModel)]="paramsForm.lae_ibnr_aoe" class="form-control" />
+                <input type="number" [(ngModel)]="paramsForm.lae_ibnr_aoe" class="form-control" readonly />
               </div>
               <div class="form-group">
                 <label>Previous ULAE IBNR Reserves</label>
-                <input type="number" [(ngModel)]="paramsForm.ulae_ibnr" class="form-control" />
+                <input type="number" [(ngModel)]="paramsForm.ulae_ibnr" class="form-control" readonly />
               </div>
-            </div>
-            <div class="form-actions-row">
-              <button class="btn btn-primary" (click)="saveParams()">
-                Save Parameters
-              </button>
             </div>
           </div>
         }
@@ -149,37 +144,32 @@
             <div class="form-grid">
               <div class="form-group">
                 <label>Company (Comp)</label>
-                <input type="text" [(ngModel)]="mappingsForm.comp" class="form-control" />
+                <input type="text" [(ngModel)]="mappingsForm.comp" class="form-control" readonly />
               </div>
               <div class="form-group">
                 <label>Cost Center (CC)</label>
-                <input type="text" [(ngModel)]="mappingsForm.cc" class="form-control" />
+                <input type="text" [(ngModel)]="mappingsForm.cc" class="form-control" readonly />
               </div>
               <div class="form-group">
                 <label>MGA Code</label>
-                <input type="text" [(ngModel)]="mappingsForm.mga" class="form-control" />
+                <input type="text" [(ngModel)]="mappingsForm.mga" class="form-control" readonly />
               </div>
               <div class="form-group">
                 <label>LOB Code</label>
-                <input type="text" [(ngModel)]="mappingsForm.lob" class="form-control" />
+                <input type="text" [(ngModel)]="mappingsForm.lob" class="form-control" readonly />
               </div>
               <div class="form-group">
                 <label>Extension (Ext)</label>
-                <input type="text" [(ngModel)]="mappingsForm.ext" class="form-control" />
+                <input type="text" [(ngModel)]="mappingsForm.ext" class="form-control" readonly />
               </div>
               <div class="form-group">
                 <label>Subledger (Sub)</label>
-                <input type="text" [(ngModel)]="mappingsForm.sub" class="form-control" />
+                <input type="text" [(ngModel)]="mappingsForm.sub" class="form-control" readonly />
               </div>
               <div class="form-group">
                 <label>Line Description Suffix</label>
-                <input type="text" [(ngModel)]="mappingsForm.line_desc_suffix" class="form-control" />
+                <input type="text" [(ngModel)]="mappingsForm.line_desc_suffix" class="form-control" readonly />
               </div>
-            </div>
-            <div class="form-actions-row">
-              <button class="btn btn-primary" (click)="saveMappings()">
-                Save Mappings
-              </button>
             </div>
           </div>
         }
@@ -233,7 +223,7 @@
         <!-- 2. GL Journal Entries Tab -->
         <div *ngIf="activeTab === 'glje'">
           <div class="export-bar flex-between">
-            <button class="btn btn-success" (click)="postToJournalEntries()" [disabled]="postingBatch">
+            <button class="btn btn-success" (click)="postToJournalEntries()" [disabled]="postingBatch || isPosted">
               🚀 Post to Journal Entries Batch
             </button>
             <button class="btn btn-primary" (click)="exportGLJECSV()">
@@ -262,39 +252,39 @@
                 <tr *ngFor="let row of gljeRows; let i = index">
                   <td class="font-sans font-semibold">
                     <ng-container *ngIf="!row.isNew">{{ row.desc }}</ng-container>
-                    <input *ngIf="row.isNew" type="text" [(ngModel)]="row.desc" placeholder="Account description">
+                    <input *ngIf="row.isNew" type="text" [(ngModel)]="row.desc" (ngModelChange)="onRowChange()" placeholder="Account description">
                   </td>
                   <td>
                     <ng-container *ngIf="!row.isNew">{{ row.comp }}</ng-container>
-                    <input *ngIf="row.isNew" type="text" [(ngModel)]="row.comp" style="width: 50px;">
+                    <input *ngIf="row.isNew" type="text" [(ngModel)]="row.comp" (ngModelChange)="onRowChange()" style="width: 50px;">
                   </td>
                   <td>
                     <ng-container *ngIf="!row.isNew">{{ row.account }}</ng-container>
-                    <input *ngIf="row.isNew" type="text" [(ngModel)]="row.account" style="width: 75px;" placeholder="Code">
+                    <input *ngIf="row.isNew" type="text" [(ngModel)]="row.account" (ngModelChange)="onRowChange()" style="width: 75px;" placeholder="Code">
                   </td>
                   <td>
                     <ng-container *ngIf="!row.isNew">{{ row.cc }}</ng-container>
-                    <input *ngIf="row.isNew" type="text" [(ngModel)]="row.cc" style="width: 50px;">
+                    <input *ngIf="row.isNew" type="text" [(ngModel)]="row.cc" (ngModelChange)="onRowChange()" style="width: 50px;">
                   </td>
                   <td>
                     <ng-container *ngIf="!row.isNew">{{ row.mga }}</ng-container>
-                    <input *ngIf="row.isNew" type="text" [(ngModel)]="row.mga" style="width: 50px;">
+                    <input *ngIf="row.isNew" type="text" [(ngModel)]="row.mga" (ngModelChange)="onRowChange()" style="width: 50px;">
                   </td>
                   <td>
                     <ng-container *ngIf="!row.isNew">{{ row.lob }}</ng-container>
-                    <input *ngIf="row.isNew" type="text" [(ngModel)]="row.lob" style="width: 70px;">
+                    <input *ngIf="row.isNew" type="text" [(ngModel)]="row.lob" (ngModelChange)="onRowChange()" style="width: 70px;">
                   </td>
                   <td>
                     <ng-container *ngIf="!row.isNew">{{ row.st }}</ng-container>
-                    <input *ngIf="row.isNew" type="text" [(ngModel)]="row.st" style="width: 45px;">
+                    <input *ngIf="row.isNew" type="text" [(ngModel)]="row.st" (ngModelChange)="onRowChange()" style="width: 45px;">
                   </td>
                   <td>
                     <ng-container *ngIf="!row.isNew">{{ row.ext }}</ng-container>
-                    <input *ngIf="row.isNew" type="text" [(ngModel)]="row.ext" style="width: 50px;">
+                    <input *ngIf="row.isNew" type="text" [(ngModel)]="row.ext" (ngModelChange)="onRowChange()" style="width: 50px;">
                   </td>
                   <td>
                     <ng-container *ngIf="!row.isNew">{{ row.sub || '-' }}</ng-container>
-                    <input *ngIf="row.isNew" type="text" [(ngModel)]="row.sub" style="width: 50px;">
+                    <input *ngIf="row.isNew" type="text" [(ngModel)]="row.sub" (ngModelChange)="onRowChange()" style="width: 50px;">
                   </td>
                   <td class="text-right text-green font-bold">
                     <ng-container *ngIf="!row.isNew">{{ row.debit > 0 ? formatCurrency(row.debit) : '-' }}</ng-container>
