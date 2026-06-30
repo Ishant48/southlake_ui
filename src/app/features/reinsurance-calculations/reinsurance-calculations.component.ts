@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { ReinsuranceService } from '../../core/services/reinsurance.service';
 import { ToastService } from '../../shared/components/toast/toast.service';
+import { MastersService } from '../../core/services/masters.service';
 
 @Component({
   selector: 'app-reinsurance-calculations',
@@ -17,6 +18,7 @@ export class ReinsuranceCalculationsComponent implements OnInit {
   private toast = inject(ToastService);
   private cdr = inject(ChangeDetectorRef);
   private router = inject(Router);
+  private mastersService = inject(MastersService);
 
   workbooks: any[] = [];
   selectedWorkbookId: number | null = null;
@@ -24,6 +26,7 @@ export class ReinsuranceCalculationsComponent implements OnInit {
   selectedState: string = 'TOTAL';
   states: string[] = ['TOTAL'];
   activeTab: 'statement' | 'glje' | 'cash' = 'statement';
+  isPosted = false;
 
   statementRows: any[] = [];
   gljeRows: any[] = [];
@@ -69,6 +72,7 @@ export class ReinsuranceCalculationsComponent implements OnInit {
   onWorkbookChange(): void {
     if (!this.selectedWorkbookId) return;
     this.loading = true;
+    this.isPosted = false;
     this.service.getWorkbook(this.selectedWorkbookId).subscribe({
       next: (res) => {
         this.selectedWorkbook = res;
@@ -83,23 +87,62 @@ export class ReinsuranceCalculationsComponent implements OnInit {
           sub: res.sub
         };
 
-        // Extract states from exhibits
-        if (res.state_exhibits) {
-          const codes = res.state_exhibits.map((e: any) => e.state_code);
-          this.states = ['TOTAL', ...codes.filter((c: string) => c !== 'TOTAL').sort()];
-        } else {
-          this.states = ['TOTAL'];
-        }
+        // Load treaties to filter states
+        this.mastersService.getTreaties().subscribe({
+          next: (treaties) => {
+            const matchingTreaty = treaties.find(t => t.name?.trim().toLowerCase() === res.program?.trim().toLowerCase());
+            
+            // Extract states from exhibits
+            if (res.state_exhibits) {
+              const codes = res.state_exhibits.map((e: any) => e.state_code);
+              const rawStates = ['TOTAL', ...codes.filter((c: string) => c !== 'TOTAL').sort()];
+              
+              if (matchingTreaty) {
+                const treatyStatesAbbrs = (matchingTreaty.treaty_states || []).map((s: any) => 
+                  (s.state?.state_abbr || s.state_abbr || '').toUpperCase()
+                ).filter(Boolean);
+                
+                this.states = rawStates.filter(s => 
+                  s === 'TOTAL' || 
+                  treatyStatesAbbrs.includes(s.toUpperCase()) ||
+                  (s === '5' && treatyStatesAbbrs.includes('CA'))
+                );
+              } else {
+                this.states = rawStates;
+              }
+            } else {
+              this.states = ['TOTAL'];
+            }
 
-        // Select the first non-TOTAL state by default if available
-        const nonTotalState = this.states.find(s => s !== 'TOTAL');
-        if (nonTotalState) {
-          this.selectedState = nonTotalState;
-        } else {
-          this.selectedState = 'TOTAL';
-        }
+            // Select the first non-TOTAL state by default if available
+            const nonTotalState = this.states.find(s => s !== 'TOTAL');
+            if (nonTotalState) {
+              this.selectedState = nonTotalState;
+            } else {
+              this.selectedState = 'TOTAL';
+            }
 
-        this.loadActiveTabCalculations();
+            this.loadActiveTabCalculations();
+          },
+          error: () => {
+            // Fallback to not filtering if treaties API fails
+            if (res.state_exhibits) {
+              const codes = res.state_exhibits.map((e: any) => e.state_code);
+              this.states = ['TOTAL', ...codes.filter((c: string) => c !== 'TOTAL').sort()];
+            } else {
+              this.states = ['TOTAL'];
+            }
+
+            const nonTotalState = this.states.find(s => s !== 'TOTAL');
+            if (nonTotalState) {
+              this.selectedState = nonTotalState;
+            } else {
+              this.selectedState = 'TOTAL';
+            }
+
+            this.loadActiveTabCalculations();
+          }
+        });
       },
       error: () => {
         this.toast.error('Failed to load workbook details');
@@ -110,6 +153,7 @@ export class ReinsuranceCalculationsComponent implements OnInit {
   }
 
   onStateChange(): void {
+    this.isPosted = false;
     this.loadActiveTabCalculations();
   }
 
@@ -312,6 +356,8 @@ export class ReinsuranceCalculationsComponent implements OnInit {
       next: (batch) => {
         this.toast.success(`Successfully posted ceding entries to Journal Entry batch: ${batch.batch_number}`);
         this.postingBatch = false;
+        this.isPosted = true;
+        this.cdr.markForCheck();
         // Redirect to Manual Journal Entries Workspace with batchId query param
         this.router.navigate(['/journal-entries'], { queryParams: { batchId: batch.id } });
       },
@@ -339,11 +385,13 @@ export class ReinsuranceCalculationsComponent implements OnInit {
       credit: null,
       isNew: true
     });
+    this.isPosted = false;
     this.cdr.markForCheck();
   }
 
   removeGLJERow(index: number): void {
     this.gljeRows.splice(index, 1);
+    this.isPosted = false;
     this.cdr.markForCheck();
   }
 
@@ -353,6 +401,12 @@ export class ReinsuranceCalculationsComponent implements OnInit {
     } else if (field === 'credit' && row.credit > 0) {
       row.debit = 0;
     }
+    this.isPosted = false;
+  }
+
+  onRowChange(): void {
+    this.isPosted = false;
+    this.cdr.markForCheck();
   }
 
   exportGLJECSV(): void {

@@ -1216,7 +1216,27 @@
         </div>
 
         <div class="panel-body" style="overflow-y: auto; flex-grow: 1; padding: 20px;">
-          <!-- Month & Year -->
+          <!-- Select Month & Year -->
+          <div class="form-row" style="margin-bottom: 20px;">
+            <div class="form-field">
+              <label class="form-label">Select Month</label>
+              <select class="form-input" [(ngModel)]="itdSelectedMonth" (change)="onItdMonthYearChange()" style="height: 38px; padding: 4px 8px;">
+                @for (m of monthsList; track m.value) {
+                  <option [value]="m.value">{{ m.label }}</option>
+                }
+              </select>
+            </div>
+            <div class="form-field">
+              <label class="form-label">Select Year</label>
+              <select class="form-input" [(ngModel)]="itdSelectedYear" (change)="onItdMonthYearChange()" style="height: 38px; padding: 4px 8px;">
+                @for (y of yearsList; track y) {
+                  <option [value]="y">{{ y }}</option>
+                }
+              </select>
+            </div>
+          </div>
+
+          <!-- Month Key & Month Label -->
           <div class="form-row" style="margin-bottom: 20px;">
             <div class="form-field">
               <label class="form-label">Month Key</label>
@@ -1238,8 +1258,8 @@
           <div style="display: flex; gap: 12px; margin-bottom: 20px; align-items: center;">
             <label class="form-label" style="margin-bottom: 0; font-weight: 600; font-size: 13.5px; color: var(--navy);">Select State to Edit:</label>
             <select class="form-input" [(ngModel)]="itdSelectedStateCode" style="max-width: 150px; height: 38px; padding: 4px 8px;">
-              @for (st of itdStatesList; track st) {
-                <option [value]="st">{{ st }}</option>
+              @for (st of itdStatesList; track st.code) {
+                <option [value]="st.code">{{ st.label }}</option>
               }
             </select>
           </div>
