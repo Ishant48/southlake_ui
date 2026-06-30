@@ -21,7 +21,7 @@ export class JournalEntriesService {
     return this.http.get<JournalEntryBatch>(`${this.base}/${id}`);
   }
 
-  createBatch(payload: { batch_number: string; period: string; agent_name: string }): Observable<JournalEntryBatch> {
+  createBatch(payload: { batch_number?: string; period: string; agent_name: string }): Observable<JournalEntryBatch> {
     return this.http.post<JournalEntryBatch>(this.base, payload);
   }
 
