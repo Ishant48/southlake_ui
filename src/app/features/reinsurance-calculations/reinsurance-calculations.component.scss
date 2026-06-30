@@ -90,6 +90,37 @@
   }
 }
 
+.select-with-action {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.btn-delete {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5625rem;
+  background-color: var(--white);
+  border: 1px solid var(--gray-300);
+  border-radius: var(--radius);
+  color: #dc3545;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  outline: none;
+
+  &:hover:not(:disabled) {
+    background-color: #f8d7da;
+    border-color: #dc3545;
+    color: #842029;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
 .workspace-layout-stacked {
   display: flex;
   flex-direction: column;

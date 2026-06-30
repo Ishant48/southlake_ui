@@ -69,6 +69,27 @@ export class ReinsuranceCalculationsComponent implements OnInit {
     });
   }
 
+  deleteWorkbook(): void {
+    if (!this.selectedWorkbookId) return;
+    const confirmDelete = confirm('Are you sure you want to delete this workbook and all its state exhibits?');
+    if (!confirmDelete) return;
+
+    this.loading = true;
+    this.service.deleteWorkbook(this.selectedWorkbookId).subscribe({
+      next: () => {
+        this.toast.success('Workbook deleted successfully');
+        this.selectedWorkbookId = null;
+        this.selectedWorkbook = null;
+        this.loadWorkbooks();
+      },
+      error: () => {
+        this.toast.error('Failed to delete workbook');
+        this.loading = false;
+        this.cdr.markForCheck();
+      }
+    });
+  }
+
   onWorkbookChange(): void {
     if (!this.selectedWorkbookId) return;
     this.loading = true;
