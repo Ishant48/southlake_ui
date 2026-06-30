@@ -1675,17 +1675,7 @@ export class MastersComponent implements OnInit {
     this.selectedTreatyForItd = treaty;
     this.itdForm.program = treaty.name;
 
-    this.itdForm.rates = {
-      qs: 100,
-      cf: 5,
-      comm: 29,
-      ulae: 7,
-      boards_charge: 0.4,
-      loss_ratio_cap: 2,
-      loss_pick: 5,
-      lae_dcc: 7,
-      lae_aoe: 7
-    };
+
 
     const codes = (treaty.treaty_states || []).map((s: any) => s.state?.state_code || s.state_code).filter(Boolean);
     this.itdStatesList = ['TOTAL', ...codes.filter((c: string) => c !== 'TOTAL').sort()];
@@ -1739,7 +1729,6 @@ export class MastersComponent implements OnInit {
       program: this.itdForm.program,
       monthKey: this.itdForm.month_key,
       monthLabel: this.itdForm.month_label,
-      rates: this.itdForm.rates,
       exhibits: exhibitsArray
     };
 
