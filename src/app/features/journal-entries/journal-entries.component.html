@@ -38,9 +38,6 @@
 
       <div class="header-actions-row">
         <button class="btn btn-primary" (click)="openAddBatch()">Add New</button>
-        <button class="btn btn-secondary">Print Register(All Batches)</button>
-        <button class="btn btn-secondary">History Docs</button>
-        <button class="btn btn-secondary">History Docs PDF</button>
       </div>
     </div>
 
@@ -93,7 +90,6 @@
                   <td style="text-align: right;">
                     <button class="btn-table" (click)="viewBatchDetails(b)">Edit</button>
                     <button class="btn-table" (click)="viewBatchDetails(b)">Journal Entry</button>
-                    <button class="btn-table">Print Register</button>
                     <button class="btn-table btn-table-danger" (click)="deleteBatch(b, $event)">Delete</button>
                   </td>
                 </tr>
