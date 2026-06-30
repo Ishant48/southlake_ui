@@ -79,14 +79,18 @@ export class ReinsuranceCalculationsComponent implements OnInit {
         };
 
         // Extract states from exhibits
-        if (res.state_exhibits) {
-          const codes = res.state_exhibits.map((e: any) => e.state_code);
+        if (res.stateExhibits) {
+          const codes = res.stateExhibits.map((e: any) => e.stateCode);
           this.states = ['TOTAL', ...codes.filter((c: string) => c !== 'TOTAL').sort()];
         } else {
           this.states = ['TOTAL'];
         }
 
-        if (!this.states.includes(this.selectedState)) {
+        // Select the first non-TOTAL state by default if available
+        const nonTotalState = this.states.find(s => s !== 'TOTAL');
+        if (nonTotalState) {
+          this.selectedState = nonTotalState;
+        } else {
           this.selectedState = 'TOTAL';
         }
 
@@ -115,7 +119,7 @@ export class ReinsuranceCalculationsComponent implements OnInit {
     this.cdr.markForCheck();
 
     // Populate required parameters form from current state exhibit
-    const curEx = this.selectedWorkbook?.state_exhibits?.find((e: any) => e.state_code === this.selectedState);
+    const curEx = this.selectedWorkbook?.stateExhibits?.find((e: any) => e.stateCode === this.selectedState);
     if (curEx) {
       this.paramsForm = {
         pw: curEx.pw[1],
@@ -182,7 +186,7 @@ export class ReinsuranceCalculationsComponent implements OnInit {
     // Map single values back to [Prior, Current, YTD] array format
     const exData: any = {};
     Object.keys(this.paramsForm).forEach(k => {
-      const curEx = this.selectedWorkbook?.state_exhibits?.find((e: any) => e.state_code === this.selectedState);
+      const curEx = this.selectedWorkbook?.stateExhibits?.find((e: any) => e.stateCode === this.selectedState);
       const prior = curEx ? curEx[k]?.[0] || 0 : 0;
       const current = Number(this.paramsForm[k] || 0);
       const ytd = prior + current;
