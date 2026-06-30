@@ -515,7 +515,7 @@ export class MastersComponent implements OnInit {
 
     if (this.simpleMode === 'lob' || this.simpleMode === 'cob') {
       payload.description = this.simpleForm.description || null;
-      payload.type = this.simpleForm.type || null;
+      payload.type = this.simpleMode === 'cob' ? (this.simpleForm.type || null) : null;
       payload.taxable = this.simpleForm.taxable || false;
       payload.priority = Number(this.simpleForm.priority || 1);
       payload.fully_earned = this.simpleForm.fully_earned || false;
