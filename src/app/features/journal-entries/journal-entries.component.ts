@@ -167,14 +167,8 @@ export class JournalEntriesComponent implements OnInit {
   }
 
   createBatch(): void {
-    if (!this.newBatchNumber.trim()) {
-      this.toast.error('Batch number is required');
-      return;
-    }
-
     this.submittingBatch = true;
     this.service.createBatch({
-      batch_number: this.newBatchNumber.trim(),
       period: this.selectedPeriod,
       agent_name: this.selectedAgent,
     }).subscribe({
