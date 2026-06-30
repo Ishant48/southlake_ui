@@ -50,10 +50,10 @@ export class ReinsuranceCalculationsComponent implements OnInit {
     this.loading = true;
     this.service.getWorkbooks().subscribe({
       next: (res) => {
-        this.workbooks = res;
+        this.workbooks = (res || []).filter((w: any) => w.source !== 'ITD');
         this.loading = false;
-        if (res.length > 0 && !this.selectedWorkbookId) {
-          this.selectedWorkbookId = res[0].id;
+        if (this.workbooks.length > 0 && !this.selectedWorkbookId) {
+          this.selectedWorkbookId = this.workbooks[0].id;
           this.onWorkbookChange();
         }
         this.cdr.markForCheck();
