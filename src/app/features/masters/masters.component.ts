@@ -281,6 +281,12 @@ export class MastersComponent implements OnInit {
   pendingAction: (() => void) | null = null;
 
   ngOnInit(): void {
+    // Preload MGA options for the filter dropdown
+    this.service.getMgas(undefined, true).subscribe(res => {
+      this.mgaOptions = res;
+      this.cdr.markForCheck();
+    });
+
     this.route.queryParams.subscribe(params => {
       const tab = params['tab'] as MasterTab;
       if (tab && ['treaties', 'mgas', 'lobs', 'cobs', 'states', 'reinsurers', 'risk-companies', 'gl-mappings'].includes(tab)) {
