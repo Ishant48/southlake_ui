@@ -1687,7 +1687,7 @@ export class MastersComponent implements OnInit {
       lae_aoe: 7
     };
 
-    const codes = (treaty.treaty_states || []).map((s: any) => s.state_code);
+    const codes = (treaty.treaty_states || []).map((s: any) => s.state?.state_code || s.state_code).filter(Boolean);
     this.itdStatesList = ['TOTAL', ...codes.filter((c: string) => c !== 'TOTAL').sort()];
     this.itdSelectedStateCode = 'TOTAL';
 
