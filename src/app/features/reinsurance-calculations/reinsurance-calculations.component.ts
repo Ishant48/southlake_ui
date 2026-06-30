@@ -335,8 +335,8 @@ export class ReinsuranceCalculationsComponent implements OnInit {
       st: this.selectedState === 'TOTAL' ? '00' : this.selectedState,
       ext: this.selectedWorkbook?.ext || '',
       sub: this.selectedWorkbook?.sub || '',
-      debit: 0,
-      credit: 0,
+      debit: null,
+      credit: null,
       isNew: true
     });
     this.cdr.markForCheck();
