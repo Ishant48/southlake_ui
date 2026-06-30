@@ -85,4 +85,8 @@ export class ReinsuranceService {
   checkItdSeeded(): Observable<any> {
     return this.http.get<any>(`${this.apiUrl}/database/check-itd-seeded`);
   }
+
+  createManualITD(data: any): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/workbooks/manual-itd`, data);
+  }
 }
