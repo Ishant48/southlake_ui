@@ -1692,15 +1692,20 @@ export class MastersComponent implements OnInit {
     // Load existing ITD baseline workbook if it exists
     this.reinsuranceService.getWorkbooks().subscribe({
       next: (wbs) => {
-        const itdWb = wbs.find(w => w.program === treaty.name && w.source === 'ITD');
+        const itdWb = wbs.find(w => 
+          w.program?.trim().toLowerCase() === treaty.name?.trim().toLowerCase() && 
+          w.source === 'ITD'
+        );
         if (itdWb) {
           this.reinsuranceService.getWorkbook(itdWb.id).subscribe({
             next: (wbDetail) => {
-              if (wbDetail && wbDetail.stateExhibits) {
-                for (const ex of wbDetail.stateExhibits) {
-                  const targetState = this.itdStatesList.find(s => String(s) === String(ex.stateCode)) || 
-                                      (ex.stateCode === '5' ? 'CA' : null) || 
-                                      (ex.stateCode === 'CA' ? '5' : null);
+              const exhibits = wbDetail?.state_exhibits || wbDetail?.stateExhibits;
+              if (wbDetail && exhibits) {
+                for (const ex of exhibits) {
+                  const stateCode = ex.state_code || ex.stateCode;
+                  const targetState = this.itdStatesList.find(s => String(s) === String(stateCode)) || 
+                                      (String(stateCode) === '5' ? 'CA' : null) || 
+                                      (String(stateCode) === 'CA' ? '5' : null);
                   
                   if (targetState && this.itdForm.exhibits[targetState]) {
                     const val = (arr: any) => {
