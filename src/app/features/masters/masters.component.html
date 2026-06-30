@@ -312,8 +312,7 @@
             <thead>
               <tr>
                 <th style="width: 15%;">LOB Code</th>
-                <th style="width: 25%;">LOB Name</th>
-                <th style="width: 15%;">LOB Type</th>
+                <th style="width: 40%;">LOB Name</th>
                 <th style="width: 10%;">Taxable</th>
                 <th style="width: 10%;">Priority</th>
                 <th style="width: 10%;">Fully Earned</th>
@@ -333,7 +332,6 @@
                       </div>
                     }
                   </td>
-                  <td>{{ item.type || '-' }}</td>
                   <td>
                     <span [class]="item.taxable ? 'status-badge status-active' : 'status-badge status-inactive'" style="padding: 2px 8px; font-size: 11px;">
                       {{ item.taxable ? 'Yes' : 'No' }}
@@ -504,17 +502,19 @@
 
           @if (simpleMode === 'lob' || simpleMode === 'cob') {
             <div class="form-row" style="margin-top: 8px;">
-              <div class="form-field">
-                <label class="form-label">{{ simpleMode === 'lob' ? 'LOB Type' : 'Class Type' }}</label>
-                <app-dropdown-search
-                  [items]="simpleFormTypeOptions"
-                  [isMultiSelect]="false"
-                  bindValue="id"
-                  placeholder="Select Type"
-                  [itemLabelFn]="nameLabelFn"
-                  [(selectedValue)]="simpleForm.type"
-                ></app-dropdown-search>
-              </div>
+              @if (simpleMode === 'cob') {
+                <div class="form-field">
+                  <label class="form-label">Class Type</label>
+                  <app-dropdown-search
+                    [items]="simpleFormTypeOptions"
+                    [isMultiSelect]="false"
+                    bindValue="id"
+                    placeholder="Select Type"
+                    [itemLabelFn]="nameLabelFn"
+                    [(selectedValue)]="simpleForm.type"
+                  ></app-dropdown-search>
+                </div>
+              }
               <div class="form-field">
                 <label class="form-label">Priority</label>
                 <input [(ngModel)]="simpleForm.priority" name="priority" type="number" placeholder="1" class="form-input">
