@@ -44,7 +44,7 @@
       </div>
 
       <!-- 2. Advanced Accounting -->
-      @if (hasPermission('chart_of_accounts', 'view') || hasPermission('journal_entry', 'view')) {
+      @if (hasPermission('chart_of_accounts', 'view') || hasPermission('journal_entry', 'view') || hasPermission('reinsurance', 'view')) {
         <div class="nav-item-group" [class.expanded]="accountingExpanded">
           <a class="nav-item group-header" (click)="toggleAccounting($event)">
             <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
