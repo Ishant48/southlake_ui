@@ -38,19 +38,7 @@
   <!-- Content Card -->
   <div class="content-card">
     <!-- Toolbar Filters -->
-    <div class="filters-bar" style="justify-content: space-between;">
-      <div class="table-entries">
-        <span>Show </span>
-        <select class="filter-select entries-select" [(ngModel)]="pageSize" (ngModelChange)="currentPage = 1">
-          <option [value]="10">10</option>
-          <option [value]="25">25</option>
-          <option [value]="50">50</option>
-          <option [value]="100">100</option>
-        </select>
-        <span> entries</span>
-      </div>
-
-      <div style="display: flex; gap: 12px; align-items: center;">
+    <div class="filters-bar">
         @if (currentTab === 'treaties') {
           <select class="filter-select" [(ngModel)]="mgaFilter" (ngModelChange)="onFilterChange()">
             <option value="all">All MGAs</option>
@@ -72,13 +60,17 @@
             <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
           </svg>
         </div>
-        <button class="btn-action-outline" (click)="exportToExcel()" style="height: 38px; padding: 0 14px; display: inline-flex; align-items: center; gap: 6px;">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+        <button class="btn-action-outline" (click)="exportToExcel()" style="height: 38px; padding: 0 14px; display: inline-flex; align-items: center; gap: 6px; justify-content: center;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M5 3.5 A1.5 1.5 0 0 1 6.5 2 H14 L19 7 V20.5 A1.5 1.5 0 0 1 17.5 22 H6.5 A1.5 1.5 0 0 1 5 20.5 V3.5 Z" fill="#e2e6e9" />
+            <path d="M14 2 V5.5 A1.5 1.5 0 0 0 15.5 7 H19 Z" fill="#c3c8cc" />
+            <path d="M8 7 H12 M8 9.75 H15 M8 12.5 H14" stroke="#19a347" stroke-width="1.5" stroke-linecap="round" />
+            <path d="M2 14 V12.5 C2 11 3 10 4.5 10 H5 V14 Z" fill="#0d7028" />
+            <rect x="2" y="14" width="20" height="8" rx="1.5" fill="#19a347" />
+            <text x="12" y="20.2" font-family="Arial, sans-serif" font-weight="900" font-size="6.2" fill="#ffffff" text-anchor="middle" letter-spacing="0.2">CSV</text>
           </svg>
           <span>Export</span>
         </button>
-      </div>
     </div>
 
     <!-- Loading State -->
@@ -98,376 +90,16 @@
         <p>No records found. Try adjusting your filters or create a new entry.</p>
       </div>
     } @else {
-      <div class="table-wrapper">
-        <table class="data-table">
-          <!-- TREATIES TAB TABLE -->
-          @if (currentTab === 'treaties') {
-            <thead>
-              <tr>
-                <th style="width: 10%;">Code</th>
-                <th style="width: 15%;">Treaty Name</th>
-                <th style="width: 11%;">MGA</th>
-                <th style="width: 15%;">Carriers (Retention %)</th>
-                <th style="width: 11%;">States</th>
-                <th style="width: 11%;">LOBs (COBs)</th>
-                <th style="width: 9%;">Status</th>
-                <th class="col-actions" style="width: 21%; text-align: center;">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              @for (treaty of paginatedItems; track treaty.id) {
-                <tr [style.background]="!treaty.is_active ? 'var(--gray-50)' : 'transparent'">
-                  <td style="font-family: monospace; font-weight: 600;">{{ treaty.treaty_code }}</td>
-                  <td>{{ treaty.name }}</td>
-                  <td>{{ getMgasListDisplay(treaty) }}</td>
-                  <td>{{ getCarriersListDisplay(treaty) }}</td>
-                  <td [title]="getFullStatesList(treaty.treaty_states)">{{ getStatesListDisplay(treaty.treaty_states) }}</td>
-                  <td>{{ getLobsListDisplay(treaty.treaty_lobs) }}</td>
-                  <td>
-                    @let status = getTreatyStatus(treaty.name);
-                    @if (status === 'Approved') {
-                      <span class="status-badge approved">Approved</span>
-                    } @else if (status === 'Pending') {
-                      <span class="status-badge pending">Pending</span>
-                    } @else {
-                      <span class="status-badge none">-</span>
-                    }
-                  </td>
-                  <td class="col-actions" style="text-align: center;">
-                    <div class="action-buttons-list">
-                      <button class="btn-action-outline" (click)="triggerTreatyMonthlyUpload(treaty, monthlyExcelInput)">Upload Excel</button>
-                      <button class="btn-action-outline" (click)="openAddItdModal(treaty)">Add ITD</button>
-                      <button class="btn-action-outline" (click)="openTreatyEdit(treaty)">Edit</button>
-                      <button class="btn-action-outline btn-action-danger-outline" (click)="deleteTreaty(treaty)">
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              }
-            </tbody>
-          }
-
-          <!-- MGAS TAB TABLE -->
-          @if (currentTab === 'mgas') {
-            <thead>
-              <tr>
-                <th style="width: 12%;">MGA Code</th>
-                <th style="width: 30%;">MGA Name</th>
-                <th style="width: 20%;">Tax Payable In-house</th>
-                <th style="width: 13%;">Status</th>
-                <th class="col-actions" style="width: 25%; text-align: center;">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              @for (mga of paginatedItems; track mga.id) {
-                <tr [style.background]="!mga.is_active ? 'var(--gray-50)' : 'transparent'">
-                  <td style="font-family: monospace; font-weight: 600;">{{ mga.mga_code }}</td>
-                  <td>{{ mga.name }}</td>
-                  <td>
-                    <span [class]="mga.tax_payable_inhouse ? 'status-badge status-active' : 'status-badge status-inactive'" style="padding: 2px 8px; font-size: 11px;">
-                      {{ mga.tax_payable_inhouse ? 'Yes' : 'No' }}
-                    </span>
-                  </td>
-                  <td>
-                    <span [class]="mga.is_active ? 'status-badge status-active' : 'status-badge status-inactive'" style="padding: 2px 8px; font-size: 11px;">
-                      {{ mga.is_active ? 'Active' : 'Inactive' }}
-                    </span>
-                  </td>
-                  <td class="col-actions" style="text-align: center;">
-                    <div class="action-buttons-list">
-                      <button class="btn-action-outline" (click)="openTreatyAdd(mga.id)">Add to Treaties</button>
-                      <button class="btn-action-outline" (click)="openDocModal('mga', mga)">Document</button>
-                      <button class="btn-action-outline" (click)="openMgaEdit(mga)">Edit</button>
-                      <button class="btn-action-outline btn-action-danger-outline" (click)="deleteMga(mga)">
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              }
-            </tbody>
-          }
-
-          <!-- STATES TAB TABLE -->
-          @if (currentTab === 'states') {
-            <thead>
-              <tr>
-                <th style="width: 20%;">State Code</th>
-                <th style="width: 20%;">State Abbr</th>
-                <th style="width: 40%;">State Name</th>
-                <th class="col-actions" style="width: 20%; text-align: center;">Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              @for (item of paginatedItems; track item.id) {
-                <tr [style.background]="!item.is_active ? 'var(--gray-50)' : 'transparent'">
-                  <td style="font-family: monospace; font-weight: 600;">{{ item.state_code }}</td>
-                  <td style="font-weight: 600;">{{ item.state_abbr }}</td>
-                  <td>{{ item.name }}</td>
-                  <td class="col-actions" style="text-align: center;">
-                    <div class="action-buttons-list">
-                      <button class="btn-action-outline" (click)="openDocModal('state', item)">Document</button>
-                      <button class="btn-action-outline" (click)="openNotesModal('State Notes: ' + item.name, item.notes)">Notes</button>
-                      <button class="btn-action-outline" (click)="openStateEdit(item)">Edit</button>
-                      <button class="btn-action-outline btn-action-danger-outline" (click)="deleteState(item)">
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              }
-            </tbody>
-          }
-
-          <!-- RISK COMPANIES TAB TABLE -->
-          @if (currentTab === 'risk-companies') {
-            <thead>
-              <tr>
-                <th style="width: 15%;">Company</th>
-                <th style="width: 15%;">ID Name</th>
-                <th style="width: 20%;">Name</th>
-                <th style="width: 15%;">Phone</th>
-                <th style="width: 10%;">Admitted</th>
-                <th style="width: 10%;">State</th>
-                <th class="col-actions" style="width: 15%; text-align: center;">Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              @for (item of paginatedItems; track item.id) {
-                <tr [style.background]="!item.is_active ? 'var(--gray-50)' : 'transparent'">
-                  <td>
-                    <span style="font-family: monospace; font-weight: 600;">{{ item.company_id }}</span>
-                    @if (item.risk_company_id) {
-                      <span style="font-size: 11px; color: var(--gray-500);"> ({{ item.risk_company_id }})</span>
-                    }
-                  </td>
-                  <td>{{ item.id_name || '-' }}</td>
-                  <td>{{ item.name }}</td>
-                  <td>{{ item.phone || '-' }}</td>
-                  <td>
-                    <span [class]="item.is_admitted ? 'status-badge status-active' : 'status-badge status-inactive'" style="padding: 2px 8px; font-size: 11px;">
-                      {{ item.is_admitted ? 'Yes' : 'No' }}
-                    </span>
-                  </td>
-                  <td>{{ item.state || '-' }}</td>
-                  <td class="col-actions" style="text-align: center;">
-                    <div class="action-buttons-list">
-                      <button class="btn-action-outline" (click)="openDocModal('risk-company', item)">Document</button>
-                      <button class="btn-action-outline" (click)="openNotesModal('Risk Company Notes: ' + item.name, item.notes)">Notes</button>
-                      <button class="btn-action-outline" (click)="viewPolicy(item)">View Policy</button>
-                      <button class="btn-action-outline" (click)="openRiskCompanyEdit(item)">Edit</button>
-                      <button class="btn-action-outline btn-action-danger-outline" (click)="deleteRiskCompany(item)">
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              }
-            </tbody>
-          }
-
-          <!-- GL MAPPINGS TAB TABLE -->
-          @if (currentTab === 'gl-mappings') {
-            <thead>
-              <tr>
-                <th style="width: 60%;">GL Number</th>
-                <th style="width: 25%;">Type</th>
-                <th class="col-actions" style="width: 15%; text-align: center;">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              @for (mapping of paginatedItems; track mapping.id) {
-                <tr [style.background]="!mapping.is_active ? 'var(--gray-50)' : 'transparent'">
-                  <td style="font-weight: 600; font-family: monospace; color: var(--navy);">
-                    {{ getGLNumberDisplay(mapping) }}
-                  </td>
-                  <td>
-                    <span class="type-badge" [class]="mapping.type.toLowerCase()">
-                      {{ mapping.type }}
-                    </span>
-                  </td>
-                  <td class="col-actions" style="text-align: center;">
-                    <div class="action-buttons-list">
-                      <button class="btn-action-outline" (click)="openGlMappingEdit(mapping)">Edit</button>
-                      <button class="btn-action-outline btn-action-danger-outline" (click)="deleteGlMapping(mapping)">
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                          <polyline points="3 6 5 6 21 6"/>
-                          <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
-                        </svg>
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              }
-            </tbody>
-          }
-
-          <!-- LOBS TAB TABLE -->
-          @if (currentTab === 'lobs') {
-            <thead>
-              <tr>
-                <th style="width: 15%;">LOB Code</th>
-                <th style="width: 40%;">LOB Name</th>
-                <th style="width: 10%;">Taxable</th>
-                <th style="width: 10%;">Priority</th>
-                <th style="width: 10%;">Fully Earned</th>
-                <th style="width: 10%;">Status</th>
-                <th class="col-actions" style="width: 10%; text-align: center;">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              @for (item of paginatedItems; track item.id) {
-                <tr [style.background]="!item.is_active ? 'var(--gray-50)' : 'transparent'">
-                  <td style="font-family: monospace; font-weight: 600;">{{ item.lob_code }}</td>
-                  <td>
-                    <div style="font-weight: 500;">{{ item.name }}</div>
-                    @if (item.description) {
-                      <div style="font-size: 11px; color: var(--gray-500); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 220px;" [title]="item.description">
-                        {{ item.description }}
-                      </div>
-                    }
-                  </td>
-                  <td>
-                    <span [class]="item.taxable ? 'status-badge status-active' : 'status-badge status-inactive'" style="padding: 2px 8px; font-size: 11px;">
-                      {{ item.taxable ? 'Yes' : 'No' }}
-                    </span>
-                  </td>
-                  <td>{{ item.priority }}</td>
-                  <td>
-                    <span [class]="item.fully_earned ? 'status-badge status-active' : 'status-badge status-inactive'" style="padding: 2px 8px; font-size: 11px;">
-                      {{ item.fully_earned ? 'Yes' : 'No' }}
-                    </span>
-                  </td>
-                  <td>
-                    <span [class]="item.is_active ? 'status-badge status-active' : 'status-badge status-inactive'" style="padding: 2px 8px; font-size: 11px;">
-                      {{ item.is_active ? 'Active' : 'Inactive' }}
-                    </span>
-                  </td>
-                  <td class="col-actions" style="text-align: center;">
-                    <div class="action-buttons-list">
-                      <button class="btn-action-outline" (click)="openSimpleEdit('lob', item)">Edit</button>
-                      <button class="btn-action-outline btn-action-danger-outline" (click)="deleteSimple('lob', item)">
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              }
-            </tbody>
-          }
-
-          <!-- COBS TAB TABLE -->
-          @if (currentTab === 'cobs') {
-            <thead>
-              <tr>
-                <th style="width: 15%;">Class Code</th>
-                <th style="width: 25%;">Class Name</th>
-                <th style="width: 15%;">Class Type</th>
-                <th style="width: 10%;">Taxable</th>
-                <th style="width: 10%;">Priority</th>
-                <th style="width: 10%;">Fully Earned</th>
-                <th style="width: 10%;">Status</th>
-                <th class="col-actions" style="width: 10%; text-align: center;">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              @for (item of paginatedItems; track item.id) {
-                <tr [style.background]="!item.is_active ? 'var(--gray-50)' : 'transparent'">
-                  <td style="font-family: monospace; font-weight: 600;">{{ item.cob_code }}</td>
-                  <td>
-                    <div style="font-weight: 500;">{{ item.name }}</div>
-                    @if (item.description) {
-                      <div style="font-size: 11px; color: var(--gray-500); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 220px;" [title]="item.description">
-                        {{ item.description }}
-                      </div>
-                    }
-                  </td>
-                  <td>{{ item.type || '-' }}</td>
-                  <td>
-                    <span [class]="item.taxable ? 'status-badge status-active' : 'status-badge status-inactive'" style="padding: 2px 8px; font-size: 11px;">
-                      {{ item.taxable ? 'Yes' : 'No' }}
-                    </span>
-                  </td>
-                  <td>{{ item.priority }}</td>
-                  <td>
-                    <span [class]="item.fully_earned ? 'status-badge status-active' : 'status-badge status-inactive'" style="padding: 2px 8px; font-size: 11px;">
-                      {{ item.fully_earned ? 'Yes' : 'No' }}
-                    </span>
-                  </td>
-                  <td>
-                    <span [class]="item.is_active ? 'status-badge status-active' : 'status-badge status-inactive'" style="padding: 2px 8px; font-size: 11px;">
-                      {{ item.is_active ? 'Active' : 'Inactive' }}
-                    </span>
-                  </td>
-                  <td class="col-actions" style="text-align: center;">
-                    <div class="action-buttons-list">
-                      <button class="btn-action-outline" (click)="openSimpleEdit('cob', item)">Edit</button>
-                      <button class="btn-action-outline btn-action-danger-outline" (click)="deleteSimple('cob', item)">
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              }
-            </tbody>
-          }
-
-          <!-- REINSURERS TAB TABLE -->
-          @if (currentTab === 'reinsurers') {
-            <thead>
-              <tr>
-                <th style="width: 25%;">Code ID</th>
-                <th style="width: 50%;">Name</th>
-                <th style="width: 15%;">Status</th>
-                <th class="col-actions" style="width: 10%; text-align: center;">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              @for (item of paginatedItems; track item.id) {
-                <tr [style.background]="!item.is_active ? 'var(--gray-50)' : 'transparent'">
-                  <td style="font-family: monospace; font-weight: 600;">
-                    {{ item.reinsurer_company_id }}
-                  </td>
-                  <td>{{ item.name }}</td>
-                  <td>
-                    <span [class]="item.is_active ? 'status-badge status-active' : 'status-badge status-inactive'" style="padding: 2px 8px; font-size: 11px;">
-                      {{ item.is_active ? 'Active' : 'Inactive' }}
-                    </span>
-                  </td>
-                  <td class="col-actions" style="text-align: center;">
-                    <div class="action-buttons-list">
-                      <button class="btn-action-outline" (click)="openSimpleEdit('reinsurer', item)">Edit</button>
-                      <button class="btn-action-outline btn-action-danger-outline" (click)="deleteSimple('reinsurer', item)">
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              }
-            </tbody>
-          }
-        </table>
+      <div class="table-wrapper" style="margin-top: 16px;">
+        <ag-grid-angular
+          style="display: block; width: 100%;"
+          class="ag-theme-alpine"
+          [domLayout]="'autoHeight'"
+          [gridOptions]="gridOptions"
+          [columnDefs]="currentColumnDefs"
+          [rowData]="currentList">
+        </ag-grid-angular>
       </div>
-
-      <!-- Pagination Footer -->
-      @if (totalPages > 1) {
-        <div class="pagination">
-          <button class="page-btn" [disabled]="currentPage === 1" (click)="goToPage(currentPage - 1)">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-              <polyline points="15 18 9 12 15 6"/>
-            </svg>
-          </button>
-          @for (p of pageNumbers; track p) {
-            <button class="page-btn" [class.active]="p === currentPage" (click)="goToPage(p)">{{ p }}</button>
-          }
-          <button class="page-btn" [disabled]="currentPage === totalPages" (click)="goToPage(currentPage + 1)">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-              <polyline points="9 18 15 12 9 6"/>
-            </svg>
-          </button>
-        </div>
-      }
     }
   </div>
 

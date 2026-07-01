@@ -42,73 +42,23 @@
     </div>
 
     <div class="card table-card">
-      <div class="table-toolbar">
-        <div class="entries-control">
-          <span>Show</span>
-          <select>
-            <option value="25">25</option>
-            <option value="50">50</option>
-            <option value="100">100</option>
-          </select>
-          <span>entries</span>
-        </div>
-        <div class="search-control">
-          <input type="text" [(ngModel)]="searchTerm" (ngModelChange)="loadBatches()" placeholder="Search here">
-          <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <div class="filters-bar">
+        <div class="search-wrap">
+          <input class="search-input" type="text" [(ngModel)]="searchTerm" (ngModelChange)="loadBatches()" placeholder="Search here" style="padding-left: 12px; padding-right: 34px;">
+          <svg class="search-icon" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); color: var(--gray-400); pointer-events: none;" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
           </svg>
         </div>
       </div>
 
-      <div class="table-responsive">
-        <table class="data-table">
-          <thead>
-            <tr>
-              <th style="width: 60px;">#</th>
-              <th>Batch</th>
-              <th>Amount</th>
-              <th>Count</th>
-              <th style="text-align: right; width: 350px;">Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            @if (loading) {
-              <tr>
-                <td colspan="5" class="text-center py-4">Loading batches...</td>
-              </tr>
-            } @else if (batches.length === 0) {
-              <tr>
-                <td colspan="5" class="text-center py-4">No batches found for this selection.</td>
-              </tr>
-            } @else {
-              @for (b of batches; track b.id; let idx = $index) {
-                <tr>
-                  <td>{{ idx + 1 }}</td>
-                  <td><strong class="text-link" (click)="viewBatchDetails(b)">{{ b.batch_number }}</strong></td>
-                  <td>{{ formatCurrency(b.total_amount) }}</td>
-                  <td>{{ b.count }}</td>
-                  <td style="text-align: right;">
-                    <button class="btn-table" (click)="viewBatchDetails(b)">Edit</button>
-                    <button class="btn-table" (click)="viewBatchDetails(b)">Journal Entry</button>
-                    <button class="btn-table btn-table-danger" (click)="deleteBatch(b, $event)">Delete</button>
-                  </td>
-                </tr>
-              }
-            }
-          </tbody>
-        </table>
-      </div>
-
-      <div class="table-footer">
-        <div class="showing-info">
-          Showing 1 to {{ batches.length }} of {{ batches.length }} entries
-        </div>
-        <div class="pagination">
-          <button class="btn-page" disabled>< Previous</button>
-          <button class="btn-page active">1</button>
-          <button class="btn-page" disabled>Next ></button>
-        </div>
-      </div>
+      <ag-grid-angular
+        style="display: block; width: 100%;"
+        class="ag-theme-alpine"
+        [domLayout]="'autoHeight'"
+        [gridOptions]="gridOptions"
+        [rowData]="batches"
+        [columnDefs]="batchColDefs">
+      </ag-grid-angular>
     </div>
   }
 
@@ -151,81 +101,23 @@
     </div>
 
     <div class="card table-card">
-      <div class="table-toolbar">
-        <div class="entries-control">
-          <span>Show</span>
-          <select>
-            <option value="25">25</option>
-            <option value="50">50</option>
-            <option value="100">100</option>
-          </select>
-          <span>entries</span>
-        </div>
-        <div class="search-control">
-          <input type="text" placeholder="Search here">
-          <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <div class="filters-bar">
+        <div class="search-wrap">
+          <input class="search-input" type="text" placeholder="Search here" style="padding-left: 12px; padding-right: 34px;">
+          <svg class="search-icon" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); color: var(--gray-400); pointer-events: none;" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
           </svg>
         </div>
       </div>
 
-      <div class="table-responsive">
-        <table class="data-table">
-          <thead>
-            <tr>
-              <th>Journal</th>
-              <th>Description</th>
-              <th>G/L</th>
-              <th>Sub</th>
-              <th>Debit</th>
-              <th>Credit</th>
-              <th>Date</th>
-              <th>DP</th>
-              <th>Policy</th>
-              <th style="text-align: right;">Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            @if (loadingEntries) {
-              <tr>
-                <td colspan="10" class="text-center py-4">Loading entries...</td>
-              </tr>
-            } @else if (entries.length === 0) {
-              <tr>
-                <td colspan="10" class="text-center py-4">No entries in this batch. Click Add to create one.</td>
-              </tr>
-            } @else {
-              @for (entry of entries; track entry.id) {
-                <tr>
-                  <td>{{ entry.je_number }}</td>
-                  <td>{{ entry.description }}</td>
-                  <td>{{ entry.coa?.account_code }}</td>
-                  <td>{{ entry.sub || '-' }}</td>
-                  <td>{{ entry.debit ? formatCurrency(entry.debit) : '' }}</td>
-                  <td>{{ entry.credit ? formatCurrency(entry.credit) : '' }}</td>
-                  <td>{{ entry.date }}</td>
-                  <td>{{ entry.dp || '-' }}</td>
-                  <td>{{ entry.policy || '-' }}</td>
-                  <td style="text-align: right;">
-                    <button class="btn-table" (click)="editJournalEntry(entry)">Edit</button>
-                  </td>
-                </tr>
-              }
-            }
-          </tbody>
-        </table>
-      </div>
-
-      <div class="table-footer">
-        <div class="showing-info">
-          Showing 1 to {{ entries.length }} of {{ entries.length }} entries
-        </div>
-        <div class="pagination">
-          <button class="btn-page" disabled>< Previous</button>
-          <button class="btn-page active">1</button>
-          <button class="btn-page" disabled>Next ></button>
-        </div>
-      </div>
+      <ag-grid-angular
+        style="display: block; width: 100%;"
+        class="ag-theme-alpine"
+        [domLayout]="'autoHeight'"
+        [gridOptions]="gridOptions"
+        [rowData]="entries"
+        [columnDefs]="entriesColDefs">
+      </ag-grid-angular>
     </div>
   }
 

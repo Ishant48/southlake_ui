@@ -3,6 +3,7 @@
 @use 'styles/layout';
 @use 'styles/components';
 @use 'styles/user-management';
+@use 'styles/ag-grid-custom';
 
 *, *::before, *::after {
   box-sizing: border-box;

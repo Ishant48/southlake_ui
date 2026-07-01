@@ -10,12 +10,16 @@ import { ConfirmDialogComponent } from '../../shared/components/confirm-dialog/c
 import { DropdownSearchComponent } from '../../shared/components/dropdown-search/dropdown-search.component';
 import { JournalEntryBatch, JournalEntry } from '../../core/models/journal-entry.model';
 import { ChartOfAccount } from '../../core/models/chart-of-account.model';
+import { ActionButtonsCellRenderer } from '../../shared/components/grid-renderers/action-buttons-cell.component';
 import { ReinsuranceService } from '../../core/services/reinsurance.service';
+import { AgGridAngular } from 'ag-grid-angular';
+import { ColDef, GridOptions } from 'ag-grid-community';
+import { AgGridConfigService } from '../../core/services/ag-grid-config.service';
 
 @Component({
   selector: 'app-journal-entries',
   standalone: true,
-  imports: [CommonModule, FormsModule, ConfirmDialogComponent, DropdownSearchComponent],
+  imports: [CommonModule, FormsModule, ConfirmDialogComponent, DropdownSearchComponent, AgGridAngular],
   templateUrl: './journal-entries.component.html',
   styleUrl: './journal-entries.component.scss',
 })
@@ -28,6 +32,83 @@ export class JournalEntriesComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private reinsuranceService = inject(ReinsuranceService);
+  private agGridConfig = inject(AgGridConfigService);
+
+  gridOptions: GridOptions = this.agGridConfig.getDefaultGridOptions();
+
+  batchColDefs: ColDef[] = [
+    { headerName: '#', valueGetter: 'node.rowIndex + 1', width: 60, flex: 0 },
+    { 
+      headerName: 'BATCH', 
+      field: 'batch_number', 
+      cellRenderer: (params: any) => {
+        const el = document.createElement('strong');
+        el.className = 'text-link';
+        el.innerText = params.value;
+        el.style.cursor = 'pointer';
+        el.onclick = () => this.viewBatchDetails(params.data);
+        return el;
+      },
+      flex: 1, minWidth: 150
+    },
+    { headerName: 'AMOUNT', field: 'total_amount', valueFormatter: (params) => this.formatCurrency(params.value), flex: 1, minWidth: 150 },
+    { headerName: 'COUNT', field: 'count', flex: 1, minWidth: 120 },
+    { 
+      headerName: 'ACTIONS', 
+      cellRenderer: ActionButtonsCellRenderer,
+      cellRendererParams: {
+        buttons: (data: any) => [
+          { label: 'Edit', action: 'edit' },
+          { label: 'Journal Entry', action: 'je' },
+          { label: 'Print Register', action: 'print' },
+          { label: 'Delete', action: 'delete', danger: true }
+        ],
+        onClick: (action: string, data: any) => {
+          if (action === 'edit' || action === 'je') this.viewBatchDetails(data);
+          if (action === 'delete') {
+            // Because deleteBatch expects a mouse event to stop propagation, we simulate or bypass it
+            this.confirm('Delete Batch', `Are you sure you want to delete batch ${data.batch_number}?`, () => {
+              this.service.deleteBatch(data.id).subscribe({
+                next: () => {
+                  this.toast.success(`Batch ${data.batch_number} deleted successfully`);
+                  this.loadBatches();
+                },
+                error: () => this.toast.error('Failed to delete batch')
+              });
+            });
+          }
+        }
+      },
+      width: 320, minWidth: 320,
+      flex: 0,
+      sortable: false
+    }
+  ];
+
+  entriesColDefs: ColDef[] = [
+    { headerName: 'JOURNAL', field: 'je_number', flex: 1, minWidth: 120 },
+    { headerName: 'DESCRIPTION', field: 'description', flex: 1, minWidth: 180 },
+    { headerName: 'G/L', field: 'coa.account_code', flex: 1, minWidth: 120 },
+    { headerName: 'SUB', field: 'sub', valueFormatter: p => p.value || '-', flex: 1, minWidth: 120 },
+    { headerName: 'DEBIT', field: 'debit', valueFormatter: p => p.value ? this.formatCurrency(p.value) : '', flex: 1, minWidth: 120 },
+    { headerName: 'CREDIT', field: 'credit', valueFormatter: p => p.value ? this.formatCurrency(p.value) : '', flex: 1, minWidth: 120 },
+    { headerName: 'DATE', field: 'date', flex: 1, minWidth: 120 },
+    { headerName: 'DP', field: 'dp', valueFormatter: p => p.value || '-', flex: 1, minWidth: 100 },
+    { headerName: 'POLICY', field: 'policy', valueFormatter: p => p.value || '-', flex: 1, minWidth: 120 },
+    { 
+      headerName: 'ACTIONS',
+      cellRenderer: ActionButtonsCellRenderer,
+      cellRendererParams: {
+        buttons: () => [{ label: 'Edit', action: 'edit' }],
+        onClick: (action: string, data: any) => {
+          if (action === 'edit') this.editJournalEntry(data);
+        }
+      },
+      flex: 0,
+      width: 100, minWidth: 100, maxWidth: 100,
+      sortable: false
+    }
+  ];
 
   // View state
   currentView: 'list' | 'detail' | 'form' = 'list';

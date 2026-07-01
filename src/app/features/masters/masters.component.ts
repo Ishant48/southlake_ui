@@ -1,8 +1,13 @@
-import { Component, inject, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, inject, OnInit, ChangeDetectorRef, ViewChild, ElementRef } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { Observable } from 'rxjs';
 import { FormsModule } from '@angular/forms';
+import { AgGridAngular } from 'ag-grid-angular';
+import { ColDef, GridOptions } from 'ag-grid-community';
+import { AgGridConfigService } from '../../core/services/ag-grid-config.service';
+import { ActionButtonsCellRenderer } from '../../shared/components/grid-renderers/action-buttons-cell.component';
+import { StatusBadgeCellRenderer } from '../../shared/components/grid-renderers/status-badge-cell.component';
 import { MastersService } from '../../core/services/masters.service';
 import { ToastService } from '../../shared/components/toast/toast.service';
 import { ConfirmDialogComponent } from '../../shared/components/confirm-dialog/confirm-dialog.component';
@@ -33,7 +38,7 @@ type MasterTab = 'treaties' | 'mgas' | 'lobs' | 'cobs' | 'states' | 'reinsurers'
 @Component({
   selector: 'app-masters',
   standalone: true,
-  imports: [CommonModule, FormsModule, ConfirmDialogComponent, DropdownSearchComponent],
+  imports: [CommonModule, FormsModule, ConfirmDialogComponent, DropdownSearchComponent, AgGridAngular],
   templateUrl: './masters.component.html',
   styleUrl: './masters.component.scss',
 })
@@ -71,6 +76,12 @@ export class MastersComponent implements OnInit {
   private router = inject(Router);
   private glMappingsService = inject(GlMappingsService);
   private coaService = inject(ChartOfAccountsService);
+  private agGridConfig = inject(AgGridConfigService);
+
+  gridOptions: GridOptions = this.agGridConfig.getDefaultGridOptions();
+
+  @ViewChild('monthlyExcelInput') monthlyExcelInput!: ElementRef<HTMLInputElement>;
+  @ViewChild('itdExcelInput') itdExcelInput!: ElementRef<HTMLInputElement>;
 
   currentTab: MasterTab = 'treaties';
   glMappings: GlMapping[] = [];
@@ -482,6 +493,210 @@ export class MastersComponent implements OnInit {
   goToPage(page: number): void {
     if (page >= 1 && page <= this.totalPages) {
       this.currentPage = page;
+    }
+  }
+
+  get currentColumnDefs(): ColDef[] {
+    const statusCol: ColDef = {
+      headerName: 'STATUS',
+      field: 'is_active',
+      flex: 1,
+      minWidth: 100,
+      maxWidth: 120,
+      cellRenderer: StatusBadgeCellRenderer
+    };
+
+    switch (this.currentTab) {
+      case 'treaties':
+        return [
+          { headerName: 'CODE', field: 'treaty_code', flex: 1, minWidth: 100, maxWidth: 120 },
+          { headerName: 'TREATY NAME', field: 'name', flex: 2, minWidth: 150 },
+          { headerName: 'MGA', valueGetter: (p) => this.getMgasListDisplay(p.data), flex: 1.5, minWidth: 120 },
+          { headerName: 'CARRIERS (RETENTION %)', valueGetter: (p) => this.getCarriersListDisplay(p.data), flex: 2, minWidth: 150 },
+          { headerName: 'STATES', valueGetter: (p) => this.getStatesListDisplay(p.data?.treaty_states), flex: 1, minWidth: 100 },
+          { headerName: 'LOBS (COBS)', valueGetter: (p) => this.getLobsListDisplay(p.data?.treaty_lobs), flex: 1.5, minWidth: 120 },
+          { headerName: 'STATUS', valueGetter: (p) => this.getTreatyStatus(p.data?.name),
+            cellRenderer: (p: any) => {
+              const baseStyle = 'display: inline-flex; align-items: center; justify-content: center; padding: 4px 10px; font-size: 12px; font-weight: 700; border-radius: 12px; text-transform: uppercase; letter-spacing: 0.3px; white-space: nowrap;';
+              if (p.value === 'Approved') return `<span style="${baseStyle} background-color: #e2f5ec; color: #0d9488; border: 1px solid #ccfbf1;">Approved</span>`;
+              if (p.value === 'Pending') return `<span style="${baseStyle} background-color: #fff3e0; color: #f59e0b; border: 1px solid #fef3c7;">Pending</span>`;
+              return '<span style="color: var(--gray-500);">-</span>';
+            },
+            flex: 1, minWidth: 100, maxWidth: 120
+          },
+          { headerName: 'ACTIONS', cellRenderer: ActionButtonsCellRenderer, cellRendererParams: {
+              buttons: (data: any) => {
+                const btns = [];
+                if (this.hasITDSeeded(data.name)) {
+                  btns.push({ label: 'Upload Excel', action: 'uploadExcel' });
+                }
+                btns.push({ label: 'Add ITD', action: 'addItd' });
+                btns.push({ label: 'Edit', action: 'edit' });
+                btns.push({ label: 'Delete', action: 'delete', danger: true });
+                return btns;
+              },
+              onClick: (action: string, data: any) => {
+                if (action === 'uploadExcel') this.triggerTreatyMonthlyUpload(data);
+                if (action === 'addItd') this.triggerTreatyITDUpload(data);
+                if (action === 'edit') this.openTreatyEdit(data);
+                if (action === 'delete') this.deleteTreaty(data);
+              }
+          }, flex: 0, width: 330, minWidth: 330, maxWidth: 330, cellStyle: { justifyContent: 'flex-start' } }
+        ];
+
+      case 'mgas':
+        return [
+          { headerName: 'MGA CODE', field: 'mga_code', flex: 1, minWidth: 100, maxWidth: 120 },
+          { headerName: 'MGA NAME', field: 'name', flex: 2, minWidth: 150 },
+          { headerName: 'TAX PAYABLE IN-HOUSE', field: 'tax_payable_inhouse', cellRenderer: StatusBadgeCellRenderer, flex: 1.5, minWidth: 150 },
+          { headerName: 'LEDGER AMOUNT', field: 'ledger_amount', valueFormatter: p => p.value !== undefined ? `$${Number(p.value).toFixed(2)}` : '$0.00', flex: 1.5, minWidth: 120 },
+          statusCol,
+          { headerName: 'ACTIONS', cellRenderer: ActionButtonsCellRenderer, cellRendererParams: {
+              buttons: [
+                { label: 'Add to Treaties', action: 'addTreaty' },
+                { label: 'Document', action: 'doc' },
+                { label: 'Edit', action: 'edit' },
+                { label: 'Delete', action: 'delete', danger: true }
+              ],
+              onClick: (action: string, data: any) => {
+                if (action === 'addTreaty') this.openTreatyAdd(data.id);
+                if (action === 'doc') this.openDocModal('mga', data);
+                if (action === 'edit') this.openMgaEdit(data);
+                if (action === 'delete') this.deleteMga(data);
+              }
+          }, flex: 0, width: 330, minWidth: 330, maxWidth: 330 }
+        ];
+
+      case 'states':
+        return [
+          { headerName: 'STATE CODE', field: 'state_code', flex: 1, minWidth: 100 },
+          { headerName: 'STATE ABBR', field: 'state_abbr', flex: 1, minWidth: 100 },
+          { headerName: 'STATE NAME', field: 'name', flex: 3, minWidth: 200 },
+          { headerName: 'ACTIONS', cellRenderer: ActionButtonsCellRenderer, cellRendererParams: {
+              buttons: [
+                { label: 'Document', action: 'doc' },
+                { label: 'Notes', action: 'notes' },
+                { label: 'Edit', action: 'edit' },
+                { label: 'Delete', action: 'delete', danger: true }
+              ],
+              onClick: (action: string, data: any) => {
+                if (action === 'doc') this.openDocModal('state', data);
+                if (action === 'notes') this.openNotesModal('State Notes: ' + data.name, data.notes);
+                if (action === 'edit') this.openStateEdit(data);
+                if (action === 'delete') this.deleteState(data);
+              }
+          }, flex: 0, width: 280, minWidth: 280, maxWidth: 280 }
+        ];
+
+      case 'risk-companies':
+        return [
+          { headerName: 'COMPANY', valueGetter: p => `${p.data.company_id}${p.data.risk_company_id ? ` (${p.data.risk_company_id})` : ''}`, flex: 1.5, minWidth: 150 },
+          { headerName: 'ID NAME', field: 'id_name', flex: 1.5, minWidth: 150 },
+          { headerName: 'NAME', field: 'name', flex: 3, minWidth: 200 },
+          { headerName: 'PHONE', field: 'phone', flex: 1.5, minWidth: 120 },
+          { headerName: 'ADMITTED', field: 'is_admitted', cellRenderer: StatusBadgeCellRenderer, flex: 1, minWidth: 100 },
+          { headerName: 'STATE', field: 'state', flex: 1, minWidth: 80 },
+          { headerName: 'ACTIONS', cellRenderer: ActionButtonsCellRenderer, cellRendererParams: {
+              buttons: [
+                { label: 'Document', action: 'doc' },
+                { label: 'Notes', action: 'notes' },
+                { label: 'View Policy', action: 'policy' },
+                { label: 'Edit', action: 'edit' },
+                { label: 'Delete', action: 'delete', danger: true }
+              ],
+              onClick: (action: string, data: any) => {
+                if (action === 'doc') this.openDocModal('risk-company', data);
+                if (action === 'notes') this.openNotesModal('Risk Company Notes: ' + data.name, data.notes);
+                if (action === 'policy') this.viewPolicy(data);
+                if (action === 'edit') this.openRiskCompanyEdit(data);
+                if (action === 'delete') this.deleteRiskCompany(data);
+              }
+          }, flex: 0, width: 360, minWidth: 360, maxWidth: 360 }
+        ];
+
+      case 'gl-mappings':
+        return [
+          { headerName: 'GL NUMBER', valueGetter: p => this.getGLNumberDisplay(p.data), flex: 2, minWidth: 200 },
+          { headerName: 'TYPE', field: 'type', cellRenderer: (p: any) => `<span class="type-badge ${p.value?.toLowerCase()}">${p.value}</span>`, flex: 1, minWidth: 100 },
+          { headerName: 'ACTIONS', cellRenderer: ActionButtonsCellRenderer, cellRendererParams: {
+              buttons: [
+                { label: 'Edit', action: 'edit' },
+                { label: 'Delete', action: 'delete', danger: true }
+              ],
+              onClick: (action: string, data: any) => {
+                if (action === 'edit') this.openGlMappingEdit(data);
+                if (action === 'delete') this.deleteGlMapping(data);
+              }
+          }, flex: 0, width: 160, minWidth: 160, maxWidth: 160 }
+        ];
+
+      case 'lobs':
+        return [
+          { headerName: 'LOB CODE', field: 'lob_code', flex: 1, minWidth: 100, maxWidth: 120 },
+          { headerName: 'LOB NAME', valueGetter: p => p.data.name, cellRenderer: (p: any) => {
+              const desc = p.data.description ? `<div style="font-size: 11px; color: var(--gray-500); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 220px;" title="${p.data.description}">${p.data.description}</div>` : '';
+              return `<div style="line-height:1.2; margin-top:10px;"><div style="font-weight: 500;">${p.data.name}</div>${desc}</div>`;
+            }, flex: 3, minWidth: 200 },
+          { headerName: 'LOB TYPE', field: 'type', flex: 1.5, minWidth: 120 },
+          { headerName: 'TAXABLE', field: 'taxable', cellRenderer: StatusBadgeCellRenderer, flex: 1, minWidth: 100 },
+          { headerName: 'PRIORITY', field: 'priority', flex: 1, minWidth: 100 },
+          { headerName: 'FULLY EARNED', field: 'fully_earned', cellRenderer: StatusBadgeCellRenderer, flex: 1, minWidth: 120 },
+          statusCol,
+          { headerName: 'ACTIONS', cellRenderer: ActionButtonsCellRenderer, cellRendererParams: {
+              buttons: [
+                { label: 'Edit', action: 'edit' },
+                { label: 'Delete', action: 'delete', danger: true }
+              ],
+              onClick: (action: string, data: any) => {
+                if (action === 'edit') this.openSimpleEdit('lob', data);
+                if (action === 'delete') this.deleteSimple('lob', data);
+              }
+          }, flex: 0, width: 160, minWidth: 160, maxWidth: 160 }
+        ];
+
+      case 'cobs':
+        return [
+          { headerName: 'CLASS CODE', field: 'cob_code', flex: 1, minWidth: 100, maxWidth: 120 },
+          { headerName: 'CLASS NAME', valueGetter: p => p.data.name, cellRenderer: (p: any) => {
+              const desc = p.data.description ? `<div style="font-size: 11px; color: var(--gray-500); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 220px;" title="${p.data.description}">${p.data.description}</div>` : '';
+              return `<div style="line-height:1.2; margin-top:10px;"><div style="font-weight: 500;">${p.data.name}</div>${desc}</div>`;
+            }, flex: 3, minWidth: 200 },
+          { headerName: 'CLASS TYPE', field: 'type', flex: 1.5, minWidth: 120 },
+          { headerName: 'TAXABLE', field: 'taxable', cellRenderer: StatusBadgeCellRenderer, flex: 1, minWidth: 100 },
+          { headerName: 'PRIORITY', field: 'priority', flex: 1, minWidth: 100 },
+          { headerName: 'FULLY EARNED', field: 'fully_earned', cellRenderer: StatusBadgeCellRenderer, flex: 1, minWidth: 120 },
+          statusCol,
+          { headerName: 'ACTIONS', cellRenderer: ActionButtonsCellRenderer, cellRendererParams: {
+              buttons: [
+                { label: 'Edit', action: 'edit' },
+                { label: 'Delete', action: 'delete', danger: true }
+              ],
+              onClick: (action: string, data: any) => {
+                if (action === 'edit') this.openSimpleEdit('cob', data);
+                if (action === 'delete') this.deleteSimple('cob', data);
+              }
+          }, flex: 0, width: 160, minWidth: 160, maxWidth: 160 }
+        ];
+
+      case 'reinsurers':
+        return [
+          { headerName: 'CODE ID', field: 'reinsurer_company_id', flex: 1.5, minWidth: 120, maxWidth: 180 },
+          { headerName: 'NAME', field: 'name', flex: 3, minWidth: 200 },
+          statusCol,
+          { headerName: 'ACTIONS', cellRenderer: ActionButtonsCellRenderer, cellRendererParams: {
+              buttons: [
+                { label: 'Edit', action: 'edit' },
+                { label: 'Delete', action: 'delete', danger: true }
+              ],
+              onClick: (action: string, data: any) => {
+                if (action === 'edit') this.openSimpleEdit('reinsurer', data);
+                if (action === 'delete') this.deleteSimple('reinsurer', data);
+              }
+          }, flex: 0, width: 160, minWidth: 160, maxWidth: 160 }
+        ];
+
+      default:
+        return [];
     }
   }
 
@@ -1643,14 +1858,18 @@ export class MastersComponent implements OnInit {
 
   selectedTreatyForUpload: any = null;
 
-  triggerTreatyMonthlyUpload(treaty: any, inputEl: HTMLInputElement): void {
+  triggerTreatyMonthlyUpload(treaty: any): void {
     this.selectedTreatyForUpload = treaty;
-    inputEl.click();
+    if (this.monthlyExcelInput?.nativeElement) {
+      this.monthlyExcelInput.nativeElement.click();
+    }
   }
 
-  triggerTreatyITDUpload(treaty: any, inputEl: HTMLInputElement): void {
+  triggerTreatyITDUpload(treaty: any): void {
     this.selectedTreatyForUpload = treaty;
-    inputEl.click();
+    if (this.itdExcelInput?.nativeElement) {
+      this.itdExcelInput.nativeElement.click();
+    }
   }
 
   onTreatyMonthlyUpload(event: any): void {

@@ -1,7 +1,8 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnInit, HostListener } from '@angular/core';
 import { RouterLink, RouterLinkActive, Router, NavigationEnd } from '@angular/router';
 import { filter } from 'rxjs/operators';
 import { AuthService } from '../../core/services/auth.service';
+import { SidebarService } from '../../core/services/sidebar.service';
 
 @Component({
   selector: 'app-sidebar',
@@ -13,11 +14,25 @@ import { AuthService } from '../../core/services/auth.service';
 export class SidebarComponent implements OnInit {
   private router = inject(Router);
   private authService = inject(AuthService);
+  sidebarService = inject(SidebarService);
   
   dashboardExpanded = true;
   accountingExpanded = false;
   adminExpanded = false;
   mastersExpanded = false;
+
+  @HostListener('window:resize')
+  onResize() {
+    this.checkScreenSize();
+  }
+
+  private checkScreenSize() {
+    if (typeof window !== 'undefined' && window.innerWidth <= 1024) {
+      if (!this.sidebarService.isCollapsed()) {
+        this.sidebarService.isCollapsed.set(true);
+      }
+    }
+  }
 
   get displayName(): string {
     return this.authService.getCurrentUser()?.name ?? 'User';
@@ -48,6 +63,7 @@ export class SidebarComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    this.checkScreenSize();
     this.checkActiveRoute(this.router.url);
 
     this.router.events.pipe(
@@ -74,21 +90,41 @@ export class SidebarComponent implements OnInit {
 
   toggleDashboard(event: Event): void {
     event.preventDefault();
+    if (this.sidebarService.isCollapsed()) {
+      this.sidebarService.isCollapsed.set(false);
+      this.dashboardExpanded = true;
+      return;
+    }
     this.dashboardExpanded = !this.dashboardExpanded;
   }
 
   toggleAccounting(event: Event): void {
     event.preventDefault();
+    if (this.sidebarService.isCollapsed()) {
+      this.sidebarService.isCollapsed.set(false);
+      this.accountingExpanded = true;
+      return;
+    }
     this.accountingExpanded = !this.accountingExpanded;
   }
 
   toggleAdmin(event: Event): void {
     event.preventDefault();
+    if (this.sidebarService.isCollapsed()) {
+      this.sidebarService.isCollapsed.set(false);
+      this.adminExpanded = true;
+      return;
+    }
     this.adminExpanded = !this.adminExpanded;
   }
 
   toggleMasters(event: Event): void {
     event.preventDefault();
+    if (this.sidebarService.isCollapsed()) {
+      this.sidebarService.isCollapsed.set(false);
+      this.mastersExpanded = true;
+      return;
+    }
     this.mastersExpanded = !this.mastersExpanded;
   }
 

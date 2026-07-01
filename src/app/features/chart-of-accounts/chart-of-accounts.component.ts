@@ -7,23 +7,92 @@ import { ToastService } from '../../shared/components/toast/toast.service';
 import { ConfirmDialogComponent } from '../../shared/components/confirm-dialog/confirm-dialog.component';
 import { environment } from '../../../environments/environment';
 
+import { AgGridAngular } from 'ag-grid-angular';
+import { ColDef, GridOptions, GridReadyEvent } from 'ag-grid-community';
+import { AgGridConfigService } from '../../core/services/ag-grid-config.service';
+
+import { CoaBadgeRendererComponent } from './grid-renderers/coa-badge-renderer.component';
+import { CoaTreeNameRendererComponent } from './grid-renderers/coa-tree-name-renderer.component';
+import { BalanceBadgeRendererComponent } from './grid-renderers/balance-badge-renderer.component';
+import { CoaActionsRendererComponent } from './grid-renderers/coa-actions-renderer.component';
+
 @Component({
   selector: 'app-chart-of-accounts',
   standalone: true,
-  imports: [CommonModule, FormsModule, ConfirmDialogComponent],
+  imports: [CommonModule, FormsModule, ConfirmDialogComponent, AgGridAngular],
   templateUrl: './chart-of-accounts.component.html',
   styleUrl: './chart-of-accounts.component.scss',
 })
 export class ChartOfAccountsComponent implements OnInit {
   private service = inject(ChartOfAccountsService);
   private toast = inject(ToastService);
+  private agGridConfig = inject(AgGridConfigService);
   private cdr = inject(ChangeDetectorRef);
 
   flatAccounts: ChartOfAccount[] = [];
   rootParents: ChartOfAccount[] = []; // Predefined 5 roots
   subCoas: any[] = []; // List of COAs (roots and subs) displayed in table
+  filteredSubCoas: any[] = []; // Filtered list passed to AG Grid
   loading = false;
-  searchTerm = '';
+  searchTerm: string = '';
+  Math = Math; // To use Math.ceil in template if needed
+
+  // AG Grid Properties
+  gridOptions: GridOptions = this.agGridConfig.getDefaultGridOptions();
+  columnDefs: ColDef[] = [
+    { 
+      headerName: 'COA TYPE', 
+      field: 'is_root', 
+      cellRenderer: CoaBadgeRendererComponent,
+      flex: 12,
+      minWidth: 100
+    },
+    { 
+      headerName: 'CODE', 
+      field: 'account_code',
+      cellStyle: { fontFamily: 'monospace', fontWeight: '700' },
+      flex: 10,
+      minWidth: 90
+    },
+    { 
+      headerName: 'NAME', 
+      field: 'description', 
+      cellRenderer: CoaTreeNameRendererComponent,
+      flex: 40,
+      minWidth: 350
+    },
+    { 
+      headerName: 'PARENT CODE', 
+      valueGetter: (params) => params.data?.is_root ? '-' : this.getParentCoaId(params.data),
+      cellStyle: { fontFamily: 'monospace', fontWeight: '600' },
+      flex: 12,
+      minWidth: 100
+    },
+    { 
+      headerName: 'NEXT NUMBER', 
+      valueGetter: (params) => params.data?.is_root ? (params.data?.next_number || '-') : '-',
+      cellStyle: { fontFamily: 'monospace' },
+      flex: 12,
+      minWidth: 100
+    },
+    { 
+      headerName: 'NORMAL BAL...', 
+      field: 'normal_balance', 
+      cellRenderer: BalanceBadgeRendererComponent,
+      flex: 14,
+      minWidth: 100
+    },
+    { 
+      headerName: 'ACTIONS', 
+      cellRenderer: CoaActionsRendererComponent,
+      sortable: false,
+      minWidth: 230,
+      maxWidth: 240,
+      cellStyle: { textAlign: 'center', justifyContent: 'center' }
+    }
+  ];
+
+  // Modals state
   statusFilter: 'all' | 'active' | 'inactive' = 'all';
   typeFilter: string = 'all';
   earningAccountCode: number | null = null;
@@ -96,6 +165,7 @@ export class ChartOfAccountsComponent implements OnInit {
 
         // Build the nested/hierarchical flat list to display in the table
         this.subCoas = this.buildTreeList(accounts);
+        this.applyTypeFilter();
 
         this.currentPage = 1;
         this.loading = false;
@@ -108,6 +178,15 @@ export class ChartOfAccountsComponent implements OnInit {
       }
     });
   }
+
+  onGridReady(params: GridReadyEvent) {
+    // Provide component reference to custom renderers so they can call modals
+    params.api.setGridOption('context', {
+      componentParent: this
+    });
+  }
+
+  applyFilter() {}
 
   buildTreeList(accounts: ChartOfAccount[]): any[] {
     const rootCodes = [110000, 210000, 310000, 410000, 510000];
@@ -184,8 +263,8 @@ export class ChartOfAccountsComponent implements OnInit {
     return `${code} - ${root.description}`;
   }
 
-  // Client-side pagination helpers
-  get paginatedSubCoas(): any[] {
+  // Client-side filtering for AG Grid
+  applyTypeFilter(): void {
     let filtered = this.subCoas;
     if (this.typeFilter === 'parent') {
       filtered = filtered.filter(coa => coa.is_root);
@@ -193,43 +272,11 @@ export class ChartOfAccountsComponent implements OnInit {
       const targetCode = Number(this.typeFilter);
       const targetParent = this.rootParents.find(p => Number(p.account_code) === targetCode);
       if (targetParent) {
+        // Include the target parent and any account that has this parent
         filtered = filtered.filter(coa => coa.id === targetParent.id || coa.parent_id === targetParent.id);
       }
     }
-    const start = (this.currentPage - 1) * this.pageSize;
-    return filtered.slice(start, start + this.pageSize);
-  }
-
-  get totalPages(): number {
-    let filtered = this.subCoas;
-    if (this.typeFilter === 'parent') {
-      filtered = filtered.filter(coa => coa.is_root);
-    } else if (this.typeFilter !== 'all') {
-      const targetCode = Number(this.typeFilter);
-      const targetParent = this.rootParents.find(p => Number(p.account_code) === targetCode);
-      if (targetParent) {
-        filtered = filtered.filter(coa => coa.id === targetParent.id || coa.parent_id === targetParent.id);
-      }
-    }
-    return Math.ceil(filtered.length / this.pageSize);
-  }
-
-  get pageNumbers(): number[] {
-    const pages: number[] = [];
-    for (let i = 1; i <= this.totalPages; i++) {
-      pages.push(i);
-    }
-    return pages;
-  }
-
-  goToPage(page: number): void {
-    if (page >= 1 && page <= this.totalPages) {
-      this.currentPage = page;
-    }
-  }
-
-  onPageSizeChange(): void {
-    this.currentPage = 1;
+    this.filteredSubCoas = filtered;
   }
 
   onSearchChange(): void {
@@ -243,6 +290,7 @@ export class ChartOfAccountsComponent implements OnInit {
 
   onTypeFilter(type: string): void {
     this.typeFilter = type;
+    this.applyTypeFilter();
     this.currentPage = 1;
     this.cdr.markForCheck();
   }

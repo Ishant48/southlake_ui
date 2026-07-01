@@ -16,19 +16,7 @@
   <!-- Content Card -->
   <div class="content-card">
     <!-- Toolbar Filters -->
-    <div class="filters-bar" style="justify-content: space-between;">
-      <div class="table-entries">
-        <span>Show </span>
-        <select class="filter-select entries-select" [(ngModel)]="pageSize" (ngModelChange)="onPageSizeChange()">
-          <option [value]="10">10</option>
-          <option [value]="25">25</option>
-          <option [value]="50">50</option>
-          <option [value]="100">100</option>
-        </select>
-        <span> entries</span>
-      </div>
-
-      <div style="display: flex; gap: 12px; align-items: center;">
+    <div class="filters-bar">
         <select class="filter-select" [(ngModel)]="statusFilter" (ngModelChange)="onStatusFilter(statusFilter)">
           <option value="all">All Statuses</option>
           <option value="active">Active</option>
@@ -51,13 +39,17 @@
             <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
           </svg>
         </div>
-        <button class="btn-action-outline" (click)="exportToExcel()" style="height: 38px; padding: 0 14px; margin-left: 8px; display: inline-flex; align-items: center; gap: 6px;">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+        <button class="btn-action-outline" (click)="exportToExcel()" style="height: 38px; padding: 0 14px; display: inline-flex; align-items: center; gap: 6px; justify-content: center;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M5 3.5 A1.5 1.5 0 0 1 6.5 2 H14 L19 7 V20.5 A1.5 1.5 0 0 1 17.5 22 H6.5 A1.5 1.5 0 0 1 5 20.5 V3.5 Z" fill="#e2e6e9" />
+            <path d="M14 2 V5.5 A1.5 1.5 0 0 0 15.5 7 H19 Z" fill="#c3c8cc" />
+            <path d="M8 7 H12 M8 9.75 H15 M8 12.5 H14" stroke="#19a347" stroke-width="1.5" stroke-linecap="round" />
+            <path d="M2 14 V12.5 C2 11 3 10 4.5 10 H5 V14 Z" fill="#0d7028" />
+            <rect x="2" y="14" width="20" height="8" rx="1.5" fill="#19a347" />
+            <text x="12" y="20.2" font-family="Arial, sans-serif" font-weight="900" font-size="6.2" fill="#ffffff" text-anchor="middle" letter-spacing="0.2">CSV</text>
           </svg>
           <span>Export</span>
         </button>
-      </div>
     </div>
 
     <!-- Loading State -->
@@ -66,8 +58,10 @@
         <div class="spinner" style="width: 32px; height: 32px; margin-bottom: 12px;"></div>
         <p>Loading chart of accounts...</p>
       </div>
-    } @else if (subCoas.length === 0) {
-      <!-- Empty State -->
+    }
+
+    <!-- Empty State -->
+    @if (subCoas.length === 0 && !loading) {
       <div class="empty-state">
         <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--gray-400)" stroke-width="1.5" style="margin-bottom: 12px; opacity: 0.7;">
           <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
@@ -76,90 +70,18 @@
         <p>No sub COAs found. Try adjusting your filters or create a new sub COA.</p>
         <button class="btn-ghost" (click)="openAddModal()" style="margin-top: 12px;">Create First Sub COA</button>
       </div>
-    } @else {
-      <!-- Grouped COA Table -->
-      <div class="table-wrapper">
-        <table class="data-table">
-          <thead>
-            <tr>
-              <th style="width: 12%;">COA TYPE</th>
-              <th style="width: 10%;">CODE</th>
-              <th style="width: 30%;">NAME</th>
-              <th style="width: 12%;">PARENT CODE</th>
-              <th style="width: 12%;">NEXT NUMBER</th>
-              <th style="width: 14%;">NORMAL BALANCE</th>
-              <th class="col-actions" style="width: 10%; text-align: center;">ACTIONS</th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (coa of paginatedSubCoas; track coa.id) {
-              <tr [style.background]="!coa.is_active ? 'var(--gray-50)' : 'transparent'" [class.root-row]="coa.is_root">
-                <td>
-                  <span class="coa-badge" [class.root]="coa.is_root" [class.sub]="!coa.is_root">
-                    {{ coa.is_root ? 'Root COA' : 'Sub COA' }}
-                  </span>
-                </td>
-                <td style="font-family: monospace; font-weight: 700; font-size: 14px;">
-                  {{ coa.account_code }}
-                </td>
-                <td>
-                  <div class="coa-name-cell" [style.padding-left.px]="coa.treeDepth * 32">
-                    @if (coa.treeDepth > 0) {
-                      <span class="tree-connector" [style.left.px]="(coa.treeDepth - 1) * 32 + 12"></span>
-                    }
-                    <div class="coa-name-text">
-                      <div class="coa-title">{{ coa.description }}</div>
-                      <div class="coa-subtitle">{{ coa.notes || (coa.is_root ? 'Insurance ledger root group' : '-') }}</div>
-                    </div>
-                  </div>
-                </td>
-                <td style="font-family: monospace; font-weight: 600;">
-                  {{ coa.is_root ? '-' : getParentCoaId(coa) }}
-                </td>
-                <td style="font-family: monospace;">
-                  {{ coa.is_root ? (coa.next_number || '-') : '-' }}
-                </td>
-                <td>
-                  <span class="balance-badge" [class.debit]="coa.normal_balance === 'debit'" [class.credit]="coa.normal_balance === 'credit'">
-                    {{ (coa.normal_balance || '-') | titlecase }}
-                  </span>
-                </td>
-                <td class="col-actions" style="text-align: center;">
-                  @if (coa.is_root) {
-                    <span class="view-link" (click)="openViewModal(coa)">View</span>
-                  } @else {
-                    <div class="action-buttons-list">
-                      <button class="btn-action-outline" (click)="openDocModal(coa)">Document</button>
-                      <button class="btn-action-outline" (click)="openNotesModal(coa)">Notes</button>
-                      <button class="btn-action-outline" (click)="openEditModal(coa)">Edit</button>
-                    </div>
-                  }
-                </td>
-              </tr>
-            }
-          </tbody>
-        </table>
-      </div>
-
-      <!-- Pagination Footer -->
-      @if (totalPages > 1) {
-        <div class="pagination">
-          <button class="page-btn" [disabled]="currentPage === 1" (click)="goToPage(currentPage - 1)">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-              <polyline points="15 18 9 12 15 6"/>
-            </svg>
-          </button>
-          @for (p of pageNumbers; track p) {
-            <button class="page-btn" [class.active]="p === currentPage" (click)="goToPage(p)">{{ p }}</button>
-          }
-          <button class="page-btn" [disabled]="currentPage === totalPages" (click)="goToPage(currentPage + 1)">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-              <polyline points="9 18 15 12 9 6"/>
-            </svg>
-          </button>
-        </div>
-      }
     }
+
+    <!-- Grouped COA Table -->
+    <ag-grid-angular
+      class="ag-theme-alpine"
+      style="display: block; width: 100%;"
+      [domLayout]="'autoHeight'"
+      [gridOptions]="gridOptions"
+      [rowData]="filteredSubCoas"
+      [columnDefs]="columnDefs"
+      (gridReady)="onGridReady($event)">
+    </ag-grid-angular>
   </div>
 
   <!-- ADD / EDIT ACCOUNT MODAL -->
