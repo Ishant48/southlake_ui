@@ -17,6 +17,8 @@ import { PermissionsService } from '../../../../core/services/permissions.servic
 import { ToastService } from '../../../../shared/components/toast/toast.service';
 import { UserStatusBadgeComponent } from '../user-status-badge/user-status-badge.component';
 
+import { Role } from '../../../../core/models/role.model';
+
 @Component({
   selector: 'app-user-detail-panel',
   standalone: true,
@@ -27,6 +29,8 @@ import { UserStatusBadgeComponent } from '../user-status-badge/user-status-badge
 export class UserDetailPanelComponent implements OnChanges {
   @Input() user: User | null = null;
   @Input() open = false;
+  @Input() roles: Role[] = [];
+  @Input() mode: 'view' | 'edit' = 'view';
   @Output() closed = new EventEmitter<void>();
   @Output() updated = new EventEmitter<User>();
 
@@ -38,6 +42,10 @@ export class UserDetailPanelComponent implements OnChanges {
 
   activeTab: 'profile' | 'permissions' = 'profile';
   editStatus: 'active' | 'inactive' | 'pending' = 'active';
+  editName = '';
+  editRoleId = '';
+  editDepartment = '';
+  editTitle = '';
 
   allPermissions: Permission[] = [];
   selectedIds = new Set<string>();
@@ -82,6 +90,10 @@ export class UserDetailPanelComponent implements OnChanges {
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['user'] && this.user) {
       this.editStatus = this.user.status;
+      this.editName = this.user.name;
+      this.editRoleId = this.user.role?.id || '';
+      this.editDepartment = this.user.department || '';
+      this.editTitle = this.user.title || '';
       this.activeTab = 'profile';
       this.profileError = '';
     }
@@ -141,11 +153,34 @@ export class UserDetailPanelComponent implements OnChanges {
     if (!this.user || this.savingProfile) return;
     this.savingProfile = true;
     this.profileError = '';
-    this.usersService.updateUser(this.user.id, { status: this.editStatus }).subscribe({
+
+    const payload: any = {
+      status: this.editStatus,
+    };
+
+    if (this.mode === 'edit') {
+      payload.name = this.editName;
+      payload.role_id = this.editRoleId;
+      payload.department = this.editDepartment || null;
+      payload.title = this.editTitle || null;
+
+      // Generate initials
+      let initials = '';
+      const parts = this.editName.trim().split(/\s+/);
+      if (parts.length > 1) {
+        initials = parts.map(p => p[0]).join('').slice(0, 4).toUpperCase();
+      } else if (parts.length === 1 && parts[0]) {
+        initials = parts[0].slice(0, 2).toUpperCase();
+      }
+      payload.initials = initials || null;
+    }
+
+    this.usersService.updateUser(this.user.id, payload).subscribe({
       next: updated => {
         this.savingProfile = false;
         this.toast.success('User updated successfully');
         this.updated.emit(updated);
+        this.closed.emit();
         this.cdr.markForCheck();
       },
       error: err => {

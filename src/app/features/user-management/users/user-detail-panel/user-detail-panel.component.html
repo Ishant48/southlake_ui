@@ -8,9 +8,11 @@
         <div class="user-avatar-lg" [style.background]="user.avatar_color">{{ user.initials }}</div>
         <div class="header-user-info">
           <span class="header-user-name">{{ user.name }}</span>
-          <span class="role-badge-sm" [style.background]="hexToRgba(user.role.color, 0.1)" [style.color]="user.role.color">
-            {{ user.role.label }}
-          </span>
+          @if (user.role) {
+            <span class="role-badge-sm" [style.background]="hexToRgba(user.role.color, 0.1)" [style.color]="user.role.color">
+              {{ user.role.label }}
+            </span>
+          }
         </div>
       </div>
       <button class="panel-close" (click)="closePanel()" aria-label="Close">
@@ -31,30 +33,57 @@
       @if (activeTab === 'profile') {
         <div class="profile-tab">
           <div class="info-grid">
-            <div class="info-row">
-              <span class="info-label">Email</span>
-              <span class="info-value">{{ user.email }}</span>
-            </div>
-            <div class="info-row">
-              <span class="info-label">Department</span>
-              <span class="info-value">{{ user.department ?? 'Not set' }}</span>
-            </div>
-            <div class="info-row">
-              <span class="info-label">Title</span>
-              <span class="info-value">{{ user.title ?? 'Not set' }}</span>
-            </div>
-            <div class="info-row">
-              <span class="info-label">User Type</span>
-              <span class="info-value">{{ formatUserType(user.user_type) }}</span>
-            </div>
-            <div class="info-row">
-              <span class="info-label">Joined</span>
-              <span class="info-value">{{ formatDate(user.joined_date) }}</span>
-            </div>
-            <div class="info-row">
-              <span class="info-label">Last Login</span>
-              <span class="info-value">{{ formatDate(user.last_login_at) }}</span>
-            </div>
+            @if (mode === 'edit') {
+              <div class="info-row">
+                <span class="info-label">Full Name *</span>
+                <input type="text" class="form-input" [(ngModel)]="editName" required>
+              </div>
+              <div class="info-row">
+                <span class="info-label">Email</span>
+                <span class="info-value">{{ user.email }} <span class="text-muted">(Read-only)</span></span>
+              </div>
+              <div class="info-row">
+                <span class="info-label">Role *</span>
+                <select class="form-input" [(ngModel)]="editRoleId">
+                  @for (role of roles; track role.id) {
+                    <option [value]="role.id">{{ role.label }}</option>
+                  }
+                </select>
+              </div>
+              <div class="info-row">
+                <span class="info-label">Department</span>
+                <input type="text" class="form-input" [(ngModel)]="editDepartment">
+              </div>
+              <div class="info-row">
+                <span class="info-label">Title</span>
+                <input type="text" class="form-input" [(ngModel)]="editTitle">
+              </div>
+            } @else {
+              <div class="info-row">
+                <span class="info-label">Email</span>
+                <span class="info-value">{{ user.email }}</span>
+              </div>
+              <div class="info-row">
+                <span class="info-label">Department</span>
+                <span class="info-value">{{ user.department ?? 'Not set' }}</span>
+              </div>
+              <div class="info-row">
+                <span class="info-label">Title</span>
+                <span class="info-value">{{ user.title ?? 'Not set' }}</span>
+              </div>
+              <div class="info-row">
+                <span class="info-label">User Type</span>
+                <span class="info-value">{{ formatUserType(user.user_type) }}</span>
+              </div>
+              <div class="info-row">
+                <span class="info-label">Joined</span>
+                <span class="info-value">{{ formatDate(user.joined_date) }}</span>
+              </div>
+              <div class="info-row">
+                <span class="info-label">Last Login</span>
+                <span class="info-value">{{ formatDate(user.last_login_at) }}</span>
+              </div>
+            }
           </div>
 
           <div class="status-section">
