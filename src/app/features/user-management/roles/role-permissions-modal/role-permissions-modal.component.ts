@@ -59,7 +59,8 @@ export class RolePermissionsModalComponent implements OnChanges {
       user_management: 'User Management',
       chart_of_accounts: 'Chart of Accounts',
       master_data: 'Master Data',
-      journal_entry: 'Premium and claims Exhibits / Journal Entries',
+      journal_entry: 'Journal Entries',
+      reinsurance: 'Premium and claims Exhibits',
       general: 'General'
     };
     return Object.entries(groups).map(([prefix, perms]) => ({
@@ -68,18 +69,18 @@ export class RolePermissionsModalComponent implements OnChanges {
     })).sort((a, b) => a.moduleName.localeCompare(b.moduleName));
   }
 
-  collapsedGroups = new Set<string>();
+  expandedGroups = new Set<string>();
 
   toggleGroup(groupName: string): void {
-    if (this.collapsedGroups.has(groupName)) {
-      this.collapsedGroups.delete(groupName);
+    if (this.expandedGroups.has(groupName)) {
+      this.expandedGroups.delete(groupName);
     } else {
-      this.collapsedGroups.add(groupName);
+      this.expandedGroups.add(groupName);
     }
   }
 
-  isGroupCollapsed(groupName: string): boolean {
-    return this.collapsedGroups.has(groupName);
+  isGroupExpanded(groupName: string): boolean {
+    return this.expandedGroups.has(groupName);
   }
 
   isAllSelected(group: { moduleName: string; permissions: Permission[] }): boolean {
