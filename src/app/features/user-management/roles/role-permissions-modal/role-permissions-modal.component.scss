@@ -135,6 +135,49 @@
   border-radius: var(--radius) var(--radius) 0 0;
   text-transform: uppercase;
   letter-spacing: 0.8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  user-select: none;
+  gap: 12px;
+
+  &.collapsed-border {
+    border-bottom: 1px solid var(--gray-200);
+    border-radius: var(--radius);
+  }
+}
+
+.perm-module-header-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  flex: 1;
+}
+
+.perm-chevron-icon {
+  transition: transform 0.2s ease;
+  color: var(--gray-500);
+  &.collapsed {
+    transform: rotate(-90deg);
+  }
+}
+
+.select-all-btn {
+  background: none;
+  border: none;
+  color: var(--navy);
+  font-size: 10px;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 4px;
+  transition: background 0.15s ease;
+  text-transform: uppercase;
+
+  &:hover {
+    background: rgba(28, 48, 94, 0.1);
+  }
 }
 
 .perm-list {

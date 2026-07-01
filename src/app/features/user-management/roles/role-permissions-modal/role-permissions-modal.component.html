@@ -54,18 +54,30 @@
           <div class="perm-section-title">Permissions</div>
           @for (group of groupedPermissions; track group.moduleName) {
             <div class="perm-module-group">
-              <div class="perm-module-title">{{ group.moduleName }}</div>
-              <div class="perm-list">
-                @for (perm of group.permissions; track perm.id) {
-                  <label class="perm-item" [class.checked]="selectedIds.has(perm.id)">
-                    <input type="checkbox"
-                      [checked]="selectedIds.has(perm.id)"
-                      (change)="togglePermission(perm.id)">
-                    <span class="perm-label">{{ perm.label }}</span>
-                    <span class="perm-action">{{ perm.action }}</span>
-                  </label>
-                }
+              <div class="perm-module-title" [class.collapsed-border]="isGroupCollapsed(group.moduleName)">
+                <div class="perm-module-header-left" (click)="toggleGroup(group.moduleName)">
+                  <svg class="perm-chevron-icon" [class.collapsed]="isGroupCollapsed(group.moduleName)" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="6 9 12 15 18 9"/>
+                  </svg>
+                  <span>{{ group.moduleName }}</span>
+                </div>
+                <button type="button" class="select-all-btn" (click)="toggleSelectAllGroup(group)">
+                  {{ isAllSelected(group) ? 'Deselect All' : 'Select All' }}
+                </button>
               </div>
+              @if (!isGroupCollapsed(group.moduleName)) {
+                <div class="perm-list">
+                  @for (perm of group.permissions; track perm.id) {
+                    <label class="perm-item" [class.checked]="selectedIds.has(perm.id)">
+                      <input type="checkbox"
+                        [checked]="selectedIds.has(perm.id)"
+                        (change)="togglePermission(perm.id)">
+                      <span class="perm-label">{{ perm.label }}</span>
+                      <span class="perm-action">{{ perm.action }}</span>
+                    </label>
+                  }
+                </div>
+              }
             </div>
           }
         </div>
