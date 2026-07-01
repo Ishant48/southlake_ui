@@ -334,7 +334,7 @@ export class JournalEntriesComponent implements OnInit {
     const todayStr = new Date().toISOString().split('T')[0];
     const prevRow = this.formEntries[this.formEntries.length - 1];
 
-    this.formEntries.push(this.createBlankRow({
+    const newRowConfig = {
       je_number: this.nextJeNumber,
       description: prevRow ? prevRow.description : '',
       coa_id: '',
@@ -345,7 +345,11 @@ export class JournalEntriesComponent implements OnInit {
       dp: prevRow ? prevRow.dp : '',
       policy: prevRow ? prevRow.policy : '',
       memo: prevRow ? prevRow.memo : '',
-    }));
+    };
+
+    // Create and push two more rows of same fields
+    this.formEntries.push(this.createBlankRow(newRowConfig));
+    this.formEntries.push(this.createBlankRow(newRowConfig));
   }
 
   copyRow(index: number): void {
