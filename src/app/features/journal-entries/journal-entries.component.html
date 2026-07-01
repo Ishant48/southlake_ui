@@ -286,11 +286,13 @@
                     [(selectedValue)]="row.sub"
                   ></app-dropdown-search>
                 </td>
-                <td>
-                  <input type="number" class="form-control" [(ngModel)]="row.debit" placeholder="debit">
+                 <td>
+                  <input type="number" class="form-control" [(ngModel)]="row.debit" placeholder="debit"
+                    [disabled]="row.credit !== null && row.credit !== '' && row.credit !== 0">
                 </td>
                 <td>
-                  <input type="number" class="form-control" [(ngModel)]="row.credit" placeholder="credit">
+                  <input type="number" class="form-control" [(ngModel)]="row.credit" placeholder="credit"
+                    [disabled]="row.debit !== null && row.debit !== '' && row.debit !== 0">
                 </td>
                 <td>
                   <div class="date-input-wrapper">
