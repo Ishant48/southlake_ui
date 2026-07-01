@@ -1737,9 +1737,10 @@ export class MastersComponent implements OnInit {
     if (existingWbId) {
       this.reinsuranceService.getWorkbook(existingWbId).subscribe({
         next: (wbDetail) => {
-          if (wbDetail && wbDetail.stateExhibits) {
-            wbDetail.stateExhibits.forEach((se: any) => {
-              const stateCode = se.stateCode.toUpperCase();
+          const exhibits = wbDetail ? (wbDetail.stateExhibits || wbDetail.state_exhibits) : null;
+          if (exhibits) {
+            exhibits.forEach((se: any) => {
+              const stateCode = (se.stateCode || se.state_code || '').toUpperCase();
               if (this.itdForm.exhibits[stateCode]) {
                 const getVal = (val: any): number => {
                   if (Array.isArray(val)) {
