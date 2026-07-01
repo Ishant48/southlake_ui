@@ -1,7 +1,8 @@
 import { Component, inject, OnInit, ChangeDetectorRef } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink, RouterLinkActive } from '@angular/router';
-import { debounceTime, distinctUntilChanged, Subject } from 'rxjs';
+import { PaginationComponent } from '../../../shared/ui/pagination/pagination.component';
+import { SearchInputComponent } from '../../../shared/ui/search-input/search-input.component';
 import { User, UserStats, PendingInvite } from '../../../core/models/user.model';
 import { Role } from '../../../core/models/role.model';
 import { AuthService } from '../../../core/services/auth.service';
@@ -24,6 +25,8 @@ import { ConfirmDialogComponent } from '../../../shared/components/confirm-dialo
     InvitePanelComponent,
     UserDetailPanelComponent,
     ConfirmDialogComponent,
+    PaginationComponent,
+    SearchInputComponent,
   ],
   templateUrl: './users.component.html',
   styleUrl: './users.component.scss',
@@ -55,14 +58,6 @@ export class UsersComponent implements OnInit {
   total = 0;
   totalPages = 1;
 
-  get pageNumbers(): number[] {
-    const pages: number[] = [];
-    const start = Math.max(1, this.currentPage - 2);
-    const end = Math.min(this.totalPages, this.currentPage + 2);
-    for (let i = start; i <= end; i++) pages.push(i);
-    return pages;
-  }
-
   invitePanelOpen = false;
   detailPanelOpen = false;
   selectedUser: User | null = null;
@@ -72,21 +67,11 @@ export class UsersComponent implements OnInit {
   confirmMessage = '';
   pendingAction: (() => void) | null = null;
 
-  private searchSubject = new Subject<string>();
-
   ngOnInit(): void {
     this.loadStats();
     this.loadUsers();
     this.loadRoles();
     this.loadPendingInvites();
-
-    this.searchSubject.pipe(
-      debounceTime(300),
-      distinctUntilChanged()
-    ).subscribe(() => {
-      this.currentPage = 1;
-      this.loadUsers();
-    });
   }
 
   loadStats(): void {
@@ -151,7 +136,9 @@ export class UsersComponent implements OnInit {
   }
 
   onSearch(term: string): void {
-    this.searchSubject.next(term);
+    this.searchTerm = term;
+    this.currentPage = 1;
+    this.loadUsers();
   }
 
   onFilterChange(): void {

@@ -1,5 +1,6 @@
 import { Component, inject, OnInit, ChangeDetectorRef } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
+import { PaginationComponent } from '../../../shared/ui/pagination/pagination.component';
 import { Role, RoleDetail } from '../../../core/models/role.model';
 import { AuthService } from '../../../core/services/auth.service';
 import { RolesService } from '../../../core/services/roles.service';
@@ -10,7 +11,7 @@ import { ConfirmDialogComponent } from '../../../shared/components/confirm-dialo
 @Component({
   selector: 'app-roles',
   standalone: true,
-  imports: [RouterLink, RouterLinkActive, RolePermissionsModalComponent, ConfirmDialogComponent],
+  imports: [RouterLink, RouterLinkActive, RolePermissionsModalComponent, ConfirmDialogComponent, PaginationComponent],
   templateUrl: './roles.component.html',
   styleUrl: './roles.component.scss',
 })
@@ -37,14 +38,6 @@ export class RolesComponent implements OnInit {
   perPage = 20;
   total = 0;
   totalPages = 1;
-
-  get pageNumbers(): number[] {
-    const pages: number[] = [];
-    const start = Math.max(1, this.currentPage - 2);
-    const end = Math.min(this.totalPages, this.currentPage + 2);
-    for (let i = start; i <= end; i++) pages.push(i);
-    return pages;
-  }
 
   ngOnInit(): void {
     this.loadRoles();

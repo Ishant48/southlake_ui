@@ -71,12 +71,7 @@
 
   <div class="content-card">
     <div class="filters-bar">
-      <div class="search-wrap">
-        <svg class="search-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
-        </svg>
-        <input class="search-input" type="text" placeholder="Search users..." [(ngModel)]="searchTerm" (ngModelChange)="onSearch($event)">
-      </div>
+      <app-search-input placeholder="Search users..." (searched)="onSearch($event)" />
       <select class="filter-select" [(ngModel)]="roleFilter" (ngModelChange)="onFilterChange()">
         <option value="">All Roles</option>
         @for (role of roles; track role.id) {
@@ -120,23 +115,7 @@
       (selectionChanged)="onSelectionChanged($event)"
     />
 
-    @if (totalPages > 1) {
-      <div class="pagination">
-        <button class="page-btn" [disabled]="currentPage === 1" (click)="goToPage(currentPage - 1)">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-            <polyline points="15 18 9 12 15 6"/>
-          </svg>
-        </button>
-        @for (p of pageNumbers; track p) {
-          <button class="page-btn" [class.active]="p === currentPage" (click)="goToPage(p)">{{ p }}</button>
-        }
-        <button class="page-btn" [disabled]="currentPage === totalPages" (click)="goToPage(currentPage + 1)">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-            <polyline points="9 18 15 12 9 6"/>
-          </svg>
-        </button>
-      </div>
-    }
+    <app-pagination [currentPage]="currentPage" [totalPages]="totalPages" [totalItems]="total" [pageSize]="perPage" (pageChange)="goToPage($event)" />
   </div>
 
   @if (pendingInvites.length > 0) {

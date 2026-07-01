@@ -1,6 +1,7 @@
-import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { createDebouncedSearch } from '../../core/utils/debounce.util';
 import { ActivatedRoute, Router } from '@angular/router';
 import { JournalEntriesService } from '../../core/services/journal-entries.service';
 import { ChartOfAccountsService } from '../../core/services/chart-of-accounts.service';
@@ -19,7 +20,7 @@ import { ReinsuranceService } from '../../core/services/reinsurance.service';
   templateUrl: './journal-entries.component.html',
   styleUrl: './journal-entries.component.scss',
 })
-export class JournalEntriesComponent implements OnInit {
+export class JournalEntriesComponent implements OnInit, OnDestroy {
   private service = inject(JournalEntriesService);
   private coaService = inject(ChartOfAccountsService);
   private mastersService = inject(MastersService);
@@ -39,6 +40,7 @@ export class JournalEntriesComponent implements OnInit {
   agentsList: string[] = ['Futuristic Underwriters LLC'];
   selectedAgent = 'Futuristic Underwriters LLC';
   totalBatchesAmount = 0;
+  private readonly _search = createDebouncedSearch();
   searchTerm = '';
   loading = false;
 
@@ -76,8 +78,17 @@ export class JournalEntriesComponent implements OnInit {
   pendingAction: (() => void) | null = null;
 
   ngOnInit(): void {
+    this._search.stream$.subscribe(() => this.loadBatches());
     this.loadInitialData();
     this.checkQueryParameters();
+  }
+
+  ngOnDestroy(): void {
+    this._search.subject$.complete();
+  }
+
+  onSearch(term: string): void {
+    this._search.subject$.next(term);
   }
 
   checkQueryParameters(): void {

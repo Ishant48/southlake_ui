@@ -1,0 +1,10 @@
+@if (totalPages > 1) {
+  <mat-paginator
+    [length]="totalItems"
+    [pageSize]="effectivePageSize"
+    [pageIndex]="pageIndex"
+    [hidePageSize]="true"
+    [showFirstLastButtons]="true"
+    (page)="onPage($event)"
+  />
+}

@@ -69,23 +69,7 @@
       }
     </div>
 
-    @if (totalPages > 1) {
-      <div class="pagination">
-        <button class="page-btn" [disabled]="currentPage === 1" (click)="goToPage(currentPage - 1)">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-            <polyline points="15 18 9 12 15 6"/>
-          </svg>
-        </button>
-        @for (p of pageNumbers; track p) {
-          <button class="page-btn" [class.active]="p === currentPage" (click)="goToPage(p)">{{ p }}</button>
-        }
-        <button class="page-btn" [disabled]="currentPage === totalPages" (click)="goToPage(currentPage + 1)">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-            <polyline points="9 18 15 12 9 6"/>
-          </svg>
-        </button>
-      </div>
-    }
+    <app-pagination [currentPage]="currentPage" [totalPages]="totalPages" [totalItems]="total" [pageSize]="perPage" (pageChange)="goToPage($event)" />
   }
 </div>
 

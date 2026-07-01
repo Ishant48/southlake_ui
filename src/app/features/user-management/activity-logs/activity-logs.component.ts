@@ -1,6 +1,8 @@
 import { Component, inject, OnInit, ChangeDetectorRef } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink, RouterLinkActive } from '@angular/router';
+import { PaginationComponent } from '../../../shared/ui/pagination/pagination.component';
+import { SearchInputComponent } from '../../../shared/ui/search-input/search-input.component';
 import { ActivityLog, ActivityLogsFilter } from '../../../core/models/activity-log.model';
 import { Module } from '../../../core/models/permission.model';
 import { AuthService } from '../../../core/services/auth.service';
@@ -19,7 +21,7 @@ const ACTION_COLORS: Record<string, { bg: string; text: string }> = {
 @Component({
   selector: 'app-activity-logs',
   standalone: true,
-  imports: [FormsModule, RouterLink, RouterLinkActive],
+  imports: [FormsModule, RouterLink, RouterLinkActive, PaginationComponent, SearchInputComponent],
   templateUrl: './activity-logs.component.html',
   styleUrl: './activity-logs.component.scss',
 })
@@ -29,7 +31,6 @@ export class ActivityLogsComponent implements OnInit {
   private permissionsService = inject(PermissionsService);
   private toast = inject(ToastService);
   private cdr = inject(ChangeDetectorRef);
-
   logs: ActivityLog[] = [];
   loading = false;
   modules: Module[] = [];
@@ -52,14 +53,6 @@ export class ActivityLogsComponent implements OnInit {
   total = 0;
   totalPages = 1;
   currentPage = 1;
-
-  get pageNumbers(): number[] {
-    const pages: number[] = [];
-    const start = Math.max(1, this.currentPage - 2);
-    const end = Math.min(this.totalPages, this.currentPage + 2);
-    for (let i = start; i <= end; i++) pages.push(i);
-    return pages;
-  }
 
   ngOnInit(): void {
     this.loadLogs();
@@ -99,6 +92,13 @@ export class ActivityLogsComponent implements OnInit {
         this.cdr.markForCheck();
       }
     });
+  }
+
+  onSearchInput(term: string): void {
+    this.filter.search = term;
+    this.filter.page = 1;
+    this.currentPage = 1;
+    this.loadLogs();
   }
 
   onFilterChange(): void {

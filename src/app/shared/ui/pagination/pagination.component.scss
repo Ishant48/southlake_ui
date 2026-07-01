@@ -1,0 +1,9 @@
+:host {
+  display: block;
+}
+
+// Align with the existing card border separator used throughout the app
+.mat-mdc-paginator {
+  border-top: 1px solid var(--gray-200);
+  background: transparent;
+}

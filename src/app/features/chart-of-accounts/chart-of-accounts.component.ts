@@ -1,6 +1,8 @@
 import { Component, inject, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { PaginationComponent } from '../../shared/ui/pagination/pagination.component';
+import { SearchInputComponent } from '../../shared/ui/search-input/search-input.component';
 import { ChartOfAccountsService } from '../../core/services/chart-of-accounts.service';
 import { ChartOfAccount, ChartOfAccountDocument } from '../../core/models/chart-of-account.model';
 import { ToastService } from '../../shared/components/toast/toast.service';
@@ -10,7 +12,7 @@ import { environment } from '../../../environments/environment';
 @Component({
   selector: 'app-chart-of-accounts',
   standalone: true,
-  imports: [CommonModule, FormsModule, ConfirmDialogComponent],
+  imports: [CommonModule, FormsModule, ConfirmDialogComponent, PaginationComponent, SearchInputComponent],
   templateUrl: './chart-of-accounts.component.html',
   styleUrl: './chart-of-accounts.component.scss',
 })
@@ -22,6 +24,7 @@ export class ChartOfAccountsComponent implements OnInit {
   flatAccounts: ChartOfAccount[] = [];
   rootParents: ChartOfAccount[] = []; // Predefined 5 roots
   subCoas: any[] = []; // List of COAs (roots and subs) displayed in table
+  private codeMap = new Map<string, number>();
   loading = false;
   searchTerm = '';
   statusFilter: 'all' | 'active' | 'inactive' = 'all';
@@ -82,6 +85,12 @@ export class ChartOfAccountsComponent implements OnInit {
       next: (accounts) => {
         this.flatAccounts = accounts;
 
+        // Build fast code lookup map (avoids O(n) find() calls in getParentCoaId)
+        this.codeMap.clear();
+        for (const acc of accounts) {
+          this.codeMap.set(acc.id, Number(acc.account_code));
+        }
+
         // Resolve top-level parent accounts if they are present or not cached
         const hasRoots = accounts.some(a => Number(a.account_code) === 110000);
         if (hasRoots || this.rootParents.length === 0) {
@@ -109,37 +118,38 @@ export class ChartOfAccountsComponent implements OnInit {
     });
   }
 
-  buildTreeList(accounts: ChartOfAccount[]): any[] {
-    const rootCodes = [110000, 210000, 310000, 410000, 510000];
-    const roots = accounts.filter(a => rootCodes.includes(Number(a.account_code)));
+  private buildTreeList(accounts: ChartOfAccount[]): any[] {
+    const rootCodes = new Set([110000, 210000, 310000, 410000, 510000]);
 
-    const rootOrder: { [code: number]: number } = {
-      110000: 1, // Assets
-      210000: 2, // Liability
-      310000: 3, // Capital and Equity
-      410000: 4, // Revenue
-      510000: 5  // Expense
+    // Pre-group children by parent_id (O(n) once instead of O(n) per node)
+    const childrenMap = new Map<string | null, ChartOfAccount[]>();
+    for (const acc of accounts) {
+      const key = acc.parent_id ?? null;
+      if (!childrenMap.has(key)) childrenMap.set(key, []);
+      childrenMap.get(key)!.push(acc);
+    }
+
+    const rootOrder: Record<number, number> = {
+      110000: 1, 210000: 2, 310000: 3, 410000: 4, 510000: 5
     };
 
-    roots.sort((a, b) => {
-      const orderA = rootOrder[Number(a.account_code)] || 99;
-      const orderB = rootOrder[Number(b.account_code)] || 99;
-      return orderA - orderB;
-    });
+    const roots = accounts
+      .filter(a => rootCodes.has(Number(a.account_code)))
+      .sort((a, b) =>
+        (rootOrder[Number(a.account_code)] ?? 99) - (rootOrder[Number(b.account_code)] ?? 99)
+      );
 
     const result: any[] = [];
 
     const traverse = (node: ChartOfAccount, depth: number) => {
-      const isRoot = node.is_parent;
       result.push({
         ...node,
-        is_root: isRoot,
+        is_root: node.is_parent,
         treeDepth: depth
       });
 
-      // Find children
-      const children = accounts.filter(a => a.parent_id === node.id);
-      children.sort((a, b) => Number(a.account_code) - Number(b.account_code));
+      const children = (childrenMap.get(node.id) || [])
+        .sort((a, b) => Number(a.account_code) - Number(b.account_code));
 
       for (const child of children) {
         traverse(child, depth + 1);
@@ -152,15 +162,9 @@ export class ChartOfAccountsComponent implements OnInit {
 
     // Capture stray accounts to avoid losing data
     const visitedIds = new Set(result.map(r => r.id));
-    const strays = accounts.filter(a => !visitedIds.has(a.id));
-    if (strays.length > 0) {
-      strays.sort((a, b) => Number(a.account_code) - Number(b.account_code));
-      for (const s of strays) {
-        result.push({
-          ...s,
-          is_root: false,
-          treeDepth: 0
-        });
+    for (const acc of accounts) {
+      if (!visitedIds.has(acc.id)) {
+        result.push({ ...acc, is_root: false, treeDepth: 0 });
       }
     }
 
@@ -170,8 +174,8 @@ export class ChartOfAccountsComponent implements OnInit {
   // Helper mappings
   getParentCoaId(coa: ChartOfAccount): string {
     if (!coa.parent_id) return '-';
-    const parent = this.flatAccounts.find(p => p.id === coa.parent_id);
-    return parent ? String(parent.account_code) : '-';
+    const parentCode = this.codeMap.get(coa.parent_id);
+    return parentCode !== undefined ? String(parentCode) : '-';
   }
 
   getParentCoaDisplay(root: ChartOfAccount): string {
@@ -185,41 +189,29 @@ export class ChartOfAccountsComponent implements OnInit {
   }
 
   // Client-side pagination helpers
-  get paginatedSubCoas(): any[] {
-    let filtered = this.subCoas;
+  private get filteredCoas(): any[] {
+    if (this.typeFilter === 'all') return this.subCoas;
     if (this.typeFilter === 'parent') {
-      filtered = filtered.filter(coa => coa.is_root);
-    } else if (this.typeFilter !== 'all') {
-      const targetCode = Number(this.typeFilter);
-      const targetParent = this.rootParents.find(p => Number(p.account_code) === targetCode);
-      if (targetParent) {
-        filtered = filtered.filter(coa => coa.id === targetParent.id || coa.parent_id === targetParent.id);
-      }
+      return this.subCoas.filter(coa => coa.is_root);
     }
+    const targetCode = Number(this.typeFilter);
+    const targetParent = this.rootParents.find(p => Number(p.account_code) === targetCode);
+    if (!targetParent) return this.subCoas;
+    return this.subCoas.filter(coa => coa.id === targetParent.id || coa.parent_id === targetParent.id);
+  }
+
+  get paginatedSubCoas(): any[] {
+    const filtered = this.filteredCoas;
     const start = (this.currentPage - 1) * this.pageSize;
     return filtered.slice(start, start + this.pageSize);
   }
 
   get totalPages(): number {
-    let filtered = this.subCoas;
-    if (this.typeFilter === 'parent') {
-      filtered = filtered.filter(coa => coa.is_root);
-    } else if (this.typeFilter !== 'all') {
-      const targetCode = Number(this.typeFilter);
-      const targetParent = this.rootParents.find(p => Number(p.account_code) === targetCode);
-      if (targetParent) {
-        filtered = filtered.filter(coa => coa.id === targetParent.id || coa.parent_id === targetParent.id);
-      }
-    }
-    return Math.ceil(filtered.length / this.pageSize);
+    return Math.ceil(this.filteredCoas.length / this.pageSize);
   }
 
-  get pageNumbers(): number[] {
-    const pages: number[] = [];
-    for (let i = 1; i <= this.totalPages; i++) {
-      pages.push(i);
-    }
-    return pages;
+  get totalFilteredItems(): number {
+    return this.filteredCoas.length;
   }
 
   goToPage(page: number): void {
@@ -232,7 +224,9 @@ export class ChartOfAccountsComponent implements OnInit {
     this.currentPage = 1;
   }
 
-  onSearchChange(): void {
+  onSearch(term: string): void {
+    this.searchTerm = term;
+    this.currentPage = 1;
     this.loadAccounts();
   }
 

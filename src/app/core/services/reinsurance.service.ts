@@ -8,7 +8,7 @@ import { environment } from '../../../environments/environment';
 })
 export class ReinsuranceService {
   private http = inject(HttpClient);
-  private apiUrl = `${environment.apiUrl}/api`;
+  private apiUrl = environment.apiUrl;
 
   getWorkbooks(): Observable<any[]> {
     return this.http.get<any[]>(`${this.apiUrl}/workbooks`);

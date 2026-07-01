@@ -19,7 +19,7 @@ export const routes: Routes = [
         canActivate: [permissionGuard('user_management')],
         loadChildren: () => import('./features/user-management/user-management.routes').then(m => m.userManagementRoutes)
       },
-      {
+{
         path: 'dashboard',
         loadComponent: () => import('./features/dashboard/dashboard.component').then(m => m.DashboardComponent)
       },

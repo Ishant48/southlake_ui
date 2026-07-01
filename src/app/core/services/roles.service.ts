@@ -2,7 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Role, RoleDetail, CreateRolePayload } from '../models/role.model';
-import { PaginatedResult } from '../models/user.model';
+import { PaginatedResult } from '../models/paginated-result.model';
 import { environment } from '../../../environments/environment';
 
 export interface RolesFilter {

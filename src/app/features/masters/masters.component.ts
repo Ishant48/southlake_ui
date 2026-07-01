@@ -2,6 +2,8 @@ import { Component, inject, OnInit, ChangeDetectorRef } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { Observable } from 'rxjs';
+import { PaginationComponent } from '../../shared/ui/pagination/pagination.component';
+import { SearchInputComponent } from '../../shared/ui/search-input/search-input.component';
 import { FormsModule } from '@angular/forms';
 import { MastersService } from '../../core/services/masters.service';
 import { ToastService } from '../../shared/components/toast/toast.service';
@@ -33,7 +35,7 @@ type MasterTab = 'treaties' | 'mgas' | 'lobs' | 'cobs' | 'states' | 'reinsurers'
 @Component({
   selector: 'app-masters',
   standalone: true,
-  imports: [CommonModule, FormsModule, ConfirmDialogComponent, DropdownSearchComponent],
+  imports: [CommonModule, FormsModule, ConfirmDialogComponent, DropdownSearchComponent, PaginationComponent, SearchInputComponent],
   templateUrl: './masters.component.html',
   styleUrl: './masters.component.scss',
 })
@@ -414,6 +416,12 @@ export class MastersComponent implements OnInit {
     }
   }
 
+  onSearch(term: string): void {
+    this.searchTerm = term;
+    this.currentPage = 1;
+    this.loadData();
+  }
+
   onFilterChange(): void {
     this.currentPage = 1;
     this.loadData();
@@ -447,12 +455,6 @@ export class MastersComponent implements OnInit {
 
   get totalPages(): number {
     return Math.ceil(this.currentList.length / this.pageSize);
-  }
-
-  get pageNumbers(): number[] {
-    const pages = [];
-    for (let i = 1; i <= this.totalPages; i++) pages.push(i);
-    return pages;
   }
 
   goToPage(page: number): void {

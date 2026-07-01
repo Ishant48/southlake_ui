@@ -5,8 +5,8 @@
       <p class="page-subtitle">Track all user actions across the platform.</p>
     </div>
     @if (hasPermission('activity_log.export')) {
-      <button class="btn-export" (click)="exportLogs()">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <button class="btn-export" (click)="exportLogs()" aria-label="Export activity logs as CSV">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
           <polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
         </svg>
@@ -23,13 +23,8 @@
 
   <div class="content-card">
     <div class="filters-bar">
-      <div class="search-wrap">
-        <svg class="search-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
-        </svg>
-        <input class="search-input" type="text" placeholder="Search logs..." [(ngModel)]="filter.search" (ngModelChange)="onFilterChange()">
-      </div>
-      <select class="filter-select" [(ngModel)]="filter.action" (ngModelChange)="onFilterChange()">
+      <app-search-input placeholder="Search logs..." (searched)="onSearchInput($event)" />
+      <select class="filter-select" [(ngModel)]="filter.action" (ngModelChange)="onFilterChange()" aria-label="Filter by action">
         <option value="">All Actions</option>
         <option value="login">Login</option>
         <option value="logout">Logout</option>
@@ -39,27 +34,30 @@
         <option value="approve">Approve</option>
         <option value="export">Export</option>
       </select>
-      <select class="filter-select" [(ngModel)]="filter.module_id" (ngModelChange)="onFilterChange()">
+      <select class="filter-select" [(ngModel)]="filter.module_id" (ngModelChange)="onFilterChange()" aria-label="Filter by module">
         <option value="">All Modules</option>
         @for (mod of modules; track mod.id) {
           <option [value]="mod.id">{{ mod.label }}</option>
         }
       </select>
-      <input class="filter-date" type="date" [(ngModel)]="filter.date_from" (ngModelChange)="onFilterChange()" placeholder="From">
-      <input class="filter-date" type="date" [(ngModel)]="filter.date_to" (ngModelChange)="onFilterChange()" placeholder="To">
+      <div class="date-range">
+        <input class="filter-date" type="date" [(ngModel)]="filter.date_from" (ngModelChange)="onFilterChange()" aria-label="From date">
+        <span class="date-sep" aria-hidden="true">to</span>
+        <input class="filter-date" type="date" [(ngModel)]="filter.date_to" (ngModelChange)="onFilterChange()" aria-label="To date">
+      </div>
     </div>
 
     <div class="table-wrapper">
       <table class="data-table">
         <thead>
           <tr>
-            <th>User</th>
-            <th>Action</th>
-            <th>Module</th>
-            <th>Entity</th>
-            <th>Description</th>
-            <th>IP Address</th>
-            <th>Date / Time</th>
+            <th class="col-user" scope="col">User</th>
+            <th class="col-action" scope="col">Action</th>
+            <th class="col-module" scope="col">Module</th>
+            <th class="col-entity" scope="col">Entity</th>
+            <th class="col-description" scope="col">Description</th>
+            <th class="col-ip" scope="col">IP Address</th>
+            <th class="col-date" scope="col">Date / Time</th>
           </tr>
         </thead>
         <tbody>
@@ -79,10 +77,11 @@
             <tr>
               <td colspan="7" class="empty-cell">
                 <div class="empty-state">
-                  <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#d1d5db" stroke-width="1.5">
+                  <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" class="empty-icon" aria-hidden="true">
                     <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
                   </svg>
-                  <p>No activity logs found</p>
+                  <p class="empty-title">No activity logs found</p>
+                  <p class="empty-hint">Try adjusting your search or filter criteria</p>
                 </div>
               </td>
             </tr>
@@ -99,7 +98,7 @@
                       </div>
                     </div>
                   } @else {
-                    <span class="text-muted">System</span>
+                    <span class="system-actor">System</span>
                   }
                 </td>
                 <td>
@@ -119,22 +118,6 @@
       </table>
     </div>
 
-    @if (totalPages > 1) {
-      <div class="pagination">
-        <button class="page-btn" [disabled]="currentPage === 1" (click)="goToPage(currentPage - 1)">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-            <polyline points="15 18 9 12 15 6"/>
-          </svg>
-        </button>
-        @for (p of pageNumbers; track p) {
-          <button class="page-btn" [class.active]="p === currentPage" (click)="goToPage(p)">{{ p }}</button>
-        }
-        <button class="page-btn" [disabled]="currentPage === totalPages" (click)="goToPage(currentPage + 1)">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-            <polyline points="9 18 15 12 9 6"/>
-          </svg>
-        </button>
-      </div>
-    }
+    <app-pagination [currentPage]="currentPage" [totalPages]="totalPages" [totalItems]="total" [pageSize]="filter.per_page ?? 20" (pageChange)="goToPage($event)" />
   </div>
 </div>
