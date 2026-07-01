@@ -378,12 +378,14 @@ export class MastersComponent implements OnInit {
             this.treatyWorkbookStatuses.clear();
             wbs.forEach(wb => {
               if (wb.source === 'ITD') {
-                this.seededProgramITD.add(wb.program);
-                this.itdWorkbookIds.set(wb.program, wb.id);
+                const progName = (wb.program || '').trim();
+                this.seededProgramITD.add(progName);
+                this.itdWorkbookIds.set(progName, wb.id);
               }
-              const existing = this.treatyWorkbookStatuses.get(wb.program);
+              const progName = (wb.program || '').trim();
+              const existing = this.treatyWorkbookStatuses.get(progName);
               if (existing !== 'Approved') {
-                this.treatyWorkbookStatuses.set(wb.program, wb.status || 'Pending');
+                this.treatyWorkbookStatuses.set(progName, wb.status || 'Pending');
               }
             });
             this.service.getTreaties(search, active).subscribe({
@@ -1632,11 +1634,11 @@ export class MastersComponent implements OnInit {
   }
 
   hasITDSeeded(programName: string): boolean {
-    return this.seededProgramITD.has(programName);
+    return this.seededProgramITD.has((programName || '').trim());
   }
 
   getTreatyStatus(programName: string): string {
-    return this.treatyWorkbookStatuses.get(programName) || '-';
+    return this.treatyWorkbookStatuses.get((programName || '').trim()) || '-';
   }
 
   getGLNumberDisplay(mapping: GlMapping): string {
@@ -1731,7 +1733,7 @@ export class MastersComponent implements OnInit {
       };
     }
 
-    const existingWbId = this.itdWorkbookIds.get(treaty.name);
+    const existingWbId = this.itdWorkbookIds.get((treaty.name || '').trim());
     if (existingWbId) {
       this.reinsuranceService.getWorkbook(existingWbId).subscribe({
         next: (wbDetail) => {
