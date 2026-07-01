@@ -59,7 +59,7 @@ export class RolePermissionsModalComponent implements OnChanges {
       user_management: 'User Management',
       chart_of_accounts: 'Chart of Accounts',
       master_data: 'Master Data',
-      journal_entry: 'Journal Entries',
+      journal_entry: 'Premium and claims Exhibits / Journal Entries',
       general: 'General'
     };
     return Object.entries(groups).map(([prefix, perms]) => ({
