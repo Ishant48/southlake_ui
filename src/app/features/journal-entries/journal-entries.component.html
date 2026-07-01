@@ -38,9 +38,6 @@
 
       <div class="header-actions-row">
         <button class="btn btn-primary" (click)="openAddBatch()">Add New</button>
-        <button class="btn btn-secondary">Print Register(All Batches)</button>
-        <button class="btn btn-secondary">History Docs</button>
-        <button class="btn btn-secondary">History Docs PDF</button>
       </div>
     </div>
 
@@ -93,7 +90,6 @@
                   <td style="text-align: right;">
                     <button class="btn-table" (click)="viewBatchDetails(b)">Edit</button>
                     <button class="btn-table" (click)="viewBatchDetails(b)">Journal Entry</button>
-                    <button class="btn-table">Print Register</button>
                     <button class="btn-table btn-table-danger" (click)="deleteBatch(b, $event)">Delete</button>
                   </td>
                 </tr>
@@ -290,11 +286,13 @@
                     [(selectedValue)]="row.sub"
                   ></app-dropdown-search>
                 </td>
-                <td>
-                  <input type="number" class="form-control" [(ngModel)]="row.debit" placeholder="debit">
+                 <td>
+                  <input type="number" class="form-control" [(ngModel)]="row.debit" placeholder="debit"
+                    [disabled]="row.credit !== null && row.credit !== '' && row.credit !== 0">
                 </td>
                 <td>
-                  <input type="number" class="form-control" [(ngModel)]="row.credit" placeholder="credit">
+                  <input type="number" class="form-control" [(ngModel)]="row.credit" placeholder="credit"
+                    [disabled]="row.debit !== null && row.debit !== '' && row.debit !== 0">
                 </td>
                 <td>
                   <div class="date-input-wrapper">
@@ -386,10 +384,6 @@
           <div class="form-group">
             <label>Process Period</label>
             <input type="text" class="form-control" [value]="selectedPeriod" readonly>
-          </div>
-          <div class="form-group">
-            <label>Batch Number</label>
-            <input type="text" class="form-control" [(ngModel)]="newBatchNumber" placeholder="Enter batch number">
           </div>
         </div>
         <div class="modal-footer">

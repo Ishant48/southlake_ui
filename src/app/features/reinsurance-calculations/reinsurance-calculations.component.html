@@ -10,11 +10,21 @@
     <div class="selection-grid">
       <div class="select-group">
         <label>Active Workbook & Month</label>
-        <select [(ngModel)]="selectedWorkbookId" (change)="onWorkbookChange()" class="form-control">
-          <option *ngFor="let wb of workbooks" [value]="wb.id">
-            {{ wb.program }} - {{ wb.month_label }} ({{ wb.source }})
-          </option>
-        </select>
+        <div class="select-with-action">
+          <select [(ngModel)]="selectedWorkbookId" (change)="onWorkbookChange()" class="form-control">
+            <option *ngFor="let wb of workbooks" [value]="wb.id">
+              {{ wb.program }} - {{ wb.month_label }} ({{ wb.source }})
+            </option>
+          </select>
+          <button (click)="deleteWorkbook()" class="btn-delete" title="Delete this workbook" [disabled]="!selectedWorkbookId">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="3 6 5 6 21 6"></polyline>
+              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+              <line x1="10" y1="11" x2="10" y2="17"></line>
+              <line x1="14" y1="11" x2="14" y2="17"></line>
+            </svg>
+          </button>
+        </div>
       </div>
 
       <div class="select-group">
@@ -31,162 +41,148 @@
     <div class="settings-grid mb-4">
       <!-- 1. Required Parameters Form -->
       <div class="card settings-card">
-        <div class="card-header">
+        <div class="card-header" (click)="toggleAccordion('parameters')" style="cursor: pointer; display: flex; justify-content: space-between; align-items: center; user-select: none;">
           <h2>📝 Required Parameters ({{ selectedState }})</h2>
+          <span class="accordion-arrow" [style.transform]="parametersExpanded ? 'rotate(90deg)' : 'rotate(0deg)'" style="transition: transform 0.2s; display: inline-flex; align-items: center; color: var(--gray-500);">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <path d="M9 5l7 7-7 7"/>
+            </svg>
+          </span>
         </div>
-        <div class="card-body">
-          <div class="form-grid">
-            <div class="form-group">
-              <label>Premiums Written</label>
-              <input type="number" [(ngModel)]="paramsForm.pw" class="form-control" />
-            </div>
-            <div class="form-group">
-              <label>Unearned Premium Reserve</label>
-              <input type="number" [(ngModel)]="paramsForm.uep" class="form-control" />
-            </div>
-            <div class="form-group">
-              <label>Losses Paid (Net)</label>
-              <input type="number" [(ngModel)]="paramsForm.lp" class="form-control" />
-            </div>
-            <div class="form-group">
-              <label>DCC Paid (ALAE)</label>
-              <input type="number" [(ngModel)]="paramsForm.laep" class="form-control" />
-            </div>
-            <div class="form-group">
-              <label>AOE Paid (ULAE TPA)</label>
-              <input type="number" [(ngModel)]="paramsForm.ae_paid" class="form-control" />
-            </div>
-            <div class="form-group">
-              <label>Loss Reserves (Case)</label>
-              <input type="number" [(ngModel)]="paramsForm.loss_reserves" class="form-control" />
-            </div>
-            <div class="form-group" *ngIf="selectedWorkbook.source !== 'FUT'">
-              <label>Loss IBNR Reserves</label>
-              <input type="number" [(ngModel)]="paramsForm.loss_ibnr" class="form-control" />
-            </div>
-            <div class="form-group">
-              <label>LAE Reserves DCC</label>
-              <input type="number" [(ngModel)]="paramsForm.lae_reserves_dcc" class="form-control" />
-            </div>
-            <div class="form-group" *ngIf="selectedWorkbook.source !== 'FUT'">
-              <label>LAE IBNR DCC</label>
-              <input type="number" [(ngModel)]="paramsForm.lae_ibnr_dcc" class="form-control" />
-            </div>
-            <div class="form-group">
-              <label>LAE Reserves AOE</label>
-              <input type="number" [(ngModel)]="paramsForm.lae_reserves_aoe" class="form-control" />
-            </div>
-            <div class="form-group" *ngIf="selectedWorkbook.source !== 'FUT'">
-              <label>LAE IBNR AOE</label>
-              <input type="number" [(ngModel)]="paramsForm.lae_ibnr_aoe" class="form-control" />
-            </div>
-            <div class="form-group" *ngIf="selectedWorkbook.source !== 'FUT'">
-              <label>ULAE IBNR Reserves</label>
-              <input type="number" [(ngModel)]="paramsForm.ulae_ibnr" class="form-control" />
+        @if (parametersExpanded) {
+          <div class="card-body">
+            <div class="form-grid">
+              <div class="form-group">
+                <label>Premiums Written</label>
+                <input type="number" [(ngModel)]="paramsForm.pw" class="form-control" readonly />
+              </div>
+              <div class="form-group">
+                <label>Previous Unearned Premium Reserve</label>
+                <input type="number" [(ngModel)]="paramsForm.prev_uep" class="form-control" readonly />
+              </div>
+              <div class="form-group">
+                <label>Current Unearned Premium Reserve</label>
+                <input type="number" [(ngModel)]="paramsForm.curr_uep" class="form-control" readonly />
+              </div>
+              <div class="form-group">
+                <label>Previous Loss IBNR Reserves</label>
+                <input type="number" [(ngModel)]="paramsForm.loss_ibnr" class="form-control" readonly />
+              </div>
+              <div class="form-group">
+                <label>Previous LAE IBNR Reserves - DCC</label>
+                <input type="number" [(ngModel)]="paramsForm.lae_ibnr_dcc" class="form-control" readonly />
+              </div>
+              <div class="form-group">
+                <label>Previous LAE IBNR Reserves - AOE</label>
+                <input type="number" [(ngModel)]="paramsForm.lae_ibnr_aoe" class="form-control" readonly />
+              </div>
+              <div class="form-group">
+                <label>Previous ULAE IBNR Reserves</label>
+                <input type="number" [(ngModel)]="paramsForm.ulae_ibnr" class="form-control" readonly />
+              </div>
             </div>
           </div>
-          <div class="form-actions-row">
-            <button class="btn btn-primary" (click)="saveParams()">
-              Save Parameters
-            </button>
-          </div>
-        </div>
+        }
       </div>
 
       <!-- 2. Actuarial Rates Form -->
       <div class="card settings-card">
-        <div class="card-header">
+        <div class="card-header" (click)="toggleAccordion('rates')" style="cursor: pointer; display: flex; justify-content: space-between; align-items: center; user-select: none;">
           <h2>📊 Actuarial Rates & Commissions (%)</h2>
+          <span class="accordion-arrow" [style.transform]="ratesExpanded ? 'rotate(90deg)' : 'rotate(0deg)'" style="transition: transform 0.2s; display: inline-flex; align-items: center; color: var(--gray-500);">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <path d="M9 5l7 7-7 7"/>
+            </svg>
+          </span>
         </div>
-        <div class="card-body">
-          <div class="form-grid">
-            <div class="form-group">
-              <label>Quota Share (%)</label>
-              <input type="number" [(ngModel)]="ratesForm.qs" class="form-control" />
-            </div>
-            <div class="form-group">
-              <label>Ceding Fee (%)</label>
-              <input type="number" [(ngModel)]="ratesForm.cf" class="form-control" />
-            </div>
-            <div class="form-group">
-              <label>Ceding Commission (%)</label>
-              <input type="number" [(ngModel)]="ratesForm.comm" class="form-control" />
-            </div>
-            <div class="form-group">
-              <label>ULAE Rate (%)</label>
-              <input type="number" [(ngModel)]="ratesForm.ulae" class="form-control" />
-            </div>
-            <div class="form-group">
-              <label>Boards Charge (%)</label>
-              <input type="number" [(ngModel)]="ratesForm.boards_charge" class="form-control" />
-            </div>
-            <div class="form-group">
-              <label>Loss Ratio Cap (%)</label>
-              <input type="number" [(ngModel)]="ratesForm.loss_ratio_cap" class="form-control" />
-            </div>
-            <div class="form-group">
-              <label>Loss Pick (%)</label>
-              <input type="number" [(ngModel)]="ratesForm.loss_pick" class="form-control" />
-            </div>
-            <div class="form-group">
-              <label>LAE DCC (%)</label>
-              <input type="number" [(ngModel)]="ratesForm.lae_dcc" class="form-control" />
-            </div>
-            <div class="form-group">
-              <label>LAE AOE (%)</label>
-              <input type="number" [(ngModel)]="ratesForm.lae_aoe" class="form-control" />
+        @if (ratesExpanded) {
+          <div class="card-body">
+            <div class="form-grid">
+              <div class="form-group">
+                <label>Quota Share (%)</label>
+                <input type="number" [(ngModel)]="ratesForm.qs" class="form-control" readonly />
+              </div>
+              <div class="form-group">
+                <label>Ceding Fee (%)</label>
+                <input type="number" [(ngModel)]="ratesForm.cf" class="form-control" readonly />
+              </div>
+              <div class="form-group">
+                <label>Ceding Commission (%)</label>
+                <input type="number" [(ngModel)]="ratesForm.comm" class="form-control" readonly />
+              </div>
+              <div class="form-group">
+                <label>ULAE Rate (%)</label>
+                <input type="number" [(ngModel)]="ratesForm.ulae" class="form-control" readonly />
+              </div>
+              <div class="form-group">
+                <label>Boards Charge (%)</label>
+                <input type="number" [(ngModel)]="ratesForm.boards_charge" class="form-control" readonly />
+              </div>
+              <div class="form-group">
+                <label>Loss Ratio Cap (%)</label>
+                <input type="number" [(ngModel)]="ratesForm.loss_ratio_cap" class="form-control" readonly />
+              </div>
+              <div class="form-group">
+                <label>Loss Pick (%)</label>
+                <input type="number" [(ngModel)]="ratesForm.loss_pick" class="form-control" readonly />
+              </div>
+              <div class="form-group">
+                <label>LAE DCC (%)</label>
+                <input type="number" [(ngModel)]="ratesForm.lae_dcc" class="form-control" readonly />
+              </div>
+              <div class="form-group">
+                <label>LAE AOE (%)</label>
+                <input type="number" [(ngModel)]="ratesForm.lae_aoe" class="form-control" readonly />
+              </div>
             </div>
           </div>
-          <div class="form-actions-row">
-            <button class="btn btn-primary" (click)="saveRates()">
-              Save Rates
-            </button>
-          </div>
-        </div>
+        }
       </div>
 
       <!-- 3. GL Account Segment Mappings Form -->
       <div class="card settings-card">
-        <div class="card-header">
+        <div class="card-header" (click)="toggleAccordion('mappings')" style="cursor: pointer; display: flex; justify-content: space-between; align-items: center; user-select: none;">
           <h2>💼 GL Segment Mappings</h2>
+          <span class="accordion-arrow" [style.transform]="mappingsExpanded ? 'rotate(90deg)' : 'rotate(0deg)'" style="transition: transform 0.2s; display: inline-flex; align-items: center; color: var(--gray-500);">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <path d="M9 5l7 7-7 7"/>
+            </svg>
+          </span>
         </div>
-        <div class="card-body">
-          <div class="form-grid">
-            <div class="form-group">
-              <label>Company (Comp)</label>
-              <input type="text" [(ngModel)]="mappingsForm.comp" class="form-control" />
-            </div>
-            <div class="form-group">
-              <label>Cost Center (CC)</label>
-              <input type="text" [(ngModel)]="mappingsForm.cc" class="form-control" />
-            </div>
-            <div class="form-group">
-              <label>MGA Code</label>
-              <input type="text" [(ngModel)]="mappingsForm.mga" class="form-control" />
-            </div>
-            <div class="form-group">
-              <label>LOB Code</label>
-              <input type="text" [(ngModel)]="mappingsForm.lob" class="form-control" />
-            </div>
-            <div class="form-group">
-              <label>Extension (Ext)</label>
-              <input type="text" [(ngModel)]="mappingsForm.ext" class="form-control" />
-            </div>
-            <div class="form-group">
-              <label>Subledger (Sub)</label>
-              <input type="text" [(ngModel)]="mappingsForm.sub" class="form-control" />
-            </div>
-            <div class="form-group">
-              <label>Line Description Suffix</label>
-              <input type="text" [(ngModel)]="mappingsForm.line_desc_suffix" class="form-control" />
+        @if (mappingsExpanded) {
+          <div class="card-body">
+            <div class="form-grid">
+              <div class="form-group">
+                <label>Company (Comp)</label>
+                <input type="text" [(ngModel)]="mappingsForm.comp" class="form-control" readonly />
+              </div>
+              <div class="form-group">
+                <label>Cost Center (CC)</label>
+                <input type="text" [(ngModel)]="mappingsForm.cc" class="form-control" readonly />
+              </div>
+              <div class="form-group">
+                <label>MGA Code</label>
+                <input type="text" [(ngModel)]="mappingsForm.mga" class="form-control" readonly />
+              </div>
+              <div class="form-group">
+                <label>LOB Code</label>
+                <input type="text" [(ngModel)]="mappingsForm.lob" class="form-control" readonly />
+              </div>
+              <div class="form-group">
+                <label>Extension (Ext)</label>
+                <input type="text" [(ngModel)]="mappingsForm.ext" class="form-control" readonly />
+              </div>
+              <div class="form-group">
+                <label>Subledger (Sub)</label>
+                <input type="text" [(ngModel)]="mappingsForm.sub" class="form-control" readonly />
+              </div>
+              <div class="form-group">
+                <label>Line Description Suffix</label>
+                <input type="text" [(ngModel)]="mappingsForm.line_desc_suffix" class="form-control" readonly />
+              </div>
             </div>
           </div>
-          <div class="form-actions-row">
-            <button class="btn btn-primary" (click)="saveMappings()">
-              Save Mappings
-            </button>
-          </div>
-        </div>
+        }
       </div>
     </div>
 
@@ -237,7 +233,7 @@
         <!-- 2. GL Journal Entries Tab -->
         <div *ngIf="activeTab === 'glje'">
           <div class="export-bar flex-between">
-            <button class="btn btn-success" (click)="postToJournalEntries()" [disabled]="postingBatch">
+            <button class="btn btn-success" (click)="postToJournalEntries()" [disabled]="postingBatch || isPosted">
               🚀 Post to Journal Entries Batch
             </button>
             <button class="btn btn-primary" (click)="exportGLJECSV()">
@@ -259,24 +255,67 @@
                   <th>Sub</th>
                   <th class="text-right">Debit</th>
                   <th class="text-right">Credit</th>
+                  <th class="text-center">Action</th>
                 </tr>
               </thead>
               <tbody>
-                <tr *ngFor="let row of gljeRows">
-                  <td class="font-sans font-semibold">{{ row.desc }}</td>
-                  <td>{{ row.comp }}</td>
-                  <td>{{ row.account }}</td>
-                  <td>{{ row.cc }}</td>
-                  <td>{{ row.mga }}</td>
-                  <td>{{ row.lob }}</td>
-                  <td>{{ row.st }}</td>
-                  <td>{{ row.ext }}</td>
-                  <td>{{ row.sub || '-' }}</td>
-                  <td class="text-right text-green font-bold">{{ row.debit > 0 ? formatCurrency(row.debit) : '-' }}</td>
-                  <td class="text-right text-red font-bold">{{ row.credit > 0 ? formatCurrency(row.credit) : '-' }}</td>
+                <tr *ngFor="let row of gljeRows; let i = index">
+                  <td class="font-sans font-semibold">
+                    <ng-container *ngIf="!row.isNew">{{ row.desc }}</ng-container>
+                    <input *ngIf="row.isNew" type="text" [(ngModel)]="row.desc" (ngModelChange)="onRowChange()" placeholder="Account description">
+                  </td>
+                  <td>
+                    <ng-container *ngIf="!row.isNew">{{ row.comp }}</ng-container>
+                    <input *ngIf="row.isNew" type="text" [(ngModel)]="row.comp" (ngModelChange)="onRowChange()" style="width: 50px;">
+                  </td>
+                  <td>
+                    <ng-container *ngIf="!row.isNew">{{ row.account }}</ng-container>
+                    <input *ngIf="row.isNew" type="text" [(ngModel)]="row.account" (ngModelChange)="onRowChange()" style="width: 75px;" placeholder="Code">
+                  </td>
+                  <td>
+                    <ng-container *ngIf="!row.isNew">{{ row.cc }}</ng-container>
+                    <input *ngIf="row.isNew" type="text" [(ngModel)]="row.cc" (ngModelChange)="onRowChange()" style="width: 50px;">
+                  </td>
+                  <td>
+                    <ng-container *ngIf="!row.isNew">{{ row.mga }}</ng-container>
+                    <input *ngIf="row.isNew" type="text" [(ngModel)]="row.mga" (ngModelChange)="onRowChange()" style="width: 50px;">
+                  </td>
+                  <td>
+                    <ng-container *ngIf="!row.isNew">{{ row.lob }}</ng-container>
+                    <input *ngIf="row.isNew" type="text" [(ngModel)]="row.lob" (ngModelChange)="onRowChange()" style="width: 70px;">
+                  </td>
+                  <td>
+                    <ng-container *ngIf="!row.isNew">{{ row.st }}</ng-container>
+                    <input *ngIf="row.isNew" type="text" [(ngModel)]="row.st" (ngModelChange)="onRowChange()" style="width: 45px;">
+                  </td>
+                  <td>
+                    <ng-container *ngIf="!row.isNew">{{ row.ext }}</ng-container>
+                    <input *ngIf="row.isNew" type="text" [(ngModel)]="row.ext" (ngModelChange)="onRowChange()" style="width: 50px;">
+                  </td>
+                  <td>
+                    <ng-container *ngIf="!row.isNew">{{ row.sub || '-' }}</ng-container>
+                    <input *ngIf="row.isNew" type="text" [(ngModel)]="row.sub" (ngModelChange)="onRowChange()" style="width: 50px;">
+                  </td>
+                  <td class="text-right text-green font-bold">
+                    <ng-container *ngIf="!row.isNew">{{ row.debit > 0 ? formatCurrency(row.debit) : '-' }}</ng-container>
+                    <input *ngIf="row.isNew" type="number" [(ngModel)]="row.debit" style="width: 95px;" (change)="onRowAmountChange(row, 'debit')">
+                  </td>
+                  <td class="text-right text-red font-bold">
+                    <ng-container *ngIf="!row.isNew">{{ row.credit > 0 ? formatCurrency(row.credit) : '-' }}</ng-container>
+                    <input *ngIf="row.isNew" type="number" [(ngModel)]="row.credit" style="width: 95px;" (change)="onRowAmountChange(row, 'credit')">
+                  </td>
+                  <td class="text-center">
+                    <button *ngIf="row.isNew" class="btn-table btn-table-danger" (click)="removeGLJERow(i)" style="padding: 2px 6px; font-size: 11px;">Delete</button>
+                    <span *ngIf="!row.isNew">-</span>
+                  </td>
                 </tr>
               </tbody>
             </table>
+          </div>
+          <div class="flex-start mt-2">
+            <button class="btn btn-primary" (click)="addGLJERow()">
+              ➕ Add Row
+            </button>
           </div>
         </div>
 

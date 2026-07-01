@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { ReinsuranceService } from '../../core/services/reinsurance.service';
 import { ToastService } from '../../shared/components/toast/toast.service';
+import { MastersService } from '../../core/services/masters.service';
 
 @Component({
   selector: 'app-reinsurance-calculations',
@@ -17,6 +18,7 @@ export class ReinsuranceCalculationsComponent implements OnInit {
   private toast = inject(ToastService);
   private cdr = inject(ChangeDetectorRef);
   private router = inject(Router);
+  private mastersService = inject(MastersService);
 
   workbooks: any[] = [];
   selectedWorkbookId: number | null = null;
@@ -24,6 +26,7 @@ export class ReinsuranceCalculationsComponent implements OnInit {
   selectedState: string = 'TOTAL';
   states: string[] = ['TOTAL'];
   activeTab: 'statement' | 'glje' | 'cash' = 'statement';
+  isPosted = false;
 
   statementRows: any[] = [];
   gljeRows: any[] = [];
@@ -36,6 +39,11 @@ export class ReinsuranceCalculationsComponent implements OnInit {
   ratesForm: any = {};
   mappingsForm: any = {};
   paramsForm: any = {};
+  currentStateExhibitObj: any = null;
+
+  parametersExpanded = false;
+  ratesExpanded = false;
+  mappingsExpanded = false;
 
   ngOnInit(): void {
     this.loadWorkbooks();
@@ -45,10 +53,10 @@ export class ReinsuranceCalculationsComponent implements OnInit {
     this.loading = true;
     this.service.getWorkbooks().subscribe({
       next: (res) => {
-        this.workbooks = res;
+        this.workbooks = (res || []).filter((w: any) => w.source !== 'ITD');
         this.loading = false;
-        if (res.length > 0 && !this.selectedWorkbookId) {
-          this.selectedWorkbookId = res[0].id;
+        if (this.workbooks.length > 0 && !this.selectedWorkbookId) {
+          this.selectedWorkbookId = this.workbooks[0].id;
           this.onWorkbookChange();
         }
         this.cdr.markForCheck();
@@ -61,9 +69,31 @@ export class ReinsuranceCalculationsComponent implements OnInit {
     });
   }
 
+  deleteWorkbook(): void {
+    if (!this.selectedWorkbookId) return;
+    const confirmDelete = confirm('Are you sure you want to delete this workbook and all its state exhibits?');
+    if (!confirmDelete) return;
+
+    this.loading = true;
+    this.service.deleteWorkbook(this.selectedWorkbookId).subscribe({
+      next: () => {
+        this.toast.success('Workbook deleted successfully');
+        this.selectedWorkbookId = null;
+        this.selectedWorkbook = null;
+        this.loadWorkbooks();
+      },
+      error: () => {
+        this.toast.error('Failed to delete workbook');
+        this.loading = false;
+        this.cdr.markForCheck();
+      }
+    });
+  }
+
   onWorkbookChange(): void {
     if (!this.selectedWorkbookId) return;
     this.loading = true;
+    this.isPosted = false;
     this.service.getWorkbook(this.selectedWorkbookId).subscribe({
       next: (res) => {
         this.selectedWorkbook = res;
@@ -78,23 +108,62 @@ export class ReinsuranceCalculationsComponent implements OnInit {
           sub: res.sub
         };
 
-        // Extract states from exhibits
-        if (res.state_exhibits) {
-          const codes = res.state_exhibits.map((e: any) => e.state_code);
-          this.states = ['TOTAL', ...codes.filter((c: string) => c !== 'TOTAL').sort()];
-        } else {
-          this.states = ['TOTAL'];
-        }
+        // Load treaties to filter states
+        this.mastersService.getTreaties().subscribe({
+          next: (treaties) => {
+            const matchingTreaty = treaties.find(t => t.name?.trim().toLowerCase() === res.program?.trim().toLowerCase());
+            
+            // Extract states from exhibits
+            if (res.state_exhibits) {
+              const codes = res.state_exhibits.map((e: any) => e.state_code);
+              const rawStates = ['TOTAL', ...codes.filter((c: string) => c !== 'TOTAL').sort()];
+              
+              if (matchingTreaty) {
+                const treatyStatesAbbrs = (matchingTreaty.treaty_states || []).map((s: any) => 
+                  (s.state?.state_abbr || s.state_abbr || '').toUpperCase()
+                ).filter(Boolean);
+                
+                this.states = rawStates.filter(s => 
+                  s === 'TOTAL' || 
+                  treatyStatesAbbrs.includes(s.toUpperCase()) ||
+                  (s === '5' && treatyStatesAbbrs.includes('CA'))
+                );
+              } else {
+                this.states = rawStates;
+              }
+            } else {
+              this.states = ['TOTAL'];
+            }
 
-        // Select the first non-TOTAL state by default if available
-        const nonTotalState = this.states.find(s => s !== 'TOTAL');
-        if (nonTotalState) {
-          this.selectedState = nonTotalState;
-        } else {
-          this.selectedState = 'TOTAL';
-        }
+            // Select the first non-TOTAL state by default if available
+            const nonTotalState = this.states.find(s => s !== 'TOTAL');
+            if (nonTotalState) {
+              this.selectedState = nonTotalState;
+            } else {
+              this.selectedState = 'TOTAL';
+            }
 
-        this.loadActiveTabCalculations();
+            this.loadActiveTabCalculations();
+          },
+          error: () => {
+            // Fallback to not filtering if treaties API fails
+            if (res.state_exhibits) {
+              const codes = res.state_exhibits.map((e: any) => e.state_code);
+              this.states = ['TOTAL', ...codes.filter((c: string) => c !== 'TOTAL').sort()];
+            } else {
+              this.states = ['TOTAL'];
+            }
+
+            const nonTotalState = this.states.find(s => s !== 'TOTAL');
+            if (nonTotalState) {
+              this.selectedState = nonTotalState;
+            } else {
+              this.selectedState = 'TOTAL';
+            }
+
+            this.loadActiveTabCalculations();
+          }
+        });
       },
       error: () => {
         this.toast.error('Failed to load workbook details');
@@ -105,7 +174,19 @@ export class ReinsuranceCalculationsComponent implements OnInit {
   }
 
   onStateChange(): void {
+    this.isPosted = false;
     this.loadActiveTabCalculations();
+  }
+
+  toggleAccordion(section: 'parameters' | 'rates' | 'mappings'): void {
+    if (section === 'parameters') {
+      this.parametersExpanded = !this.parametersExpanded;
+    } else if (section === 'rates') {
+      this.ratesExpanded = !this.ratesExpanded;
+    } else if (section === 'mappings') {
+      this.mappingsExpanded = !this.mappingsExpanded;
+    }
+    this.cdr.markForCheck();
   }
 
   setTab(tab: 'statement' | 'glje' | 'cash'): void {
@@ -121,19 +202,15 @@ export class ReinsuranceCalculationsComponent implements OnInit {
     // Populate required parameters form from current state exhibit
     const curEx = this.selectedWorkbook?.state_exhibits?.find((e: any) => e.state_code === this.selectedState);
     if (curEx) {
+      this.currentStateExhibitObj = curEx;
       this.paramsForm = {
-        pw: curEx.pw[1],
-        uep: curEx.uep[1],
-        lp: curEx.lp[1],
-        laep: curEx.laep[1],
-        ae_paid: curEx.ae_paid[1],
-        loss_reserves: curEx.loss_reserves[1],
-        loss_ibnr: curEx.loss_ibnr[1],
-        lae_reserves_dcc: curEx.lae_reserves_dcc[1],
-        lae_ibnr_dcc: curEx.lae_ibnr_dcc[1],
-        lae_reserves_aoe: curEx.lae_reserves_aoe[1],
-        lae_ibnr_aoe: curEx.lae_ibnr_aoe[1],
-        ulae_ibnr: curEx.ulae_ibnr[1]
+        pw: curEx.pw?.[1] || 0,
+        prev_uep: curEx.uep?.[0] || 0,
+        curr_uep: curEx.uep?.[1] || 0,
+        loss_ibnr: curEx.loss_ibnr?.[0] || 0,
+        lae_ibnr_dcc: curEx.lae_ibnr_dcc?.[0] || 0,
+        lae_ibnr_aoe: curEx.lae_ibnr_aoe?.[0] || 0,
+        ulae_ibnr: curEx.ulae_ibnr?.[0] || 0
       };
     }
 
@@ -180,18 +257,49 @@ export class ReinsuranceCalculationsComponent implements OnInit {
   }
 
   saveParams(): void {
-    if (!this.selectedWorkbookId) return;
+    if (!this.selectedWorkbookId || !this.selectedState) return;
     this.loading = true;
 
-    // Map single values back to [Prior, Current, YTD] array format
-    const exData: any = {};
-    Object.keys(this.paramsForm).forEach(k => {
-      const curEx = this.selectedWorkbook?.state_exhibits?.find((e: any) => e.state_code === this.selectedState);
-      const prior = curEx ? curEx[k]?.[0] || 0 : 0;
-      const current = Number(this.paramsForm[k] || 0);
-      const ytd = prior + current;
-      exData[k] = [prior, current, ytd];
-    });
+    const curEx = this.selectedWorkbook?.state_exhibits?.find((e: any) => e.state_code === this.selectedState) || {};
+    const getArr = (arr: any) => arr && Array.isArray(arr) ? [...arr] : [0, 0, 0];
+
+    const pw = getArr(curEx.pw);
+    pw[1] = Number(this.paramsForm.pw || 0);
+    pw[2] = Number(pw[0] || 0) + pw[1];
+
+    const uep = getArr(curEx.uep);
+    uep[0] = Number(this.paramsForm.prev_uep || 0);
+    uep[1] = Number(this.paramsForm.curr_uep || 0);
+    uep[2] = uep[0] + uep[1];
+
+    const loss_ibnr = getArr(curEx.loss_ibnr);
+    loss_ibnr[0] = Number(this.paramsForm.loss_ibnr || 0);
+    loss_ibnr[1] = Number(loss_ibnr[1] || 0);
+    loss_ibnr[2] = loss_ibnr[0] + loss_ibnr[1];
+
+    const lae_ibnr_dcc = getArr(curEx.lae_ibnr_dcc);
+    lae_ibnr_dcc[0] = Number(this.paramsForm.lae_ibnr_dcc || 0);
+    lae_ibnr_dcc[1] = Number(lae_ibnr_dcc[1] || 0);
+    lae_ibnr_dcc[2] = lae_ibnr_dcc[0] + lae_ibnr_dcc[1];
+
+    const lae_ibnr_aoe = getArr(curEx.lae_ibnr_aoe);
+    lae_ibnr_aoe[0] = Number(this.paramsForm.lae_ibnr_aoe || 0);
+    lae_ibnr_aoe[1] = Number(lae_ibnr_aoe[1] || 0);
+    lae_ibnr_aoe[2] = lae_ibnr_aoe[0] + lae_ibnr_aoe[1];
+
+    const ulae_ibnr = getArr(curEx.ulae_ibnr);
+    ulae_ibnr[0] = Number(this.paramsForm.ulae_ibnr || 0);
+    ulae_ibnr[1] = Number(ulae_ibnr[1] || 0);
+    ulae_ibnr[2] = ulae_ibnr[0] + ulae_ibnr[1];
+
+    const exData = {
+      pw,
+      uep,
+      loss_ibnr,
+      lae_ibnr_dcc,
+      lae_ibnr_aoe,
+      ulae_ibnr
+    };
 
     this.service.updateExhibit(this.selectedWorkbookId, this.selectedState, exData).subscribe({
       next: () => {
@@ -265,10 +373,12 @@ export class ReinsuranceCalculationsComponent implements OnInit {
 
     // Call post to journal entries endpoint directly
     const url = `${this.service['apiUrl']}/workbooks/${this.selectedWorkbookId}/post-to-journal-entries/${this.selectedState}`;
-    this.service['http'].post<any>(url, {}).subscribe({
+    this.service['http'].post<any>(url, { customRows: this.gljeRows }).subscribe({
       next: (batch) => {
         this.toast.success(`Successfully posted ceding entries to Journal Entry batch: ${batch.batch_number}`);
         this.postingBatch = false;
+        this.isPosted = true;
+        this.cdr.markForCheck();
         // Redirect to Manual Journal Entries Workspace with batchId query param
         this.router.navigate(['/journal-entries'], { queryParams: { batchId: batch.id } });
       },
@@ -279,6 +389,45 @@ export class ReinsuranceCalculationsComponent implements OnInit {
         this.cdr.markForCheck();
       }
     });
+  }
+
+  addGLJERow(): void {
+    this.gljeRows.push({
+      desc: '',
+      comp: this.selectedWorkbook?.comp || '',
+      account: '',
+      cc: this.selectedWorkbook?.cc || '',
+      mga: this.selectedWorkbook?.mga || '',
+      lob: this.selectedWorkbook?.lob || '',
+      st: this.selectedState === 'TOTAL' ? '00' : this.selectedState,
+      ext: this.selectedWorkbook?.ext || '',
+      sub: this.selectedWorkbook?.sub || '',
+      debit: null,
+      credit: null,
+      isNew: true
+    });
+    this.isPosted = false;
+    this.cdr.markForCheck();
+  }
+
+  removeGLJERow(index: number): void {
+    this.gljeRows.splice(index, 1);
+    this.isPosted = false;
+    this.cdr.markForCheck();
+  }
+
+  onRowAmountChange(row: any, field: 'debit' | 'credit'): void {
+    if (field === 'debit' && row.debit > 0) {
+      row.credit = 0;
+    } else if (field === 'credit' && row.credit > 0) {
+      row.debit = 0;
+    }
+    this.isPosted = false;
+  }
+
+  onRowChange(): void {
+    this.isPosted = false;
+    this.cdr.markForCheck();
   }
 
   exportGLJECSV(): void {

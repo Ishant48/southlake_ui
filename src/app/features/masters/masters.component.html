@@ -147,11 +147,10 @@
           @if (currentTab === 'mgas') {
             <thead>
               <tr>
-                <th style="width: 10%;">MGA Code</th>
-                <th style="width: 25%;">MGA Name</th>
-                <th style="width: 18%;">Tax Payable In-house</th>
-                <th style="width: 12%;">Ledger Amount</th>
-                <th style="width: 10%;">Status</th>
+                <th style="width: 12%;">MGA Code</th>
+                <th style="width: 30%;">MGA Name</th>
+                <th style="width: 20%;">Tax Payable In-house</th>
+                <th style="width: 13%;">Status</th>
                 <th class="col-actions" style="width: 25%; text-align: center;">Actions</th>
               </tr>
             </thead>
@@ -164,9 +163,6 @@
                     <span [class]="mga.tax_payable_inhouse ? 'status-badge status-active' : 'status-badge status-inactive'" style="padding: 2px 8px; font-size: 11px;">
                       {{ mga.tax_payable_inhouse ? 'Yes' : 'No' }}
                     </span>
-                  </td>
-                  <td>
-                    {{ mga.ledger_amount !== undefined ? (mga.ledger_amount | currency) : ('$0.00') }}
                   </td>
                   <td>
                     <span [class]="mga.is_active ? 'status-badge status-active' : 'status-badge status-inactive'" style="padding: 2px 8px; font-size: 11px;">
@@ -307,8 +303,7 @@
             <thead>
               <tr>
                 <th style="width: 15%;">LOB Code</th>
-                <th style="width: 25%;">LOB Name</th>
-                <th style="width: 15%;">LOB Type</th>
+                <th style="width: 40%;">LOB Name</th>
                 <th style="width: 10%;">Taxable</th>
                 <th style="width: 10%;">Priority</th>
                 <th style="width: 10%;">Fully Earned</th>
@@ -328,7 +323,6 @@
                       </div>
                     }
                   </td>
-                  <td>{{ item.type || '-' }}</td>
                   <td>
                     <span [class]="item.taxable ? 'status-badge status-active' : 'status-badge status-inactive'" style="padding: 2px 8px; font-size: 11px;">
                       {{ item.taxable ? 'Yes' : 'No' }}
@@ -483,17 +477,19 @@
 
           @if (simpleMode === 'lob' || simpleMode === 'cob') {
             <div class="form-row" style="margin-top: 8px;">
-              <div class="form-field">
-                <label class="form-label">{{ simpleMode === 'lob' ? 'LOB Type' : 'Class Type' }}</label>
-                <app-dropdown-search
-                  [items]="simpleFormTypeOptions"
-                  [isMultiSelect]="false"
-                  bindValue="id"
-                  placeholder="Select Type"
-                  [itemLabelFn]="nameLabelFn"
-                  [(selectedValue)]="simpleForm.type"
-                ></app-dropdown-search>
-              </div>
+              @if (simpleMode === 'cob') {
+                <div class="form-field">
+                  <label class="form-label">Class Type</label>
+                  <app-dropdown-search
+                    [items]="simpleFormTypeOptions"
+                    [isMultiSelect]="false"
+                    bindValue="id"
+                    placeholder="Select Type"
+                    [itemLabelFn]="nameLabelFn"
+                    [(selectedValue)]="simpleForm.type"
+                  ></app-dropdown-search>
+                </div>
+              }
               <div class="form-field">
                 <label class="form-label">Priority</label>
                 <input [(ngModel)]="simpleForm.priority" name="priority" type="number" placeholder="1" class="form-input">
@@ -690,15 +686,12 @@
 
           <div class="form-row">
             <div class="form-field">
-              <label class="form-label">Ledger Amount</label>
-              <input [(ngModel)]="mgaForm.ledger_amount" name="ledgerAmount" type="number" step="0.01" placeholder="0.00" class="form-input">
-            </div>
-            <div class="form-field">
               <div class="form-checkbox-field" style="margin-top: 28px;">
                 <input [(ngModel)]="mgaForm.is_active" name="isActive" type="checkbox" id="mgaIsActive">
                 <label for="mgaIsActive" style="cursor: pointer;">Active Status</label>
               </div>
             </div>
+            <div class="form-field"></div>
             <div class="form-field"></div>
           </div>
         </form>
@@ -1120,8 +1113,27 @@
               <input [(ngModel)]="treatyForm.lr_cap_pct" name="lrCapPct" type="number" step="0.01" class="form-input" placeholder="0.00">
             </div>
             <div class="form-field">
-              <label class="form-label">IBNR %</label>
+              <label class="form-label">Loss Pick %</label>
               <input [(ngModel)]="treatyForm.ibnr_pct" name="ibnrPct" type="number" step="0.01" class="form-input" placeholder="0.00">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-field">
+              <label class="form-label">LAE DCC %</label>
+              <input [(ngModel)]="treatyForm.lae_dcc_pct" name="laeDccPct" type="number" step="0.01" class="form-input" placeholder="0.00">
+            </div>
+            <div class="form-field">
+              <label class="form-label">LAE AOE %</label>
+              <input [(ngModel)]="treatyForm.lae_aoe_pct" name="laeAoePct" type="number" step="0.01" class="form-input" placeholder="0.00">
+            </div>
+            <div class="form-field" style="visibility: hidden;">
+              <label class="form-label">&nbsp;</label>
+              <input class="form-input">
+            </div>
+            <div class="form-field" style="visibility: hidden;">
+              <label class="form-label">&nbsp;</label>
+              <input class="form-input">
             </div>
           </div>
 
@@ -1195,125 +1207,78 @@
         </div>
 
         <div class="panel-body" style="overflow-y: auto; flex-grow: 1; padding: 20px;">
-          <!-- Month & Year -->
-          <div class="form-grid-2col" style="margin-bottom: 20px;">
+          <!-- Select Month & Year -->
+          <div class="form-row" style="margin-bottom: 20px;">
             <div class="form-field">
-              <label>Month Key</label>
-              <input type="text" class="form-control" [(ngModel)]="itdForm.month_key" readonly>
+              <label class="form-label">Select Month</label>
+              <select class="form-input" [(ngModel)]="itdSelectedMonth" (change)="onItdMonthYearChange()" style="height: 38px; padding: 4px 8px;">
+                @for (m of monthsList; track m.value) {
+                  <option [value]="m.value">{{ m.label }}</option>
+                }
+              </select>
             </div>
             <div class="form-field">
-              <label>Month Label</label>
-              <input type="text" class="form-control" [(ngModel)]="itdForm.month_label" readonly>
+              <label class="form-label">Select Year</label>
+              <select class="form-input" [(ngModel)]="itdSelectedYear" (change)="onItdMonthYearChange()" style="height: 38px; padding: 4px 8px;">
+                @for (y of yearsList; track y) {
+                  <option [value]="y">{{ y }}</option>
+                }
+              </select>
             </div>
           </div>
 
-          <!-- Actuarial Rates section -->
-          <h4 style="margin: 0 0 12px 0; color: var(--navy); font-weight: 700; font-size: 14px; border-bottom: 1.5px solid var(--gray-200); padding-bottom: 6px;">
-            Actuarial Rates & Commissions (%)
-          </h4>
-          <div class="form-grid-3col" style="margin-bottom: 24px;">
+          <!-- Month Key & Month Label -->
+          <div class="form-row" style="margin-bottom: 20px;">
             <div class="form-field">
-              <label>Quota Share (%)</label>
-              <input type="number" class="form-control" [(ngModel)]="itdForm.rates.qs">
+              <label class="form-label">Month Key</label>
+              <input type="text" class="form-input" [(ngModel)]="itdForm.month_key" readonly>
             </div>
             <div class="form-field">
-              <label>Ceding Fee (%)</label>
-              <input type="number" class="form-control" [(ngModel)]="itdForm.rates.cf">
-            </div>
-            <div class="form-field">
-              <label>Ceding Commission (%)</label>
-              <input type="number" class="form-control" [(ngModel)]="itdForm.rates.comm">
-            </div>
-            <div class="form-field">
-              <label>ULAE Rate (%)</label>
-              <input type="number" class="form-control" [(ngModel)]="itdForm.rates.ulae">
-            </div>
-            <div class="form-field">
-              <label>Boards Charge (%)</label>
-              <input type="number" class="form-control" [(ngModel)]="itdForm.rates.boards_charge">
-            </div>
-            <div class="form-field">
-              <label>Loss Ratio Cap (%)</label>
-              <input type="number" class="form-control" [(ngModel)]="itdForm.rates.loss_ratio_cap">
-            </div>
-            <div class="form-field">
-              <label>Loss Pick (%)</label>
-              <input type="number" class="form-control" [(ngModel)]="itdForm.rates.loss_pick">
-            </div>
-            <div class="form-field">
-              <label>LAE DCC (%)</label>
-              <input type="number" class="form-control" [(ngModel)]="itdForm.rates.lae_dcc">
-            </div>
-            <div class="form-field">
-              <label>LAE AOE (%)</label>
-              <input type="number" class="form-control" [(ngModel)]="itdForm.rates.lae_aoe">
+              <label class="form-label">Month Label</label>
+              <input type="text" class="form-input" [(ngModel)]="itdForm.month_label" readonly>
             </div>
           </div>
+
+
 
           <!-- State Exhibits section -->
-          <h4 style="margin: 0 0 12px 0; color: var(--navy); font-weight: 700; font-size: 14px; border-bottom: 1.5px solid var(--gray-200); padding-bottom: 6px;">
+          <h4 style="margin: 24px 0 12px 0; color: var(--navy); font-weight: 700; font-size: 14px; border-bottom: 1.5px solid var(--gray-200); padding-bottom: 6px;">
             Reporting States Data Baseline
           </h4>
 
-          <div style="display: flex; gap: 12px; margin-bottom: 16px; align-items: center;">
-            <label style="font-weight: 600; font-size: 13px; color: var(--navy);">Select State to Edit:</label>
-            <select class="form-control" [(ngModel)]="itdSelectedStateCode" style="max-width: 150px;">
-              @for (st of itdStatesList; track st) {
-                <option [value]="st">{{ st }}</option>
+          <div style="display: flex; gap: 12px; margin-bottom: 20px; align-items: center;">
+            <label class="form-label" style="margin-bottom: 0; font-weight: 600; font-size: 13.5px; color: var(--navy);">Select State to Edit:</label>
+            <select class="form-input" [(ngModel)]="itdSelectedStateCode" style="max-width: 150px; height: 38px; padding: 4px 8px;">
+              @for (st of itdStatesList; track st.code) {
+                <option [value]="st.code">{{ st.label }}</option>
               }
             </select>
           </div>
 
           <!-- Fields editor for the selected state -->
           @if (itdForm.exhibits[itdSelectedStateCode]) {
-            <div class="form-grid-3col">
+            <div class="form-row">
               <div class="form-field">
-                <label>Premiums Written</label>
-                <input type="number" class="form-control" [(ngModel)]="itdForm.exhibits[itdSelectedStateCode].pw">
+                <label class="form-label">Unearned Premium Reserve</label>
+                <input type="number" class="form-input" [(ngModel)]="itdForm.exhibits[itdSelectedStateCode].uep">
               </div>
               <div class="form-field">
-                <label>Unearned Premium Reserve</label>
-                <input type="number" class="form-control" [(ngModel)]="itdForm.exhibits[itdSelectedStateCode].uep">
+                <label class="form-label">Loss IBNR Reserves</label>
+                <input type="number" class="form-input" [(ngModel)]="itdForm.exhibits[itdSelectedStateCode].loss_ibnr">
+              </div>
+            </div>
+            <div class="form-row" style="margin-bottom: 20px;">
+              <div class="form-field">
+                <label class="form-label">LAE IBNR Reserves - DCC</label>
+                <input type="number" class="form-input" [(ngModel)]="itdForm.exhibits[itdSelectedStateCode].lae_ibnr_dcc">
               </div>
               <div class="form-field">
-                <label>Losses Paid (Net)</label>
-                <input type="number" class="form-control" [(ngModel)]="itdForm.exhibits[itdSelectedStateCode].lp">
+                <label class="form-label">LAE IBNR Reserves - AOE</label>
+                <input type="number" class="form-input" [(ngModel)]="itdForm.exhibits[itdSelectedStateCode].lae_ibnr_aoe">
               </div>
               <div class="form-field">
-                <label>DCC Paid (ALAE)</label>
-                <input type="number" class="form-control" [(ngModel)]="itdForm.exhibits[itdSelectedStateCode].laep">
-              </div>
-              <div class="form-field">
-                <label>AOE Paid (ULAE TPA)</label>
-                <input type="number" class="form-control" [(ngModel)]="itdForm.exhibits[itdSelectedStateCode].ae_paid">
-              </div>
-              <div class="form-field">
-                <label>Loss Reserves (Case)</label>
-                <input type="number" class="form-control" [(ngModel)]="itdForm.exhibits[itdSelectedStateCode].loss_reserves">
-              </div>
-              <div class="form-field">
-                <label>Loss IBNR Reserves</label>
-                <input type="number" class="form-control" [(ngModel)]="itdForm.exhibits[itdSelectedStateCode].loss_ibnr">
-              </div>
-              <div class="form-field">
-                <label>LAE Reserves DCC</label>
-                <input type="number" class="form-control" [(ngModel)]="itdForm.exhibits[itdSelectedStateCode].lae_reserves_dcc">
-              </div>
-              <div class="form-field">
-                <label>LAE IBNR DCC</label>
-                <input type="number" class="form-control" [(ngModel)]="itdForm.exhibits[itdSelectedStateCode].lae_ibnr_dcc">
-              </div>
-              <div class="form-field">
-                <label>LAE Reserves AOE</label>
-                <input type="number" class="form-control" [(ngModel)]="itdForm.exhibits[itdSelectedStateCode].lae_reserves_aoe">
-              </div>
-              <div class="form-field">
-                <label>LAE IBNR AOE</label>
-                <input type="number" class="form-control" [(ngModel)]="itdForm.exhibits[itdSelectedStateCode].lae_ibnr_aoe">
-              </div>
-              <div class="form-field">
-                <label>ULAE IBNR Reserves</label>
-                <input type="number" class="form-control" [(ngModel)]="itdForm.exhibits[itdSelectedStateCode].ulae_ibnr">
+                <label class="form-label">ULAE IBNR Reserves</label>
+                <input type="number" class="form-input" [(ngModel)]="itdForm.exhibits[itdSelectedStateCode].ulae_ibnr">
               </div>
             </div>
           }

@@ -111,23 +111,56 @@ export class JournalEntriesComponent implements OnInit, OnDestroy {
   }
 
   loadInitialData(): void {
-    // 1. Fetch active MGAs
-    this.mastersService.getMgas('', true).subscribe({
-      next: (res) => {
-        if (res.length > 0) {
-          this.agentsList = res.map(m => m.name);
-          // Prefer 'Futuristic Underwriters LLC' or default to first
-          const pref = this.agentsList.find(n => n.toLowerCase().includes('futuristic'));
-          this.selectedAgent = pref || this.agentsList[0];
-          // Use MGA codes as subledger codes
-          this.subOptions = ['705', ...res.map(m => m.mga_code)];
-          this.subOptionsList = this.subOptions.map(s => ({ id: s, name: s }));
+    // 1. Fetch all periods dynamically from batches first
+    this.service.getBatches('', '', '').subscribe({
+      next: (batches) => {
+        if (batches.length > 0) {
+          const uniquePeriods = Array.from(new Set(batches.map(b => b.period)));
+          // Sort or reverse to show newest/oldest
+          this.periods = uniquePeriods.sort((a, b) => b.localeCompare(a));
+          if (!this.periods.includes(this.selectedPeriod)) {
+            this.selectedPeriod = this.periods[0];
+          }
         }
-        this.loadBatches();
+
+        // 2. Fetch active MGAs
+        this.mastersService.getMgas('', true).subscribe({
+          next: (res) => {
+            if (res.length > 0) {
+              this.agentsList = res.map(m => m.name);
+              // Prefer 'Futuristic Underwriters LLC' or default to first
+              const pref = this.agentsList.find(n => n.toLowerCase().includes('futuristic'));
+              this.selectedAgent = pref || this.agentsList[0];
+              // Use MGA codes as subledger codes
+              this.subOptions = ['705', ...res.map(m => m.mga_code)];
+              this.subOptionsList = this.subOptions.map(s => ({ id: s, name: s }));
+            }
+            this.loadBatches();
+          },
+          error: () => {
+            this.toast.error('Failed to load MGAs, fallback to default');
+            this.loadBatches();
+          }
+        });
       },
       error: () => {
-        this.toast.error('Failed to load MGAs, fallback to default');
-        this.loadBatches();
+        // Fallback to static loading
+        this.mastersService.getMgas('', true).subscribe({
+          next: (res) => {
+            if (res.length > 0) {
+              this.agentsList = res.map(m => m.name);
+              const pref = this.agentsList.find(n => n.toLowerCase().includes('futuristic'));
+              this.selectedAgent = pref || this.agentsList[0];
+              this.subOptions = ['705', ...res.map(m => m.mga_code)];
+              this.subOptionsList = this.subOptions.map(s => ({ id: s, name: s }));
+            }
+            this.loadBatches();
+          },
+          error: () => {
+            this.toast.error('Failed to load MGAs, fallback to default');
+            this.loadBatches();
+          }
+        });
       }
     });
 
@@ -178,14 +211,8 @@ export class JournalEntriesComponent implements OnInit, OnDestroy {
   }
 
   createBatch(): void {
-    if (!this.newBatchNumber.trim()) {
-      this.toast.error('Batch number is required');
-      return;
-    }
-
     this.submittingBatch = true;
     this.service.createBatch({
-      batch_number: this.newBatchNumber.trim(),
       period: this.selectedPeriod,
       agent_name: this.selectedAgent,
     }).subscribe({
@@ -318,7 +345,7 @@ export class JournalEntriesComponent implements OnInit, OnDestroy {
     const todayStr = new Date().toISOString().split('T')[0];
     const prevRow = this.formEntries[this.formEntries.length - 1];
 
-    this.formEntries.push(this.createBlankRow({
+    const newRowConfig = {
       je_number: this.nextJeNumber,
       description: prevRow ? prevRow.description : '',
       coa_id: '',
@@ -329,7 +356,11 @@ export class JournalEntriesComponent implements OnInit, OnDestroy {
       dp: prevRow ? prevRow.dp : '',
       policy: prevRow ? prevRow.policy : '',
       memo: prevRow ? prevRow.memo : '',
-    }));
+    };
+
+    // Create and push two more rows of same fields
+    this.formEntries.push(this.createBlankRow(newRowConfig));
+    this.formEntries.push(this.createBlankRow(newRowConfig));
   }
 
   copyRow(index: number): void {

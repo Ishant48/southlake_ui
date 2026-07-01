@@ -249,7 +249,31 @@ export class MastersComponent implements OnInit {
     exhibits: {}
   };
   itdSelectedStateCode = 'TOTAL';
-  itdStatesList: string[] = ['TOTAL'];
+  itdStatesList: any[] = [{ code: 'TOTAL', label: 'TOTAL' }];
+  itdSelectedMonth = '12';
+  itdSelectedYear = '2025';
+  monthsList = [
+    { value: '01', label: 'January' },
+    { value: '02', label: 'February' },
+    { value: '03', label: 'March' },
+    { value: '04', label: 'April' },
+    { value: '05', label: 'May' },
+    { value: '06', label: 'June' },
+    { value: '07', label: 'July' },
+    { value: '08', label: 'August' },
+    { value: '09', label: 'September' },
+    { value: '10', label: 'October' },
+    { value: '11', label: 'November' },
+    { value: '12', label: 'December' }
+  ];
+  yearsList = ['2020', '2021', '2022', '2023', '2024', '2025', '2026', '2027', '2028', '2029', '2030'];
+
+  onItdMonthYearChange(): void {
+    const monthObj = this.monthsList.find(m => m.value === this.itdSelectedMonth);
+    const monthLabel = monthObj ? monthObj.label : 'December';
+    this.itdForm.month_key = `${this.itdSelectedYear}-${this.itdSelectedMonth}`;
+    this.itdForm.month_label = `${monthLabel} ${this.itdSelectedYear}`;
+  }
 
   // Treaty Modal
   showTreatyModal = false;
@@ -517,7 +541,7 @@ export class MastersComponent implements OnInit {
 
     if (this.simpleMode === 'lob' || this.simpleMode === 'cob') {
       payload.description = this.simpleForm.description || null;
-      payload.type = this.simpleForm.type || null;
+      payload.type = this.simpleMode === 'cob' ? (this.simpleForm.type || null) : null;
       payload.taxable = this.simpleForm.taxable || false;
       payload.priority = Number(this.simpleForm.priority || 1);
       payload.fully_earned = this.simpleForm.fully_earned || false;
@@ -1042,6 +1066,8 @@ export class MastersComponent implements OnInit {
       xol_pct: 0,
       lr_cap_pct: 0,
       ibnr_pct: 0,
+      lae_dcc_pct: 0,
+      lae_aoe_pct: 0,
       carrier_retention_pct: 100,
       reinsurer_cession_pct: 0,
       is_active: true,
@@ -1104,6 +1130,8 @@ export class MastersComponent implements OnInit {
       xol_pct: treaty.xol_pct,
       lr_cap_pct: treaty.lr_cap_pct,
       ibnr_pct: treaty.ibnr_pct,
+      lae_dcc_pct: treaty.lae_dcc_pct,
+      lae_aoe_pct: treaty.lae_aoe_pct,
       carrier_retention_pct: treaty.carrier_retention_pct,
       reinsurer_cession_pct: treaty.reinsurer_cession_pct,
       is_active: treaty.is_active,
@@ -1672,40 +1700,31 @@ export class MastersComponent implements OnInit {
       });
     }
   }
-
   openAddItdModal(treaty: any): void {
     this.selectedTreatyForItd = treaty;
     this.itdForm.program = treaty.name;
+    this.itdSelectedMonth = '12';
+    this.itdSelectedYear = '2025';
+    this.itdForm.month_key = '2025-12';
+    this.itdForm.month_label = 'December 2025';
 
-    this.itdForm.rates = {
-      qs: 100,
-      cf: 5,
-      comm: 29,
-      ulae: 7,
-      boards_charge: 0.4,
-      loss_ratio_cap: 2,
-      loss_pick: 5,
-      lae_dcc: 7,
-      lae_aoe: 7
-    };
+    const states = (treaty.treaty_states || []).map((s: any) => {
+      const abbr = s.state?.state_abbr || s.state_code;
+      return { code: String(abbr), label: String(abbr) };
+    }).filter((s: any) => s.code && s.code !== 'undefined');
 
-    const codes = (treaty.treaty_states || []).map((s: any) => s.state_code);
-    this.itdStatesList = ['TOTAL', ...codes.filter((c: string) => c !== 'TOTAL').sort()];
+    this.itdStatesList = [
+      { code: 'TOTAL', label: 'TOTAL' },
+      ...states.filter((s: any) => s.code !== 'TOTAL').sort((a: any, b: any) => a.label.localeCompare(b.label))
+    ];
     this.itdSelectedStateCode = 'TOTAL';
 
     this.itdForm.exhibits = {};
-    for (const code of this.itdStatesList) {
-      this.itdForm.exhibits[code] = {
-        pw: 0,
+    for (const st of this.itdStatesList) {
+      this.itdForm.exhibits[st.code] = {
         uep: 0,
-        lp: 0,
-        laep: 0,
-        ae_paid: 0,
-        loss_reserves: 0,
         loss_ibnr: 0,
-        lae_reserves_dcc: 0,
         lae_ibnr_dcc: 0,
-        lae_reserves_aoe: 0,
         lae_ibnr_aoe: 0,
         ulae_ibnr: 0
       };
@@ -1722,18 +1741,11 @@ export class MastersComponent implements OnInit {
       const ex = this.itdForm.exhibits[code];
       return {
         state_code: code,
-        pw: [0, Number(ex.pw || 0), Number(ex.pw || 0)],
-        uep: [0, Number(ex.uep || 0), Number(ex.uep || 0)],
-        lp: [0, Number(ex.lp || 0), Number(ex.lp || 0)],
-        laep: [0, Number(ex.laep || 0), Number(ex.laep || 0)],
-        ae_paid: [0, Number(ex.ae_paid || 0), Number(ex.ae_paid || 0)],
-        loss_reserves: [0, Number(ex.loss_reserves || 0), Number(ex.loss_reserves || 0)],
-        loss_ibnr: [0, Number(ex.loss_ibnr || 0), Number(ex.loss_ibnr || 0)],
-        lae_reserves_dcc: [0, Number(ex.lae_reserves_dcc || 0), Number(ex.lae_reserves_dcc || 0)],
-        lae_ibnr_dcc: [0, Number(ex.lae_ibnr_dcc || 0), Number(ex.lae_ibnr_dcc || 0)],
-        lae_reserves_aoe: [0, Number(ex.lae_reserves_aoe || 0), Number(ex.lae_reserves_aoe || 0)],
-        lae_ibnr_aoe: [0, Number(ex.lae_ibnr_aoe || 0), Number(ex.lae_ibnr_aoe || 0)],
-        ulae_ibnr: [0, Number(ex.ulae_ibnr || 0), Number(ex.ulae_ibnr || 0)]
+        uep: Number(ex.uep || 0),
+        loss_ibnr: Number(ex.loss_ibnr || 0),
+        lae_ibnr_dcc: Number(ex.lae_ibnr_dcc || 0),
+        lae_ibnr_aoe: Number(ex.lae_ibnr_aoe || 0),
+        ulae_ibnr: Number(ex.ulae_ibnr || 0)
       };
     });
 
@@ -1741,7 +1753,6 @@ export class MastersComponent implements OnInit {
       program: this.itdForm.program,
       monthKey: this.itdForm.month_key,
       monthLabel: this.itdForm.month_label,
-      rates: this.itdForm.rates,
       exhibits: exhibitsArray
     };
 

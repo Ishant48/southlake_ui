@@ -4,7 +4,7 @@ export interface User {
   id: string;
   email: string;
   name: string;
-  role: Role;
+  role?: Role;
   user_type: 'staff' | 'mga_user' | 'broker_user' | 'customer_user';
   department?: string;
   title?: string;
@@ -38,7 +38,7 @@ export interface PendingInvite {
   id: string;
   email: string;
   name: string;
-  role: Role;
+  role?: Role;
   user_type: string;
   department?: string;
   title?: string;

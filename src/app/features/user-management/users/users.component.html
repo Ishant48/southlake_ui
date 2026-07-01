@@ -173,6 +173,8 @@
 <app-user-detail-panel
   [user]="selectedUser"
   [open]="detailPanelOpen"
+  [roles]="roles"
+  [mode]="detailMode"
   (closed)="detailPanelOpen = false"
   (updated)="onUserUpdated($event)"
 />

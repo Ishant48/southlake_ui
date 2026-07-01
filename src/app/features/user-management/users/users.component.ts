@@ -61,6 +61,7 @@ export class UsersComponent implements OnInit {
   invitePanelOpen = false;
   detailPanelOpen = false;
   selectedUser: User | null = null;
+  detailMode: 'view' | 'edit' = 'view';
 
   confirmOpen = false;
   confirmTitle = '';
@@ -148,11 +149,13 @@ export class UsersComponent implements OnInit {
 
   onViewUser(user: User): void {
     this.selectedUser = user;
+    this.detailMode = 'view';
     this.detailPanelOpen = true;
   }
 
   onEditUser(user: User): void {
     this.selectedUser = user;
+    this.detailMode = 'edit';
     this.detailPanelOpen = true;
   }
 
