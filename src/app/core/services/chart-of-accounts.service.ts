@@ -17,7 +17,9 @@ export class ChartOfAccountsService {
   }
 
   getAccount(id: string): Observable<ChartOfAccount & { documents: ChartOfAccountDocument[] }> {
-    return this.http.get<ChartOfAccount & { documents: ChartOfAccountDocument[] }>(`${this.base}/${id}`);
+    return this.http.get<ChartOfAccount & { documents: ChartOfAccountDocument[] }>(
+      `${this.base}/${id}`,
+    );
   }
 
   createAccount(payload: Partial<ChartOfAccount>): Observable<ChartOfAccount> {

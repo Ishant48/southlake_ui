@@ -20,8 +20,14 @@
 }
 
 @keyframes fadeIn {
-  from { transform: scale(0.95); opacity: 0; }
-  to { transform: scale(1); opacity: 1; }
+  from {
+    transform: scale(0.95);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
 
 .dialog-header {
@@ -41,9 +47,18 @@
   flex-shrink: 0;
 }
 
-.dialog-icon-danger { background: var(--red-bg); color: var(--red); }
-.dialog-icon-warning { background: var(--orange-bg); color: var(--orange); }
-.dialog-icon-info { background: var(--blue-bg); color: var(--blue); }
+.dialog-icon-danger {
+  background: var(--red-bg);
+  color: var(--red);
+}
+.dialog-icon-warning {
+  background: var(--orange-bg);
+  color: var(--orange);
+}
+.dialog-icon-info {
+  background: var(--blue-bg);
+  color: var(--blue);
+}
 
 .dialog-title {
   font-size: 17px;
@@ -75,7 +90,9 @@
   cursor: pointer;
   transition: background var(--transition);
 
-  &:hover { background: var(--gray-100); }
+  &:hover {
+    background: var(--gray-100);
+  }
 }
 
 .btn-confirm {
@@ -88,10 +105,20 @@
   color: var(--white);
   transition: opacity var(--transition);
 
-  &:hover { opacity: 0.9; }
+  &:hover {
+    opacity: 0.9;
+  }
 }
 
-.btn-confirm-danger { background: var(--coral); }
-.btn-confirm-danger:hover { background: var(--coral-hover); }
-.btn-confirm-warning { background: var(--orange); }
-.btn-confirm-info { background: var(--blue); }
+.btn-confirm-danger {
+  background: var(--coral);
+}
+.btn-confirm-danger:hover {
+  background: var(--coral-hover);
+}
+.btn-confirm-warning {
+  background: var(--orange);
+}
+.btn-confirm-info {
+  background: var(--blue);
+}

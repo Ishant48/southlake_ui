@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { ColDef, GridOptions } from 'ag-grid-community';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class AgGridConfigService {
   getDefaultGridOptions(): GridOptions {
@@ -17,8 +17,8 @@ export class AgGridConfigService {
       defaultColDef: this.getDefaultColDef(),
       rowClass: 'custom-grid-row',
       localeText: {
-        pageSizeSelectorLabel: 'Rows per page:'
-      }
+        pageSizeSelectorLabel: 'Rows per page:',
+      },
     };
   }
 
@@ -30,7 +30,7 @@ export class AgGridConfigService {
       flex: 1,
       minWidth: 100,
       wrapText: true,
-      autoHeight: true
+      autoHeight: true,
     };
   }
 }

@@ -1,22 +1,30 @@
-@use 'styles/variables' as *;
-@use 'styles/auth';
-@use 'styles/layout';
-@use 'styles/components';
-@use 'styles/user-management';
-@use 'styles/ag-grid-custom';
+@use "styles/variables" as *;
+@use "styles/auth";
+@use "styles/layout";
+@use "styles/components";
+@use "styles/user-management";
+@use "styles/ag-grid-custom";
 
-*, *::before, *::after {
+*,
+*::before,
+*::after {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
 }
 
-html, body {
+html,
+body {
   height: 100%;
 }
 
 body {
-  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  font-family:
+    system-ui,
+    -apple-system,
+    "Segoe UI",
+    Roboto,
+    sans-serif;
   background: var(--bg);
   color: var(--gray-900);
   line-height: 1.5;
@@ -34,6 +42,8 @@ button {
   font: inherit;
 }
 
-input, select, textarea {
+input,
+select,
+textarea {
   font: inherit;
 }

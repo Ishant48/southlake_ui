@@ -1,7 +1,7 @@
 import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
 import { JournalEntriesService } from '../../core/services/journal-entries.service';
 import { ChartOfAccountsService } from '../../core/services/chart-of-accounts.service';
 import { MastersService } from '../../core/services/masters.service';
@@ -19,7 +19,13 @@ import { AgGridConfigService } from '../../core/services/ag-grid-config.service'
 @Component({
   selector: 'app-journal-entries',
   standalone: true,
-  imports: [CommonModule, FormsModule, ConfirmDialogComponent, DropdownSearchComponent, AgGridAngular],
+  imports: [
+    CommonModule,
+    FormsModule,
+    ConfirmDialogComponent,
+    DropdownSearchComponent,
+    AgGridAngular,
+  ],
   templateUrl: './journal-entries.component.html',
   styleUrl: './journal-entries.component.scss',
 })
@@ -30,7 +36,6 @@ export class JournalEntriesComponent implements OnInit {
   private toast = inject(ToastService);
   private cdr = inject(ChangeDetectorRef);
   private route = inject(ActivatedRoute);
-  private router = inject(Router);
   private reinsuranceService = inject(ReinsuranceService);
   private agGridConfig = inject(AgGridConfigService);
 
@@ -38,9 +43,9 @@ export class JournalEntriesComponent implements OnInit {
 
   batchColDefs: ColDef[] = [
     { headerName: '#', valueGetter: 'node.rowIndex + 1', width: 60, flex: 0 },
-    { 
-      headerName: 'BATCH', 
-      field: 'batch_number', 
+    {
+      headerName: 'BATCH',
+      field: 'batch_number',
       cellRenderer: (params: any) => {
         const el = document.createElement('strong');
         el.className = 'text-link';
@@ -49,65 +54,103 @@ export class JournalEntriesComponent implements OnInit {
         el.onclick = () => this.viewBatchDetails(params.data);
         return el;
       },
-      flex: 1, minWidth: 150
+      flex: 1,
+      minWidth: 150,
     },
-    { headerName: 'AMOUNT', field: 'total_amount', valueFormatter: (params) => this.formatCurrency(params.value), flex: 1, minWidth: 150 },
+    {
+      headerName: 'AMOUNT',
+      field: 'total_amount',
+      valueFormatter: params => this.formatCurrency(params.value),
+      flex: 1,
+      minWidth: 150,
+    },
     { headerName: 'COUNT', field: 'count', flex: 1, minWidth: 120 },
-    { 
-      headerName: 'ACTIONS', 
+    {
+      headerName: 'ACTIONS',
       cellRenderer: ActionButtonsCellRenderer,
       cellRendererParams: {
         buttons: (data: any) => [
           { label: 'Edit', action: 'edit' },
           { label: 'Journal Entry', action: 'je' },
           { label: 'Print Register', action: 'print' },
-          { label: 'Delete', action: 'delete', danger: true }
+          { label: 'Delete', action: 'delete', danger: true },
         ],
         onClick: (action: string, data: any) => {
           if (action === 'edit' || action === 'je') this.viewBatchDetails(data);
           if (action === 'delete') {
             // Because deleteBatch expects a mouse event to stop propagation, we simulate or bypass it
-            this.confirm('Delete Batch', `Are you sure you want to delete batch ${data.batch_number}?`, () => {
-              this.service.deleteBatch(data.id).subscribe({
-                next: () => {
-                  this.toast.success(`Batch ${data.batch_number} deleted successfully`);
-                  this.loadBatches();
-                },
-                error: () => this.toast.error('Failed to delete batch')
-              });
-            });
+            this.confirm(
+              'Delete Batch',
+              `Are you sure you want to delete batch ${data.batch_number}?`,
+              () => {
+                this.service.deleteBatch(data.id).subscribe({
+                  next: () => {
+                    this.toast.success(`Batch ${data.batch_number} deleted successfully`);
+                    this.loadBatches();
+                  },
+                  error: () => this.toast.error('Failed to delete batch'),
+                });
+              },
+            );
           }
-        }
+        },
       },
-      width: 320, minWidth: 320,
+      width: 320,
+      minWidth: 320,
       flex: 0,
-      sortable: false
-    }
+      sortable: false,
+    },
   ];
 
   entriesColDefs: ColDef[] = [
     { headerName: 'JOURNAL', field: 'je_number', flex: 1, minWidth: 120 },
     { headerName: 'DESCRIPTION', field: 'description', flex: 1, minWidth: 180 },
     { headerName: 'G/L', field: 'coa.account_code', flex: 1, minWidth: 120 },
-    { headerName: 'SUB', field: 'sub', valueFormatter: p => p.value || '-', flex: 1, minWidth: 120 },
-    { headerName: 'DEBIT', field: 'debit', valueFormatter: p => p.value ? this.formatCurrency(p.value) : '', flex: 1, minWidth: 120 },
-    { headerName: 'CREDIT', field: 'credit', valueFormatter: p => p.value ? this.formatCurrency(p.value) : '', flex: 1, minWidth: 120 },
+    {
+      headerName: 'SUB',
+      field: 'sub',
+      valueFormatter: p => p.value || '-',
+      flex: 1,
+      minWidth: 120,
+    },
+    {
+      headerName: 'DEBIT',
+      field: 'debit',
+      valueFormatter: p => (p.value ? this.formatCurrency(p.value) : ''),
+      flex: 1,
+      minWidth: 120,
+    },
+    {
+      headerName: 'CREDIT',
+      field: 'credit',
+      valueFormatter: p => (p.value ? this.formatCurrency(p.value) : ''),
+      flex: 1,
+      minWidth: 120,
+    },
     { headerName: 'DATE', field: 'date', flex: 1, minWidth: 120 },
     { headerName: 'DP', field: 'dp', valueFormatter: p => p.value || '-', flex: 1, minWidth: 100 },
-    { headerName: 'POLICY', field: 'policy', valueFormatter: p => p.value || '-', flex: 1, minWidth: 120 },
-    { 
+    {
+      headerName: 'POLICY',
+      field: 'policy',
+      valueFormatter: p => p.value || '-',
+      flex: 1,
+      minWidth: 120,
+    },
+    {
       headerName: 'ACTIONS',
       cellRenderer: ActionButtonsCellRenderer,
       cellRendererParams: {
         buttons: () => [{ label: 'Edit', action: 'edit' }],
         onClick: (action: string, data: any) => {
           if (action === 'edit') this.editJournalEntry(data);
-        }
+        },
       },
       flex: 0,
-      width: 100, minWidth: 100, maxWidth: 100,
-      sortable: false
-    }
+      width: 100,
+      minWidth: 100,
+      maxWidth: 100,
+      sortable: false,
+    },
   ];
 
   // View state
@@ -144,10 +187,10 @@ export class JournalEntriesComponent implements OnInit {
     { id: '705', name: '705' },
     { id: 'MGA-100', name: 'MGA-100' },
     { id: 'MGA-200', name: 'MGA-200' },
-    { id: 'AA', name: 'AA' }
+    { id: 'AA', name: 'AA' },
   ];
-  coaLabelFn = (item: any) => item ? `${item.account_code} - ${item.description}` : '';
-  subLabelFn = (item: any) => item ? item.name : '';
+  coaLabelFn = (item: any) => (item ? `${item.account_code} - ${item.description}` : '');
+  subLabelFn = (item: any) => (item ? item.name : '');
   submittingEntries = false;
 
   // Confirm dialog control
@@ -166,7 +209,7 @@ export class JournalEntriesComponent implements OnInit {
       const batchId = params['batchId'];
       if (batchId) {
         this.service.getBatch(batchId).subscribe({
-          next: (batch) => {
+          next: batch => {
             this.selectedPeriod = batch.period;
             this.selectedAgent = batch.agent_name;
             this.viewBatchDetails(batch);
@@ -174,7 +217,7 @@ export class JournalEntriesComponent implements OnInit {
           },
           error: () => {
             this.toast.error('Failed to load journal batch from parameters');
-          }
+          },
         });
       }
     });
@@ -183,7 +226,7 @@ export class JournalEntriesComponent implements OnInit {
   loadInitialData(): void {
     // 1. Fetch all periods dynamically from batches first
     this.service.getBatches('', '', '').subscribe({
-      next: (batches) => {
+      next: batches => {
         if (batches.length > 0) {
           const uniquePeriods = Array.from(new Set(batches.map(b => b.period)));
           // Sort or reverse to show newest/oldest
@@ -195,7 +238,7 @@ export class JournalEntriesComponent implements OnInit {
 
         // 2. Fetch active MGAs
         this.mastersService.getMgas('', true).subscribe({
-          next: (res) => {
+          next: res => {
             if (res.length > 0) {
               this.agentsList = res.map(m => m.name);
               // Prefer 'Futuristic Underwriters LLC' or default to first
@@ -210,13 +253,13 @@ export class JournalEntriesComponent implements OnInit {
           error: () => {
             this.toast.error('Failed to load MGAs, fallback to default');
             this.loadBatches();
-          }
+          },
         });
       },
       error: () => {
         // Fallback to static loading
         this.mastersService.getMgas('', true).subscribe({
-          next: (res) => {
+          next: res => {
             if (res.length > 0) {
               this.agentsList = res.map(m => m.name);
               const pref = this.agentsList.find(n => n.toLowerCase().includes('futuristic'));
@@ -229,38 +272,40 @@ export class JournalEntriesComponent implements OnInit {
           error: () => {
             this.toast.error('Failed to load MGAs, fallback to default');
             this.loadBatches();
-          }
+          },
         });
-      }
+      },
     });
 
     // 2. Fetch Chart of Accounts for the entries dropdown
     this.coaService.getAccounts('', true).subscribe({
-      next: (res) => {
+      next: res => {
         // filter out parent accounts
         this.coaOptions = res.filter(a => !a.is_parent);
       },
       error: () => {
         this.toast.error('Failed to load Chart of Accounts');
-      }
+      },
     });
   }
 
   loadBatches(): void {
     this.loading = true;
-    this.service.getBatches(this.selectedPeriod, this.selectedAgent, this.searchTerm || undefined).subscribe({
-      next: (res) => {
-        this.batches = res;
-        this.calculateTotalBatchesAmount();
-        this.loading = false;
-        this.cdr.markForCheck();
-      },
-      error: () => {
-        this.toast.error('Failed to load batches');
-        this.loading = false;
-        this.cdr.markForCheck();
-      }
-    });
+    this.service
+      .getBatches(this.selectedPeriod, this.selectedAgent, this.searchTerm || undefined)
+      .subscribe({
+        next: res => {
+          this.batches = res;
+          this.calculateTotalBatchesAmount();
+          this.loading = false;
+          this.cdr.markForCheck();
+        },
+        error: () => {
+          this.toast.error('Failed to load batches');
+          this.loading = false;
+          this.cdr.markForCheck();
+        },
+      });
   }
 
   calculateTotalBatchesAmount(): void {
@@ -282,23 +327,25 @@ export class JournalEntriesComponent implements OnInit {
 
   createBatch(): void {
     this.submittingBatch = true;
-    this.service.createBatch({
-      period: this.selectedPeriod,
-      agent_name: this.selectedAgent,
-    }).subscribe({
-      next: (res) => {
-        this.toast.success(`Batch ${res.batch_number} created successfully`);
-        this.showAddBatchModal = false;
-        this.submittingBatch = false;
-        this.loadBatches();
-      },
-      error: (err) => {
-        const msg = err.error?.message || 'Failed to create batch';
-        this.toast.error(msg);
-        this.submittingBatch = false;
-        this.cdr.markForCheck();
-      }
-    });
+    this.service
+      .createBatch({
+        period: this.selectedPeriod,
+        agent_name: this.selectedAgent,
+      })
+      .subscribe({
+        next: res => {
+          this.toast.success(`Batch ${res.batch_number} created successfully`);
+          this.showAddBatchModal = false;
+          this.submittingBatch = false;
+          this.loadBatches();
+        },
+        error: err => {
+          const msg = err.error?.message || 'Failed to create batch';
+          this.toast.error(msg);
+          this.submittingBatch = false;
+          this.cdr.markForCheck();
+        },
+      });
   }
 
   viewBatchDetails(batch: JournalEntryBatch): void {
@@ -311,7 +358,7 @@ export class JournalEntriesComponent implements OnInit {
     if (!this.selectedBatch) return;
     this.loadingEntries = true;
     this.service.getBatchEntries(this.selectedBatch.id).subscribe({
-      next: (res) => {
+      next: res => {
         this.entries = res;
         this.loadingEntries = false;
         this.cdr.markForCheck();
@@ -320,7 +367,7 @@ export class JournalEntriesComponent implements OnInit {
         this.toast.error('Failed to load entries');
         this.loadingEntries = false;
         this.cdr.markForCheck();
-      }
+      },
     });
   }
 
@@ -361,7 +408,7 @@ export class JournalEntriesComponent implements OnInit {
       dp: '',
       policy: '',
       memo: '',
-      ...values
+      ...values,
     };
   }
 
@@ -378,10 +425,7 @@ export class JournalEntriesComponent implements OnInit {
     }
 
     // Initialize with 2 blank rows
-    this.formEntries = [
-      this.createBlankRow(),
-      this.createBlankRow()
-    ];
+    this.formEntries = [this.createBlankRow(), this.createBlankRow()];
 
     this.currentView = 'form';
   }
@@ -394,18 +438,20 @@ export class JournalEntriesComponent implements OnInit {
     // Filter matching lines by je_number
     const matchingEntries = this.entries.filter(e => e.je_number === entry.je_number);
 
-    this.formEntries = matchingEntries.map(e => this.createBlankRow({
-      je_number: e.je_number,
-      description: e.description,
-      coa_id: e.coa_id,
-      sub: e.sub || '',
-      debit: e.debit || null,
-      credit: e.credit || null,
-      date: e.date,
-      dp: e.dp || '',
-      policy: e.policy || '',
-      memo: e.memo || '',
-    }));
+    this.formEntries = matchingEntries.map(e =>
+      this.createBlankRow({
+        je_number: e.je_number,
+        description: e.description,
+        coa_id: e.coa_id,
+        sub: e.sub || '',
+        debit: e.debit || null,
+        credit: e.credit || null,
+        date: e.date,
+        dp: e.dp || '',
+        policy: e.policy || '',
+        memo: e.memo || '',
+      }),
+    );
 
     this.currentView = 'form';
     this.cdr.markForCheck();
@@ -501,7 +547,9 @@ export class JournalEntriesComponent implements OnInit {
     }
 
     if (!this.isFormBalanced) {
-      this.toast.error(`Journal Entry is not balanced. Difference: $${this.formDifference.toFixed(2)}`);
+      this.toast.error(
+        `Journal Entry is not balanced. Difference: $${this.formDifference.toFixed(2)}`,
+      );
       return;
     }
 
@@ -519,7 +567,7 @@ export class JournalEntriesComponent implements OnInit {
         dp: r.dp || null,
         policy: r.policy || null,
         memo: r.memo || null,
-      }))
+      })),
     };
 
     this.service.postEntries(this.selectedBatch.id, payload).subscribe({
@@ -532,16 +580,19 @@ export class JournalEntriesComponent implements OnInit {
         // Reload details to update total amount and count
         if (this.selectedBatch) {
           this.service.getBatch(this.selectedBatch.id).subscribe({
-            next: (b) => { this.selectedBatch = b; this.cdr.markForCheck(); }
+            next: b => {
+              this.selectedBatch = b;
+              this.cdr.markForCheck();
+            },
           });
         }
       },
-      error: (err) => {
+      error: err => {
         const msg = err.error?.message || 'Failed to post entries';
         this.toast.error(msg);
         this.submittingEntries = false;
         this.cdr.markForCheck();
-      }
+      },
     });
   }
 
@@ -552,21 +603,6 @@ export class JournalEntriesComponent implements OnInit {
   // ==========================================
   // CONFIRM DELETION DIALOG ACTIONS
   // ==========================================
-  deleteBatch(batch: JournalEntryBatch, event: MouseEvent): void {
-    event.stopPropagation(); // Prevent opening batch details
-    this.confirm('Delete Batch', `Are you sure you want to delete batch ${batch.batch_number}?`, () => {
-      this.service.deleteBatch(batch.id).subscribe({
-        next: () => {
-          this.toast.success(`Batch ${batch.batch_number} deleted successfully`);
-          this.loadBatches();
-        },
-        error: () => {
-          this.toast.error('Failed to delete batch');
-        }
-      });
-    });
-  }
-
   confirm(title: string, message: string, action: () => void): void {
     this.confirmTitle = title;
     this.confirmMessage = message;
@@ -585,48 +621,6 @@ export class JournalEntriesComponent implements OnInit {
   onCancelled(): void {
     this.confirmOpen = false;
     this.pendingAction = null;
-  }
-
-  onUploadMonthlyExcel(event: any): void {
-    if (event.target.files && event.target.files.length > 0) {
-      const file = event.target.files[0];
-      if (!this.selectedBatch) return;
-
-      this.toast.info('Uploading monthly exhibit...');
-      const formData = new FormData();
-      formData.append('file', file);
-
-      const url = `${this.reinsuranceService['apiUrl']}/workbooks/upload-to-batch/${this.selectedBatch.id}`;
-      this.reinsuranceService['http'].post<any>(url, formData).subscribe({
-        next: (res: any) => {
-          this.toast.success('Successfully uploaded monthly exhibit and generated ceding entries.');
-          this.loadBatchEntries();
-          this.cdr.markForCheck();
-        },
-        error: (err: any) => {
-          const msg = err.error?.message || 'Failed to upload monthly exhibit';
-          this.toast.error(msg);
-        }
-      });
-    }
-  }
-
-  onUploadITDExcel(event: any): void {
-    if (event.target.files && event.target.files.length > 0) {
-      const file = event.target.files[0];
-      this.toast.info('Uploading and seeding ITD baseline reserves...');
-      
-      this.reinsuranceService.uploadWorkbook(file, true).subscribe({
-        next: () => {
-          this.toast.success('ITD baseline reserves uploaded and seeded in database successfully.');
-          this.cdr.markForCheck();
-        },
-        error: (err: any) => {
-          const msg = err.error?.message || 'Failed to seed ITD baseline';
-          this.toast.error(msg);
-        }
-      });
-    }
   }
 
   // Format Helper

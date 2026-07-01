@@ -1,16 +1,60 @@
 <div class="auth-wrap">
   <div class="auth-panel">
-
     <div class="auth-left">
       <div class="auth-left-bg-text">✓</div>
       <div class="auth-left-content">
-        <svg class="auth-logo-mark" width="80" height="80" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M20 2 A18 18 0 0 0 2 20 A18 18 0 0 0 20 38" stroke="#0d1b4b" stroke-width="2.5" fill="none" stroke-linecap="round"/>
-          <path d="M20 7 A13 13 0 0 0 7 20 A13 13 0 0 0 20 33" stroke="#0d1b4b" stroke-width="2.5" fill="none" stroke-linecap="round"/>
-          <path d="M20 12 A8 8 0 0 0 12 20 A8 8 0 0 0 20 28" stroke="#e05470" stroke-width="2.5" fill="none" stroke-linecap="round"/>
-          <path d="M20 17 A3 3 0 0 0 17 20 A3 3 0 0 0 20 23" stroke="#e05470" stroke-width="3" fill="none" stroke-linecap="round"/>
-          <path d="M20 2 A18 18 0 0 1 38 20" stroke="#e05470" stroke-width="2" fill="none" stroke-linecap="round" opacity="0.4"/>
-          <path d="M20 7 A13 13 0 0 1 33 20" stroke="#e05470" stroke-width="2" fill="none" stroke-linecap="round" opacity="0.3"/>
+        <svg
+          class="auth-logo-mark"
+          width="80"
+          height="80"
+          viewBox="0 0 40 40"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M20 2 A18 18 0 0 0 2 20 A18 18 0 0 0 20 38"
+            stroke="#0d1b4b"
+            stroke-width="2.5"
+            fill="none"
+            stroke-linecap="round"
+          />
+          <path
+            d="M20 7 A13 13 0 0 0 7 20 A13 13 0 0 0 20 33"
+            stroke="#0d1b4b"
+            stroke-width="2.5"
+            fill="none"
+            stroke-linecap="round"
+          />
+          <path
+            d="M20 12 A8 8 0 0 0 12 20 A8 8 0 0 0 20 28"
+            stroke="#e05470"
+            stroke-width="2.5"
+            fill="none"
+            stroke-linecap="round"
+          />
+          <path
+            d="M20 17 A3 3 0 0 0 17 20 A3 3 0 0 0 20 23"
+            stroke="#e05470"
+            stroke-width="3"
+            fill="none"
+            stroke-linecap="round"
+          />
+          <path
+            d="M20 2 A18 18 0 0 1 38 20"
+            stroke="#e05470"
+            stroke-width="2"
+            fill="none"
+            stroke-linecap="round"
+            opacity="0.4"
+          />
+          <path
+            d="M20 7 A13 13 0 0 1 33 20"
+            stroke="#e05470"
+            stroke-width="2"
+            fill="none"
+            stroke-linecap="round"
+            opacity="0.3"
+          />
         </svg>
         <div>
           <div class="auth-brand-name">SOUTHLAKE</div>
@@ -40,7 +84,7 @@
             (input)="onInput($event, i)"
             (paste)="onPaste($event)"
             autocomplete="one-time-code"
-          >
+          />
         }
       </div>
 
@@ -49,18 +93,25 @@
       }
 
       <button class="auth-btn" [disabled]="loading || !isComplete()" (click)="submit()">
-        @if (loading) { Verifying... } @else { Verify }
+        @if (loading) {
+          Verifying...
+        } @else {
+          Verify
+        }
       </button>
 
       <div class="otp-resend">
         Don't receive the OTP? &nbsp;
         <button (click)="resend()" [disabled]="resending">
-          @if (resending) { Sending... } @else { Resend Code }
+          @if (resending) {
+            Sending...
+          } @else {
+            Resend Code
+          }
         </button>
       </div>
 
       <a class="auth-back-link" routerLink="/auth/login">← Back to Sign In</a>
     </div>
-
   </div>
 </div>

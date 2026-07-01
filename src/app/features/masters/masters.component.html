@@ -7,17 +7,20 @@
     </div>
     <!-- Dynamic Header Buttons -->
     <div>
-      @if (currentTab === 'mgas') {
+      @if (currentTab === "mgas") {
         <button class="btn-primary" (click)="openMgaAdd()">Add MGA</button>
-      } @else if (currentTab === 'states') {
+      } @else if (currentTab === "states") {
         <button class="btn-primary" (click)="openStateAdd()">Add State</button>
-      } @else if (currentTab === 'risk-companies') {
+      } @else if (currentTab === "risk-companies") {
         <button class="btn-primary" (click)="openRiskCompanyAdd()">Add Risk Company</button>
-      } @else if (currentTab === 'gl-mappings') {
+      } @else if (currentTab === "gl-mappings") {
         <button class="btn-primary" (click)="openGlMappingAdd()">Add Mapping</button>
-      } @else if (currentTab === 'lobs' || currentTab === 'cobs' || currentTab === 'reinsurers') {
-        <button class="btn-primary" (click)="openSimpleAdd(currentTab === 'lobs' ? 'lob' : currentTab === 'cobs' ? 'cob' : 'reinsurer')">
-          Add {{ currentTab === 'lobs' ? 'LOB' : currentTab === 'cobs' ? 'COB' : 'Reinsurer' }}
+      } @else if (currentTab === "lobs" || currentTab === "cobs" || currentTab === "reinsurers") {
+        <button
+          class="btn-primary"
+          (click)="openSimpleAdd(currentTab === 'lobs' ? 'lob' : currentTab === 'cobs' ? 'cob' : 'reinsurer')"
+        >
+          Add {{ currentTab === "lobs" ? "LOB" : currentTab === "cobs" ? "COB" : "Reinsurer" }}
         </button>
       }
     </div>
@@ -25,80 +28,137 @@
 
   <!-- Tab Bar -->
   <div class="tab-bar">
-    <button class="tab-link" [class.active]="currentTab === 'treaties'" (click)="selectTab('treaties')">Treaties</button>
+    <button class="tab-link" [class.active]="currentTab === 'treaties'" (click)="selectTab('treaties')">
+      Treaties
+    </button>
     <button class="tab-link" [class.active]="currentTab === 'mgas'" (click)="selectTab('mgas')">MGAs</button>
     <button class="tab-link" [class.active]="currentTab === 'lobs'" (click)="selectTab('lobs')">LOBs</button>
     <button class="tab-link" [class.active]="currentTab === 'cobs'" (click)="selectTab('cobs')">COBs</button>
     <button class="tab-link" [class.active]="currentTab === 'states'" (click)="selectTab('states')">States</button>
-    <button class="tab-link" [class.active]="currentTab === 'reinsurers'" (click)="selectTab('reinsurers')">Reinsurers</button>
-    <button class="tab-link" [class.active]="currentTab === 'risk-companies'" (click)="selectTab('risk-companies')">Risk Companies</button>
-    <button class="tab-link" [class.active]="currentTab === 'gl-mappings'" (click)="selectTab('gl-mappings')">GL Map</button>
+    <button class="tab-link" [class.active]="currentTab === 'reinsurers'" (click)="selectTab('reinsurers')">
+      Reinsurers
+    </button>
+    <button class="tab-link" [class.active]="currentTab === 'risk-companies'" (click)="selectTab('risk-companies')">
+      Risk Companies
+    </button>
+    <button class="tab-link" [class.active]="currentTab === 'gl-mappings'" (click)="selectTab('gl-mappings')">
+      GL Map
+    </button>
   </div>
 
   <!-- Content Card -->
   <div class="content-card">
     <!-- Toolbar Filters -->
     <div class="filters-bar">
-        @if (currentTab === 'treaties') {
-          <select class="filter-select" [(ngModel)]="mgaFilter" (ngModelChange)="onFilterChange()">
-            <option value="all">All MGAs</option>
-            @for (mga of mgaOptions; track mga.id) {
-              <option [value]="mga.id">{{ mga.name }}</option>
-            }
-          </select>
-        }
-
-        <select class="filter-select" [(ngModel)]="statusFilter" (ngModelChange)="onFilterChange()">
-          <option value="all">All Statuses</option>
-          <option value="active">Active</option>
-          <option value="inactive">Inactive</option>
+      @if (currentTab === "treaties") {
+        <select class="filter-select" [(ngModel)]="mgaFilter" (ngModelChange)="onFilterChange()">
+          <option value="all">All MGAs</option>
+          @for (mga of mgaOptions; track mga.id) {
+            <option [value]="mga.id">{{ mga.name }}</option>
+          }
         </select>
+      }
 
-        <div class="search-wrap">
-          <input class="search-input" type="text" placeholder="Search here" [(ngModel)]="searchTerm" (ngModelChange)="onFilterChange()" style="padding-left: 12px; padding-right: 34px;">
-          <svg class="search-icon-right" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
-          </svg>
-        </div>
-        <button class="btn-action-outline" (click)="exportToExcel()" style="height: 38px; padding: 0 14px; display: inline-flex; align-items: center; gap: 6px; justify-content: center;">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M5 3.5 A1.5 1.5 0 0 1 6.5 2 H14 L19 7 V20.5 A1.5 1.5 0 0 1 17.5 22 H6.5 A1.5 1.5 0 0 1 5 20.5 V3.5 Z" fill="#e2e6e9" />
-            <path d="M14 2 V5.5 A1.5 1.5 0 0 0 15.5 7 H19 Z" fill="#c3c8cc" />
-            <path d="M8 7 H12 M8 9.75 H15 M8 12.5 H14" stroke="#19a347" stroke-width="1.5" stroke-linecap="round" />
-            <path d="M2 14 V12.5 C2 11 3 10 4.5 10 H5 V14 Z" fill="#0d7028" />
-            <rect x="2" y="14" width="20" height="8" rx="1.5" fill="#19a347" />
-            <text x="12" y="20.2" font-family="Arial, sans-serif" font-weight="900" font-size="6.2" fill="#ffffff" text-anchor="middle" letter-spacing="0.2">CSV</text>
-          </svg>
-          <span>Export</span>
-        </button>
+      <select class="filter-select" [(ngModel)]="statusFilter" (ngModelChange)="onFilterChange()">
+        <option value="all">All Statuses</option>
+        <option value="active">Active</option>
+        <option value="inactive">Inactive</option>
+      </select>
+
+      <div class="search-wrap">
+        <input
+          class="search-input"
+          type="text"
+          placeholder="Search here"
+          [(ngModel)]="searchTerm"
+          (ngModelChange)="onFilterChange()"
+          style="padding-left: 12px; padding-right: 34px"
+        />
+        <svg
+          class="search-icon-right"
+          width="15"
+          height="15"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <circle cx="11" cy="11" r="8" />
+          <line x1="21" y1="21" x2="16.65" y2="16.65" />
+        </svg>
+      </div>
+      <button
+        class="btn-action-outline"
+        (click)="exportToExcel()"
+        style="
+          height: 38px;
+          padding: 0 14px;
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          justify-content: center;
+        "
+      >
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path
+            d="M5 3.5 A1.5 1.5 0 0 1 6.5 2 H14 L19 7 V20.5 A1.5 1.5 0 0 1 17.5 22 H6.5 A1.5 1.5 0 0 1 5 20.5 V3.5 Z"
+            fill="#e2e6e9"
+          />
+          <path d="M14 2 V5.5 A1.5 1.5 0 0 0 15.5 7 H19 Z" fill="#c3c8cc" />
+          <path d="M8 7 H12 M8 9.75 H15 M8 12.5 H14" stroke="#19a347" stroke-width="1.5" stroke-linecap="round" />
+          <path d="M2 14 V12.5 C2 11 3 10 4.5 10 H5 V14 Z" fill="#0d7028" />
+          <rect x="2" y="14" width="20" height="8" rx="1.5" fill="#19a347" />
+          <text
+            x="12"
+            y="20.2"
+            font-family="Arial, sans-serif"
+            font-weight="900"
+            font-size="6.2"
+            fill="#ffffff"
+            text-anchor="middle"
+            letter-spacing="0.2"
+          >
+            CSV
+          </text>
+        </svg>
+        <span>Export</span>
+      </button>
     </div>
 
     <!-- Loading State -->
     @if (loading) {
       <div class="empty-state">
-        <div class="spinner" style="width: 32px; height: 32px; margin-bottom: 12px;"></div>
+        <div class="spinner" style="width: 32px; height: 32px; margin-bottom: 12px"></div>
         <p>Loading master data...</p>
       </div>
     } @else if (currentList.length === 0) {
       <div class="empty-state">
-        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--gray-400)" stroke-width="1.5" style="margin-bottom: 12px; opacity: 0.7;">
-          <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
-          <line x1="9" y1="9" x2="15" y2="9"/>
-          <line x1="9" y1="13" x2="15" y2="13"/>
-          <line x1="9" y1="17" x2="13" y2="17"/>
+        <svg
+          width="40"
+          height="40"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="var(--gray-400)"
+          stroke-width="1.5"
+          style="margin-bottom: 12px; opacity: 0.7"
+        >
+          <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+          <line x1="9" y1="9" x2="15" y2="9" />
+          <line x1="9" y1="13" x2="15" y2="13" />
+          <line x1="9" y1="17" x2="13" y2="17" />
         </svg>
         <p>No records found. Try adjusting your filters or create a new entry.</p>
       </div>
     } @else {
-      <div class="table-wrapper" style="margin-top: 16px;">
+      <div class="table-wrapper" style="margin-top: 16px">
         <ag-grid-angular
-          style="display: block; width: 100%;"
+          style="display: block; width: 100%"
           class="ag-theme-alpine"
           [domLayout]="'autoHeight'"
           [gridOptions]="gridOptions"
           [columnDefs]="currentColumnDefs"
-          [rowData]="currentList">
-        </ag-grid-angular>
+          [rowData]="currentList"
+        ></ag-grid-angular>
       </div>
     }
   </div>
@@ -106,31 +166,54 @@
   <!-- SIMPLE MASTER CREATE / EDIT MODAL -->
   @if (showSimpleModal) {
     <div class="modal-overlay" (click)="showSimpleModal = false">
-      <div class="modal-box {{ (simpleMode === 'lob' || simpleMode === 'cob') ? 'treaty-modal' : 'coa-modal' }}" (click)="$event.stopPropagation()">
+      <div
+        class="modal-box {{ simpleMode === 'lob' || simpleMode === 'cob' ? 'treaty-modal' : 'coa-modal' }}"
+        (click)="$event.stopPropagation()"
+      >
         <div class="panel-header">
           <h3 class="panel-title">{{ simpleModalTitle }}</h3>
           <button class="panel-close" (click)="showSimpleModal = false" aria-label="Close modal">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-              <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6" y1="6" x2="18" y2="18" />
             </svg>
           </button>
         </div>
 
-        <form (submit)="submitSimple()" class="panel-body" style="max-height: calc(100vh - 200px); overflow-y: auto;">
+        <form (submit)="submitSimple()" class="panel-body" style="max-height: calc(100vh - 200px); overflow-y: auto">
           <div class="form-row">
             <div class="form-field">
-              <label class="form-label">{{ simpleMode === 'lob' ? 'LOB ID *' : simpleMode === 'cob' ? 'Class ID *' : 'Code ID *' }}</label>
-              <input [(ngModel)]="simpleForm.code" name="code" type="text" required placeholder="e.g. TX" [disabled]="isEditMode" class="form-input">
+              <label class="form-label">
+                {{ simpleMode === "lob" ? "LOB ID *" : simpleMode === "cob" ? "Class ID *" : "Code ID *" }}
+              </label>
+              <input
+                [(ngModel)]="simpleForm.code"
+                name="code"
+                type="text"
+                required
+                placeholder="e.g. TX"
+                [disabled]="isEditMode"
+                class="form-input"
+              />
             </div>
             <div class="form-field">
-              <label class="form-label">{{ simpleMode === 'lob' ? 'LOB Name *' : simpleMode === 'cob' ? 'Class Name *' : 'Name *' }}</label>
-              <input [(ngModel)]="simpleForm.name" name="name" type="text" required placeholder="e.g. Texas" class="form-input">
+              <label class="form-label">
+                {{ simpleMode === "lob" ? "LOB Name *" : simpleMode === "cob" ? "Class Name *" : "Name *" }}
+              </label>
+              <input
+                [(ngModel)]="simpleForm.name"
+                name="name"
+                type="text"
+                required
+                placeholder="e.g. Texas"
+                class="form-input"
+              />
             </div>
           </div>
 
-          @if (simpleMode === 'lob' || simpleMode === 'cob') {
-            <div class="form-row" style="margin-top: 8px;">
-              @if (simpleMode === 'cob') {
+          @if (simpleMode === "lob" || simpleMode === "cob") {
+            <div class="form-row" style="margin-top: 8px">
+              @if (simpleMode === "cob") {
                 <div class="form-field">
                   <label class="form-label">Class Type</label>
                   <app-dropdown-search
@@ -145,19 +228,27 @@
               }
               <div class="form-field">
                 <label class="form-label">Priority</label>
-                <input [(ngModel)]="simpleForm.priority" name="priority" type="number" placeholder="1" class="form-input">
+                <input
+                  [(ngModel)]="simpleForm.priority"
+                  name="priority"
+                  type="number"
+                  placeholder="1"
+                  class="form-input"
+                />
               </div>
             </div>
 
-            <div class="form-row" style="margin-top: 8px;">
+            <div class="form-row" style="margin-top: 8px">
               <div class="form-field">
                 <label class="form-label">Taxable</label>
                 <div class="radio-group">
                   <label>
-                    <input type="radio" [value]="true" [(ngModel)]="simpleForm.taxable" name="taxable"> Yes
+                    <input type="radio" [value]="true" [(ngModel)]="simpleForm.taxable" name="taxable" />
+                    Yes
                   </label>
                   <label>
-                    <input type="radio" [value]="false" [(ngModel)]="simpleForm.taxable" name="taxable"> No
+                    <input type="radio" [value]="false" [(ngModel)]="simpleForm.taxable" name="taxable" />
+                    No
                   </label>
                 </div>
               </div>
@@ -165,27 +256,35 @@
                 <label class="form-label">Fully Earned</label>
                 <div class="radio-group">
                   <label>
-                    <input type="radio" [value]="true" [(ngModel)]="simpleForm.fully_earned" name="fullyEarned"> Yes
+                    <input type="radio" [value]="true" [(ngModel)]="simpleForm.fully_earned" name="fullyEarned" />
+                    Yes
                   </label>
                   <label>
-                    <input type="radio" [value]="false" [(ngModel)]="simpleForm.fully_earned" name="fullyEarned"> No
+                    <input type="radio" [value]="false" [(ngModel)]="simpleForm.fully_earned" name="fullyEarned" />
+                    No
                   </label>
                 </div>
               </div>
             </div>
 
-            <div class="form-row" style="margin-top: 8px;">
+            <div class="form-row" style="margin-top: 8px">
               <div class="form-field">
                 <label class="form-label">Description</label>
-                <textarea [(ngModel)]="simpleForm.description" name="description" placeholder="Description details..." class="form-input" style="height: 60px; resize: vertical;"></textarea>
+                <textarea
+                  [(ngModel)]="simpleForm.description"
+                  name="description"
+                  placeholder="Description details..."
+                  class="form-input"
+                  style="height: 60px; resize: vertical"
+                ></textarea>
               </div>
             </div>
           }
 
-          <div class="form-field" style="margin-top: 12px;">
+          <div class="form-field" style="margin-top: 12px">
             <div class="form-checkbox-field">
-              <input [(ngModel)]="simpleForm.is_active" name="isActive" type="checkbox" id="simpleIsActive">
-              <label for="simpleIsActive" style="cursor: pointer;">Active Status</label>
+              <input [(ngModel)]="simpleForm.is_active" name="isActive" type="checkbox" id="simpleIsActive" />
+              <label for="simpleIsActive" style="cursor: pointer">Active Status</label>
             </div>
           </div>
         </form>
@@ -194,7 +293,7 @@
           <button type="button" class="btn-ghost" (click)="showSimpleModal = false">Cancel</button>
           <button type="button" class="btn-primary" [disabled]="submitting" (click)="submitSimple()">
             @if (submitting) {
-              <span class="spinner btn-spinner" style="width: 14px; height: 14px;"></span>
+              <span class="spinner btn-spinner" style="width: 14px; height: 14px"></span>
               <span>Saving...</span>
             } @else {
               <span>Save Entry</span>
@@ -213,40 +312,62 @@
           <h3 class="panel-title">{{ mgaModalTitle }}</h3>
           <button class="panel-close" (click)="showMgaModal = false" aria-label="Close modal">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-              <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6" y1="6" x2="18" y2="18" />
             </svg>
           </button>
         </div>
 
-        <form (submit)="submitMga()" class="panel-body" style="max-height: calc(100vh - 200px); overflow-y: auto;">
+        <form (submit)="submitMga()" class="panel-body" style="max-height: calc(100vh - 200px); overflow-y: auto">
           <!-- Names Info -->
-          <div class="form-section-title" style="margin-top: 0;">Names Info</div>
+          <div class="form-section-title" style="margin-top: 0">Names Info</div>
           <div class="form-row">
             <div class="form-field">
               <label class="form-label">Company ID</label>
-              <input [(ngModel)]="mgaForm.company_id" name="companyId" type="number" placeholder="e.g. 597" class="form-input">
+              <input
+                [(ngModel)]="mgaForm.company_id"
+                name="companyId"
+                type="number"
+                placeholder="e.g. 597"
+                class="form-input"
+              />
             </div>
             <div class="form-field">
               <label class="form-label">ID Name</label>
-              <input [(ngModel)]="mgaForm.id_name" name="idName" type="text" placeholder="ID Name" class="form-input">
+              <input [(ngModel)]="mgaForm.id_name" name="idName" type="text" placeholder="ID Name" class="form-input" />
             </div>
             <div class="form-field">
               <label class="form-label">Name *</label>
-              <input [(ngModel)]="mgaForm.name" name="mgaName" type="text" required placeholder="e.g. Southlake Underwriters" class="form-input">
+              <input
+                [(ngModel)]="mgaForm.name"
+                name="mgaName"
+                type="text"
+                required
+                placeholder="e.g. Southlake Underwriters"
+                class="form-input"
+              />
             </div>
           </div>
           <div class="form-row">
             <div class="form-field">
               <label class="form-label">MGA Code *</label>
-              <input [(ngModel)]="mgaForm.mga_code" name="mgaCode" type="text" required placeholder="e.g. MGA-100" [disabled]="isEditMode" class="form-input">
+              <input
+                [(ngModel)]="mgaForm.mga_code"
+                name="mgaCode"
+                type="text"
+                required
+                placeholder="e.g. MGA-100"
+                [disabled]="isEditMode"
+                class="form-input"
+              />
             </div>
-            <div class="form-field" style="flex: 2;"></div>
+            <div class="form-field" style="flex: 2"></div>
           </div>
 
           <!-- Other Names -->
           <div class="form-section-title">Other Names</div>
           @for (row of mgaForm.other_names; track $index) {
-            <div class="form-row" style="align-items: flex-end; margin-bottom: 12px;">
+            <div class="form-row" style="align-items: flex-end; margin-bottom: 12px">
               <div class="form-field">
                 <label class="form-label">State</label>
                 <app-dropdown-search
@@ -260,36 +381,53 @@
               </div>
               <div class="form-field">
                 <label class="form-label">Display Name</label>
-                <input [(ngModel)]="row.displayName" name="otherDisplayName_{{$index}}" type="text" placeholder="Display Name" class="form-input">
+                <input
+                  [(ngModel)]="row.displayName"
+                  name="otherDisplayName_{{ $index }}"
+                  type="text"
+                  placeholder="Display Name"
+                  class="form-input"
+                />
               </div>
-              <div style="padding-bottom: 2px;">
-                <button type="button" class="btn-action-outline btn-action-danger-outline" (click)="removeOtherNameRow($index)" style="height: 38px;">
+              <div style="padding-bottom: 2px">
+                <button
+                  type="button"
+                  class="btn-action-outline btn-action-danger-outline"
+                  (click)="removeOtherNameRow($index)"
+                  style="height: 38px"
+                >
                   Remove
                 </button>
               </div>
             </div>
           }
-          <div style="margin-bottom: 16px;">
+          <div style="margin-bottom: 16px">
             <button type="button" class="btn-action-outline" (click)="addOtherNameRow()">+ Add Other Name</button>
           </div>
 
           <!-- Addresses & Other -->
           <div class="form-section-title">Addresses & Other</div>
           <div class="form-row">
-            <div class="form-field" style="flex: 2;">
+            <div class="form-field" style="flex: 2">
               <label class="form-label">Address</label>
-              <input [(ngModel)]="mgaForm.address" name="address" type="text" placeholder="123 Main St" class="form-input">
+              <input
+                [(ngModel)]="mgaForm.address"
+                name="address"
+                type="text"
+                placeholder="123 Main St"
+                class="form-input"
+              />
             </div>
             <div class="form-field">
               <label class="form-label">Zip</label>
-              <input [(ngModel)]="mgaForm.zip" name="zip" type="text" placeholder="12345" class="form-input">
+              <input [(ngModel)]="mgaForm.zip" name="zip" type="text" placeholder="12345" class="form-input" />
             </div>
           </div>
 
           <div class="form-row">
             <div class="form-field">
               <label class="form-label">City</label>
-              <input [(ngModel)]="mgaForm.city" name="city" type="text" placeholder="City" class="form-input">
+              <input [(ngModel)]="mgaForm.city" name="city" type="text" placeholder="City" class="form-input" />
             </div>
             <div class="form-field">
               <label class="form-label">State</label>
@@ -304,7 +442,7 @@
             </div>
             <div class="form-field">
               <label class="form-label">Phone</label>
-              <input [(ngModel)]="mgaForm.phone" name="phone" type="text" placeholder="555-0199" class="form-input">
+              <input [(ngModel)]="mgaForm.phone" name="phone" type="text" placeholder="555-0199" class="form-input" />
             </div>
           </div>
 
@@ -313,10 +451,22 @@
               <label class="form-label">Tax Payable Inhouse</label>
               <div class="radio-group">
                 <label>
-                  <input type="radio" [value]="true" [(ngModel)]="mgaForm.tax_payable_inhouse" name="taxPayableInhouse"> Yes
+                  <input
+                    type="radio"
+                    [value]="true"
+                    [(ngModel)]="mgaForm.tax_payable_inhouse"
+                    name="taxPayableInhouse"
+                  />
+                  Yes
                 </label>
                 <label>
-                  <input type="radio" [value]="false" [(ngModel)]="mgaForm.tax_payable_inhouse" name="taxPayableInhouse"> No
+                  <input
+                    type="radio"
+                    [value]="false"
+                    [(ngModel)]="mgaForm.tax_payable_inhouse"
+                    name="taxPayableInhouse"
+                  />
+                  No
                 </label>
               </div>
             </div>
@@ -324,24 +474,26 @@
               <label class="form-label">Open Item</label>
               <div class="radio-group">
                 <label>
-                  <input type="radio" [value]="true" [(ngModel)]="mgaForm.open_item" name="openItem"> Yes
+                  <input type="radio" [value]="true" [(ngModel)]="mgaForm.open_item" name="openItem" />
+                  Yes
                 </label>
                 <label>
-                  <input type="radio" [value]="false" [(ngModel)]="mgaForm.open_item" name="openItem"> No
+                  <input type="radio" [value]="false" [(ngModel)]="mgaForm.open_item" name="openItem" />
+                  No
                 </label>
               </div>
             </div>
             <div class="form-field">
               <label class="form-label">Op Start Date</label>
-              <input [(ngModel)]="mgaForm.op_start_date" name="opStartDate" type="date" class="form-input">
+              <input [(ngModel)]="mgaForm.op_start_date" name="opStartDate" type="date" class="form-input" />
             </div>
           </div>
 
           <div class="form-row">
             <div class="form-field">
-              <div class="form-checkbox-field" style="margin-top: 28px;">
-                <input [(ngModel)]="mgaForm.is_active" name="isActive" type="checkbox" id="mgaIsActive">
-                <label for="mgaIsActive" style="cursor: pointer;">Active Status</label>
+              <div class="form-checkbox-field" style="margin-top: 28px">
+                <input [(ngModel)]="mgaForm.is_active" name="isActive" type="checkbox" id="mgaIsActive" />
+                <label for="mgaIsActive" style="cursor: pointer">Active Status</label>
               </div>
             </div>
             <div class="form-field"></div>
@@ -353,7 +505,7 @@
           <button type="button" class="btn-ghost" (click)="showMgaModal = false">Cancel</button>
           <button type="button" class="btn-primary" [disabled]="submitting" (click)="submitMga()">
             @if (submitting) {
-              <span class="spinner btn-spinner" style="width: 14px; height: 14px;"></span>
+              <span class="spinner btn-spinner" style="width: 14px; height: 14px"></span>
               <span>Saving...</span>
             } @else {
               <span>Save MGA</span>
@@ -372,7 +524,8 @@
           <h3 class="panel-title">{{ stateModalTitle }}</h3>
           <button class="panel-close" (click)="showStateModal = false" aria-label="Close modal">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-              <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6" y1="6" x2="18" y2="18" />
             </svg>
           </button>
         </div>
@@ -381,32 +534,62 @@
           <div class="form-row">
             <div class="form-field">
               <label class="form-label">State Code (Numeric) *</label>
-               <input [(ngModel)]="stateForm.state_code" name="stateCode" type="number" required placeholder="e.g. 48" [disabled]="isEditMode" class="form-input">
+              <input
+                [(ngModel)]="stateForm.state_code"
+                name="stateCode"
+                type="number"
+                required
+                placeholder="e.g. 48"
+                [disabled]="isEditMode"
+                class="form-input"
+              />
             </div>
             <div class="form-field">
               <label class="form-label">State Abbr (2 Letters) *</label>
-              <input [(ngModel)]="stateForm.state_abbr" name="stateAbbr" type="text" maxlength="2" required placeholder="e.g. TX" [disabled]="isEditMode" class="form-input">
+              <input
+                [(ngModel)]="stateForm.state_abbr"
+                name="stateAbbr"
+                type="text"
+                maxlength="2"
+                required
+                placeholder="e.g. TX"
+                [disabled]="isEditMode"
+                class="form-input"
+              />
             </div>
           </div>
 
-          <div class="form-row" style="margin-top: 8px;">
+          <div class="form-row" style="margin-top: 8px">
             <div class="form-field">
               <label class="form-label">State Name *</label>
-              <input [(ngModel)]="stateForm.name" name="stateName" type="text" required placeholder="e.g. Texas" class="form-input">
+              <input
+                [(ngModel)]="stateForm.name"
+                name="stateName"
+                type="text"
+                required
+                placeholder="e.g. Texas"
+                class="form-input"
+              />
             </div>
           </div>
 
-          <div class="form-row" style="margin-top: 8px;">
-            <div class="form-field" style="flex: 1;">
+          <div class="form-row" style="margin-top: 8px">
+            <div class="form-field" style="flex: 1">
               <label class="form-label">Notes</label>
-              <textarea [(ngModel)]="stateForm.notes" name="notes" placeholder="Enter notes here..." class="form-input" style="height: 80px; resize: vertical;"></textarea>
+              <textarea
+                [(ngModel)]="stateForm.notes"
+                name="notes"
+                placeholder="Enter notes here..."
+                class="form-input"
+                style="height: 80px; resize: vertical"
+              ></textarea>
             </div>
           </div>
 
-          <div class="form-field" style="margin-top: 8px;">
+          <div class="form-field" style="margin-top: 8px">
             <div class="form-checkbox-field">
-              <input [(ngModel)]="stateForm.is_active" name="isActive" type="checkbox" id="stateIsActive">
-              <label for="stateIsActive" style="cursor: pointer;">Active Status</label>
+              <input [(ngModel)]="stateForm.is_active" name="isActive" type="checkbox" id="stateIsActive" />
+              <label for="stateIsActive" style="cursor: pointer">Active Status</label>
             </div>
           </div>
         </form>
@@ -415,7 +598,7 @@
           <button type="button" class="btn-ghost" (click)="showStateModal = false">Cancel</button>
           <button type="button" class="btn-primary" [disabled]="submitting" (click)="submitState()">
             @if (submitting) {
-              <span class="spinner btn-spinner" style="width: 14px; height: 14px;"></span>
+              <span class="spinner btn-spinner" style="width: 14px; height: 14px"></span>
               <span>Saving...</span>
             } @else {
               <span>Save State</span>
@@ -434,43 +617,74 @@
           <h3 class="panel-title">{{ riskCompanyModalTitle }}</h3>
           <button class="panel-close" (click)="showRiskCompanyModal = false" aria-label="Close modal">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-               <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6" y1="6" x2="18" y2="18" />
             </svg>
           </button>
         </div>
- 
-        <form (submit)="submitRiskCompany()" class="panel-body" style="max-height: calc(100vh - 200px); overflow-y: auto;">
+
+        <form
+          (submit)="submitRiskCompany()"
+          class="panel-body"
+          style="max-height: calc(100vh - 200px); overflow-y: auto"
+        >
           <!-- Names Info -->
-          <div class="form-section-title" style="margin-top: 0;">Names Info</div>
+          <div class="form-section-title" style="margin-top: 0">Names Info</div>
           <div class="form-row">
             <div class="form-field">
               <label class="form-label">Company ID</label>
-              <input [(ngModel)]="riskCompanyForm.company_id" name="companyId" type="number" placeholder="e.g. 283" class="form-input" [disabled]="isEditMode">
+              <input
+                [(ngModel)]="riskCompanyForm.company_id"
+                name="companyId"
+                type="number"
+                placeholder="e.g. 283"
+                class="form-input"
+                [disabled]="isEditMode"
+              />
             </div>
             <div class="form-field">
               <label class="form-label">ID Name</label>
-              <input [(ngModel)]="riskCompanyForm.id_name" name="idName" type="text" placeholder="ID Name" class="form-input">
+              <input
+                [(ngModel)]="riskCompanyForm.id_name"
+                name="idName"
+                type="text"
+                placeholder="ID Name"
+                class="form-input"
+              />
             </div>
             <div class="form-field">
               <label class="form-label">Name *</label>
-              <input [(ngModel)]="riskCompanyForm.name" name="name" type="text" required placeholder="Name" class="form-input">
+              <input
+                [(ngModel)]="riskCompanyForm.name"
+                name="name"
+                type="text"
+                required
+                placeholder="Name"
+                class="form-input"
+              />
             </div>
           </div>
- 
+
           <!-- Addresses & Other -->
           <div class="form-section-title">Addresses & Other</div>
           <div class="form-row">
             <div class="form-field">
               <label class="form-label">Address 1</label>
-              <input [(ngModel)]="riskCompanyForm.address" name="address" type="text" placeholder="Address 1" class="form-input">
+              <input
+                [(ngModel)]="riskCompanyForm.address"
+                name="address"
+                type="text"
+                placeholder="Address 1"
+                class="form-input"
+              />
             </div>
             <div class="form-field">
               <label class="form-label">Zip</label>
-              <input [(ngModel)]="riskCompanyForm.zip" name="zip" type="text" placeholder="Zip" class="form-input">
+              <input [(ngModel)]="riskCompanyForm.zip" name="zip" type="text" placeholder="Zip" class="form-input" />
             </div>
             <div class="form-field">
               <label class="form-label">City</label>
-              <input [(ngModel)]="riskCompanyForm.city" name="city" type="text" placeholder="City" class="form-input">
+              <input [(ngModel)]="riskCompanyForm.city" name="city" type="text" placeholder="City" class="form-input" />
             </div>
             <div class="form-field">
               <label class="form-label">State</label>
@@ -484,31 +698,39 @@
               ></app-dropdown-search>
             </div>
           </div>
- 
-          <div class="form-row" style="margin-top: 8px;">
+
+          <div class="form-row" style="margin-top: 8px">
             <div class="form-field">
               <label class="form-label">Phone</label>
-              <input [(ngModel)]="riskCompanyForm.phone" name="phone" type="text" placeholder="Phone" class="form-input">
+              <input
+                [(ngModel)]="riskCompanyForm.phone"
+                name="phone"
+                type="text"
+                placeholder="Phone"
+                class="form-input"
+              />
             </div>
             <div class="form-field">
               <label class="form-label">Admitted</label>
               <div class="radio-group">
                 <label>
-                  <input type="radio" [value]="true" [(ngModel)]="riskCompanyForm.is_admitted" name="isAdmitted"> Yes
+                  <input type="radio" [value]="true" [(ngModel)]="riskCompanyForm.is_admitted" name="isAdmitted" />
+                  Yes
                 </label>
                 <label>
-                  <input type="radio" [value]="false" [(ngModel)]="riskCompanyForm.is_admitted" name="isAdmitted"> No
+                  <input type="radio" [value]="false" [(ngModel)]="riskCompanyForm.is_admitted" name="isAdmitted" />
+                  No
                 </label>
               </div>
             </div>
           </div>
         </form>
- 
+
         <div class="panel-footer">
           <button type="button" class="btn-ghost" (click)="showRiskCompanyModal = false">Cancel</button>
           <button type="button" class="btn-primary" [disabled]="submitting" (click)="submitRiskCompany()">
             @if (submitting) {
-              <span class="spinner btn-spinner" style="width: 14px; height: 14px;"></span>
+              <span class="spinner btn-spinner" style="width: 14px; height: 14px"></span>
               <span>Saving...</span>
             } @else {
               <span>Save Risk Company</span>
@@ -527,11 +749,22 @@
           <h3 class="panel-title">{{ notesModalTitle }}</h3>
           <button class="panel-close" (click)="showNotesModal = false" aria-label="Close modal">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-              <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6" y1="6" x2="18" y2="18" />
             </svg>
           </button>
         </div>
-        <div class="panel-body" style="white-space: pre-wrap; font-size: 14px; color: var(--gray-700); line-height: 1.6; max-height: 50vh; overflow-y: auto;">
+        <div
+          class="panel-body"
+          style="
+            white-space: pre-wrap;
+            font-size: 14px;
+            color: var(--gray-700);
+            line-height: 1.6;
+            max-height: 50vh;
+            overflow-y: auto;
+          "
+        >
           {{ notesModalText }}
         </div>
         <div class="panel-footer">
@@ -548,37 +781,61 @@
         <div class="panel-header">
           <div>
             <h3 class="panel-title">Attachment Documents</h3>
-            <p class="panel-subtitle" style="font-size: 12px; margin-top: 2px;">
-              Attachments for: {{ selectedItem?.mga_code || selectedItem?.state_abbr || selectedItem?.risk_company_id }} - {{ selectedItem?.name }}
+            <p class="panel-subtitle" style="font-size: 12px; margin-top: 2px">
+              Attachments for:
+              {{ selectedItem?.mga_code || selectedItem?.state_abbr || selectedItem?.risk_company_id }} -
+              {{ selectedItem?.name }}
             </p>
           </div>
           <button class="panel-close" (click)="showDocModal = false" aria-label="Close modal">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-              <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6" y1="6" x2="18" y2="18" />
             </svg>
           </button>
         </div>
 
         <div class="panel-body">
           <div class="upload-section">
-            <span class="upload-label" style="font-weight: 600; color: var(--gray-700);">Attach File</span>
+            <span class="upload-label" style="font-weight: 600; color: var(--gray-700)">Attach File</span>
             <label class="btn-primary upload-btn">
               @if (uploadingDoc) {
-                <span class="spinner btn-spinner" style="width: 12px; height: 12px; margin-right: 6px;"></span>
+                <span class="spinner btn-spinner" style="width: 12px; height: 12px; margin-right: 6px"></span>
                 <span>Uploading...</span>
               } @else {
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-right: 6px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2.5"
+                  style="margin-right: 6px"
+                >
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                  <polyline points="17 8 12 3 7 8" />
+                  <line x1="12" y1="3" x2="12" y2="15" />
+                </svg>
                 <span>Upload File</span>
               }
-              <input type="file" [disabled]="uploadingDoc" (change)="onFileSelected($event)" style="display: none;">
+              <input type="file" [disabled]="uploadingDoc" (change)="onFileSelected($event)" style="display: none" />
             </label>
           </div>
 
           <div class="documents-list">
             @if (documentsList.length === 0) {
               <div class="empty-docs">
-                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--gray-400)" stroke-width="1.5" style="margin-bottom: 8px;">
-                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>
+                <svg
+                  width="32"
+                  height="32"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="var(--gray-400)"
+                  stroke-width="1.5"
+                  style="margin-bottom: 8px"
+                >
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                  <polyline points="14 2 14 8 20 8" />
                 </svg>
                 <p>No documents uploaded yet.</p>
               </div>
@@ -586,17 +843,34 @@
               @for (doc of documentsList; track doc.id) {
                 <div class="doc-item">
                   <div class="doc-info">
-                     <svg class="doc-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>
+                    <svg
+                      class="doc-icon"
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                    >
+                      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                      <polyline points="14 2 14 8 20 8" />
                     </svg>
                     <div class="doc-meta">
                       <span class="doc-name" [title]="doc.file_name">{{ doc.file_name }}</span>
-                      <span class="doc-date">Uploaded {{ doc.uploaded_at | date:'short' }}</span>
+                      <span class="doc-date">Uploaded {{ doc.uploaded_at | date: "short" }}</span>
                     </div>
                   </div>
                   <div class="action-buttons-list">
-                    <button (click)="downloadDoc(doc)" class="btn-action-outline" style="height: 26px; padding: 0 8px;">Download</button>
-                    <button (click)="deleteDoc(doc)" class="btn-action-outline btn-action-danger-outline" style="height: 26px; padding: 0 8px;">Delete</button>
+                    <button (click)="downloadDoc(doc)" class="btn-action-outline" style="height: 26px; padding: 0 8px">
+                      Download
+                    </button>
+                    <button
+                      (click)="deleteDoc(doc)"
+                      class="btn-action-outline btn-action-danger-outline"
+                      style="height: 26px; padding: 0 8px"
+                    >
+                      Delete
+                    </button>
                   </div>
                 </div>
               }
@@ -613,94 +887,214 @@
   <!-- TREATY CREATE / EDIT MODAL -->
   @if (showTreatyModal) {
     <div class="modal-overlay" (click)="showTreatyModal = false">
-      <div class="modal-box coa-modal treaty-modal" style="max-width: 800px !important;" (click)="$event.stopPropagation()">
+      <div
+        class="modal-box coa-modal treaty-modal"
+        style="max-width: 800px !important"
+        (click)="$event.stopPropagation()"
+      >
         <div class="panel-header">
           <h3 class="panel-title">{{ treatyModalTitle }}</h3>
           <button class="panel-close" (click)="showTreatyModal = false" aria-label="Close modal">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-              <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6" y1="6" x2="18" y2="18" />
             </svg>
           </button>
         </div>
 
-        <form (submit)="submitTreaty()" class="panel-body" style="max-height: 70vh; overflow-y: auto;">
-          <h4 style="margin: 0 0 12px 0; color: var(--navy); font-weight: 700; font-size: 14px; border-bottom: 1.5px solid var(--gray-200); padding-bottom: 6px;">
+        <form (submit)="submitTreaty()" class="panel-body" style="max-height: 70vh; overflow-y: auto">
+          <h4
+            style="
+              margin: 0 0 12px 0;
+              color: var(--navy);
+              font-weight: 700;
+              font-size: 14px;
+              border-bottom: 1.5px solid var(--gray-200);
+              padding-bottom: 6px;
+            "
+          >
             Basic Details
           </h4>
 
           <div class="form-row">
             <div class="form-field">
               <label class="form-label">Treaty Code *</label>
-              <input [(ngModel)]="treatyForm.treaty_code" name="treatyCode" type="text" required placeholder="e.g. TR-100" [disabled]="isEditMode" class="form-input">
+              <input
+                [(ngModel)]="treatyForm.treaty_code"
+                name="treatyCode"
+                type="text"
+                required
+                placeholder="e.g. TR-100"
+                [disabled]="isEditMode"
+                class="form-input"
+              />
             </div>
             <div class="form-field">
               <label class="form-label">Treaty Name *</label>
-              <input [(ngModel)]="treatyForm.name" name="treatyName" type="text" required placeholder="e.g. Casualty Quota Share" class="form-input">
+              <input
+                [(ngModel)]="treatyForm.name"
+                name="treatyName"
+                type="text"
+                required
+                placeholder="e.g. Casualty Quota Share"
+                class="form-input"
+              />
             </div>
           </div>
 
-          <h4 style="margin: 16px 0 12px 0; color: var(--navy); font-weight: 700; font-size: 14px; border-bottom: 1.5px solid var(--gray-200); padding-bottom: 6px; display: flex; justify-content: space-between; align-items: center;">
+          <h4
+            style="
+              margin: 16px 0 12px 0;
+              color: var(--navy);
+              font-weight: 700;
+              font-size: 14px;
+              border-bottom: 1.5px solid var(--gray-200);
+              padding-bottom: 6px;
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+            "
+          >
             <span>Carrier Companies (Risk Companies) & Retention %</span>
-            <button type="button" class="btn btn-sm btn-primary" (click)="addCarrierRow()" style="font-size: 11px; padding: 4px 8px;">+ Add Carrier</button>
+            <button
+              type="button"
+              class="btn btn-sm btn-primary"
+              (click)="addCarrierRow()"
+              style="font-size: 11px; padding: 4px 8px"
+            >
+              + Add Carrier
+            </button>
           </h4>
 
-          <div *ngFor="let carrier of treatyForm.carriers; let i = index" class="form-row" style="align-items: flex-end; margin-bottom: 8px;">
-            <div class="form-field" style="flex: 2;">
-              <label class="form-label" *ngIf="i === 0">Carrier Company</label>
-              <app-dropdown-search
-                [items]="riskCompanyOptions"
-                [isMultiSelect]="false"
-                bindValue="id"
-                placeholder="Select Carrier"
-                [itemLabelFn]="riskCompanyLabelFn"
-                [(selectedValue)]="carrier.risk_company_id"
-              ></app-dropdown-search>
+          @for (carrier of treatyForm.carriers; track $index; let i = $index) {
+            <div class="form-row" style="align-items: flex-end; margin-bottom: 8px">
+              <div class="form-field" style="flex: 2">
+                @if (i === 0) {
+                  <label class="form-label">Carrier Company</label>
+                }
+                <app-dropdown-search
+                  [items]="riskCompanyOptions"
+                  [isMultiSelect]="false"
+                  bindValue="id"
+                  placeholder="Select Carrier"
+                  [itemLabelFn]="riskCompanyLabelFn"
+                  [(selectedValue)]="carrier.risk_company_id"
+                ></app-dropdown-search>
+              </div>
+              <div class="form-field" style="flex: 1">
+                @if (i === 0) {
+                  <label class="form-label">Retention %</label>
+                }
+                <input
+                  [(ngModel)]="carrier.retention_pct"
+                  [name]="'carrierRet_' + i"
+                  type="number"
+                  step="0.01"
+                  class="form-input"
+                  placeholder="100.00"
+                />
+              </div>
+              <div style="margin-left: 8px; margin-bottom: 4px">
+                <button
+                  type="button"
+                  class="btn btn-danger"
+                  (click)="removeCarrierRow(i)"
+                  style="padding: 6px 10px; font-size: 12px; height: 38px"
+                >
+                  ✕
+                </button>
+              </div>
             </div>
-            <div class="form-field" style="flex: 1;">
-              <label class="form-label" *ngIf="i === 0">Retention %</label>
-              <input [(ngModel)]="carrier.retention_pct" [name]="'carrierRet_' + i" type="number" step="0.01" class="form-input" placeholder="100.00">
+          }
+          @if (!treatyForm.carriers || treatyForm.carriers.length === 0) {
+            <div style="color: var(--gray-500); font-size: 12px; margin-bottom: 12px; font-style: italic">
+              No carriers added yet. Click "+ Add Carrier" to define a carrier retention split.
             </div>
-            <div style="margin-left: 8px; margin-bottom: 4px;">
-              <button type="button" class="btn btn-danger" (click)="removeCarrierRow(i)" style="padding: 6px 10px; font-size: 12px; height: 38px;">✕</button>
-            </div>
-          </div>
-          <div *ngIf="!treatyForm.carriers || treatyForm.carriers.length === 0" style="color: var(--gray-500); font-size: 12px; margin-bottom: 12px; font-style: italic;">
-            No carriers added yet. Click "+ Add Carrier" to define a carrier retention split.
-          </div>
+          }
 
-          <h4 style="margin: 16px 0 12px 0; color: var(--navy); font-weight: 700; font-size: 14px; border-bottom: 1.5px solid var(--gray-200); padding-bottom: 6px; display: flex; justify-content: space-between; align-items: center;">
+          <h4
+            style="
+              margin: 16px 0 12px 0;
+              color: var(--navy);
+              font-weight: 700;
+              font-size: 14px;
+              border-bottom: 1.5px solid var(--gray-200);
+              padding-bottom: 6px;
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+            "
+          >
             <span>Reinsurer Companies & Cession %</span>
-            <button type="button" class="btn btn-sm btn-primary" (click)="addReinsurerRow()" style="font-size: 11px; padding: 4px 8px;">+ Add Reinsurer</button>
+            <button
+              type="button"
+              class="btn btn-sm btn-primary"
+              (click)="addReinsurerRow()"
+              style="font-size: 11px; padding: 4px 8px"
+            >
+              + Add Reinsurer
+            </button>
           </h4>
 
-          <div *ngFor="let reinsurer of treatyForm.reinsurers; let i = index" class="form-row" style="align-items: flex-end; margin-bottom: 8px;">
-            <div class="form-field" style="flex: 2;">
-              <label class="form-label" *ngIf="i === 0">Reinsurer Company</label>
-              <app-dropdown-search
-                [items]="reinsurerOptions"
-                [isMultiSelect]="false"
-                bindValue="id"
-                placeholder="Select Reinsurer"
-                [itemLabelFn]="reinsurerLabelFn"
-                [(selectedValue)]="reinsurer.reinsurer_id"
-              ></app-dropdown-search>
+          @for (reinsurer of treatyForm.reinsurers; track $index; let i = $index) {
+            <div class="form-row" style="align-items: flex-end; margin-bottom: 8px">
+              <div class="form-field" style="flex: 2">
+                @if (i === 0) {
+                  <label class="form-label">Reinsurer Company</label>
+                }
+                <app-dropdown-search
+                  [items]="reinsurerOptions"
+                  [isMultiSelect]="false"
+                  bindValue="id"
+                  placeholder="Select Reinsurer"
+                  [itemLabelFn]="reinsurerLabelFn"
+                  [(selectedValue)]="reinsurer.reinsurer_id"
+                ></app-dropdown-search>
+              </div>
+              <div class="form-field" style="flex: 1">
+                @if (i === 0) {
+                  <label class="form-label">Cession %</label>
+                }
+                <input
+                  [(ngModel)]="reinsurer.cession_pct"
+                  [name]="'reinsurerCes_' + i"
+                  type="number"
+                  step="0.01"
+                  class="form-input"
+                  placeholder="0.00"
+                />
+              </div>
+              <div style="margin-left: 8px; margin-bottom: 4px">
+                <button
+                  type="button"
+                  class="btn btn-danger"
+                  (click)="removeReinsurerRow(i)"
+                  style="padding: 6px 10px; font-size: 12px; height: 38px"
+                >
+                  ✕
+                </button>
+              </div>
             </div>
-            <div class="form-field" style="flex: 1;">
-              <label class="form-label" *ngIf="i === 0">Cession %</label>
-              <input [(ngModel)]="reinsurer.cession_pct" [name]="'reinsurerCes_' + i" type="number" step="0.01" class="form-input" placeholder="0.00">
+          }
+          @if (!treatyForm.reinsurers || treatyForm.reinsurers.length === 0) {
+            <div style="color: var(--gray-500); font-size: 12px; margin-bottom: 12px; font-style: italic">
+              No reinsurers added yet. Click "+ Add Reinsurer" to define a reinsurer cession split.
             </div>
-            <div style="margin-left: 8px; margin-bottom: 4px;">
-              <button type="button" class="btn btn-danger" (click)="removeReinsurerRow(i)" style="padding: 6px 10px; font-size: 12px; height: 38px;">✕</button>
-            </div>
-          </div>
-          <div *ngIf="!treatyForm.reinsurers || treatyForm.reinsurers.length === 0" style="color: var(--gray-500); font-size: 12px; margin-bottom: 12px; font-style: italic;">
-            No reinsurers added yet. Click "+ Add Reinsurer" to define a reinsurer cession split.
-          </div>
+          }
 
-          <h4 style="margin: 16px 0 12px 0; color: var(--navy); font-weight: 700; font-size: 14px; border-bottom: 1.5px solid var(--gray-200); padding-bottom: 6px;">
+          <h4
+            style="
+              margin: 16px 0 12px 0;
+              color: var(--navy);
+              font-weight: 700;
+              font-size: 14px;
+              border-bottom: 1.5px solid var(--gray-200);
+              padding-bottom: 6px;
+            "
+          >
             Authorized MGA Underwriter *
           </h4>
-          <div style="margin-bottom: 16px;">
+          <div style="margin-bottom: 16px">
             <app-dropdown-search
               [items]="mgaOptions"
               [isMultiSelect]="false"
@@ -715,87 +1109,173 @@
           <div class="form-row">
             <div class="form-field">
               <label class="form-label">Effective Date</label>
-              <input [(ngModel)]="treatyForm.effective_date" name="effDate" type="date" class="form-input">
+              <input [(ngModel)]="treatyForm.effective_date" name="effDate" type="date" class="form-input" />
             </div>
             <div class="form-field">
               <label class="form-label">Expiration Date (Blank = Open)</label>
-              <input [(ngModel)]="treatyForm.expiration_date" name="expDate" type="date" class="form-input">
+              <input [(ngModel)]="treatyForm.expiration_date" name="expDate" type="date" class="form-input" />
             </div>
-            <div class="form-field" style="display: flex; align-items: flex-end; padding-bottom: 8px;">
+            <div class="form-field" style="display: flex; align-items: flex-end; padding-bottom: 8px">
               <div class="form-checkbox-field">
-                <input [(ngModel)]="treatyForm.is_active" name="isActive" type="checkbox" id="treatyIsActive">
-                <label for="treatyIsActive" style="cursor: pointer;">Active Status</label>
+                <input [(ngModel)]="treatyForm.is_active" name="isActive" type="checkbox" id="treatyIsActive" />
+                <label for="treatyIsActive" style="cursor: pointer">Active Status</label>
               </div>
             </div>
           </div>
 
-          <h4 style="margin: 16px 0 12px 0; color: var(--navy); font-weight: 700; font-size: 14px; border-bottom: 1.5px solid var(--gray-200); padding-bottom: 6px;">
+          <h4
+            style="
+              margin: 16px 0 12px 0;
+              color: var(--navy);
+              font-weight: 700;
+              font-size: 14px;
+              border-bottom: 1.5px solid var(--gray-200);
+              padding-bottom: 6px;
+            "
+          >
             Treaty Terms (Percentages)
           </h4>
 
           <div class="form-row">
             <div class="form-field">
               <label class="form-label">Quota Share (QS) %</label>
-              <input [(ngModel)]="treatyForm.qs_pct" name="qsPct" type="number" step="0.01" class="form-input" placeholder="0.00">
+              <input
+                [(ngModel)]="treatyForm.qs_pct"
+                name="qsPct"
+                type="number"
+                step="0.01"
+                class="form-input"
+                placeholder="0.00"
+              />
             </div>
             <div class="form-field">
               <label class="form-label">CF %</label>
-              <input [(ngModel)]="treatyForm.cf_pct" name="cfPct" type="number" step="0.01" class="form-input" placeholder="0.00">
+              <input
+                [(ngModel)]="treatyForm.cf_pct"
+                name="cfPct"
+                type="number"
+                step="0.01"
+                class="form-input"
+                placeholder="0.00"
+              />
             </div>
             <div class="form-field">
               <label class="form-label">Commission %</label>
-              <input [(ngModel)]="treatyForm.comm_pct" name="commPct" type="number" step="0.01" class="form-input" placeholder="0.00">
+              <input
+                [(ngModel)]="treatyForm.comm_pct"
+                name="commPct"
+                type="number"
+                step="0.01"
+                class="form-input"
+                placeholder="0.00"
+              />
             </div>
             <div class="form-field">
               <label class="form-label">BB %</label>
-              <input [(ngModel)]="treatyForm.bb_pct" name="bbPct" type="number" step="0.01" class="form-input" placeholder="0.00">
+              <input
+                [(ngModel)]="treatyForm.bb_pct"
+                name="bbPct"
+                type="number"
+                step="0.01"
+                class="form-input"
+                placeholder="0.00"
+              />
             </div>
           </div>
 
           <div class="form-row">
             <div class="form-field">
               <label class="form-label">ULAE %</label>
-              <input [(ngModel)]="treatyForm.ulae_pct" name="ulaePct" type="number" step="0.01" class="form-input" placeholder="0.00">
+              <input
+                [(ngModel)]="treatyForm.ulae_pct"
+                name="ulaePct"
+                type="number"
+                step="0.01"
+                class="form-input"
+                placeholder="0.00"
+              />
             </div>
             <div class="form-field">
               <label class="form-label">XOL %</label>
-              <input [(ngModel)]="treatyForm.xol_pct" name="xolPct" type="number" step="0.01" class="form-input" placeholder="0.00">
+              <input
+                [(ngModel)]="treatyForm.xol_pct"
+                name="xolPct"
+                type="number"
+                step="0.01"
+                class="form-input"
+                placeholder="0.00"
+              />
             </div>
             <div class="form-field">
               <label class="form-label">LR Cap %</label>
-              <input [(ngModel)]="treatyForm.lr_cap_pct" name="lrCapPct" type="number" step="0.01" class="form-input" placeholder="0.00">
+              <input
+                [(ngModel)]="treatyForm.lr_cap_pct"
+                name="lrCapPct"
+                type="number"
+                step="0.01"
+                class="form-input"
+                placeholder="0.00"
+              />
             </div>
             <div class="form-field">
               <label class="form-label">Loss Pick %</label>
-              <input [(ngModel)]="treatyForm.ibnr_pct" name="ibnrPct" type="number" step="0.01" class="form-input" placeholder="0.00">
+              <input
+                [(ngModel)]="treatyForm.ibnr_pct"
+                name="ibnrPct"
+                type="number"
+                step="0.01"
+                class="form-input"
+                placeholder="0.00"
+              />
             </div>
           </div>
 
           <div class="form-row">
             <div class="form-field">
               <label class="form-label">LAE DCC %</label>
-              <input [(ngModel)]="treatyForm.lae_dcc_pct" name="laeDccPct" type="number" step="0.01" class="form-input" placeholder="0.00">
+              <input
+                [(ngModel)]="treatyForm.lae_dcc_pct"
+                name="laeDccPct"
+                type="number"
+                step="0.01"
+                class="form-input"
+                placeholder="0.00"
+              />
             </div>
             <div class="form-field">
               <label class="form-label">LAE AOE %</label>
-              <input [(ngModel)]="treatyForm.lae_aoe_pct" name="laeAoePct" type="number" step="0.01" class="form-input" placeholder="0.00">
+              <input
+                [(ngModel)]="treatyForm.lae_aoe_pct"
+                name="laeAoePct"
+                type="number"
+                step="0.01"
+                class="form-input"
+                placeholder="0.00"
+              />
             </div>
-            <div class="form-field" style="visibility: hidden;">
+            <div class="form-field" style="visibility: hidden">
               <label class="form-label">&nbsp;</label>
-              <input class="form-input">
+              <input class="form-input" />
             </div>
-            <div class="form-field" style="visibility: hidden;">
+            <div class="form-field" style="visibility: hidden">
               <label class="form-label">&nbsp;</label>
-              <input class="form-input">
+              <input class="form-input" />
             </div>
           </div>
 
-
-
-          <h4 style="margin: 16px 0 12px 0; color: var(--navy); font-weight: 700; font-size: 14px; border-bottom: 1.5px solid var(--gray-200); padding-bottom: 6px;">
+          <h4
+            style="
+              margin: 16px 0 12px 0;
+              color: var(--navy);
+              font-weight: 700;
+              font-size: 14px;
+              border-bottom: 1.5px solid var(--gray-200);
+              padding-bottom: 6px;
+            "
+          >
             Authorized Writing States
           </h4>
-          <div style="margin-bottom: 16px;">
+          <div style="margin-bottom: 16px">
             <app-dropdown-search
               [items]="stateOptions"
               [isMultiSelect]="true"
@@ -806,10 +1286,19 @@
             ></app-dropdown-search>
           </div>
 
-          <h4 style="margin: 16px 0 12px 0; color: var(--navy); font-weight: 700; font-size: 14px; border-bottom: 1.5px solid var(--gray-200); padding-bottom: 6px;">
+          <h4
+            style="
+              margin: 16px 0 12px 0;
+              color: var(--navy);
+              font-weight: 700;
+              font-size: 14px;
+              border-bottom: 1.5px solid var(--gray-200);
+              padding-bottom: 6px;
+            "
+          >
             Authorized Lines of Business (LOBs)
           </h4>
-          <div style="margin-bottom: 16px;">
+          <div style="margin-bottom: 16px">
             <app-dropdown-search
               [items]="lobOptions"
               [isMultiSelect]="true"
@@ -820,10 +1309,19 @@
             ></app-dropdown-search>
           </div>
 
-          <h4 style="margin: 16px 0 12px 0; color: var(--navy); font-weight: 700; font-size: 14px; border-bottom: 1.5px solid var(--gray-200); padding-bottom: 6px;">
+          <h4
+            style="
+              margin: 16px 0 12px 0;
+              color: var(--navy);
+              font-weight: 700;
+              font-size: 14px;
+              border-bottom: 1.5px solid var(--gray-200);
+              padding-bottom: 6px;
+            "
+          >
             Authorized Classes of Business (COBs)
           </h4>
-          <div style="margin-bottom: 16px;">
+          <div style="margin-bottom: 16px">
             <app-dropdown-search
               [items]="cobOptions"
               [isMultiSelect]="true"
@@ -839,7 +1337,7 @@
           <button type="button" class="btn-ghost" (click)="showTreatyModal = false">Cancel</button>
           <button type="button" class="btn-primary" [disabled]="submitting" (click)="submitTreaty()">
             @if (submitting) {
-              <span class="spinner btn-spinner" style="width: 14px; height: 14px;"></span>
+              <span class="spinner btn-spinner" style="width: 14px; height: 14px"></span>
               <span>Saving...</span>
             } @else {
               <span>Save Treaty</span>
@@ -853,18 +1351,27 @@
   <!-- Add ITD Manual Modal -->
   @if (showItdModal) {
     <div class="modal-overlay" (click)="showItdModal = false">
-      <div class="modal-box" (click)="$event.stopPropagation()" style="max-width: 900px; width: 90%; max-height: 90vh; display: flex; flex-direction: column;">
-        <div class="panel-header" style="flex-shrink: 0;">
+      <div
+        class="modal-box"
+        (click)="$event.stopPropagation()"
+        style="max-width: 900px; width: 90%; max-height: 90vh; display: flex; flex-direction: column"
+      >
+        <div class="panel-header" style="flex-shrink: 0">
           <h2>Add ITD Baseline for {{ itdForm.program }}</h2>
           <button class="btn-close" (click)="showItdModal = false">×</button>
         </div>
 
-        <div class="panel-body" style="overflow-y: auto; flex-grow: 1; padding: 20px;">
+        <div class="panel-body" style="overflow-y: auto; flex-grow: 1; padding: 20px">
           <!-- Select Month & Year -->
-          <div class="form-row" style="margin-bottom: 20px;">
+          <div class="form-row" style="margin-bottom: 20px">
             <div class="form-field">
               <label class="form-label">Select Month</label>
-              <select class="form-input" [(ngModel)]="itdSelectedMonth" (change)="onItdMonthYearChange()" style="height: 38px; padding: 4px 8px;">
+              <select
+                class="form-input"
+                [(ngModel)]="itdSelectedMonth"
+                (change)="onItdMonthYearChange()"
+                style="height: 38px; padding: 4px 8px"
+              >
                 @for (m of monthsList; track m.value) {
                   <option [value]="m.value">{{ m.label }}</option>
                 }
@@ -872,7 +1379,12 @@
             </div>
             <div class="form-field">
               <label class="form-label">Select Year</label>
-              <select class="form-input" [(ngModel)]="itdSelectedYear" (change)="onItdMonthYearChange()" style="height: 38px; padding: 4px 8px;">
+              <select
+                class="form-input"
+                [(ngModel)]="itdSelectedYear"
+                (change)="onItdMonthYearChange()"
+                style="height: 38px; padding: 4px 8px"
+              >
                 @for (y of yearsList; track y) {
                   <option [value]="y">{{ y }}</option>
                 }
@@ -881,27 +1393,40 @@
           </div>
 
           <!-- Month Key & Month Label -->
-          <div class="form-row" style="margin-bottom: 20px;">
+          <div class="form-row" style="margin-bottom: 20px">
             <div class="form-field">
               <label class="form-label">Month Key</label>
-              <input type="text" class="form-input" [(ngModel)]="itdForm.month_key" readonly>
+              <input type="text" class="form-input" [(ngModel)]="itdForm.month_key" readonly />
             </div>
             <div class="form-field">
               <label class="form-label">Month Label</label>
-              <input type="text" class="form-input" [(ngModel)]="itdForm.month_label" readonly>
+              <input type="text" class="form-input" [(ngModel)]="itdForm.month_label" readonly />
             </div>
           </div>
 
-
-
           <!-- State Exhibits section -->
-          <h4 style="margin: 24px 0 12px 0; color: var(--navy); font-weight: 700; font-size: 14px; border-bottom: 1.5px solid var(--gray-200); padding-bottom: 6px;">
+          <h4
+            style="
+              margin: 24px 0 12px 0;
+              color: var(--navy);
+              font-weight: 700;
+              font-size: 14px;
+              border-bottom: 1.5px solid var(--gray-200);
+              padding-bottom: 6px;
+            "
+          >
             Reporting States Data Baseline
           </h4>
 
-          <div style="display: flex; gap: 12px; margin-bottom: 20px; align-items: center;">
-            <label class="form-label" style="margin-bottom: 0; font-weight: 600; font-size: 13.5px; color: var(--navy);">Select State to Edit:</label>
-            <select class="form-input" [(ngModel)]="itdSelectedStateCode" style="max-width: 150px; height: 38px; padding: 4px 8px;">
+          <div style="display: flex; gap: 12px; margin-bottom: 20px; align-items: center">
+            <label class="form-label" style="margin-bottom: 0; font-weight: 600; font-size: 13.5px; color: var(--navy)">
+              Select State to Edit:
+            </label>
+            <select
+              class="form-input"
+              [(ngModel)]="itdSelectedStateCode"
+              style="max-width: 150px; height: 38px; padding: 4px 8px"
+            >
               @for (st of itdStatesList; track st.code) {
                 <option [value]="st.code">{{ st.label }}</option>
               }
@@ -913,31 +1438,47 @@
             <div class="form-row">
               <div class="form-field">
                 <label class="form-label">Unearned Premium Reserve</label>
-                <input type="number" class="form-input" [(ngModel)]="itdForm.exhibits[itdSelectedStateCode].uep">
+                <input type="number" class="form-input" [(ngModel)]="itdForm.exhibits[itdSelectedStateCode].uep" />
               </div>
               <div class="form-field">
                 <label class="form-label">Loss IBNR Reserves</label>
-                <input type="number" class="form-input" [(ngModel)]="itdForm.exhibits[itdSelectedStateCode].loss_ibnr">
+                <input
+                  type="number"
+                  class="form-input"
+                  [(ngModel)]="itdForm.exhibits[itdSelectedStateCode].loss_ibnr"
+                />
               </div>
             </div>
-            <div class="form-row" style="margin-bottom: 20px;">
+            <div class="form-row" style="margin-bottom: 20px">
               <div class="form-field">
                 <label class="form-label">LAE IBNR Reserves - DCC</label>
-                <input type="number" class="form-input" [(ngModel)]="itdForm.exhibits[itdSelectedStateCode].lae_ibnr_dcc">
+                <input
+                  type="number"
+                  class="form-input"
+                  [(ngModel)]="itdForm.exhibits[itdSelectedStateCode].lae_ibnr_dcc"
+                />
               </div>
               <div class="form-field">
                 <label class="form-label">LAE IBNR Reserves - AOE</label>
-                <input type="number" class="form-input" [(ngModel)]="itdForm.exhibits[itdSelectedStateCode].lae_ibnr_aoe">
+                <input
+                  type="number"
+                  class="form-input"
+                  [(ngModel)]="itdForm.exhibits[itdSelectedStateCode].lae_ibnr_aoe"
+                />
               </div>
               <div class="form-field">
                 <label class="form-label">ULAE IBNR Reserves</label>
-                <input type="number" class="form-input" [(ngModel)]="itdForm.exhibits[itdSelectedStateCode].ulae_ibnr">
+                <input
+                  type="number"
+                  class="form-input"
+                  [(ngModel)]="itdForm.exhibits[itdSelectedStateCode].ulae_ibnr"
+                />
               </div>
             </div>
           }
         </div>
 
-        <div class="panel-footer" style="flex-shrink: 0; border-top: 1px solid var(--gray-200); padding: 12px 20px;">
+        <div class="panel-footer" style="flex-shrink: 0; border-top: 1px solid var(--gray-200); padding: 12px 20px">
           <button type="button" class="btn-ghost" (click)="showItdModal = false">Cancel</button>
           <button type="button" class="btn-primary" (click)="saveManualITD()">Save ITD Baseline</button>
         </div>
@@ -948,18 +1489,19 @@
   <!-- GL Mapping Modal -->
   @if (showGlMappingModal) {
     <div class="modal-overlay" (click)="showGlMappingModal = false">
-      <div class="modal-box" (click)="$event.stopPropagation()" style="max-width: 480px;">
+      <div class="modal-box" (click)="$event.stopPropagation()" style="max-width: 480px">
         <div class="panel-header">
           <h3 class="panel-title">{{ glMappingModalTitle }}</h3>
           <button class="panel-close" (click)="showGlMappingModal = false" aria-label="Close modal">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-              <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6" y1="6" x2="18" y2="18" />
             </svg>
           </button>
         </div>
 
         <form (submit)="submitGlMapping()" class="panel-body">
-          <div class="form-field" style="margin-bottom: 16px;">
+          <div class="form-field" style="margin-bottom: 16px">
             <label class="form-label">Chart of Account *</label>
             <app-dropdown-search
               [items]="coaOptions"
@@ -969,12 +1511,12 @@
               [itemLabelFn]="coaLabelFn"
               [(selectedValue)]="glMappingForm.coa_id"
             ></app-dropdown-search>
-            <span class="field-hint" style="font-size: 11px; color: var(--gray-400); margin-top: 4px; display: block;">
+            <span class="field-hint" style="font-size: 11px; color: var(--gray-400); margin-top: 4px; display: block">
               Only child ledger accounts are available for mapping.
             </span>
           </div>
 
-          <div class="form-field" style="margin-bottom: 8px;">
+          <div class="form-field" style="margin-bottom: 8px">
             <label class="form-label">Mapping Type *</label>
             <app-dropdown-search
               [items]="glMappingTypeOptionsList"
@@ -984,7 +1526,7 @@
               [itemLabelFn]="nameLabelFn"
               [(selectedValue)]="glMappingForm.type"
             ></app-dropdown-search>
-            <span class="field-hint" style="font-size: 11px; color: var(--gray-400); margin-top: 4px; display: block;">
+            <span class="field-hint" style="font-size: 11px; color: var(--gray-400); margin-top: 4px; display: block">
               Each mapping type (AR, AP, MGA, BRK) can only be mapped to a single account.
             </span>
           </div>
@@ -994,7 +1536,7 @@
           <button type="button" class="btn-ghost" (click)="showGlMappingModal = false">Cancel</button>
           <button type="button" class="btn-primary" [disabled]="submitting" (click)="submitGlMapping()">
             @if (submitting) {
-              <span class="spinner btn-spinner" style="width: 14px; height: 14px;"></span>
+              <span class="spinner btn-spinner" style="width: 14px; height: 14px"></span>
               <span>Saving...</span>
             } @else {
               <span>Save Mapping</span>
@@ -1005,10 +1547,27 @@
     </div>
   }
 
-
   <!-- Confirm Dialog component binding -->
-  <app-confirm-dialog [open]="confirmOpen" [title]="confirmTitle" [message]="confirmMessage" (confirmed)="onConfirm()" (cancelled)="onCancelConfirm()"/>
+  <app-confirm-dialog
+    [open]="confirmOpen"
+    [title]="confirmTitle"
+    [message]="confirmMessage"
+    (confirmed)="onConfirm()"
+    (cancelled)="onCancelConfirm()"
+  />
 
-  <input type="file" #monthlyExcelInput style="display: none;" (change)="onTreatyMonthlyUpload($event)" accept=".xlsx,.xls,.csv" />
-  <input type="file" #itdExcelInput style="display: none;" (change)="onTreatyITDUpload($event)" accept=".xlsx,.xls,.csv" />
+  <input
+    type="file"
+    #monthlyExcelInput
+    style="display: none"
+    (change)="onTreatyMonthlyUpload($event)"
+    accept=".xlsx,.xls,.csv"
+  />
+  <input
+    type="file"
+    #itdExcelInput
+    style="display: none"
+    (change)="onTreatyITDUpload($event)"
+    accept=".xlsx,.xls,.csv"
+  />
 </div>

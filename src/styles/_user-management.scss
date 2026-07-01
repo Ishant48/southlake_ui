@@ -10,11 +10,11 @@
   align-items: flex-start;
   justify-content: space-between;
   gap: 16px;
-  
+
   @media (max-width: 768px) {
     flex-direction: column;
     align-items: stretch;
-    
+
     .btn-primary {
       width: 100%;
       justify-content: center;
@@ -66,10 +66,22 @@
   flex-shrink: 0;
 }
 
-.stat-icon-navy { background: rgba(13, 27, 75, 0.08); color: var(--navy); }
-.stat-icon-green { background: var(--green-bg); color: var(--green); }
-.stat-icon-blue { background: var(--blue-bg); color: var(--blue); }
-.stat-icon-orange { background: var(--orange-bg); color: var(--orange); }
+.stat-icon-navy {
+  background: rgba(13, 27, 75, 0.08);
+  color: var(--navy);
+}
+.stat-icon-green {
+  background: var(--green-bg);
+  color: var(--green);
+}
+.stat-icon-blue {
+  background: var(--blue-bg);
+  color: var(--blue);
+}
+.stat-icon-orange {
+  background: var(--orange-bg);
+  color: var(--orange);
+}
 
 .stat-info {
   display: flex;
@@ -107,7 +119,9 @@
   text-decoration: none;
   border-bottom: 2.5px solid transparent;
   margin-bottom: -1.5px;
-  transition: color var(--transition), border-color var(--transition);
+  transition:
+    color var(--transition),
+    border-color var(--transition);
 
   &:hover {
     color: var(--gray-900);
@@ -143,7 +157,7 @@
     justify-content: stretch;
     flex-direction: column;
     align-items: stretch;
-    
+
     > * {
       width: 100%;
     }
@@ -154,7 +168,7 @@
   flex: 1;
   position: relative;
   max-width: 320px;
-  
+
   @media (max-width: 768px) {
     max-width: none;
     width: 100%;
@@ -290,7 +304,9 @@
   display: flex;
   flex-direction: column;
   gap: 12px;
-  transition: box-shadow var(--transition), border-color var(--transition);
+  transition:
+    box-shadow var(--transition),
+    border-color var(--transition);
 
   &:hover {
     box-shadow: var(--shadow);
@@ -348,7 +364,9 @@
   border: none;
   cursor: pointer;
   color: var(--gray-600);
-  transition: background var(--transition), color var(--transition);
+  transition:
+    background var(--transition),
+    color var(--transition);
 
   &:hover {
     background: var(--navy);
@@ -380,7 +398,10 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: background var(--transition), color var(--transition), border-color var(--transition);
+  transition:
+    background var(--transition),
+    color var(--transition),
+    border-color var(--transition);
 
   &:hover:not(:disabled) {
     background: var(--gray-100);
@@ -421,6 +442,11 @@
 }
 
 @keyframes skeletonPulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.5; }
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
 }

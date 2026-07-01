@@ -30,4 +30,16 @@ export const PERMISSION_ACTIONS = [
   { key: 'reverse', label: 'Reverse' },
 ] as const;
 
-export type PermissionActionKey = 'view' | 'create' | 'edit' | 'approve' | 'export' | 'post' | 'file' | 'lock' | 'override' | 'reconcile' | 'void' | 'reverse';
+export type PermissionActionKey =
+  | 'view'
+  | 'create'
+  | 'edit'
+  | 'approve'
+  | 'export'
+  | 'post'
+  | 'file'
+  | 'lock'
+  | 'override'
+  | 'reconcile'
+  | 'void'
+  | 'reverse';

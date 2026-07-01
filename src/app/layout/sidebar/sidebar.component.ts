@@ -15,7 +15,7 @@ export class SidebarComponent implements OnInit {
   private router = inject(Router);
   private authService = inject(AuthService);
   sidebarService = inject(SidebarService);
-  
+
   dashboardExpanded = true;
   accountingExpanded = false;
   adminExpanded = false;
@@ -43,10 +43,18 @@ export class SidebarComponent implements OnInit {
     if (!user) return 'User';
     const roleObj = user.role;
     if (typeof roleObj === 'string') {
-      return roleObj === 'superadmin' ? 'Super Administrator' : (roleObj === 'admin' ? 'Administrator' : roleObj);
+      return roleObj === 'superadmin'
+        ? 'Super Administrator'
+        : roleObj === 'admin'
+          ? 'Administrator'
+          : roleObj;
     }
     const roleName = roleObj?.name || 'User';
-    return roleName === 'superadmin' ? 'Super Administrator' : (roleName === 'admin' ? 'Administrator' : roleName);
+    return roleName === 'superadmin'
+      ? 'Super Administrator'
+      : roleName === 'admin'
+        ? 'Administrator'
+        : roleName;
   }
 
   get initials(): string {
@@ -66,18 +74,23 @@ export class SidebarComponent implements OnInit {
     this.checkScreenSize();
     this.checkActiveRoute(this.router.url);
 
-    this.router.events.pipe(
-      filter(event => event instanceof NavigationEnd)
-    ).subscribe((event: any) => {
-      this.checkActiveRoute(event.urlAfterRedirects || event.url);
-    });
+    this.router.events
+      .pipe(filter(event => event instanceof NavigationEnd))
+      .subscribe((event: any) => {
+        this.checkActiveRoute(event.urlAfterRedirects || event.url);
+      });
   }
 
   private checkActiveRoute(url: string): void {
     if (url.includes('/dashboard')) {
       this.dashboardExpanded = true;
     }
-    if (url.includes('/chart-of-accounts') || url.includes('/journal-entries') || url.includes('/test-balance') || url.includes('/reinsurance-calculations')) {
+    if (
+      url.includes('/chart-of-accounts') ||
+      url.includes('/journal-entries') ||
+      url.includes('/test-balance') ||
+      url.includes('/reinsurance-calculations')
+    ) {
       this.accountingExpanded = true;
     }
     if (url.includes('/user-management')) {
@@ -133,4 +146,3 @@ export class SidebarComponent implements OnInit {
     this.authService.logout();
   }
 }
-

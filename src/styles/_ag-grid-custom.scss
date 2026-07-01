@@ -1,5 +1,5 @@
-@import 'ag-grid-community/styles/ag-grid.css';
-@import 'ag-grid-community/styles/ag-theme-alpine.css';
+@import "ag-grid-community/styles/ag-grid.css";
+@import "ag-grid-community/styles/ag-theme-alpine.css";
 
 /* Custom styling to match Southlake UI tables */
 .ag-theme-alpine {
@@ -12,11 +12,11 @@
   --ag-cell-horizontal-padding: 10px;
   --ag-border-color: var(--gray-200);
   --ag-borders: none;
-  
+
   .ag-root-wrapper {
     border: none !important;
   }
-  
+
   .ag-header {
     border-bottom: 1.5px solid var(--gray-200) !important;
   }
@@ -28,12 +28,12 @@
     letter-spacing: 0.04em;
     color: var(--gray-500);
   }
-  
+
   .ag-row {
     border-bottom: 1px solid var(--gray-200);
     color: var(--gray-700);
   }
-  
+
   .ag-cell {
     display: flex;
     align-items: center;
@@ -43,7 +43,7 @@
 
   /* Premium design for pagination panel */
   .ag-paging-panel {
-    border-top: 1px solid var(--gray-200) !important; 
+    border-top: 1px solid var(--gray-200) !important;
     color: var(--gray-600);
     padding: 18px 24px;
     background: transparent;
@@ -79,13 +79,13 @@
     justify-content: center;
     min-width: 34px;
     height: 34px;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.03);
-    
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+
     &:hover:not(.ag-disabled) {
       background: var(--gray-50);
       color: var(--coral);
       border-color: var(--coral-hover) !important;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.06);
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.06);
     }
 
     &.ag-disabled {
@@ -101,7 +101,7 @@
     color: var(--gray-900);
     padding: 0 4px;
   }
-  
+
   /* Target the input fields inside the pagination panel */
   .ag-paging-page-size {
     display: flex;
@@ -125,7 +125,7 @@
     transition: all 0.2s ease;
     display: inline-flex;
     align-items: center;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
   }
 
   /* Specifically target the inner input element for the page number */
@@ -141,7 +141,7 @@
     height: 100%;
     border-radius: 6px !important;
     font-weight: 600;
-    
+
     &:focus {
       outline: none;
     }
@@ -157,7 +157,7 @@
   }
 
   /* Adjust spacing around 'Page X of Y' */
-  
+
   .ag-paging-description {
     margin: 0 8px;
   }

@@ -32,7 +32,9 @@ export class MastersService {
   // STATE MASTER API
   // ==========================================
   getStates(search?: string, isActive?: boolean): Observable<StateMaster[]> {
-    return this.http.get<StateMaster[]>(`${this.base}/states`, { params: this.buildParams(search, isActive) });
+    return this.http.get<StateMaster[]>(`${this.base}/states`, {
+      params: this.buildParams(search, isActive),
+    });
   }
   getState(id: string): Observable<StateMaster & { documents: StateDocument[] }> {
     return this.http.get<StateMaster & { documents: StateDocument[] }>(`${this.base}/states/${id}`);
@@ -59,7 +61,9 @@ export class MastersService {
   // MGA MASTER API
   // ==========================================
   getMgas(search?: string, isActive?: boolean): Observable<MgaMaster[]> {
-    return this.http.get<MgaMaster[]>(`${this.base}/mgas`, { params: this.buildParams(search, isActive) });
+    return this.http.get<MgaMaster[]>(`${this.base}/mgas`, {
+      params: this.buildParams(search, isActive),
+    });
   }
   getMga(id: string): Observable<MgaMaster & { documents: MgaDocument[] }> {
     return this.http.get<MgaMaster & { documents: MgaDocument[] }>(`${this.base}/mgas/${id}`);
@@ -86,7 +90,9 @@ export class MastersService {
   // REINSURER MASTER API
   // ==========================================
   getReinsurers(search?: string, isActive?: boolean): Observable<ReinsurerCompany[]> {
-    return this.http.get<ReinsurerCompany[]>(`${this.base}/reinsurers`, { params: this.buildParams(search, isActive) });
+    return this.http.get<ReinsurerCompany[]>(`${this.base}/reinsurers`, {
+      params: this.buildParams(search, isActive),
+    });
   }
   createReinsurer(payload: Partial<ReinsurerCompany>): Observable<ReinsurerCompany> {
     return this.http.post<ReinsurerCompany>(`${this.base}/reinsurers`, payload);
@@ -102,10 +108,14 @@ export class MastersService {
   // RISK COMPANY MASTER API
   // ==========================================
   getRiskCompanies(search?: string, isActive?: boolean): Observable<RiskCompany[]> {
-    return this.http.get<RiskCompany[]>(`${this.base}/risk-companies`, { params: this.buildParams(search, isActive) });
+    return this.http.get<RiskCompany[]>(`${this.base}/risk-companies`, {
+      params: this.buildParams(search, isActive),
+    });
   }
   getRiskCompany(id: string): Observable<RiskCompany & { documents: RiskCompanyDocument[] }> {
-    return this.http.get<RiskCompany & { documents: RiskCompanyDocument[] }>(`${this.base}/risk-companies/${id}`);
+    return this.http.get<RiskCompany & { documents: RiskCompanyDocument[] }>(
+      `${this.base}/risk-companies/${id}`,
+    );
   }
   createRiskCompany(payload: Partial<RiskCompany>): Observable<RiskCompany> {
     return this.http.post<RiskCompany>(`${this.base}/risk-companies`, payload);
@@ -119,7 +129,10 @@ export class MastersService {
   uploadRiskCompanyDocument(riskCompanyId: string, file: File): Observable<RiskCompanyDocument> {
     const formData = new FormData();
     formData.append('file', file);
-    return this.http.post<RiskCompanyDocument>(`${this.base}/risk-companies/${riskCompanyId}/documents`, formData);
+    return this.http.post<RiskCompanyDocument>(
+      `${this.base}/risk-companies/${riskCompanyId}/documents`,
+      formData,
+    );
   }
   deleteRiskCompanyDocument(docId: string): Observable<void> {
     return this.http.delete<void>(`${this.base}/risk-companies/documents/${docId}`);
@@ -129,7 +142,9 @@ export class MastersService {
   // LOB MASTER API
   // ==========================================
   getLobs(search?: string, isActive?: boolean): Observable<LineOfBusiness[]> {
-    return this.http.get<LineOfBusiness[]>(`${this.base}/lobs`, { params: this.buildParams(search, isActive) });
+    return this.http.get<LineOfBusiness[]>(`${this.base}/lobs`, {
+      params: this.buildParams(search, isActive),
+    });
   }
   createLob(payload: Partial<LineOfBusiness>): Observable<LineOfBusiness> {
     return this.http.post<LineOfBusiness>(`${this.base}/lobs`, payload);
@@ -145,7 +160,9 @@ export class MastersService {
   // COB MASTER API
   // ==========================================
   getCobs(search?: string, isActive?: boolean): Observable<CobMaster[]> {
-    return this.http.get<CobMaster[]>(`${this.base}/cobs`, { params: this.buildParams(search, isActive) });
+    return this.http.get<CobMaster[]>(`${this.base}/cobs`, {
+      params: this.buildParams(search, isActive),
+    });
   }
   createCob(payload: Partial<CobMaster>): Observable<CobMaster> {
     return this.http.post<CobMaster>(`${this.base}/cobs`, payload);
@@ -161,15 +178,22 @@ export class MastersService {
   // TREATY MASTER API
   // ==========================================
   getTreaties(search?: string, isActive?: boolean): Observable<Treaty[]> {
-    return this.http.get<Treaty[]>(`${this.base}/treaties`, { params: this.buildParams(search, isActive) });
+    return this.http.get<Treaty[]>(`${this.base}/treaties`, {
+      params: this.buildParams(search, isActive),
+    });
   }
   getTreaty(id: string): Observable<Treaty> {
     return this.http.get<Treaty>(`${this.base}/treaties/${id}`);
   }
-  createTreaty(payload: Partial<Treaty> & { state_ids?: string[]; lobs?: any[] }): Observable<Treaty> {
+  createTreaty(
+    payload: Partial<Treaty> & { state_ids?: string[]; lobs?: any[] },
+  ): Observable<Treaty> {
     return this.http.post<Treaty>(`${this.base}/treaties`, payload);
   }
-  updateTreaty(id: string, payload: Partial<Treaty> & { state_ids?: string[]; lobs?: any[] }): Observable<Treaty> {
+  updateTreaty(
+    id: string,
+    payload: Partial<Treaty> & { state_ids?: string[]; lobs?: any[] },
+  ): Observable<Treaty> {
     return this.http.patch<Treaty>(`${`${this.base}/treaties`}/${id}`, payload);
   }
   deleteTreaty(id: string): Observable<void> {
@@ -177,6 +201,8 @@ export class MastersService {
   }
 
   addMgaToTreaties(mgaId: string, treatyIds: string[]): Observable<any> {
-    return this.http.post<any>(`${this.base}/mgas/${mgaId}/add-to-treaties`, { treaty_ids: treatyIds });
+    return this.http.post<any>(`${this.base}/mgas/${mgaId}/add-to-treaties`, {
+      treaty_ids: treatyIds,
+    });
   }
 }

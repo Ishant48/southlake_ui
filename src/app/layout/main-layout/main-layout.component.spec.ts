@@ -11,10 +11,7 @@ describe('MainLayoutComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [MainLayoutComponent],
-      providers: [
-        provideRouter([]),
-        provideHttpClient(),
-      ],
+      providers: [provideRouter([]), provideHttpClient()],
       schemas: [NO_ERRORS_SCHEMA],
     }).compileComponents();
 

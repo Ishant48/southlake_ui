@@ -3,7 +3,9 @@
     <table class="data-table">
       <thead>
         <tr>
-          @if (showCheckboxes) { <th class="col-check"></th> }
+          @if (showCheckboxes) {
+            <th class="col-check"></th>
+          }
           <th>User</th>
           <th>Role</th>
           <th>Department</th>
@@ -16,7 +18,9 @@
       <tbody>
         @for (i of skeletonRows; track i) {
           <tr class="skeleton-row">
-            @if (showCheckboxes) { <td><div class="skel skel-sm"></div></td> }
+            @if (showCheckboxes) {
+              <td><div class="skel skel-sm"></div></td>
+            }
             <td>
               <div class="user-cell">
                 <div class="skel skel-avatar"></div>
@@ -39,7 +43,7 @@
   } @else {
     <ag-grid-angular
       class="ag-theme-alpine"
-      style="display: block; width: 100%;"
+      style="display: block; width: 100%"
       [domLayout]="'autoHeight'"
       [rowData]="users"
       [columnDefs]="columnDefs"

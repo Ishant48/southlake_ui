@@ -1,0 +1,343 @@
+﻿diff --cc src/app/app.routes.ts
+index 00a521c,60c6d1b..0000000
+--- a/src/app/app.routes.ts
++++ b/src/app/app.routes.ts
+diff --cc src/app/features/masters/masters.component.ts
+index 717b15e,9602d0a..0000000
+--- a/src/app/features/masters/masters.component.ts
++++ b/src/app/features/masters/masters.component.ts
+diff --cc src/app/features/reinsurance-calculations/reinsurance-calculations.component.html
+index 404e66c,41e6cd7..0000000
+--- a/src/app/features/reinsurance-calculations/reinsurance-calculations.component.html
++++ b/src/app/features/reinsurance-calculations/reinsurance-calculations.component.html
+diff --cc src/app/features/user-management/roles/role-permissions-modal/role-permissions-modal.component.html
+index 784f136,3369e08..0000000
+--- a/src/app/features/user-management/roles/role-permissions-modal/role-permissions-modal.component.html
++++ b/src/app/features/user-management/roles/role-permissions-modal/role-permissions-modal.component.html
+diff --cc src/app/features/user-management/roles/role-permissions-modal/role-permissions-modal.component.ts
+index 41ea0d3,bfdea64..0000000
+--- a/src/app/features/user-management/roles/role-permissions-modal/role-permissions-modal.component.ts
++++ b/src/app/features/user-management/roles/role-permissions-modal/role-permissions-modal.component.ts
+@@@ -60,45 -60,18 +60,53 @@@ export class RolePermissionsModalCompon
+        chart_of_accounts: 'Chart of Accounts',
+        master_data: 'Master Data',
+        journal_entry: 'Journal Entries',
+++<<<<<<< Updated upstream
+ +      reinsurance: 'Premium and claims Exhibits',
+ +      general: 'General'
+++=======
++       general: 'General',
+++>>>>>>> Stashed changes
+      };
+-     return Object.entries(groups).map(([prefix, perms]) => ({
+-       moduleName: MODULE_NAMES[prefix] || (prefix.charAt(0).toUpperCase() + prefix.slice(1).replace(/_/g, ' ')),
+-       permissions: perms
+-     })).sort((a, b) => a.moduleName.localeCompare(b.moduleName));
++     return Object.entries(groups)
++       .map(([prefix, perms]) => ({
++         moduleName:
++           MODULE_NAMES[prefix] ||
++           prefix.charAt(0).toUpperCase() + prefix.slice(1).replace(/_/g, ' '),
++         permissions: perms,
++       }))
++       .sort((a, b) => a.moduleName.localeCompare(b.moduleName));
+    }
+  
+ +  expandedGroups = new Set<string>();
+ +
+ +  toggleGroup(groupName: string): void {
+ +    if (this.expandedGroups.has(groupName)) {
+ +      this.expandedGroups.delete(groupName);
+ +    } else {
+ +      this.expandedGroups.add(groupName);
+ +    }
+ +  }
+ +
+ +  isGroupExpanded(groupName: string): boolean {
+ +    return this.expandedGroups.has(groupName);
+ +  }
+ +
+ +  isAllSelected(group: { moduleName: string; permissions: Permission[] }): boolean {
+ +    if (!group.permissions.length) return false;
+ +    return group.permissions.every(perm => this.selectedIds.has(perm.id));
+ +  }
+ +
+ +  toggleSelectAllGroup(group: { moduleName: string; permissions: Permission[] }): void {
+ +    const allSelected = this.isAllSelected(group);
+ +    for (const perm of group.permissions) {
+ +      if (allSelected) {
+ +        this.selectedIds.delete(perm.id);
+ +      } else {
+ +        this.selectedIds.add(perm.id);
+ +      }
+ +    }
+ +  }
+ +
+    swatches = COLOR_SWATCHES;
+    loading = false;
+    errorMsg = '';
+diff --cc src/app/features/user-management/users/user-detail-panel/user-detail-panel.component.html
+index a7ffc7e,c6b7b14..0000000
+--- a/src/app/features/user-management/users/user-detail-panel/user-detail-panel.component.html
++++ b/src/app/features/user-management/users/user-detail-panel/user-detail-panel.component.html
+@@@ -110,30 -123,22 +123,48 @@@
+            } @else {
+              @for (group of groupedPermissions; track group.moduleName) {
+                <div class="perm-module-group">
+++<<<<<<< Updated upstream
+ +                <div class="perm-module-title" [class.collapsed-border]="!isGroupExpanded(group.moduleName)">
+ +                  <div class="perm-module-header-left" (click)="toggleGroup(group.moduleName)">
+ +                    <svg class="perm-chevron-icon" [class.collapsed]="!isGroupExpanded(group.moduleName)" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+ +                      <polyline points="6 9 12 15 18 9"/>
+ +                    </svg>
+ +                    <span>{{ group.moduleName }}</span>
+ +                  </div>
+ +                  <button type="button" class="select-all-btn" (click)="toggleSelectAllGroup(group)">
+ +                    {{ isAllSelected(group) ? 'Deselect All' : 'Select All' }}
+ +                  </button>
+++=======
++                 <div class="perm-module-title">
++                   {{ group.moduleName }}
++                 </div>
++                 <div class="perm-list">
++                   @for (perm of group.permissions; track perm.id) {
++                     <label class="perm-item" [class.checked]="selectedIds.has(perm.id)">
++                       <input
++                         type="checkbox"
++                         [checked]="selectedIds.has(perm.id)"
++                         (change)="togglePermission(perm.id)"
++                       />
++                       <span class="perm-label">{{ perm.label }}</span>
++                       <span class="perm-action">{{ perm.action }}</span>
++                     </label>
++                   }
+++>>>>>>> Stashed changes
+                  </div>
+ +                @if (isGroupExpanded(group.moduleName)) {
+ +                  <div class="perm-list">
+ +                    @for (perm of group.permissions; track perm.id) {
+ +                      <label class="perm-item" [class.checked]="selectedIds.has(perm.id)">
+ +                        <input type="checkbox"
+ +                          [checked]="selectedIds.has(perm.id)"
+ +                          (change)="togglePermission(perm.id)">
+ +                        <span class="perm-label">{{ perm.label }}</span>
+ +                        <span class="perm-action">{{ perm.action }}</span>
+ +                      </label>
+ +                    }
+ +                  </div>
+ +                }
+                </div>
+              }
+              @if (permsError) {
+diff --cc src/app/features/user-management/users/user-detail-panel/user-detail-panel.component.ts
+index 10125d0,fe03970..0000000
+--- a/src/app/features/user-management/users/user-detail-panel/user-detail-panel.component.ts
++++ b/src/app/features/user-management/users/user-detail-panel/user-detail-panel.component.ts
+@@@ -69,44 -69,17 +69,52 @@@ export class UserDetailPanelComponent i
+        chart_of_accounts: 'Chart of Accounts',
+        master_data: 'Master Data',
+        journal_entry: 'Journal Entries',
+++<<<<<<< Updated upstream
+ +      reinsurance: 'Premium and claims Exhibits',
+ +      general: 'General'
+++=======
++       general: 'General',
+++>>>>>>> Stashed changes
+      };
+-     return Object.entries(groups).map(([prefix, perms]) => ({
+-       moduleName: MODULE_NAMES[prefix] || (prefix.charAt(0).toUpperCase() + prefix.slice(1).replace(/_/g, ' ')),
+-       permissions: perms
+-     })).sort((a, b) => a.moduleName.localeCompare(b.moduleName));
++     return Object.entries(groups)
++       .map(([prefix, perms]) => ({
++         moduleName:
++           MODULE_NAMES[prefix] ||
++           prefix.charAt(0).toUpperCase() + prefix.slice(1).replace(/_/g, ' '),
++         permissions: perms,
++       }))
++       .sort((a, b) => a.moduleName.localeCompare(b.moduleName));
+    }
+ +
+ +  expandedGroups = new Set<string>();
+ +
+ +  toggleGroup(groupName: string): void {
+ +    if (this.expandedGroups.has(groupName)) {
+ +      this.expandedGroups.delete(groupName);
+ +    } else {
+ +      this.expandedGroups.add(groupName);
+ +    }
+ +  }
+ +
+ +  isGroupExpanded(groupName: string): boolean {
+ +    return this.expandedGroups.has(groupName);
+ +  }
+ +
+ +  isAllSelected(group: { moduleName: string; permissions: Permission[] }): boolean {
+ +    if (!group.permissions.length) return false;
+ +    return group.permissions.every(perm => this.selectedIds.has(perm.id));
+ +  }
+ +
+ +  toggleSelectAllGroup(group: { moduleName: string; permissions: Permission[] }): void {
+ +    const allSelected = this.isAllSelected(group);
+ +    for (const perm of group.permissions) {
+ +      if (allSelected) {
+ +        this.selectedIds.delete(perm.id);
+ +      } else {
+ +        this.selectedIds.add(perm.id);
+ +      }
+ +    }
+ +  }
+    permsLoading = false;
+    permsError = '';
+  
+diff --cc src/app/layout/sidebar/sidebar.component.html
+index f180aaf,f050e27..0000000
+--- a/src/app/layout/sidebar/sidebar.component.html
++++ b/src/app/layout/sidebar/sidebar.component.html
+@@@ -44,53 -54,101 +54,141 @@@
+        </div>
+  
+        <!-- 2. Advanced Accounting -->
+++<<<<<<< Updated upstream
+ +      @if (hasPermission('chart_of_accounts', 'view') || hasPermission('journal_entry', 'view') || hasPermission('reinsurance', 'view')) {
+++=======
++       @if (hasPermission("chart_of_accounts", "view") || hasPermission("journal_entry", "view")) {
+++>>>>>>> Stashed changes
+          <div class="nav-item-group" [class.expanded]="accountingExpanded">
+            <a class="nav-item group-header" (click)="toggleAccounting($event)">
+              <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+-               <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+-               <polyline points="14 2 14 8 20 8"/>
++               <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
++               <polyline points="14 2 14 8 20 8" />
+              </svg>
+              <span class="nav-label">Advanced Accounting</span>
+-             <svg class="arrow-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" [style.transform]="accountingExpanded ? 'rotate(180deg)' : 'rotate(0deg)'">
+-               <polyline points="6 9 12 15 18 9"/>
++             <svg
++               class="arrow-icon"
++               viewBox="0 0 24 24"
++               fill="none"
++               stroke="currentColor"
++               stroke-width="2.2"
++               [style.transform]="accountingExpanded ? 'rotate(180deg)' : 'rotate(0deg)'"
++             >
++               <polyline points="6 9 12 15 18 9" />
+              </svg>
+            </a>
+-           
++ 
+            <div class="nav-sub-items">
+++<<<<<<< Updated upstream
+ +              @if (hasPermission('chart_of_accounts', 'view')) {
+ +                <a class="nav-item sub-item" routerLink="/chart-of-accounts" routerLinkActive="active">
+ +                  <svg class="sub-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+ +                    <line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line>
+ +                  </svg>
+ +                  <span>Chart of Accounts</span>
+ +                </a>
+ +              }
+ +              @if (hasPermission('journal_entry', 'view')) {
+ +                <a class="nav-item sub-item" routerLink="/journal-entries" routerLinkActive="active">
+ +                  <svg class="sub-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+ +                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline>
+ +                  </svg>
+ +                  <span>Journal Entries</span>
+ +                </a>
+ +              }
+ +              @if (hasPermission('reinsurance', 'view')) {
+ +                <a class="nav-item sub-item" routerLink="/reinsurance-calculations" routerLinkActive="active">
+ +                  <svg class="sub-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+ +                    <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+ +                  </svg>
+ +                  <span>Premium & Claims Exhibits</span>
+ +                </a>
+ +              }
+ +              @if (hasPermission('chart_of_accounts', 'view')) {
+ +                <a class="nav-item sub-item" routerLink="/test-balance" routerLinkActive="active">
+ +                  <svg class="sub-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+ +                    <line x1="12" y1="3" x2="12" y2="21"></line><path d="M12 8l-7 4v3l7-4"></path><path d="M12 8l7 4v3l-7-4"></path><path d="M3 21h18"></path>
+ +                  </svg>
+ +                  <span>Test Balance</span>
+ +                </a>
+ +              }
+ +            </div>
+++=======
++             @if (hasPermission("chart_of_accounts", "view")) {
++               <a class="nav-item sub-item" routerLink="/chart-of-accounts" routerLinkActive="active">
++                 <svg
++                   class="sub-nav-icon"
++                   viewBox="0 0 24 24"
++                   fill="none"
++                   stroke="currentColor"
++                   stroke-width="2"
++                   stroke-linecap="round"
++                   stroke-linejoin="round"
++                 >
++                   <line x1="3" y1="12" x2="21" y2="12"></line>
++                   <line x1="3" y1="6" x2="21" y2="6"></line>
++                   <line x1="3" y1="18" x2="21" y2="18"></line>
++                 </svg>
++                 <span>Chart of Accounts</span>
++               </a>
++             }
++             @if (hasPermission("journal_entry", "view")) {
++               <a class="nav-item sub-item" routerLink="/journal-entries" routerLinkActive="active">
++                 <svg
++                   class="sub-nav-icon"
++                   viewBox="0 0 24 24"
++                   fill="none"
++                   stroke="currentColor"
++                   stroke-width="2"
++                   stroke-linecap="round"
++                   stroke-linejoin="round"
++                 >
++                   <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
++                   <polyline points="14 2 14 8 20 8"></polyline>
++                   <line x1="16" y1="13" x2="8" y2="13"></line>
++                   <line x1="16" y1="17" x2="8" y2="17"></line>
++                   <polyline points="10 9 9 9 8 9"></polyline>
++                 </svg>
++                 <span>Journal Entries</span>
++               </a>
++             }
++             @if (hasPermission("journal_entry", "view")) {
++               <a class="nav-item sub-item" routerLink="/reinsurance-calculations" routerLinkActive="active">
++                 <svg
++                   class="sub-nav-icon"
++                   viewBox="0 0 24 24"
++                   fill="none"
++                   stroke="currentColor"
++                   stroke-width="2"
++                   stroke-linecap="round"
++                   stroke-linejoin="round"
++                 >
++                   <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
++                 </svg>
++                 <span>Premium & Claims Exhibits</span>
++               </a>
++             }
++             @if (hasPermission("chart_of_accounts", "view")) {
++               <a class="nav-item sub-item" routerLink="/test-balance" routerLinkActive="active">
++                 <svg
++                   class="sub-nav-icon"
++                   viewBox="0 0 24 24"
++                   fill="none"
++                   stroke="currentColor"
++                   stroke-width="2"
++                   stroke-linecap="round"
++                   stroke-linejoin="round"
++                 >
++                   <line x1="12" y1="3" x2="12" y2="21"></line>
++                   <path d="M12 8l-7 4v3l7-4"></path>
++                   <path d="M12 8l7 4v3l-7-4"></path>
++                   <path d="M3 21h18"></path>
++                 </svg>
++                 <span>Test Balance</span>
++               </a>
++             }
++           </div>
+++>>>>>>> Stashed changes
+          </div>
+        }
+  

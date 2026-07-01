@@ -11,10 +11,7 @@ describe('SessionConflictComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [SessionConflictComponent],
-      providers: [
-        provideRouter([]),
-        provideHttpClient(),
-      ],
+      providers: [provideRouter([]), provideHttpClient()],
       schemas: [NO_ERRORS_SCHEMA],
     }).compileComponents();
 

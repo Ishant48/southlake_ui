@@ -7,7 +7,7 @@ import { SidebarService } from '../../core/services/sidebar.service';
   standalone: true,
   imports: [],
   templateUrl: './header.component.html',
-  styleUrl: './header.component.scss'
+  styleUrl: './header.component.scss',
 })
 export class HeaderComponent {
   private auth = inject(AuthService);

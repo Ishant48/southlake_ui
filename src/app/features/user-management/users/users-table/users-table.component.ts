@@ -53,7 +53,7 @@ export class UsersTableComponent implements OnInit {
         maxWidth: 50,
         resizable: false,
         sortable: false,
-        pinned: 'left'
+        pinned: 'left',
       });
     }
 
@@ -64,7 +64,7 @@ export class UsersTableComponent implements OnInit {
         cellRenderer: AvatarCellRenderer,
         minWidth: 250,
         flex: 2,
-        valueGetter: params => params.data
+        valueGetter: params => params.data,
       },
       {
         headerName: 'ROLE',
@@ -85,34 +85,34 @@ export class UsersTableComponent implements OnInit {
           return `<span class="text-muted">-</span>`;
         },
         flex: 1,
-        minWidth: 150
+        minWidth: 150,
       },
       {
         headerName: 'DEPARTMENT',
         field: 'department',
         valueFormatter: params => params.value || '-',
         flex: 1,
-        minWidth: 150
+        minWidth: 150,
       },
       {
         headerName: 'TITLE',
         field: 'title',
         valueFormatter: params => params.value || '-',
         flex: 1,
-        minWidth: 150
+        minWidth: 150,
       },
       {
         headerName: 'STATUS',
         field: 'status',
         cellRenderer: StatusBadgeCellRenderer,
-        width: 120
+        width: 120,
       },
       {
         headerName: 'LAST LOGIN',
         field: 'last_login_at',
         valueFormatter: params => this.formatDate(params.value),
         flex: 1,
-        minWidth: 150
+        minWidth: 150,
       },
       {
         headerName: 'ACTIONS',
@@ -124,9 +124,7 @@ export class UsersTableComponent implements OnInit {
         cellRenderer: ActionButtonsCellRenderer,
         cellRendererParams: {
           buttons: (data: User) => {
-            const btns: any[] = [
-              { label: 'View', action: 'view' }
-            ];
+            const btns: any[] = [{ label: 'View', action: 'view' }];
             if (this.hasPermission('user.edit')) {
               btns.push({ label: 'Edit', action: 'edit' });
               if (data.status !== 'inactive') {
@@ -139,9 +137,9 @@ export class UsersTableComponent implements OnInit {
             if (action === 'view') this.viewUser.emit(data);
             if (action === 'edit') this.editUser.emit(data);
             if (action === 'deactivate') this.deactivateUser.emit(data);
-          }
-        }
-      }
+          },
+        },
+      },
     );
   }
 

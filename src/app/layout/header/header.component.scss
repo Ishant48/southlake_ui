@@ -28,13 +28,13 @@
   justify-content: center;
   cursor: pointer;
   transition: all 0.2s;
-  
+
   &:hover {
     background: #f8fafc;
     color: #0f172a;
     border-color: #cbd5e1;
   }
-  
+
   svg {
     width: 20px;
     height: 20px;
@@ -52,7 +52,7 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  
+
   .header-user {
     font-weight: 700;
     color: #e05470;
@@ -83,7 +83,9 @@
   transition: background var(--transition);
   user-select: none;
 }
-.user-menu:hover { background: var(--gray-100); }
+.user-menu:hover {
+  background: var(--gray-100);
+}
 .user-avatar {
   width: 34px;
   height: 34px;
@@ -107,7 +109,9 @@
   color: var(--gray-400);
   transition: transform var(--transition);
 }
-.chevron.open { transform: rotate(180deg); }
+.chevron.open {
+  transform: rotate(180deg);
+}
 .user-dropdown {
   position: absolute;
   top: calc(100% + 6px);
@@ -151,9 +155,15 @@
   transition: background var(--transition);
   text-align: left;
 }
-.dropdown-item:hover { background: var(--gray-50); }
-.dropdown-item-danger { color: var(--red); }
-.dropdown-item-danger:hover { background: var(--red-bg); }
+.dropdown-item:hover {
+  background: var(--gray-50);
+}
+.dropdown-item-danger {
+  color: var(--red);
+}
+.dropdown-item-danger:hover {
+  background: var(--red-bg);
+}
 
 @media (max-width: 768px) {
   .app-header {

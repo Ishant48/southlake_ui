@@ -8,7 +8,7 @@ import { AuthService } from '../../../core/services/auth.service';
   standalone: true,
   imports: [ReactiveFormsModule, RouterLink],
   templateUrl: './login.component.html',
-  styleUrl: './login.component.scss'
+  styleUrl: './login.component.scss',
 })
 export class LoginComponent implements OnInit {
   private fb = inject(FormBuilder);
@@ -19,19 +19,22 @@ export class LoginComponent implements OnInit {
 
   form = this.fb.group({
     email: ['', [Validators.required, Validators.email]],
-    password: ['', [Validators.required]]
+    password: ['', [Validators.required]],
   });
 
-  inviteForm = this.fb.group({
-    password: ['', [Validators.required, Validators.minLength(8)]],
-    confirmPassword: ['', [Validators.required]]
-  }, {
-    validators: (group) => {
-      const pass = group.get('password')?.value;
-      const confirmPass = group.get('confirmPassword')?.value;
-      return pass === confirmPass ? null : { notSame: true };
-    }
-  });
+  inviteForm = this.fb.group(
+    {
+      password: ['', [Validators.required, Validators.minLength(8)]],
+      confirmPassword: ['', [Validators.required]],
+    },
+    {
+      validators: group => {
+        const pass = group.get('password')?.value;
+        const confirmPass = group.get('confirmPassword')?.value;
+        return pass === confirmPass ? null : { notSame: true };
+      },
+    },
+  );
 
   loading = false;
   errorMsg = '';
@@ -67,19 +70,19 @@ export class LoginComponent implements OnInit {
     this.inviteLoading = true;
     this.inviteError = '';
     this.auth.getInviteDetails(token).subscribe({
-      next: (details) => {
+      next: details => {
         console.log('LoginComponent: loadInviteDetails success:', details);
         this.inviteLoading = false;
         this.inviteEmail = details.email;
         this.inviteName = details.name;
         this.cdr.markForCheck();
       },
-      error: (err) => {
+      error: err => {
         console.error('LoginComponent: loadInviteDetails error:', err);
         this.inviteLoading = false;
         this.inviteError = err?.error?.message ?? 'The invitation is invalid or has expired.';
         this.cdr.markForCheck();
-      }
+      },
     });
   }
 
@@ -100,11 +103,11 @@ export class LoginComponent implements OnInit {
         this.router.navigate(['/auth/otp'], { state: { email, password } });
         this.cdr.markForCheck();
       },
-      error: (err) => {
+      error: err => {
         this.loading = false;
         this.errorMsg = err?.error?.message ?? 'Invalid email or password.';
         this.cdr.markForCheck();
-      }
+      },
     });
   }
 
@@ -115,17 +118,17 @@ export class LoginComponent implements OnInit {
     const password = this.inviteForm.value.password as string;
 
     this.auth.acceptInvite(this.inviteToken, password).subscribe({
-      next: (res) => {
+      next: res => {
         this.loading = false;
         this.auth.storeSession(res);
         this.router.navigate(['/user-management/users']);
         this.cdr.markForCheck();
       },
-      error: (err) => {
+      error: err => {
         this.loading = false;
         this.errorMsg = err?.error?.message ?? 'Failed to accept invitation. Please try again.';
         this.cdr.markForCheck();
-      }
+      },
     });
   }
 }

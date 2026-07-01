@@ -1,14 +1,18 @@
 import { Component, inject, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { TestBalanceService, TestBalanceResponse, TestBalanceAccount } from '../../core/services/test-balance.service';
+import {
+  TestBalanceService,
+  TestBalanceResponse,
+  TestBalanceAccount,
+} from '../../core/services/test-balance.service';
 
 @Component({
   selector: 'app-test-balance',
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './test-balance.component.html',
-  styleUrl: './test-balance.component.scss'
+  styleUrl: './test-balance.component.scss',
 })
 export class TestBalanceComponent implements OnInit {
   private balanceService = inject(TestBalanceService);
@@ -20,8 +24,18 @@ export class TestBalanceComponent implements OnInit {
   isLoading = false;
 
   months = [
-    'January', 'February', 'March', 'April', 'May', 'June',
-    'July', 'August', 'September', 'October', 'November', 'December'
+    'January',
+    'February',
+    'March',
+    'April',
+    'May',
+    'June',
+    'July',
+    'August',
+    'September',
+    'October',
+    'November',
+    'December',
   ];
   years = [2024, 2025, 2026];
 
@@ -33,16 +47,16 @@ export class TestBalanceComponent implements OnInit {
     this.isLoading = true;
     this.cdr.markForCheck();
     this.balanceService.getTestBalance(this.month, this.year).subscribe({
-      next: (res) => {
+      next: res => {
         this.data = res;
         this.isLoading = false;
         this.cdr.markForCheck();
       },
-      error: (err) => {
+      error: err => {
         console.error('Error loading test balance:', err);
         this.isLoading = false;
         this.cdr.markForCheck();
-      }
+      },
     });
   }
 
@@ -55,7 +69,7 @@ export class TestBalanceComponent implements OnInit {
     const absVal = Math.abs(val);
     const formatted = new Intl.NumberFormat('en-US', {
       minimumFractionDigits: 2,
-      maximumFractionDigits: 2
+      maximumFractionDigits: 2,
     }).format(absVal);
     return isNegative ? `-$${formatted}` : `$${formatted}`;
   }

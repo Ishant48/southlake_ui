@@ -7,17 +7,26 @@ import { ICellRendererParams } from 'ag-grid-community';
   standalone: true,
   template: `
     <div class="user-cell" style="display:flex; align-items:center; height:100%; gap:12px;">
-      <div class="user-avatar" [style.background]="avatarColor" style="width: 32px; height: 32px; border-radius: 50%; color: white; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; letter-spacing: 0.5px; flex-shrink: 0;">
+      <div
+        class="user-avatar"
+        [style.background]="avatarColor"
+        style="width: 32px; height: 32px; border-radius: 50%; color: white; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; letter-spacing: 0.5px; flex-shrink: 0;"
+      >
         {{ initials }}
       </div>
-      <div class="user-cell-text" style="display: flex; flex-direction: column; justify-content: center; line-height: 1.3;">
-        <span class="user-name" style="font-weight: 600; color: #1e293b; font-size: 13px;">{{ name }}</span>
+      <div
+        class="user-cell-text"
+        style="display: flex; flex-direction: column; justify-content: center; line-height: 1.3;"
+      >
+        <span class="user-name" style="font-weight: 600; color: #1e293b; font-size: 13px;">{{
+          name
+        }}</span>
         @if (email) {
           <span class="user-email" style="font-size: 11.5px; color: #64748b;">{{ email }}</span>
         }
       </div>
     </div>
-  `
+  `,
 })
 export class AvatarCellRenderer implements ICellRendererAngularComp {
   initials = '';

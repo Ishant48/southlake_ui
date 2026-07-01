@@ -21,48 +21,53 @@ import { CommonModule } from '@angular/common';
       </ng-template>
     </div>
   `,
-  styles: [`
-    .action-buttons-list {
-      display: flex;
-      gap: 6px;
-      align-items: center;
-      flex-wrap: nowrap;
-      justify-content: center;
-    }
-    .btn-action-outline {
-      height: 26px;
-      padding: 0 6px;
-      border-radius: 4px;
-      border: 1.5px solid var(--gray-300);
-      color: var(--gray-700);
-      background: var(--white);
-      font-size: 11px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: background var(--transition), border-color var(--transition), color var(--transition);
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      box-sizing: border-box;
-      white-space: nowrap;
-    }
-    .btn-action-outline:hover {
-      background: var(--gray-100);
-      border-color: var(--gray-400);
-      color: var(--gray-900);
-    }
-    .view-link {
-      color: var(--coral);
-      font-weight: 600;
-      font-size: 13px;
-      cursor: pointer;
-      transition: color var(--transition);
-    }
-    .view-link:hover {
-      color: var(--coral-hover);
-      text-decoration: underline;
-    }
-  `]
+  styles: [
+    `
+      .action-buttons-list {
+        display: flex;
+        gap: 6px;
+        align-items: center;
+        flex-wrap: nowrap;
+        justify-content: center;
+      }
+      .btn-action-outline {
+        height: 26px;
+        padding: 0 6px;
+        border-radius: 4px;
+        border: 1.5px solid var(--gray-300);
+        color: var(--gray-700);
+        background: var(--white);
+        font-size: 11px;
+        font-weight: 600;
+        cursor: pointer;
+        transition:
+          background var(--transition),
+          border-color var(--transition),
+          color var(--transition);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        box-sizing: border-box;
+        white-space: nowrap;
+      }
+      .btn-action-outline:hover {
+        background: var(--gray-100);
+        border-color: var(--gray-400);
+        color: var(--gray-900);
+      }
+      .view-link {
+        color: var(--coral);
+        font-weight: 600;
+        font-size: 13px;
+        cursor: pointer;
+        transition: color var(--transition);
+      }
+      .view-link:hover {
+        color: var(--coral-hover);
+        text-decoration: underline;
+      }
+    `,
+  ],
 })
 export class CoaActionsRendererComponent implements ICellRendererAngularComp {
   isRoot: boolean = false;

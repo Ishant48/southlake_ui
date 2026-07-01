@@ -8,7 +8,7 @@ import { SessionToken } from '../../../core/models/session.model';
   standalone: true,
   imports: [RouterLink],
   templateUrl: './session-conflict.component.html',
-  styleUrl: './session-conflict.component.scss'
+  styleUrl: './session-conflict.component.scss',
 })
 export class SessionConflictComponent {
   private router = inject(Router);
@@ -34,8 +34,11 @@ export class SessionConflictComponent {
   formatDate(dateStr: string): string {
     try {
       return new Date(dateStr).toLocaleString('en-US', {
-        month: 'short', day: 'numeric', year: 'numeric',
-        hour: '2-digit', minute: '2-digit'
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
       });
     } catch {
       return dateStr;
@@ -47,15 +50,15 @@ export class SessionConflictComponent {
     this.loading = true;
     this.errorMsg = '';
     this.auth.resolveChallenge(this.challengeToken, true).subscribe({
-      next: (session) => {
+      next: session => {
         this.loading = false;
         this.auth.storeSession(session);
         this.router.navigate(['/user-management/users']);
       },
-      error: (err) => {
+      error: err => {
         this.loading = false;
         this.errorMsg = err?.error?.message ?? 'Failed to sign in. Please try again.';
-      }
+      },
     });
   }
 }

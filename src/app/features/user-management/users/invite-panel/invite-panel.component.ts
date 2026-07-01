@@ -1,4 +1,12 @@
-import { Component, Input, Output, EventEmitter, inject, OnChanges, SimpleChanges } from '@angular/core';
+import {
+  Component,
+  Input,
+  Output,
+  EventEmitter,
+  inject,
+  OnChanges,
+  SimpleChanges,
+} from '@angular/core';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { Role } from '../../../../core/models/role.model';
 import { UsersService } from '../../../../core/services/users.service';
@@ -56,25 +64,27 @@ export class InvitePanelComponent implements OnChanges {
     this.errorMsg = '';
 
     const val = this.form.value;
-    this.usersService.inviteUser({
-      email: val.email as string,
-      name: val.name as string,
-      role_id: val.role_id as string,
-      user_type: val.user_type as string,
-      department: val.department ?? undefined,
-      title: val.title ?? undefined,
-    }).subscribe({
-      next: () => {
-        this.loading = false;
-        this.toast.success(`Invitation sent to ${val.email}`);
-        this.form.reset();
-        this.invited.emit();
-        this.closed.emit();
-      },
-      error: (err) => {
-        this.loading = false;
-        this.errorMsg = err?.error?.message ?? 'Failed to send invitation. Please try again.';
-      }
-    });
+    this.usersService
+      .inviteUser({
+        email: val.email as string,
+        name: val.name as string,
+        role_id: val.role_id as string,
+        user_type: val.user_type as string,
+        department: val.department ?? undefined,
+        title: val.title ?? undefined,
+      })
+      .subscribe({
+        next: () => {
+          this.loading = false;
+          this.toast.success(`Invitation sent to ${val.email}`);
+          this.form.reset();
+          this.invited.emit();
+          this.closed.emit();
+        },
+        error: err => {
+          this.loading = false;
+          this.errorMsg = err?.error?.message ?? 'Failed to send invitation. Please try again.';
+        },
+      });
   }
 }

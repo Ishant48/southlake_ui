@@ -35,22 +35,30 @@
 
 .toast-success {
   border-left-color: var(--green);
-  .toast-icon { color: var(--green); }
+  .toast-icon {
+    color: var(--green);
+  }
 }
 
 .toast-error {
   border-left-color: var(--red);
-  .toast-icon { color: var(--red); }
+  .toast-icon {
+    color: var(--red);
+  }
 }
 
 .toast-warning {
   border-left-color: var(--orange);
-  .toast-icon { color: var(--orange); }
+  .toast-icon {
+    color: var(--orange);
+  }
 }
 
 .toast-info {
   border-left-color: var(--navy);
-  .toast-icon { color: var(--navy); }
+  .toast-icon {
+    color: var(--navy);
+  }
 }
 
 .toast-icon {
@@ -86,5 +94,7 @@
   background: none;
   border: none;
 
-  &:hover { color: var(--gray-700); }
+  &:hover {
+    color: var(--gray-700);
+  }
 }

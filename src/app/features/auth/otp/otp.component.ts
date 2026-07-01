@@ -1,4 +1,11 @@
-import { Component, inject, AfterViewInit, ViewChildren, QueryList, ElementRef } from '@angular/core';
+import {
+  Component,
+  inject,
+  AfterViewInit,
+  ViewChildren,
+  QueryList,
+  ElementRef,
+} from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
 
@@ -7,7 +14,7 @@ import { AuthService } from '../../../core/services/auth.service';
   standalone: true,
   imports: [RouterLink],
   templateUrl: './otp.component.html',
-  styleUrl: './otp.component.scss'
+  styleUrl: './otp.component.scss',
 })
 export class OtpComponent implements AfterViewInit {
   @ViewChildren('digitInput') digitInputs!: QueryList<ElementRef<HTMLInputElement>>;
@@ -107,25 +114,25 @@ export class OtpComponent implements AfterViewInit {
     const otp = this.digits.join('');
 
     this.auth.verifyOtp(this.email, otp).subscribe({
-      next: (session) => {
+      next: session => {
         this.loading = false;
         if (session.token_type === 'session') {
           this.auth.storeSession(session);
           this.router.navigate(['/user-management/users']);
         } else {
           this.router.navigate(['/auth/session-conflict'], {
-            state: { session, email: this.email }
+            state: { session, email: this.email },
           });
         }
       },
-      error: (err) => {
+      error: err => {
         this.loading = false;
         this.errorMsg = err?.error?.message ?? 'Invalid or expired code. Please try again.';
         this.digits = ['', '', '', '', '', ''];
         const inputs = this.digitInputs.toArray();
         inputs.forEach(i => (i.nativeElement.value = ''));
         inputs[0].nativeElement.focus();
-      }
+      },
     });
   }
 
@@ -134,8 +141,12 @@ export class OtpComponent implements AfterViewInit {
     this.resending = true;
     this.errorMsg = '';
     this.auth.login(this.email, this.password).subscribe({
-      next: () => { this.resending = false; },
-      error: () => { this.resending = false; }
+      next: () => {
+        this.resending = false;
+      },
+      error: () => {
+        this.resending = false;
+      },
     });
   }
 }

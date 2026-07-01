@@ -1,4 +1,14 @@
-import { Component, Input, Output, EventEmitter, ElementRef, HostListener, OnInit, OnChanges, SimpleChanges } from '@angular/core';
+import {
+  Component,
+  Input,
+  Output,
+  EventEmitter,
+  ElementRef,
+  HostListener,
+  OnInit,
+  OnChanges,
+  SimpleChanges,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
@@ -7,14 +17,14 @@ import { FormsModule } from '@angular/forms';
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './dropdown-search.component.html',
-  styleUrl: './dropdown-search.component.scss'
+  styleUrl: './dropdown-search.component.scss',
 })
 export class DropdownSearchComponent implements OnInit, OnChanges {
   @Input() items: any[] = [];
   @Input() isMultiSelect: boolean = false;
   @Input() bindValue: string = 'id';
   @Input() placeholder: string = 'Select option';
-  @Input() itemLabelFn: (item: any) => string = (item) => item.name || '';
+  @Input() itemLabelFn: (item: any) => string = item => item.name || '';
   @Input() disabled: boolean = false;
 
   // Two-way bindings
@@ -82,7 +92,11 @@ export class DropdownSearchComponent implements OnInit, OnChanges {
       }
       return `${selectedLabels.length} selected`;
     } else {
-      if (this.selectedValue === null || this.selectedValue === undefined || this.selectedValue === '') {
+      if (
+        this.selectedValue === null ||
+        this.selectedValue === undefined ||
+        this.selectedValue === ''
+      ) {
         return this.placeholder;
       }
       const matched = this.items.find(item => item[this.bindValue] == this.selectedValue);

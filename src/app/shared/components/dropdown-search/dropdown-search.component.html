@@ -6,7 +6,7 @@
     </span>
     <span class="dropdown-trigger-arrow">
       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-        <path d="M6 9l6 6 6-6"/>
+        <path d="M6 9l6 6 6-6" />
       </svg>
     </span>
   </div>
@@ -15,17 +15,18 @@
   <div class="dropdown-search-panel" *ngIf="isOpen">
     <!-- Search Input Area -->
     <div class="dropdown-search-header">
-      <input 
-        type="text" 
-        class="dropdown-search-input" 
-        [(ngModel)]="searchText" 
-        (ngModelChange)="filterItems()" 
+      <input
+        type="text"
+        class="dropdown-search-input"
+        [(ngModel)]="searchText"
+        (ngModelChange)="filterItems()"
         placeholder="Search..."
         (click)="$event.stopPropagation()"
-      >
+      />
       <span class="dropdown-search-icon">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          <circle cx="11" cy="11" r="8" />
+          <line x1="21" y1="21" x2="16.65" y2="16.65" />
         </svg>
       </span>
     </div>
@@ -38,27 +39,22 @@
 
     <!-- Items List -->
     <div class="dropdown-search-list">
-      <div 
-        class="dropdown-search-item no-results" 
-        *ngIf="filteredItems.length === 0"
-      >
-        No results found
-      </div>
+      <div class="dropdown-search-item no-results" *ngIf="filteredItems.length === 0">No results found</div>
 
-      <div 
-        *ngFor="let item of filteredItems" 
-        class="dropdown-search-item" 
+      <div
+        *ngFor="let item of filteredItems"
+        class="dropdown-search-item"
         [class.selected]="isSelected(item)"
         (click)="isMultiSelect ? toggleMulti(item) : selectSingle(item); $event.stopPropagation()"
       >
         <!-- Checkbox for multi-select -->
-        <input 
-          type="checkbox" 
-          *ngIf="isMultiSelect" 
+        <input
+          type="checkbox"
+          *ngIf="isMultiSelect"
           [checked]="isSelected(item)"
           (click)="$event.stopPropagation(); toggleMulti(item)"
-          style="margin-right: 8px; pointer-events: none;"
-        >
+          style="margin-right: 8px; pointer-events: none"
+        />
         <span class="dropdown-item-label">{{ itemLabelFn(item) }}</span>
       </div>
     </div>

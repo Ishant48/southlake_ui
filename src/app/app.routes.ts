@@ -7,7 +7,7 @@ export const routes: Routes = [
   { path: '', redirectTo: 'auth/login', pathMatch: 'full' },
   {
     path: 'auth',
-    loadChildren: () => import('./features/auth/auth.routes').then(m => m.authRoutes)
+    loadChildren: () => import('./features/auth/auth.routes').then(m => m.authRoutes),
   },
   {
     path: '',
@@ -17,26 +17,39 @@ export const routes: Routes = [
       {
         path: 'user-management',
         canActivate: [permissionGuard('user_management')],
-        loadChildren: () => import('./features/user-management/user-management.routes').then(m => m.userManagementRoutes)
+        loadChildren: () =>
+          import('./features/user-management/user-management.routes').then(
+            m => m.userManagementRoutes,
+          ),
       },
       {
         path: 'dashboard',
-        loadComponent: () => import('./features/dashboard/dashboard.component').then(m => m.DashboardComponent)
+        loadComponent: () =>
+          import('./features/dashboard/dashboard.component').then(m => m.DashboardComponent),
       },
       {
         path: 'chart-of-accounts',
         canActivate: [permissionGuard('chart_of_accounts')],
-        loadComponent: () => import('./features/chart-of-accounts/chart-of-accounts.component').then(m => m.ChartOfAccountsComponent)
+        loadComponent: () =>
+          import('./features/chart-of-accounts/chart-of-accounts.component').then(
+            m => m.ChartOfAccountsComponent,
+          ),
       },
       {
         path: 'journal-entries',
         canActivate: [permissionGuard('journal_entry')],
-        loadComponent: () => import('./features/journal-entries/journal-entries.component').then(m => m.JournalEntriesComponent)
+        loadComponent: () =>
+          import('./features/journal-entries/journal-entries.component').then(
+            m => m.JournalEntriesComponent,
+          ),
       },
       {
         path: 'test-balance',
         canActivate: [permissionGuard('chart_of_accounts')],
-        loadComponent: () => import('./features/test-balance/test-balance.component').then(m => m.TestBalanceComponent)
+        loadComponent: () =>
+          import('./features/test-balance/test-balance.component').then(
+            m => m.TestBalanceComponent,
+          ),
       },
       {
         path: 'reinsurance-calculations',
@@ -46,10 +59,10 @@ export const routes: Routes = [
       {
         path: 'masters',
         canActivate: [permissionGuard('master_data')],
-        loadChildren: () => import('./features/masters/masters.routes').then(m => m.mastersRoutes)
+        loadChildren: () => import('./features/masters/masters.routes').then(m => m.mastersRoutes),
       },
-      { path: '', redirectTo: 'user-management/users', pathMatch: 'full' }
-    ]
+      { path: '', redirectTo: 'user-management/users', pathMatch: 'full' },
+    ],
   },
-  { path: '**', redirectTo: 'auth/login' }
+  { path: '**', redirectTo: 'auth/login' },
 ];

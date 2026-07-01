@@ -4,10 +4,11 @@
       <h1 class="page-title">Roles &amp; Permissions</h1>
       <p class="page-subtitle">Define roles and control what each role can access.</p>
     </div>
-    @if (hasPermission('role.manage')) {
+    @if (hasPermission("role.manage")) {
       <button class="btn-primary" (click)="openCreateModal()">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-          <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+          <line x1="12" y1="5" x2="12" y2="19" />
+          <line x1="5" y1="12" x2="19" y2="12" />
         </svg>
         New Role
       </button>
@@ -40,32 +41,37 @@
           }
           <div class="role-meta">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/>
+              <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" />
+              <circle cx="9" cy="7" r="4" />
             </svg>
-            <span>{{ role.user_count ?? 0 }} user{{ role.user_count !== 1 ? 's' : '' }}</span>
+            <span>{{ role.user_count ?? 0 }} user{{ role.user_count !== 1 ? "s" : "" }}</span>
           </div>
           <div class="role-actions">
-            @if (hasPermission('role.manage')) {
+            @if (hasPermission("role.manage")) {
               <button class="btn-edit-role" (click)="openEditModal(role)">Edit Permissions</button>
             }
-            @if (!role.is_system && hasPermission('role.manage')) {
+            @if (!role.is_system && hasPermission("role.manage")) {
               <button class="btn-delete-role" (click)="onDeleteRole(role)" aria-label="Delete role">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/>
-                  <path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/>
+                  <polyline points="3 6 5 6 21 6" />
+                  <path d="M19 6l-1 14H6L5 6" />
+                  <path d="M10 11v6" />
+                  <path d="M14 11v6" />
+                  <path d="M9 6V4h6v2" />
                 </svg>
               </button>
             }
           </div>
         </div>
       }
-      @if (hasPermission('role.manage')) {
-      <button class="role-card role-card-add" (click)="openCreateModal()">
-        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="1.5">
-          <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
-        </svg>
-        <span>New Role</span>
-      </button>
+      @if (hasPermission("role.manage")) {
+        <button class="role-card role-card-add" (click)="openCreateModal()">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="1.5">
+            <line x1="12" y1="5" x2="12" y2="19" />
+            <line x1="5" y1="12" x2="19" y2="12" />
+          </svg>
+          <span>New Role</span>
+        </button>
       }
     </div>
 
@@ -73,7 +79,7 @@
       <div class="pagination">
         <button class="page-btn" [disabled]="currentPage === 1" (click)="goToPage(currentPage - 1)">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-            <polyline points="15 18 9 12 15 6"/>
+            <polyline points="15 18 9 12 15 6" />
           </svg>
         </button>
         @for (p of pageNumbers; track p) {
@@ -81,7 +87,7 @@
         }
         <button class="page-btn" [disabled]="currentPage === totalPages" (click)="goToPage(currentPage + 1)">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-            <polyline points="9 18 15 12 9 6"/>
+            <polyline points="9 18 15 12 9 6" />
           </svg>
         </button>
       </div>
