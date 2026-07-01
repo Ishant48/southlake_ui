@@ -1722,11 +1722,8 @@ export class MastersComponent implements OnInit {
     for (const st of this.itdStatesList) {
       this.itdForm.exhibits[st.code] = {
         uep: 0,
-        loss_reserves: 0,
         loss_ibnr: 0,
-        lae_reserves_dcc: 0,
         lae_ibnr_dcc: 0,
-        lae_reserves_aoe: 0,
         lae_ibnr_aoe: 0,
         ulae_ibnr: 0
       };
@@ -1743,18 +1740,11 @@ export class MastersComponent implements OnInit {
       const ex = this.itdForm.exhibits[code];
       return {
         state_code: code,
-        pw: [0, 0, 0],
-        uep: [0, Number(ex.uep || 0), Number(ex.uep || 0)],
-        lp: [0, 0, 0],
-        laep: [0, 0, 0],
-        ae_paid: [0, 0, 0],
-        loss_reserves: [0, Number(ex.loss_reserves || 0), Number(ex.loss_reserves || 0)],
-        loss_ibnr: [0, Number(ex.loss_ibnr || 0), Number(ex.loss_ibnr || 0)],
-        lae_reserves_dcc: [0, Number(ex.lae_reserves_dcc || 0), Number(ex.lae_reserves_dcc || 0)],
-        lae_ibnr_dcc: [0, Number(ex.lae_ibnr_dcc || 0), Number(ex.lae_ibnr_dcc || 0)],
-        lae_reserves_aoe: [0, Number(ex.lae_reserves_aoe || 0), Number(ex.lae_reserves_aoe || 0)],
-        lae_ibnr_aoe: [0, Number(ex.lae_ibnr_aoe || 0), Number(ex.lae_ibnr_aoe || 0)],
-        ulae_ibnr: [0, Number(ex.ulae_ibnr || 0), Number(ex.ulae_ibnr || 0)]
+        uep: Number(ex.uep || 0),
+        loss_ibnr: Number(ex.loss_ibnr || 0),
+        lae_ibnr_dcc: Number(ex.lae_ibnr_dcc || 0),
+        lae_ibnr_aoe: Number(ex.lae_ibnr_aoe || 0),
+        ulae_ibnr: Number(ex.ulae_ibnr || 0)
       };
     });
 
