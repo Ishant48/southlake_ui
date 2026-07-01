@@ -68,6 +68,36 @@ export class RolePermissionsModalComponent implements OnChanges {
     })).sort((a, b) => a.moduleName.localeCompare(b.moduleName));
   }
 
+  collapsedGroups = new Set<string>();
+
+  toggleGroup(groupName: string): void {
+    if (this.collapsedGroups.has(groupName)) {
+      this.collapsedGroups.delete(groupName);
+    } else {
+      this.collapsedGroups.add(groupName);
+    }
+  }
+
+  isGroupCollapsed(groupName: string): boolean {
+    return this.collapsedGroups.has(groupName);
+  }
+
+  isAllSelected(group: { moduleName: string; permissions: Permission[] }): boolean {
+    if (!group.permissions.length) return false;
+    return group.permissions.every(perm => this.selectedIds.has(perm.id));
+  }
+
+  toggleSelectAllGroup(group: { moduleName: string; permissions: Permission[] }): void {
+    const allSelected = this.isAllSelected(group);
+    for (const perm of group.permissions) {
+      if (allSelected) {
+        this.selectedIds.delete(perm.id);
+      } else {
+        this.selectedIds.add(perm.id);
+      }
+    }
+  }
+
   swatches = COLOR_SWATCHES;
   loading = false;
   errorMsg = '';
