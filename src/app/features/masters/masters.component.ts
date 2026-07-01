@@ -87,6 +87,7 @@ export class MastersComponent implements OnInit {
   statusFilter: 'all' | 'active' | 'inactive' = 'all';
   mgaFilter: string = 'all';
   seededProgramITD = new Set<string>();
+  itdWorkbookIds = new Map<string, number>();
   treatyWorkbookStatuses = new Map<string, string>();
 
 
@@ -373,10 +374,12 @@ export class MastersComponent implements OnInit {
         this.reinsuranceService.getWorkbooks().subscribe({
           next: (wbs) => {
             this.seededProgramITD.clear();
+            this.itdWorkbookIds.clear();
             this.treatyWorkbookStatuses.clear();
             wbs.forEach(wb => {
               if (wb.source === 'ITD') {
                 this.seededProgramITD.add(wb.program);
+                this.itdWorkbookIds.set(wb.program, wb.id);
               }
               const existing = this.treatyWorkbookStatuses.get(wb.program);
               if (existing !== 'Approved') {
@@ -1728,8 +1731,43 @@ export class MastersComponent implements OnInit {
       };
     }
 
-    this.showItdModal = true;
-    this.cdr.markForCheck();
+    const existingWbId = this.itdWorkbookIds.get(treaty.name);
+    if (existingWbId) {
+      this.reinsuranceService.getWorkbook(existingWbId).subscribe({
+        next: (wbDetail) => {
+          if (wbDetail && wbDetail.stateExhibits) {
+            wbDetail.stateExhibits.forEach((se: any) => {
+              const stateCode = se.stateCode.toUpperCase();
+              if (this.itdForm.exhibits[stateCode]) {
+                const getVal = (val: any): number => {
+                  if (Array.isArray(val)) {
+                    return val[1] !== undefined ? Number(val[1]) : (Number(val[0]) || 0);
+                  }
+                  return Number(val) || 0;
+                };
+                this.itdForm.exhibits[stateCode] = {
+                  uep: getVal(se.uep),
+                  loss_ibnr: getVal(se.loss_ibnr),
+                  lae_ibnr_dcc: getVal(se.lae_ibnr_dcc),
+                  lae_ibnr_aoe: getVal(se.lae_ibnr_aoe),
+                  ulae_ibnr: getVal(se.ulae_ibnr),
+                };
+              }
+            });
+          }
+          this.showItdModal = true;
+          this.cdr.markForCheck();
+        },
+        error: (err) => {
+          console.error('Failed to load existing ITD workbook details', err);
+          this.showItdModal = true;
+          this.cdr.markForCheck();
+        }
+      });
+    } else {
+      this.showItdModal = true;
+      this.cdr.markForCheck();
+    }
   }
 
   saveManualITD(): void {
