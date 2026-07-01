@@ -1729,60 +1729,6 @@ export class MastersComponent implements OnInit {
       };
     }
 
-    // Load existing ITD baseline workbook if it exists
-    this.reinsuranceService.getWorkbooks().subscribe({
-      next: (wbs) => {
-        const itdWb = wbs.find(w => 
-          w.program?.trim().toLowerCase() === treaty.name?.trim().toLowerCase() && 
-          w.source === 'ITD'
-        );
-        if (itdWb) {
-          const mKey = itdWb.month_key || itdWb.monthKey || '2025-12';
-          this.itdForm.month_key = mKey;
-          this.itdForm.month_label = itdWb.month_label || itdWb.monthLabel || 'December 2025';
-          const parts = mKey.split('-');
-          if (parts.length === 2) {
-            this.itdSelectedYear = parts[0];
-            this.itdSelectedMonth = parts[1];
-          }
-
-          this.reinsuranceService.getWorkbook(itdWb.id).subscribe({
-            next: (wbDetail) => {
-              const exhibits = wbDetail?.state_exhibits || wbDetail?.stateExhibits;
-              if (wbDetail && exhibits) {
-                for (const ex of exhibits) {
-                  const stateCode = ex.state_code || ex.stateCode;
-                  const matchedStateObj = this.itdStatesList.find(s => String(s.code) === String(stateCode));
-                  const targetState = matchedStateObj ? matchedStateObj.code : 
-                                      (String(stateCode) === '5' ? 'CA' : null) || 
-                                      (String(stateCode) === 'CA' ? '5' : null);
-                  
-                  if (targetState && this.itdForm.exhibits[targetState]) {
-                    const val = (arr: any) => {
-                      if (!arr) return 0;
-                      if (Array.isArray(arr)) {
-                        return arr.length > 1 ? Number(arr[1] ?? 0) : Number(arr[0] ?? 0);
-                      }
-                      return Number(arr);
-                    };
-
-                    this.itdForm.exhibits[targetState] = {
-                      uep: val(ex.uep),
-                      loss_ibnr: val(ex.loss_ibnr),
-                      lae_ibnr_dcc: val(ex.lae_ibnr_dcc),
-                      lae_ibnr_aoe: val(ex.lae_ibnr_aoe),
-                      ulae_ibnr: val(ex.ulae_ibnr)
-                    };
-                  }
-                }
-                this.cdr.markForCheck();
-              }
-            }
-          });
-        }
-      }
-    });
-
     this.showItdModal = true;
     this.cdr.markForCheck();
   }
