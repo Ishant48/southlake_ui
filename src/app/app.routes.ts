@@ -40,7 +40,7 @@ export const routes: Routes = [
       },
       {
         path: 'reinsurance-calculations',
-        canActivate: [permissionGuard('journal_entry')],
+        canActivate: [permissionGuard('reinsurance')],
         loadComponent: () => import('./features/reinsurance-calculations/reinsurance-calculations.component').then(m => m.ReinsuranceCalculationsComponent)
       },
       {

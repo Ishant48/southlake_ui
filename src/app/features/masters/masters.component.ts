@@ -1926,10 +1926,9 @@ export class MastersComponent implements OnInit {
     this.itdForm.month_label = 'December 2025';
 
     const states = (treaty.treaty_states || []).map((s: any) => {
-      const code = s.state?.state_code || s.state_code;
       const abbr = s.state?.state_abbr || s.state_code;
-      return { code: String(code), label: String(abbr) };
-    }).filter((s: any) => s.code);
+      return { code: String(abbr), label: String(abbr) };
+    }).filter((s: any) => s.code && s.code !== 'undefined');
 
     this.itdStatesList = [
       { code: 'TOTAL', label: 'TOTAL' },

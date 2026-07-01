@@ -69,12 +69,43 @@ export class UserDetailPanelComponent implements OnChanges {
       chart_of_accounts: 'Chart of Accounts',
       master_data: 'Master Data',
       journal_entry: 'Journal Entries',
+      reinsurance: 'Premium and claims Exhibits',
       general: 'General'
     };
     return Object.entries(groups).map(([prefix, perms]) => ({
       moduleName: MODULE_NAMES[prefix] || (prefix.charAt(0).toUpperCase() + prefix.slice(1).replace(/_/g, ' ')),
       permissions: perms
     })).sort((a, b) => a.moduleName.localeCompare(b.moduleName));
+  }
+
+  expandedGroups = new Set<string>();
+
+  toggleGroup(groupName: string): void {
+    if (this.expandedGroups.has(groupName)) {
+      this.expandedGroups.delete(groupName);
+    } else {
+      this.expandedGroups.add(groupName);
+    }
+  }
+
+  isGroupExpanded(groupName: string): boolean {
+    return this.expandedGroups.has(groupName);
+  }
+
+  isAllSelected(group: { moduleName: string; permissions: Permission[] }): boolean {
+    if (!group.permissions.length) return false;
+    return group.permissions.every(perm => this.selectedIds.has(perm.id));
+  }
+
+  toggleSelectAllGroup(group: { moduleName: string; permissions: Permission[] }): void {
+    const allSelected = this.isAllSelected(group);
+    for (const perm of group.permissions) {
+      if (allSelected) {
+        this.selectedIds.delete(perm.id);
+      } else {
+        this.selectedIds.add(perm.id);
+      }
+    }
   }
   permsLoading = false;
   permsError = '';
