@@ -136,7 +136,9 @@
                   <td class="col-actions" style="text-align: center;">
                     <div class="action-buttons-list">
                       <button class="btn-action-outline" (click)="triggerTreatyMonthlyUpload(treaty, monthlyExcelInput)">Upload Excel</button>
-                      <button class="btn-action-outline" (click)="openAddItdModal(treaty)">Add ITD</button>
+                      <button class="btn-action-outline" (click)="openAddItdModal(treaty)">
+                        {{ hasITDSeeded(treaty.name) ? 'Edit ITD' : 'Add ITD' }}
+                      </button>
                       <button class="btn-action-outline" (click)="openTreatyEdit(treaty)">Edit</button>
                       <button class="btn-action-outline btn-action-danger-outline" (click)="deleteTreaty(treaty)">
                         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
@@ -1223,7 +1225,7 @@
     <div class="modal-overlay" (click)="showItdModal = false">
       <div class="modal-box" (click)="$event.stopPropagation()" style="max-width: 900px; width: 90%; max-height: 90vh; display: flex; flex-direction: column;">
         <div class="panel-header" style="flex-shrink: 0;">
-          <h2>Add ITD Baseline for {{ itdForm.program }}</h2>
+          <h2>{{ hasITDSeeded(itdForm.program) ? 'Edit' : 'Add' }} ITD Baseline for {{ itdForm.program }}</h2>
           <button class="btn-close" (click)="showItdModal = false">×</button>
         </div>
 
@@ -1307,7 +1309,9 @@
 
         <div class="panel-footer" style="flex-shrink: 0; border-top: 1px solid var(--gray-200); padding: 12px 20px;">
           <button type="button" class="btn-ghost" (click)="showItdModal = false">Cancel</button>
-          <button type="button" class="btn-primary" (click)="saveManualITD()">Save ITD Baseline</button>
+          <button type="button" class="btn-primary" (click)="saveManualITD()">
+            {{ hasITDSeeded(itdForm.program) ? 'Save ITD Baseline' : 'Add ITD Baseline' }}
+          </button>
         </div>
       </div>
     </div>
