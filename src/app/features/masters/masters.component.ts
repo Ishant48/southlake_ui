@@ -1669,10 +1669,34 @@ export class MastersComponent implements OnInit {
           this.loadData();
         },
         error: (err) => {
-          const msg = err.error?.message || 'Failed to upload monthly exhibit';
-          this.toast.error(msg);
-          this.selectedTreatyForUpload = null;
-          event.target.value = '';
+          if (err.status === 409) {
+            const msg = err.error?.message || 'A workbook for this program and month already exists.';
+            const overwrite = confirm(`${msg}\n\nDo you want to overwrite the existing data?`);
+            if (overwrite) {
+              this.reinsuranceService.uploadWorkbook(file, true, programName).subscribe({
+                next: () => {
+                  this.toast.success(`Successfully replaced monthly exhibit for ${programName}.`);
+                  this.selectedTreatyForUpload = null;
+                  event.target.value = '';
+                  this.loadData();
+                },
+                error: (err2) => {
+                  const msg2 = err2.error?.message || 'Failed to replace monthly exhibit';
+                  this.toast.error(msg2);
+                  this.selectedTreatyForUpload = null;
+                  event.target.value = '';
+                }
+              });
+            } else {
+              this.selectedTreatyForUpload = null;
+              event.target.value = '';
+            }
+          } else {
+            const msg = err.error?.message || 'Failed to upload monthly exhibit';
+            this.toast.error(msg);
+            this.selectedTreatyForUpload = null;
+            event.target.value = '';
+          }
         }
       });
     }
