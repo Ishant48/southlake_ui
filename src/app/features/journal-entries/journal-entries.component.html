@@ -43,25 +43,15 @@
 
     <div class="card table-card">
       <div class="filters-bar">
-        <div class="search-wrap">
+        <div class="search-control">
           <input
-            class="search-input"
             type="text"
             [(ngModel)]="searchTerm"
             (ngModelChange)="loadBatches()"
             placeholder="Search here"
-            style="padding-left: 12px; padding-right: 34px"
           />
           <svg
             class="search-icon"
-            style="
-              position: absolute;
-              right: 10px;
-              top: 50%;
-              transform: translateY(-50%);
-              color: var(--gray-400);
-              pointer-events: none;
-            "
             width="15"
             height="15"
             viewBox="0 0 24 24"
@@ -130,23 +120,13 @@
 
     <div class="card table-card">
       <div class="filters-bar">
-        <div class="search-wrap">
+        <div class="search-control">
           <input
-            class="search-input"
             type="text"
             placeholder="Search here"
-            style="padding-left: 12px; padding-right: 34px"
           />
           <svg
             class="search-icon"
-            style="
-              position: absolute;
-              right: 10px;
-              top: 50%;
-              transform: translateY(-50%);
-              color: var(--gray-400);
-              pointer-events: none;
-            "
             width="15"
             height="15"
             viewBox="0 0 24 24"
@@ -321,13 +301,7 @@
       </div>
 
       <div class="form-actions-row">
-        <button
-          class="btn btn-primary"
-          [disabled]="!isFormBalanced || submittingEntries"
-          (click)="postJournalEntries()"
-        >
-          {{ submittingEntries ? "Posting..." : "Post" }}
-        </button>
+        <button class="btn btn-primary" [disabled]="!isFormBalanced || submittingEntries" (click)="postJournalEntries()">{{ submittingEntries ? "Posting..." : "Post" }}</button>
         <button class="btn btn-cancel" (click)="cancelForm()">Cancel</button>
       </div>
     </div>
@@ -348,9 +322,7 @@
           </div>
         </div>
         <div class="modal-footer">
-          <button class="btn btn-primary" [disabled]="submittingBatch" (click)="createBatch()">
-            {{ submittingBatch ? "Adding..." : "Add" }}
-          </button>
+          <button class="btn btn-primary" [disabled]="submittingBatch" (click)="createBatch()">{{ submittingBatch ? "Adding..." : "Add" }}</button>
           <button class="btn btn-cancel" (click)="closeAddBatch()">Cancel</button>
         </div>
       </div>

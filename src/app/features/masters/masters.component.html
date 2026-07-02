@@ -165,10 +165,10 @@
 
   <!-- SIMPLE MASTER CREATE / EDIT MODAL -->
   @if (showSimpleModal) {
-    <div class="modal-overlay" (click)="showSimpleModal = false">
+    <div class="modal-overlay" (click)="$event.target === $event.currentTarget && (showSimpleModal = false)">
       <div
         class="modal-box {{ simpleMode === 'lob' || simpleMode === 'cob' ? 'treaty-modal' : 'coa-modal' }}"
-        (click)="$event.stopPropagation()"
+        
       >
         <div class="panel-header">
           <h3 class="panel-title">{{ simpleModalTitle }}</h3>
@@ -306,8 +306,8 @@
 
   <!-- MGA CREATE / EDIT MODAL -->
   @if (showMgaModal) {
-    <div class="modal-overlay" (click)="showMgaModal = false">
-      <div class="modal-box treaty-modal" (click)="$event.stopPropagation()">
+    <div class="modal-overlay" (click)="$event.target === $event.currentTarget && (showMgaModal = false)">
+      <div class="modal-box treaty-modal" >
         <div class="panel-header">
           <h3 class="panel-title">{{ mgaModalTitle }}</h3>
           <button class="panel-close" (click)="showMgaModal = false" aria-label="Close modal">
@@ -518,8 +518,8 @@
 
   <!-- STATE CREATE / EDIT MODAL -->
   @if (showStateModal) {
-    <div class="modal-overlay" (click)="showStateModal = false">
-      <div class="modal-box coa-modal" (click)="$event.stopPropagation()">
+    <div class="modal-overlay" (click)="$event.target === $event.currentTarget && (showStateModal = false)">
+      <div class="modal-box coa-modal" >
         <div class="panel-header">
           <h3 class="panel-title">{{ stateModalTitle }}</h3>
           <button class="panel-close" (click)="showStateModal = false" aria-label="Close modal">
@@ -611,8 +611,8 @@
 
   <!-- RISK COMPANY CREATE / EDIT MODAL -->
   @if (showRiskCompanyModal) {
-    <div class="modal-overlay" (click)="showRiskCompanyModal = false">
-      <div class="modal-box treaty-modal" (click)="$event.stopPropagation()">
+    <div class="modal-overlay" (click)="$event.target === $event.currentTarget && (showRiskCompanyModal = false)">
+      <div class="modal-box treaty-modal" >
         <div class="panel-header">
           <h3 class="panel-title">{{ riskCompanyModalTitle }}</h3>
           <button class="panel-close" (click)="showRiskCompanyModal = false" aria-label="Close modal">
@@ -743,8 +743,8 @@
 
   <!-- NOTES VIEW MODAL -->
   @if (showNotesModal) {
-    <div class="modal-overlay" (click)="showNotesModal = false">
-      <div class="modal-box coa-modal" (click)="$event.stopPropagation()">
+    <div class="modal-overlay" (click)="$event.target === $event.currentTarget && (showNotesModal = false)">
+      <div class="modal-box coa-modal" >
         <div class="panel-header">
           <h3 class="panel-title">{{ notesModalTitle }}</h3>
           <button class="panel-close" (click)="showNotesModal = false" aria-label="Close modal">
@@ -776,8 +776,8 @@
 
   <!-- GENERIC DOCUMENT DRAWER -->
   @if (showDocModal) {
-    <div class="modal-overlay" (click)="showDocModal = false">
-      <div class="modal-box coa-modal doc-modal" (click)="$event.stopPropagation()">
+    <div class="modal-overlay" (click)="$event.target === $event.currentTarget && (showDocModal = false)">
+      <div class="modal-box coa-modal doc-modal" >
         <div class="panel-header">
           <div>
             <h3 class="panel-title">Attachment Documents</h3>
@@ -886,11 +886,11 @@
 
   <!-- TREATY CREATE / EDIT MODAL -->
   @if (showTreatyModal) {
-    <div class="modal-overlay" (click)="showTreatyModal = false">
+    <div class="modal-overlay" (click)="$event.target === $event.currentTarget && (showTreatyModal = false)">
       <div
         class="modal-box coa-modal treaty-modal"
         style="max-width: 800px !important"
-        (click)="$event.stopPropagation()"
+        
       >
         <div class="panel-header">
           <h3 class="panel-title">{{ treatyModalTitle }}</h3>
@@ -1350,10 +1350,10 @@
 
   <!-- Add ITD Manual Modal -->
   @if (showItdModal) {
-    <div class="modal-overlay" (click)="showItdModal = false">
+    <div class="modal-overlay" (click)="$event.target === $event.currentTarget && (showItdModal = false)">
       <div
         class="modal-box"
-        (click)="$event.stopPropagation()"
+        
         style="max-width: 900px; width: 90%; max-height: 90vh; display: flex; flex-direction: column"
       >
         <div class="panel-header" style="flex-shrink: 0">
@@ -1488,8 +1488,8 @@
 
   <!-- GL Mapping Modal -->
   @if (showGlMappingModal) {
-    <div class="modal-overlay" (click)="showGlMappingModal = false">
-      <div class="modal-box" (click)="$event.stopPropagation()" style="max-width: 480px">
+    <div class="modal-overlay" (click)="$event.target === $event.currentTarget && (showGlMappingModal = false)">
+      <div class="modal-box"  style="max-width: 480px">
         <div class="panel-header">
           <h3 class="panel-title">{{ glMappingModalTitle }}</h3>
           <button class="panel-close" (click)="showGlMappingModal = false" aria-label="Close modal">

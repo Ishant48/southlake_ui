@@ -9,5 +9,13 @@
   </head>
   <body>
     <app-root></app-root>
+    <script>
+      // Globally fix date pickers so clicking anywhere on the input opens the native calendar
+      document.addEventListener('click', function(e) {
+        if (e.target && e.target.matches('input[type="date"]')) {
+          try { e.target.showPicker(); } catch (err) {}
+        }
+      });
+    </script>
   </body>
 </html>

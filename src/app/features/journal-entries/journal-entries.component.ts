@@ -229,8 +229,22 @@ export class JournalEntriesComponent implements OnInit {
       next: batches => {
         if (batches.length > 0) {
           const uniquePeriods = Array.from(new Set(batches.map(b => b.period)));
-          // Sort or reverse to show newest/oldest
-          this.periods = uniquePeriods.sort((a, b) => b.localeCompare(a));
+          // Filter to only allow Jan, Feb, and March 2026
+          const allowedPeriods = ['January 2026', 'February 2026', 'March 2026'];
+          const filteredPeriods = uniquePeriods.filter(p => allowedPeriods.includes(p));
+
+          // Sort chronologically (newest first)
+          this.periods = filteredPeriods.sort((a, b) => {
+            const dateA = new Date('1 ' + a);
+            const dateB = new Date('1 ' + b);
+            return dateB.getTime() - dateA.getTime();
+          });
+          
+          // If no matching periods found from DB, fallback to allowed so dropdown isn't empty
+          if (this.periods.length === 0) {
+            this.periods = allowedPeriods.reverse();
+          }
+
           if (!this.periods.includes(this.selectedPeriod)) {
             this.selectedPeriod = this.periods[0];
           }

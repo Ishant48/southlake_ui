@@ -109,6 +109,7 @@ export class MastersComponent implements OnInit {
   statusFilter: 'all' | 'active' | 'inactive' = 'all';
   mgaFilter: string = 'all';
   seededProgramITD = new Set<string>();
+  itdWorkbookIds = new Map<string, number>();
   treatyWorkbookStatuses = new Map<string, string>();
 
   // Data lists
@@ -422,6 +423,7 @@ export class MastersComponent implements OnInit {
             wbs.forEach(wb => {
               if (wb.source === 'ITD') {
                 this.seededProgramITD.add(wb.program);
+                this.itdWorkbookIds.set(wb.program, wb.id);
               }
               const existing = this.treatyWorkbookStatuses.get(wb.program);
               if (existing !== 'Approved') {
@@ -2350,8 +2352,42 @@ export class MastersComponent implements OnInit {
       };
     }
 
-    this.showItdModal = true;
-    this.cdr.markForCheck();
+    const wbId = this.itdWorkbookIds.get(treaty.name);
+    if (wbId) {
+      this.reinsuranceService.getWorkbook(wbId).subscribe({
+        next: wbDetail => {
+          const exhibits = wbDetail.stateExhibits || wbDetail.state_exhibits || [];
+          
+          const getVal = (val: any) => {
+            if (Array.isArray(val)) return Number(val[val.length - 1] || 0);
+            return Number(val || 0);
+          };
+
+          for (const se of exhibits) {
+            const stateCode = String(se.stateCode || se.state_code);
+            if (stateCode && this.itdForm.exhibits[stateCode]) {
+              this.itdForm.exhibits[stateCode] = {
+                uep: getVal(se.uep),
+                loss_ibnr: getVal(se.loss_ibnr ?? se.lossIbnr),
+                lae_ibnr_dcc: getVal(se.lae_ibnr_dcc ?? se.laeIbnrDcc),
+                lae_ibnr_aoe: getVal(se.lae_ibnr_aoe ?? se.laeIbnrAoe),
+                ulae_ibnr: getVal(se.ulae_ibnr ?? se.ulaeIbnr),
+              };
+            }
+          }
+          this.showItdModal = true;
+          this.cdr.markForCheck();
+        },
+        error: () => {
+          console.error('Failed to load existing ITD data');
+          this.showItdModal = true;
+          this.cdr.markForCheck();
+        }
+      });
+    } else {
+      this.showItdModal = true;
+      this.cdr.markForCheck();
+    }
   }
 
   saveManualITD(): void {

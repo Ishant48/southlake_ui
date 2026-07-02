@@ -11,7 +11,7 @@ import { ICellRendererParams } from 'ag-grid-community';
         <button
           class="btn-action-outline"
           [class.btn-action-danger-outline]="btn.danger"
-          [class.btn-icon-only]="true"
+          [class.btn-icon-only]="isIconOnly(btn.action)"
           [title]="btn.label"
           (click)="onClick(btn.action, $event)"
         >
@@ -154,6 +154,10 @@ export class ActionButtonsCellRenderer implements ICellRendererAngularComp {
 
   refresh(params: any): boolean {
     return false;
+  }
+
+  isIconOnly(action: string): boolean {
+    return ['uploadExcel', 'uploadItd', 'manualItd', 'edit', 'delete'].includes(action);
   }
 
   onClick(action: string, event: Event) {
