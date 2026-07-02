@@ -20,6 +20,7 @@ body {
 
 body {
   font-family:
+    "Instrument Sans",
     system-ui,
     -apple-system,
     "Segoe UI",
@@ -46,4 +47,29 @@ input,
 select,
 textarea {
   font: inherit;
+}
+
+/* Custom Global Scrollbar for all scrollable areas (tables, sidebars, body) */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(203, 213, 225, 0.7) transparent;
+}
+
+/* Chrome, Edge, and Safari (WebKit) Scrollbar Styling */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(203, 213, 225, 0.7);
+  border-radius: 6px;
+  
+  &:hover {
+    background: rgba(148, 163, 184, 0.9);
+  }
 }

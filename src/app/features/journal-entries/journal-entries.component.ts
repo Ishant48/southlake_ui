@@ -162,6 +162,9 @@ export class JournalEntriesComponent implements OnInit {
   selectedPeriod = 'June 2026';
   agentsList: string[] = ['Futuristic Underwriters LLC'];
   selectedAgent = 'Futuristic Underwriters LLC';
+  selectedState = 'all';
+  selectedAmountRange = 'all';
+  statesOptions: string[] = [];
   totalBatchesAmount = 0;
   searchTerm = '';
   loading = false;
@@ -175,6 +178,9 @@ export class JournalEntriesComponent implements OnInit {
   // Batch details view data
   selectedBatch: JournalEntryBatch | null = null;
   entries: JournalEntry[] = [];
+  allEntries: JournalEntry[] = [];
+  filteredEntries: JournalEntry[] = [];
+  entriesSearchTerm = '';
   loadingEntries = false;
 
   // Form view data
@@ -303,13 +309,43 @@ export class JournalEntriesComponent implements OnInit {
     });
   }
 
+  getStateFromBatch(batchNum: string): string {
+    const parts = batchNum.split('-');
+    return parts.length >= 3 ? parts[2] : '';
+  }
+
   loadBatches(): void {
     this.loading = true;
     this.service
       .getBatches(this.selectedPeriod, this.selectedAgent, this.searchTerm || undefined)
       .subscribe({
         next: res => {
-          this.batches = res;
+          const uniqueStates = Array.from(
+            new Set(res.map(b => this.getStateFromBatch(b.batch_number)).filter(Boolean))
+          );
+          this.statesOptions = uniqueStates.sort();
+
+          let filtered = res;
+          if (this.selectedState !== 'all') {
+            filtered = filtered.filter(
+              b => this.getStateFromBatch(b.batch_number) === this.selectedState
+            );
+          }
+
+          if (this.selectedAmountRange !== 'all') {
+            if (this.selectedAmountRange === 'under-10k') {
+              filtered = filtered.filter(b => Number(b.total_amount || 0) < 10000);
+            } else if (this.selectedAmountRange === '10k-100k') {
+              filtered = filtered.filter(b => {
+                const val = Number(b.total_amount || 0);
+                return val >= 10000 && val <= 100000;
+              });
+            } else if (this.selectedAmountRange === 'over-100k') {
+              filtered = filtered.filter(b => Number(b.total_amount || 0) > 100000);
+            }
+          }
+
+          this.batches = filtered;
           this.calculateTotalBatchesAmount();
           this.loading = false;
           this.cdr.markForCheck();
@@ -365,6 +401,7 @@ export class JournalEntriesComponent implements OnInit {
   viewBatchDetails(batch: JournalEntryBatch): void {
     this.selectedBatch = batch;
     this.currentView = 'detail';
+    this.entriesSearchTerm = '';
     this.loadBatchEntries();
   }
 
@@ -374,6 +411,8 @@ export class JournalEntriesComponent implements OnInit {
     this.service.getBatchEntries(this.selectedBatch.id).subscribe({
       next: res => {
         this.entries = res;
+        this.allEntries = res;
+        this.filterEntries();
         this.loadingEntries = false;
         this.cdr.markForCheck();
       },
@@ -383,6 +422,23 @@ export class JournalEntriesComponent implements OnInit {
         this.cdr.markForCheck();
       },
     });
+  }
+
+  filterEntries(): void {
+    if (!this.entriesSearchTerm) {
+      this.filteredEntries = [...this.allEntries];
+    } else {
+      const term = this.entriesSearchTerm.toLowerCase();
+      this.filteredEntries = this.allEntries.filter(e => {
+        return (
+          (e.je_number?.toString().toLowerCase().includes(term)) ||
+          (e.description?.toLowerCase().includes(term)) ||
+          (e.coa?.account_code?.toString().toLowerCase().includes(term)) ||
+          (e.sub?.toLowerCase().includes(term)) ||
+          (e.policy?.toLowerCase().includes(term))
+        );
+      });
+    }
   }
 
   get batchTotalDebits(): number {

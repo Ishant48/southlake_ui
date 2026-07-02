@@ -23,6 +23,8 @@ import {
   Treaty,
   TreatyState,
   TreatyLob,
+  TreatyCarrier,
+  TreatyReinsurer,
 } from '../../core/models/master.model';
 import { GlMappingsService } from '../../core/services/gl-mappings.service';
 import { ChartOfAccountsService } from '../../core/services/chart-of-accounts.service';
@@ -38,7 +40,10 @@ type MasterTab =
   | 'states'
   | 'reinsurers'
   | 'risk-companies'
-  | 'gl-mappings';
+  | 'gl-mappings'
+  | 'brokers'
+  | 'products'
+  | 'locked-periods';
 
 @Component({
   selector: 'app-masters',
@@ -120,15 +125,18 @@ export class MastersComponent implements OnInit {
   states: StateMaster[] = [];
   reinsurers: ReinsurerCompany[] = [];
   riskCompanies: RiskCompany[] = [];
+  brokers: any[] = [];
+  products: any[] = [];
+  lockedPeriods: any[] = [];
 
   // Pagination
   pageSize = 25;
   currentPage = 1;
 
-  // Simple Modals (LOB, COB, Reinsurer)
+  // Simple Modals (LOB, COB, Reinsurer, Broker, Product)
   showSimpleModal = false;
   simpleModalTitle = '';
-  simpleMode: 'lob' | 'cob' | 'reinsurer' = 'lob';
+  simpleMode: 'lob' | 'cob' | 'reinsurer' | 'broker' | 'product' = 'lob';
   isEditMode = false;
   submitting = false;
 
@@ -143,6 +151,11 @@ export class MastersComponent implements OnInit {
     taxable: boolean;
     priority: number;
     fully_earned: boolean;
+    contact_name?: string;
+    contact_email?: string;
+    contact_phone?: string;
+    lob_id?: string;
+    cob_id?: string;
   } = {
     code: '',
     name: '',
@@ -152,6 +165,11 @@ export class MastersComponent implements OnInit {
     taxable: false,
     priority: 1,
     fully_earned: false,
+    contact_name: '',
+    contact_email: '',
+    contact_phone: '',
+    lob_id: '',
+    cob_id: '',
   };
 
   // MGA Modal
@@ -174,6 +192,10 @@ export class MastersComponent implements OnInit {
     open_item: boolean;
     op_start_date: string;
     other_names: { state: string; displayName: string }[];
+    naics_code?: string;
+    contact_name?: string;
+    contact_email?: string;
+    contact_phone?: string;
   } = {
     mga_code: '',
     name: '',
@@ -190,6 +212,10 @@ export class MastersComponent implements OnInit {
     open_item: false,
     op_start_date: '',
     other_names: [],
+    naics_code: '',
+    contact_name: '',
+    contact_email: '',
+    contact_phone: '',
   };
 
   // State Modal
@@ -313,8 +339,8 @@ export class MastersComponent implements OnInit {
   treatyForm: Partial<Treaty> & {
     state_ids: string[];
     lobs: { lob_id: string; cob_ids: string[] }[];
-    carriers: { risk_company_id: string; retention_pct: number }[];
-    reinsurers: { reinsurer_id: string; cession_pct: number }[];
+    carriers: TreatyCarrier[];
+    reinsurers: TreatyReinsurer[];
   } = {
     treaty_code: '',
     name: '',
@@ -347,6 +373,10 @@ export class MastersComponent implements OnInit {
   stateOptions: StateMaster[] = [];
   lobOptions: LineOfBusiness[] = [];
   cobOptions: CobMaster[] = [];
+  brokerOptions: any[] = [];
+  brokerLabelFn = (item: any) => item.name || '';
+  showLockPeriodModal = false;
+  newPeriodToLock = '';
 
   // Treaty UI selectors
   treatySelectedStates: { [stateId: string]: boolean } = {};
@@ -381,6 +411,9 @@ export class MastersComponent implements OnInit {
           'reinsurers',
           'risk-companies',
           'gl-mappings',
+          'brokers',
+          'products',
+          'locked-periods',
         ].includes(tab)
       ) {
         this.currentTab = tab;
@@ -548,6 +581,48 @@ export class MastersComponent implements OnInit {
       case 'gl-mappings':
         this.loadGlMappings();
         break;
+      case 'brokers':
+        this.service.getBrokers(search, active).subscribe({
+          next: res => {
+            this.brokers = res;
+            this.loading = false;
+            this.cdr.markForCheck();
+          },
+          error: () => {
+            this.toast.error('Failed to load Brokers');
+            this.loading = false;
+            this.cdr.markForCheck();
+          },
+        });
+        break;
+      case 'products':
+        this.service.getProducts(search, active).subscribe({
+          next: res => {
+            this.products = res;
+            this.loading = false;
+            this.cdr.markForCheck();
+          },
+          error: () => {
+            this.toast.error('Failed to load Products');
+            this.loading = false;
+            this.cdr.markForCheck();
+          },
+        });
+        break;
+      case 'locked-periods':
+        this.service.getLockedPeriods(search).subscribe({
+          next: res => {
+            this.lockedPeriods = res;
+            this.loading = false;
+            this.cdr.markForCheck();
+          },
+          error: () => {
+            this.toast.error('Failed to load Locked Periods');
+            this.loading = false;
+            this.cdr.markForCheck();
+          },
+        });
+        break;
     }
   }
 
@@ -590,6 +665,14 @@ export class MastersComponent implements OnInit {
         return this.riskCompanies;
       case 'gl-mappings':
         return this.glMappings;
+      case 'brokers':
+        return this.brokers;
+      case 'products':
+        return this.products;
+      case 'locked-periods':
+        return this.lockedPeriods;
+      default:
+        return [];
     }
   }
 
@@ -649,22 +732,6 @@ export class MastersComponent implements OnInit {
             minWidth: 150,
           },
           {
-            headerName: 'STATUS',
-            valueGetter: p => this.getTreatyStatus(p.data?.name),
-            cellRenderer: (p: any) => {
-              const baseStyle =
-                'display: inline-flex; align-items: center; justify-content: center; padding: 4px 10px; font-size: 12px; font-weight: 700; border-radius: 12px; text-transform: uppercase; letter-spacing: 0.3px; white-space: nowrap;';
-              if (p.value === 'Approved')
-                return `<span style="${baseStyle} background-color: #e2f5ec; color: #0d9488; border: 1px solid #ccfbf1;">Approved</span>`;
-              if (p.value === 'Pending')
-                return `<span style="${baseStyle} background-color: #fff3e0; color: #f59e0b; border: 1px solid #fef3c7;">Pending</span>`;
-              return '<span style="color: var(--gray-500);">-</span>';
-            },
-            flex: 1,
-            minWidth: 100,
-            maxWidth: 120,
-          },
-          {
             headerName: 'ACTIONS',
             cellRenderer: ActionButtonsCellRenderer,
             cellRendererParams: {
@@ -699,6 +766,7 @@ export class MastersComponent implements OnInit {
         return [
           { headerName: 'MGA CODE', field: 'mga_code', flex: 1, minWidth: 100, maxWidth: 120 },
           { headerName: 'MGA NAME', field: 'name', flex: 2, minWidth: 150 },
+          { headerName: 'NAICS CODE', field: 'naics_code', flex: 1.2, minWidth: 120 },
           {
             headerName: 'TAX PAYABLE IN-HOUSE',
             field: 'tax_payable_inhouse',
@@ -987,6 +1055,104 @@ export class MastersComponent implements OnInit {
           },
         ];
 
+      case 'brokers':
+        return [
+          { headerName: 'BROKER CODE', field: 'brokerCode', flex: 1.5, minWidth: 120 },
+          { headerName: 'NAME', field: 'name', flex: 2, minWidth: 150 },
+          { headerName: 'CONTACT NAME', field: 'contactName', flex: 1.5, minWidth: 120 },
+          { headerName: 'EMAIL', field: 'contactEmail', flex: 2, minWidth: 150 },
+          { headerName: 'PHONE', field: 'contactPhone', flex: 1.5, minWidth: 120 },
+          statusCol,
+          {
+            headerName: 'ACTIONS',
+            cellRenderer: ActionButtonsCellRenderer,
+            cellRendererParams: {
+              buttons: [
+                { label: 'Edit', action: 'edit' },
+                { label: 'Delete', action: 'delete', danger: true },
+              ],
+              onClick: (action: string, data: any) => {
+                if (action === 'edit') this.openSimpleEdit('broker', data);
+                if (action === 'delete') this.deleteSimple('broker', data);
+              },
+            },
+            flex: 0,
+            width: 160,
+            minWidth: 160,
+            maxWidth: 160,
+          },
+        ];
+
+      case 'products':
+        return [
+          { headerName: 'PRODUCT ID', field: 'productId', flex: 1.5, minWidth: 120 },
+          { headerName: 'NAME', field: 'name', flex: 2, minWidth: 150 },
+          { headerName: 'LOB', valueGetter: p => p.data.lob?.name || '-', flex: 1.5, minWidth: 120 },
+          { headerName: 'COB', valueGetter: p => p.data.cob?.name || '-', flex: 1.5, minWidth: 120 },
+          { headerName: 'DESCRIPTION', field: 'description', flex: 2.5, minWidth: 180 },
+          statusCol,
+          {
+            headerName: 'ACTIONS',
+            cellRenderer: ActionButtonsCellRenderer,
+            cellRendererParams: {
+              buttons: [
+                { label: 'Edit', action: 'edit' },
+                { label: 'Delete', action: 'delete', danger: true },
+              ],
+              onClick: (action: string, data: any) => {
+                if (action === 'edit') this.openSimpleEdit('product', data);
+                if (action === 'delete') this.deleteSimple('product', data);
+              },
+            },
+            flex: 0,
+            width: 160,
+            minWidth: 160,
+            maxWidth: 160,
+          },
+        ];
+
+      case 'locked-periods':
+        return [
+          { headerName: 'PERIOD', field: 'period', flex: 1.5, minWidth: 120 },
+          {
+            headerName: 'STATUS',
+            valueGetter: p => p.data.isLocked ? 'Locked' : 'Open',
+            cellRenderer: (p: any) => {
+              const color = p.value === 'Locked' ? '#e05470' : '#19a347';
+              return `<span style="font-weight: 700; color: ${color};">${p.value}</span>`;
+            },
+            flex: 1,
+            minWidth: 100,
+          },
+          { headerName: 'LOCKED BY', valueGetter: p => p.data.user?.name || '-', flex: 1.5, minWidth: 120 },
+          {
+            headerName: 'LOCKED AT',
+            valueGetter: p => p.data.lockedAt ? new Date(p.data.lockedAt).toLocaleString() : '-',
+            flex: 2,
+            minWidth: 150,
+          },
+          {
+            headerName: 'ACTIONS',
+            cellRenderer: ActionButtonsCellRenderer,
+            cellRendererParams: {
+              buttons: (data: any) => [
+                {
+                  label: data.isLocked ? 'Unlock' : 'Lock',
+                  action: data.isLocked ? 'unlock' : 'lock',
+                },
+              ],
+              onClick: (action: string, data: any) => {
+                if (action === 'lock') this.togglePeriodLock(data.period, true);
+                if (action === 'unlock') this.togglePeriodLock(data.period, false);
+              },
+            },
+            flex: 0,
+            width: 120,
+            minWidth: 120,
+            maxWidth: 120,
+          },
+        ];
+
       default:
         return [];
     }
@@ -1008,6 +1174,11 @@ export class MastersComponent implements OnInit {
       taxable: false,
       priority: 1,
       fully_earned: false,
+      contact_name: '',
+      contact_email: '',
+      contact_phone: '',
+      lob_id: '',
+      cob_id: '',
     };
     this.showSimpleModal = true;
   }
@@ -1018,7 +1189,7 @@ export class MastersComponent implements OnInit {
     this.simpleModalTitle = `Edit ${this.getMasterLabel(mode)}`;
     this.simpleForm = {
       id: item.id,
-      code: item.lob_code || item.cob_code || item.reinsurer_company_id || '',
+      code: item.lob_code || item.cob_code || item.reinsurer_company_id || item.broker_code || item.product_id || '',
       name: item.name,
       is_active: item.is_active,
       description: item.description || '',
@@ -1026,6 +1197,11 @@ export class MastersComponent implements OnInit {
       taxable: item.taxable || false,
       priority: item.priority || 1,
       fully_earned: item.fully_earned || false,
+      contact_name: item.contact_name || item.contactName || '',
+      contact_email: item.contact_email || item.contactEmail || '',
+      contact_phone: item.contact_phone || item.contactPhone || '',
+      lob_id: item.lob_id || item.lobId || '',
+      cob_id: item.cob_id || item.cobId || '',
     };
     this.showSimpleModal = true;
   }
@@ -1050,6 +1226,14 @@ export class MastersComponent implements OnInit {
       payload.taxable = this.simpleForm.taxable || false;
       payload.priority = Number(this.simpleForm.priority || 1);
       payload.fully_earned = this.simpleForm.fully_earned || false;
+    } else if (this.simpleMode === 'broker') {
+      payload.contact_name = this.simpleForm.contact_name || null;
+      payload.contact_email = this.simpleForm.contact_email || null;
+      payload.contact_phone = this.simpleForm.contact_phone || null;
+    } else if (this.simpleMode === 'product') {
+      payload.description = this.simpleForm.description || null;
+      payload.lob_id = this.simpleForm.lob_id || null;
+      payload.cob_id = this.simpleForm.cob_id || null;
     }
 
     let request!: Observable<any>;
@@ -1065,6 +1249,12 @@ export class MastersComponent implements OnInit {
         case 'reinsurer':
           request = this.service.updateReinsurer(id, payload);
           break;
+        case 'broker':
+          request = this.service.updateBroker(id, payload);
+          break;
+        case 'product':
+          request = this.service.updateProduct(id, payload);
+          break;
       }
     } else {
       switch (this.simpleMode) {
@@ -1076,6 +1266,12 @@ export class MastersComponent implements OnInit {
           break;
         case 'reinsurer':
           request = this.service.createReinsurer(payload);
+          break;
+        case 'broker':
+          request = this.service.createBroker(payload);
+          break;
+        case 'product':
+          request = this.service.createProduct(payload);
           break;
       }
     }
@@ -1109,6 +1305,12 @@ export class MastersComponent implements OnInit {
           break;
         case 'reinsurer':
           request = this.service.deleteReinsurer(item.id);
+          break;
+        case 'broker':
+          request = this.service.deleteBroker(item.id);
+          break;
+        case 'product':
+          request = this.service.deleteProduct(item.id);
           break;
       }
       request.subscribe({
@@ -1588,6 +1790,10 @@ export class MastersComponent implements OnInit {
     });
     this.service.getStates(undefined, true).subscribe(res => {
       this.stateOptions = res;
+      this.cdr.markForCheck();
+    });
+    this.service.getBrokers(undefined, true).subscribe(res => {
+      this.brokerOptions = res;
       this.cdr.markForCheck();
     });
   }
@@ -2425,5 +2631,59 @@ export class MastersComponent implements OnInit {
         this.toast.error(err.error?.message || 'Failed to save manual ITD baseline');
       },
     });
+  }
+
+  submitLockPeriod(): void {
+    if (!this.newPeriodToLock) return;
+    this.submitting = true;
+    this.service.lockPeriod(this.newPeriodToLock).subscribe({
+      next: () => {
+        this.toast.success(`Successfully locked period "${this.newPeriodToLock}"`);
+        this.showLockPeriodModal = false;
+        this.newPeriodToLock = '';
+        this.submitting = false;
+        this.loadData();
+      },
+      error: err => {
+        this.toast.error(err.error?.message || 'Failed to lock period');
+        this.submitting = false;
+        this.cdr.markForCheck();
+      },
+    });
+  }
+
+  togglePeriodLock(period: string, lock: boolean): void {
+    const action = lock ? this.service.lockPeriod(period) : this.service.unlockPeriod(period);
+    action.subscribe({
+      next: () => {
+        this.toast.success(`Successfully ${lock ? 'locked' : 'unlocked'} period "${period}"`);
+        this.loadData();
+      },
+      error: err => {
+        this.toast.error(err.error?.message || `Failed to ${lock ? 'lock' : 'unlock'} period`);
+      },
+    });
+  }
+
+  openLockPeriodAdd(): void {
+    this.newPeriodToLock = '';
+    this.showLockPeriodModal = true;
+    this.cdr.markForCheck();
+  }
+
+  onProductLobCobChange(): void {
+    const selectedLob = this.lobOptions.find(l => l.id === this.simpleForm.lob_id);
+    const selectedCob = this.cobOptions.find(c => c.id === this.simpleForm.cob_id);
+
+    const lobCode = selectedLob ? selectedLob.lob_code : '';
+    const cobCode = selectedCob ? selectedCob.cob_code : '';
+
+    if (lobCode && cobCode) {
+      this.simpleForm.code = `${lobCode}-${cobCode}`;
+      this.simpleForm.name = `${selectedLob?.name} - ${selectedCob?.name}`;
+    } else {
+      this.simpleForm.code = '';
+      this.simpleForm.name = '';
+    }
   }
 }
