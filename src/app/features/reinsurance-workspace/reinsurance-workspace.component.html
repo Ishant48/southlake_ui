@@ -4,12 +4,12 @@
     <div class="header-main">
       <div>
         <h2>📂 Reinsurance Ceding Workspace</h2>
-        <p class="subtitle">Upload monthly workbooks to calculate reinsurance statement, cash settlement, and GL mappings.</p>
+        <p class="subtitle">
+          Upload monthly workbooks to calculate reinsurance statement, cash settlement, and GL mappings.
+        </p>
       </div>
       <div class="header-actions">
-        <button class="btn btn-warning" (click)="triggerReSeed()">
-          🔄 Reset & Re-Seed ITD
-        </button>
+        <button class="btn btn-warning" (click)="triggerReSeed()">🔄 Reset & Re-Seed ITD</button>
       </div>
     </div>
 
@@ -37,10 +37,11 @@
             <option *ngFor="let p of programs" [value]="p.name">{{ p.name }}</option>
           </select>
           <label class="overwrite-checkbox">
-            <input type="checkbox" [(ngModel)]="uploadOverwrite" /> Overwrite
+            <input type="checkbox" [(ngModel)]="uploadOverwrite" />
+            Overwrite
           </label>
           <button class="btn btn-primary" (click)="uploadWorkbook()" [disabled]="uploading || !fileToUpload">
-            {{ uploading ? 'Uploading...' : 'Upload Workbook' }}
+            {{ uploading ? "Uploading..." : "Upload Workbook" }}
           </button>
         </div>
       </div>
@@ -103,9 +104,7 @@
             <input type="number" [(ngModel)]="paramsForm.ulae_ibnr" />
           </div>
         </div>
-        <button class="btn btn-secondary w-full mt-3" (click)="saveParams()">
-          💾 Save Parameters
-        </button>
+        <button class="btn btn-secondary w-full mt-3" (click)="saveParams()">💾 Save Parameters</button>
       </div>
 
       <!-- 2. Actuarial Rates Form -->
@@ -149,9 +148,7 @@
             <input type="number" [(ngModel)]="ratesForm.laeAoe" />
           </div>
         </div>
-        <button class="btn btn-secondary w-full mt-3" (click)="saveRates()">
-          💾 Save Rates
-        </button>
+        <button class="btn btn-secondary w-full mt-3" (click)="saveRates()">💾 Save Rates</button>
       </div>
 
       <!-- 3. GL Account Segment Mappings Form -->
@@ -187,9 +184,7 @@
             <input type="text" [(ngModel)]="mappingsForm.lineDescSuffix" />
           </div>
         </div>
-        <button class="btn btn-secondary w-full mt-3" (click)="saveMappings()">
-          💾 Save Mappings
-        </button>
+        <button class="btn btn-secondary w-full mt-3" (click)="saveMappings()">💾 Save Mappings</button>
       </div>
     </aside>
 
@@ -230,10 +225,17 @@
                 </tr>
               </thead>
               <tbody>
-                <tr *ngFor="let row of statementRows" [class.header-row]="row.isHeader" [class.bold-row]="row.isBold" [class.underline-row]="row.borderClass === 'single-underline'">
+                <tr
+                  *ngFor="let row of statementRows"
+                  [class.header-row]="row.isHeader"
+                  [class.bold-row]="row.isBold"
+                  [class.underline-row]="row.borderClass === 'single-underline'"
+                >
                   <td [class.pl-4]="!row.isHeader && !row.isBold">{{ row.label }}</td>
-                  <td class="text-right" [class.bold-text]="row.isBold">{{ row.isHeader ? '' : formatCurrency(row.value) }}</td>
-                  <td class="formula-text">{{ row.formula || '' }}</td>
+                  <td class="text-right" [class.bold-text]="row.isBold">
+                    {{ row.isHeader ? "" : formatCurrency(row.value) }}
+                  </td>
+                  <td class="formula-text">{{ row.formula || "" }}</td>
                 </tr>
               </tbody>
             </table>
@@ -243,9 +245,7 @@
         <!-- 2. GL Journal Entries Tab -->
         <div *ngIf="activeTab === 'glje'">
           <div class="export-bar">
-            <button class="btn btn-success" (click)="exportGLJECSV()">
-              📥 Export Mappings to CSV
-            </button>
+            <button class="btn btn-success" (click)="exportGLJECSV()">📥 Export Mappings to CSV</button>
           </div>
           <div class="table-container">
             <table class="data-table font-mono">
@@ -275,10 +275,14 @@
                   <td>{{ row.lob }}</td>
                   <td>{{ row.st }}</td>
                   <td>{{ row.ext }}</td>
-                  <td>{{ row.sub || '-' }}</td>
+                  <td>{{ row.sub || "-" }}</td>
                   <td class="font-sans italic text-gray-400">{{ row.lineDesc }}</td>
-                  <td class="text-right text-green-400 font-bold">{{ row.debit > 0 ? formatCurrency(row.debit) : '-' }}</td>
-                  <td class="text-right text-red-400 font-bold">{{ row.credit > 0 ? formatCurrency(row.credit) : '-' }}</td>
+                  <td class="text-right text-green-400 font-bold">
+                    {{ row.debit > 0 ? formatCurrency(row.debit) : "-" }}
+                  </td>
+                  <td class="text-right text-red-400 font-bold">
+                    {{ row.credit > 0 ? formatCurrency(row.credit) : "-" }}
+                  </td>
                 </tr>
               </tbody>
             </table>
@@ -296,9 +300,7 @@
               <label>Amount Paid (Loss Funding)</label>
               <input type="number" [(ngModel)]="cashSettlement.amountPaid" />
             </div>
-            <button class="btn btn-secondary" (click)="saveCashParams()">
-              Update Balances
-            </button>
+            <button class="btn btn-secondary" (click)="saveCashParams()">Update Balances</button>
           </div>
 
           <div class="table-container mt-4">
@@ -313,8 +315,8 @@
               <tbody>
                 <tr>
                   <td>Quota Share Percentage</td>
-                  <td class="text-right">{{ (100 - (selectedWorkbook.rates.qs || 100)) }}%</td>
-                  <td class="text-right">{{ (selectedWorkbook.rates.qs || 100) }}%</td>
+                  <td class="text-right">{{ 100 - (selectedWorkbook.rates.qs || 100) }}%</td>
+                  <td class="text-right">{{ selectedWorkbook.rates.qs || 100 }}%</td>
                 </tr>
                 <tr class="bold-row">
                   <td>Beginning Balance</td>
@@ -415,7 +417,7 @@
               </div>
             </div>
             <button class="btn btn-primary mt-4" (click)="saveSeederState()" [disabled]="seederLoading">
-              {{ seederLoading ? 'Saving...' : 'Save Baseline State Values' }}
+              {{ seederLoading ? "Saving..." : "Save Baseline State Values" }}
             </button>
           </div>
         </div>

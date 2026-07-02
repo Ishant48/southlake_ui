@@ -1,8 +1,14 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { User, UsersFilter, InviteUserPayload, PendingInvite, UserStats } from '../models/user.model';
-import { PaginatedResult } from '../models/paginated-result.model';
+import {
+  User,
+  PaginatedResult,
+  UsersFilter,
+  InviteUserPayload,
+  PendingInvite,
+  UserStats,
+} from '../models/user.model';
 import { environment } from '../../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
@@ -37,7 +43,9 @@ export class UsersService {
   }
 
   deactivateBulk(ids: string[]): Observable<{ message: string; count: number }> {
-    return this.http.post<{ message: string; count: number }>(`${this.base}/deactivate-bulk`, { ids });
+    return this.http.post<{ message: string; count: number }>(`${this.base}/deactivate-bulk`, {
+      ids,
+    });
   }
 
   getUserPermissions(id: string): Observable<{ id: string; action: string }[]> {
@@ -45,7 +53,9 @@ export class UsersService {
   }
 
   updateUserPermissions(id: string, permissionIds: string[]): Observable<{ message: string }> {
-    return this.http.put<{ message: string }>(`${this.base}/${id}/permissions`, { permissions: permissionIds });
+    return this.http.put<{ message: string }>(`${this.base}/${id}/permissions`, {
+      permissions: permissionIds,
+    });
   }
 
   getPendingInvites(): Observable<PendingInvite[]> {

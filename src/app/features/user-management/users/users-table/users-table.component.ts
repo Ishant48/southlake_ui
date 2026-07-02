@@ -1,17 +1,23 @@
-import { Component, Input, Output, EventEmitter, inject } from '@angular/core';
+import { Component, Input, Output, EventEmitter, inject, OnInit } from '@angular/core';
 import { User } from '../../../../core/models/user.model';
-import { UserStatusBadgeComponent } from '../user-status-badge/user-status-badge.component';
 import { AuthService } from '../../../../core/services/auth.service';
+import { AgGridAngular } from 'ag-grid-angular';
+import { GridOptions, ColDef } from 'ag-grid-community';
+import { AgGridConfigService } from '../../../../core/services/ag-grid-config.service';
+import { AvatarCellRenderer } from '../../../../shared/components/grid-renderers/avatar-cell.component';
+import { StatusBadgeCellRenderer } from '../../../../shared/components/grid-renderers/status-badge-cell.component';
+import { ActionButtonsCellRenderer } from '../../../../shared/components/grid-renderers/action-buttons-cell.component';
 
 @Component({
   selector: 'app-users-table',
   standalone: true,
-  imports: [UserStatusBadgeComponent],
+  imports: [AgGridAngular],
   templateUrl: './users-table.component.html',
   styleUrl: './users-table.component.scss',
 })
-export class UsersTableComponent {
+export class UsersTableComponent implements OnInit {
   private authService = inject(AuthService);
+  private agGridConfig = inject(AgGridConfigService);
 
   @Input() users: User[] = [];
   @Input() loading = false;
@@ -22,42 +28,125 @@ export class UsersTableComponent {
   @Output() deactivateUser = new EventEmitter<User>();
   @Output() selectionChanged = new EventEmitter<string[]>();
 
-  selectedIds = new Set<string>();
+  gridOptions!: GridOptions;
+  columnDefs: ColDef[] = [];
+  skeletonRows = [1, 2, 3, 4, 5];
+
+  ngOnInit(): void {
+    this.gridOptions = this.agGridConfig.getDefaultGridOptions();
+    this.setupColumns();
+  }
 
   hasPermission(permission: string): boolean {
     return this.authService.hasPermission(permission);
   }
-  skeletonRows = [1, 2, 3, 4, 5];
 
-  isSelected(id: string): boolean {
-    return this.selectedIds.has(id);
-  }
+  setupColumns(): void {
+    this.columnDefs = [];
 
-  allSelected(): boolean {
-    return this.users.length > 0 && this.users.every(u => this.selectedIds.has(u.id));
-  }
-
-  someSelected(): boolean {
-    return this.selectedIds.size > 0 && !this.allSelected();
-  }
-
-  toggleAll(event: Event): void {
-    const checked = (event.target as HTMLInputElement).checked;
-    if (checked) {
-      this.users.forEach(u => this.selectedIds.add(u.id));
-    } else {
-      this.selectedIds.clear();
+    if (this.showCheckboxes) {
+      this.columnDefs.push({
+        headerCheckboxSelection: true,
+        checkboxSelection: true,
+        width: 50,
+        minWidth: 50,
+        maxWidth: 50,
+        resizable: false,
+        sortable: false,
+        pinned: 'left',
+      });
     }
-    this.selectionChanged.emit([...this.selectedIds]);
+
+    this.columnDefs.push(
+      {
+        headerName: 'USER',
+        field: 'name',
+        cellRenderer: AvatarCellRenderer,
+        minWidth: 250,
+        flex: 2,
+        valueGetter: params => params.data,
+      },
+      {
+        headerName: 'ROLE',
+        field: 'role',
+        cellRenderer: (params: any) => {
+          const role = params.value;
+          if (role) {
+            const hex = role.color;
+            let rgba = 'rgba(13,27,75,0.1)';
+            if (hex && hex.length >= 7) {
+              const r = parseInt(hex.slice(1, 3), 16);
+              const g = parseInt(hex.slice(3, 5), 16);
+              const b = parseInt(hex.slice(5, 7), 16);
+              rgba = `rgba(${r},${g},${b},0.1)`;
+            }
+            return `<span class="role-badge" style="background: ${rgba}; color: ${role.color}; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 500;">${role.label}</span>`;
+          }
+          return `<span class="text-muted">-</span>`;
+        },
+        flex: 1,
+        minWidth: 150,
+      },
+      {
+        headerName: 'DEPARTMENT',
+        field: 'department',
+        valueFormatter: params => params.value || '-',
+        flex: 1,
+        minWidth: 150,
+      },
+      {
+        headerName: 'TITLE',
+        field: 'title',
+        valueFormatter: params => params.value || '-',
+        flex: 1,
+        minWidth: 150,
+      },
+      {
+        headerName: 'STATUS',
+        field: 'status',
+        cellRenderer: StatusBadgeCellRenderer,
+        width: 120,
+      },
+      {
+        headerName: 'LAST LOGIN',
+        field: 'last_login_at',
+        valueFormatter: params => this.formatDate(params.value),
+        flex: 1,
+        minWidth: 150,
+      },
+      {
+        headerName: 'ACTIONS',
+        flex: 0,
+        width: 200,
+        minWidth: 200,
+        maxWidth: 200,
+        sortable: false,
+        cellRenderer: ActionButtonsCellRenderer,
+        cellRendererParams: {
+          buttons: (data: User) => {
+            const btns: any[] = [{ label: 'View', action: 'view' }];
+            if (this.hasPermission('user.edit')) {
+              btns.push({ label: 'Edit', action: 'edit' });
+              if (data.status !== 'inactive') {
+                btns.push({ label: 'Deactivate', action: 'deactivate', danger: true });
+              }
+            }
+            return btns;
+          },
+          onClick: (action: string, data: User) => {
+            if (action === 'view') this.viewUser.emit(data);
+            if (action === 'edit') this.editUser.emit(data);
+            if (action === 'deactivate') this.deactivateUser.emit(data);
+          },
+        },
+      },
+    );
   }
 
-  toggleUser(id: string): void {
-    if (this.selectedIds.has(id)) {
-      this.selectedIds.delete(id);
-    } else {
-      this.selectedIds.add(id);
-    }
-    this.selectionChanged.emit([...this.selectedIds]);
+  onSelectionChanged(event: any): void {
+    const selectedNodes = event.api.getSelectedNodes();
+    const selectedIds = selectedNodes.map((node: any) => node.data.id);
+    this.selectionChanged.emit(selectedIds);
   }
 
   formatDate(dateStr?: string): string {
@@ -68,13 +157,5 @@ export class UsersTableComponent {
     } catch {
       return 'Never';
     }
-  }
-
-  hexToRgba(hex: string | null | undefined, alpha: number): string {
-    if (!hex || hex.length < 7) return `rgba(13,27,75,${alpha})`;
-    const r = parseInt(hex.slice(1, 3), 16);
-    const g = parseInt(hex.slice(3, 5), 16);
-    const b = parseInt(hex.slice(5, 7), 16);
-    return `rgba(${r},${g},${b},${alpha})`;
   }
 }

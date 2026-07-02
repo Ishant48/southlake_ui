@@ -4,7 +4,7 @@ import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class ReinsuranceService {
   private http = inject(HttpClient);
@@ -51,7 +51,9 @@ export class ReinsuranceService {
   }
 
   getReinsuranceStatement(id: number, stateCode: string): Observable<any[]> {
-    return this.http.get<any[]>(`${this.apiUrl}/workbooks/${id}/reinsurance-statement/${stateCode}`);
+    return this.http.get<any[]>(
+      `${this.apiUrl}/workbooks/${id}/reinsurance-statement/${stateCode}`,
+    );
   }
 
   getGLJournalEntries(id: number, stateCode: string): Observable<any[]> {

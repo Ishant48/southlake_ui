@@ -1,21 +1,30 @@
-// ================================================
-// Page Layout
-// ================================================
+.um-page {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
 
-.um-page { display: flex; flex-direction: column; gap: 24px; }
-
-.page-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
-.page-title  { font-size: 24px; font-weight: 700; color: var(--gray-900); }
-.page-subtitle { font-size: 14px; color: var(--gray-500); margin-top: 4px; }
-
-// ================================================
-// Export Button
-// ================================================
+.page-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+.page-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--gray-900);
+}
+.page-subtitle {
+  font-size: 14px;
+  color: var(--gray-500);
+  margin-top: 4px;
+}
 
 .btn-export {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 7px;
   height: 40px;
   padding: 0 18px;
   border-radius: var(--radius);
@@ -25,26 +34,17 @@
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
-  white-space: nowrap;
-  transition: background var(--transition), color var(--transition), border-color var(--transition);
+  transition: background var(--transition);
 
   &:hover {
     background: var(--gray-100);
-    color: var(--gray-900);
-    border-color: var(--gray-400);
-  }
-
-  &:focus-visible {
-    outline: 2px solid var(--navy);
-    outline-offset: 2px;
   }
 }
 
-// ================================================
-// Tab Bar
-// ================================================
-
-.tab-bar { display: flex; border-bottom: 1.5px solid var(--gray-200); }
+.tab-bar {
+  display: flex;
+  border-bottom: 1.5px solid var(--gray-200);
+}
 
 .tab-link {
   padding: 10px 20px;
@@ -54,48 +54,43 @@
   text-decoration: none;
   border-bottom: 2.5px solid transparent;
   margin-bottom: -1.5px;
-  transition: color var(--transition), border-color var(--transition);
+  transition:
+    color var(--transition),
+    border-color var(--transition);
 
-  &:hover  { color: var(--gray-900); }
-  &.active { color: var(--navy); border-bottom-color: var(--navy); font-weight: 600; }
+  &:hover {
+    color: var(--gray-900);
+  }
+  &.active {
+    color: var(--navy);
+    border-bottom-color: var(--navy);
+    font-weight: 600;
+  }
 }
-
-// ================================================
-// Content Card
-// ================================================
 
 .content-card {
   background: var(--white);
   border-radius: var(--radius-lg);
   border: 1px solid var(--gray-200);
-  // overflow: clip (not hidden) so that border-radius clips visually
-  // while NOT creating a scroll container — required for sticky thead to
-  // be positioned relative to the page scroll instead of this element.
-  overflow: clip;
+  overflow: hidden;
   box-shadow: var(--shadow-sm);
 }
-
-// ================================================
-// Filter Bar
-// ================================================
 
 .filters-bar {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 16px 20px;
+  gap: 10px;
+  padding: 14px 16px;
   border-bottom: 1px solid var(--gray-200);
   flex-wrap: wrap;
-  background: var(--gray-50);
 }
 
-// NOTE: .search-wrap, .search-icon, .search-input below style the internal
-// elements of <app-search-input>. Due to Emulated ViewEncapsulation these
-// component-scoped rules cannot pierce the child component boundary; the
-// actual styles for those classes are supplied by _user-management.scss
-// (global). These rules are intentionally retained to avoid regressions if
-// the global source of truth changes, but they are effectively no-ops here.
-.search-wrap  { position: relative; flex: 1; min-width: 180px; max-width: 260px; }
+.search-wrap {
+  position: relative;
+  flex: 1;
+  min-width: 180px;
+  max-width: 260px;
+}
 
 .search-icon {
   position: absolute;
@@ -108,300 +103,238 @@
 
 .search-input {
   width: 100%;
-  height: 38px;
+  height: 36px;
   padding: 0 12px 0 34px;
   border-radius: var(--radius);
   border: 1.5px solid var(--gray-300);
-  background: var(--white);
+  background: var(--gray-50);
   color: var(--gray-900);
   font-size: 13.5px;
   outline: none;
-  transition: border-color var(--transition), box-shadow var(--transition);
+  transition: border-color var(--transition);
 
   &:focus {
     border-color: var(--navy);
-    box-shadow: 0 0 0 3px rgba(13, 27, 75, 0.08);
   }
 }
 
-// Cross-browser consistent select with custom chevron
 .filter-select {
-  height: 38px;
-  padding: 0 32px 0 12px;
+  height: 36px;
+  padding: 0 10px;
   border-radius: var(--radius);
   border: 1.5px solid var(--gray-300);
-  background-color: var(--white);
-  // Inline SVG chevron eliminates native OS dropdown arrow inconsistency
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%239ca3af' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 10px center;
-  appearance: none;
+  background: var(--gray-50);
   color: var(--gray-700);
   font-size: 13.5px;
   outline: none;
   cursor: pointer;
-  transition: border-color var(--transition), box-shadow var(--transition), background-color var(--transition);
-
-  &:hover:not(:focus) { border-color: var(--gray-400); }
-
-  &:focus {
-    border-color: var(--navy);
-    background-color: var(--white);
-    box-shadow: 0 0 0 3px rgba(13, 27, 75, 0.08);
-  }
-}
-
-// Date range inputs grouped with semantic "to" separator
-.date-range {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.date-sep {
-  font-size: 12px;
-  color: var(--gray-400);
-  font-weight: 500;
-  white-space: nowrap;
-  flex-shrink: 0;
 }
 
 .filter-date {
-  height: 38px;
+  height: 36px;
   padding: 0 10px;
   border-radius: var(--radius);
   border: 1.5px solid var(--gray-300);
-  background: var(--white);
+  background: var(--gray-50);
   color: var(--gray-700);
   font-size: 13px;
   outline: none;
-  min-width: 136px;
-  cursor: pointer;
-  transition: border-color var(--transition), box-shadow var(--transition), background-color var(--transition);
-
-  &:hover:not(:focus) { border-color: var(--gray-400); }
-
-  &:focus {
-    border-color: var(--navy);
-    background-color: var(--white);
-    box-shadow: 0 0 0 3px rgba(13, 27, 75, 0.08);
-  }
+  min-width: 130px;
 }
-
-// ================================================
-// Table
-// ================================================
 
 .table-wrapper {
   overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
 }
 
 .data-table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 13.5px;
+  font-size: 13px;
 }
-
-// Column width constraints applied on <th> elements
-.col-user        { min-width: 180px; }
-.col-action      { width: 120px;  white-space: nowrap; }
-.col-module      { min-width: 120px; }
-.col-entity      { min-width: 110px; }
-.col-description { min-width: 220px; }
-.col-ip          { width: 140px;  white-space: nowrap; }
-.col-date        { width: 175px;  white-space: nowrap; }
 
 .data-table th {
   text-align: left;
-  padding: 11px 16px;
+  padding: 10px 14px;
   font-size: 11.5px;
   font-weight: 600;
   color: var(--gray-500);
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.04em;
   border-bottom: 1.5px solid var(--gray-200);
   white-space: nowrap;
   background: var(--gray-50);
-  // Sticky header: works because .content-card uses overflow: clip (not hidden),
-  // so the nearest Y-axis scroll container is .layout-content.
-  position: sticky;
-  top: 0;
-  z-index: 10;
 }
 
 .data-table td {
-  padding: 13px 16px;
-  border-bottom: 1px solid var(--gray-200);
+  padding: 11px 14px;
+  border-bottom: 1px solid var(--gray-100);
   vertical-align: middle;
 }
-
-.data-table tbody tr {
-  transition: background 0.12s ease;
+.data-table tr:last-child td {
+  border-bottom: none;
 }
-
 .data-table tbody tr:hover {
-  background: var(--gray-100);
+  background: var(--gray-50);
 }
 
-// Preserve single separator before paginator border-top
-.data-table tr:last-child td { border-bottom: none; }
-
-// ================================================
-// User Cell
-// ================================================
-
-.user-cell      { display: flex; align-items: center; gap: 10px; }
-.user-cell-text { display: flex; flex-direction: column; gap: 3px; }
-.user-name      { font-weight: 600; color: var(--gray-900); font-size: 13.5px; }
-.user-email     { font-size: 11.5px; color: var(--gray-500); }
+.user-cell {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
 
 .user-avatar {
-  width: 34px;
-  height: 34px;
+  width: 30px;
+  height: 30px;
   border-radius: 50%;
   flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 11.5px;
+  font-size: 10px;
   font-weight: 700;
   color: #fff;
-  letter-spacing: 0.3px;
+  letter-spacing: 0.5px;
 }
 
-// Visually distinct pill for system-generated log entries
-.system-actor {
-  display: inline-flex;
-  align-items: center;
-  padding: 3px 10px;
-  border-radius: 20px;
-  background: var(--gray-100);
-  color: var(--gray-500);
-  font-size: 12px;
+.user-cell-text {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+.user-name {
   font-weight: 500;
-  border: 1px solid var(--gray-200);
-  white-space: nowrap;
+  color: var(--gray-900);
+  font-size: 13px;
 }
-
-// ================================================
-// Action Badge
-// ================================================
+.user-email {
+  font-size: 11.5px;
+  color: var(--gray-500);
+}
 
 .action-badge {
   display: inline-flex;
   align-items: center;
-  padding: 3px 11px;
+  padding: 2px 9px;
   border-radius: 20px;
-  font-size: 12px;
+  font-size: 11.5px;
   font-weight: 600;
   white-space: nowrap;
   text-transform: capitalize;
-  letter-spacing: 0.01em;
 }
 
-// ================================================
-// Cell Types
-// ================================================
-
-.text-muted { color: var(--gray-500); font-size: 13.5px; }
-
+.text-muted {
+  color: var(--gray-500);
+  font-size: 13px;
+}
 .description-cell {
   color: var(--gray-600);
-  max-width: 300px;
+  max-width: 220px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
-
 .text-mono {
-  font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', ui-monospace, monospace;
-  font-size: 12.5px;
+  font-family: monospace;
+  font-size: 12px;
   color: var(--gray-600);
-  letter-spacing: -0.01em;
 }
 
-// ================================================
-// Empty State
-// ================================================
-
-.empty-cell { text-align: center; padding: 72px 20px !important; }
-
+.empty-cell {
+  text-align: center;
+  padding: 48px 20px !important;
+}
 .empty-state {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 10px;
 }
+.empty-state p {
+  color: var(--gray-400);
+  font-size: 14px;
+}
 
-.empty-icon  { color: var(--gray-300); }
-.empty-title { color: var(--gray-700); font-size: 15px; font-weight: 600; margin: 0; }
-.empty-hint  { color: var(--gray-400); font-size: 13px; margin: 0; }
-
-// ================================================
-// Skeleton Loader — shimmer wave replaces flat pulse
-// ================================================
-
-.skeleton-row td { padding: 14px 16px; }
+.skeleton-row td {
+  padding: 12px 14px !important;
+}
 
 .skel {
+  background: var(--gray-200);
   border-radius: 4px;
-  background: linear-gradient(
-    90deg,
-    var(--gray-200) 0%,
-    var(--gray-100) 50%,
-    var(--gray-200) 100%
-  );
-  background-size: 200% 100%;
-  animation: shimmer 1.6s ease infinite;
+  animation: pulse 1.2s ease infinite;
 }
 
-@keyframes shimmer {
-  0%   { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
-}
-
-.skel-avatar { width: 34px; height: 34px; border-radius: 50%; flex-shrink: 0; }
-.skel-line   { height: 13px; margin-bottom: 5px; width: 110px; }
-.skel-line-sm { height: 11px; width: 72px; }
-.skel-badge  { height: 22px; border-radius: 20px; width: 64px; }
-
-// Natural width variation across the 7 skeleton rows — avoids robotic repetition
-.skeleton-row:nth-child(2) .skel-line    { width: 94px; }
-.skeleton-row:nth-child(2) .skel-line-sm { width: 58px; }
-.skeleton-row:nth-child(3) .skel-line    { width: 126px; }
-.skeleton-row:nth-child(3) .skel-line-sm { width: 80px; }
-.skeleton-row:nth-child(4) .skel-line    { width: 88px; }
-.skeleton-row:nth-child(4) .skel-line-sm { width: 65px; }
-.skeleton-row:nth-child(5) .skel-line    { width: 116px; }
-.skeleton-row:nth-child(5) .skel-line-sm { width: 75px; }
-.skeleton-row:nth-child(6) .skel-line    { width: 100px; }
-.skeleton-row:nth-child(6) .skel-line-sm { width: 62px; }
-.skeleton-row:nth-child(7) .skel-line    { width: 132px; }
-.skeleton-row:nth-child(7) .skel-line-sm { width: 68px; }
-
-// ================================================
-// Responsive
-// ================================================
-
-@media (max-width: 1024px) {
-  .filters-bar { padding: 14px 16px; gap: 10px; }
-}
-
-@media (max-width: 768px) {
-  .filters-bar {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 8px;
-    padding: 12px 16px;
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
   }
+  50% {
+    opacity: 0.5;
+  }
+}
 
-  .filter-select { width: 100%; }
+.skel-avatar {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.skel-line {
+  width: 100px;
+  height: 12px;
+  margin-bottom: 4px;
+}
+.skel-line-sm {
+  width: 70px;
+  height: 11px;
+}
+.skel-badge {
+  width: 60px;
+  height: 20px;
+  border-radius: 20px;
+}
 
-  .date-range { width: 100%; }
+.pagination {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 14px 16px;
+  border-top: 1px solid var(--gray-200);
+  justify-content: center;
+}
 
-  .date-range .filter-date {
-    flex: 1;
-    min-width: 0;
+.page-btn {
+  min-width: 34px;
+  height: 34px;
+  padding: 0 8px;
+  border-radius: var(--radius);
+  background: none;
+  border: 1.5px solid var(--gray-300);
+  color: var(--gray-600);
+  font-size: 13.5px;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition:
+    background var(--transition),
+    color var(--transition),
+    border-color var(--transition);
+
+  &:hover:not(:disabled) {
+    background: var(--gray-100);
+    border-color: var(--gray-400);
+  }
+  &.active {
+    background: var(--navy);
+    border-color: var(--navy);
+    color: #fff;
+  }
+  &:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
   }
 }

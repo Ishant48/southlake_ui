@@ -1,8 +1,7 @@
 import { Component, inject, OnInit, ChangeDetectorRef } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink, RouterLinkActive } from '@angular/router';
-import { PaginationComponent } from '../../../shared/ui/pagination/pagination.component';
-import { SearchInputComponent } from '../../../shared/ui/search-input/search-input.component';
+import { debounceTime, distinctUntilChanged, Subject } from 'rxjs';
 import { User, UserStats, PendingInvite } from '../../../core/models/user.model';
 import { Role } from '../../../core/models/role.model';
 import { AuthService } from '../../../core/services/auth.service';
@@ -25,8 +24,6 @@ import { ConfirmDialogComponent } from '../../../shared/components/confirm-dialo
     InvitePanelComponent,
     UserDetailPanelComponent,
     ConfirmDialogComponent,
-    PaginationComponent,
-    SearchInputComponent,
   ],
   templateUrl: './users.component.html',
   styleUrl: './users.component.scss',
@@ -58,6 +55,14 @@ export class UsersComponent implements OnInit {
   total = 0;
   totalPages = 1;
 
+  get pageNumbers(): number[] {
+    const pages: number[] = [];
+    const start = Math.max(1, this.currentPage - 2);
+    const end = Math.min(this.totalPages, this.currentPage + 2);
+    for (let i = start; i <= end; i++) pages.push(i);
+    return pages;
+  }
+
   invitePanelOpen = false;
   detailPanelOpen = false;
   selectedUser: User | null = null;
@@ -68,46 +73,55 @@ export class UsersComponent implements OnInit {
   confirmMessage = '';
   pendingAction: (() => void) | null = null;
 
+  private searchSubject = new Subject<string>();
+
   ngOnInit(): void {
     this.loadStats();
     this.loadUsers();
     this.loadRoles();
     this.loadPendingInvites();
+
+    this.searchSubject.pipe(debounceTime(300), distinctUntilChanged()).subscribe(() => {
+      this.currentPage = 1;
+      this.loadUsers();
+    });
   }
 
   loadStats(): void {
     this.usersService.getStats().subscribe({
-      next: (s) => {
+      next: s => {
         this.stats = s;
         this.cdr.markForCheck();
       },
-      error: () => {}
+      error: () => {},
     });
   }
 
   loadUsers(): void {
     this.loading = true;
-    this.usersService.getUsers({
-      page: this.currentPage,
-      per_page: this.perPage,
-      search: this.searchTerm || undefined,
-      role_id: this.roleFilter || undefined,
-      status: this.statusFilter || undefined,
-    }).subscribe({
-      next: (result) => {
-        this.users = result.data;
-        this.total = result.total;
-        this.totalPages = result.total_pages;
-        this.currentPage = result.page;
-        this.loading = false;
-        this.cdr.markForCheck();
-      },
-      error: () => {
-        this.loading = false;
-        this.toast.error('Failed to load users');
-        this.cdr.markForCheck();
-      }
-    });
+    this.usersService
+      .getUsers({
+        page: this.currentPage,
+        per_page: this.perPage,
+        search: this.searchTerm || undefined,
+        role_id: this.roleFilter || undefined,
+        status: this.statusFilter || undefined,
+      })
+      .subscribe({
+        next: result => {
+          this.users = result.data;
+          this.total = result.total;
+          this.totalPages = result.total_pages;
+          this.currentPage = result.page;
+          this.loading = false;
+          this.cdr.markForCheck();
+        },
+        error: () => {
+          this.loading = false;
+          this.toast.error('Failed to load users');
+          this.cdr.markForCheck();
+        },
+      });
   }
 
   goToPage(page: number): void {
@@ -118,28 +132,26 @@ export class UsersComponent implements OnInit {
 
   loadRoles(): void {
     this.rolesService.getRoles({ per_page: 100 }).subscribe({
-      next: (result) => {
+      next: result => {
         this.roles = result.data;
         this.cdr.markForCheck();
       },
-      error: () => {}
+      error: () => {},
     });
   }
 
   loadPendingInvites(): void {
     this.usersService.getPendingInvites().subscribe({
-      next: (invites) => {
+      next: invites => {
         this.pendingInvites = invites;
         this.cdr.markForCheck();
       },
-      error: () => {}
+      error: () => {},
     });
   }
 
   onSearch(term: string): void {
-    this.searchTerm = term;
-    this.currentPage = 1;
-    this.loadUsers();
+    this.searchSubject.next(term);
   }
 
   onFilterChange(): void {
@@ -169,9 +181,9 @@ export class UsersComponent implements OnInit {
           this.loadUsers();
           this.loadStats();
         },
-        error: (err) => {
+        error: err => {
           this.toast.error(err?.error?.message ?? 'Failed to deactivate user');
-        }
+        },
       });
     };
     this.confirmOpen = true;
@@ -190,15 +202,15 @@ export class UsersComponent implements OnInit {
     this.confirmMessage = `Deactivate ${this.selectedIds.length} selected user(s)? They will lose access immediately.`;
     this.pendingAction = () => {
       this.usersService.deactivateBulk(this.selectedIds).subscribe({
-        next: (res) => {
+        next: res => {
           this.toast.success(`${res.count} user(s) deactivated`);
           this.selectedIds = [];
           this.loadUsers();
           this.loadStats();
         },
-        error: (err) => {
+        error: err => {
           this.toast.error(err?.error?.message ?? 'Failed to deactivate users');
-        }
+        },
       });
     };
     this.confirmOpen = true;
@@ -231,13 +243,17 @@ export class UsersComponent implements OnInit {
       },
       error: () => {
         this.toast.error('Failed to revoke invitation');
-      }
+      },
     });
   }
 
   formatDate(dateStr: string): string {
     try {
-      return new Date(dateStr).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+      return new Date(dateStr).toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+      });
     } catch {
       return dateStr;
     }
@@ -257,7 +273,7 @@ export class UsersComponent implements OnInit {
       u.name || '',
       u.email,
       u.role?.label || '-',
-      u.status || '-'
+      u.status || '-',
     ]);
 
     this.downloadCSV(headers, rows, 'users.csv');
@@ -266,10 +282,14 @@ export class UsersComponent implements OnInit {
   private downloadCSV(headers: string[], rows: any[][], filename: string): void {
     const csvContent = [
       headers.map(h => `"${h.replace(/"/g, '""')}"`).join(','),
-      ...rows.map(row => row.map(val => {
-        const str = val === null || val === undefined ? '' : String(val);
-        return `"${str.replace(/"/g, '""')}"`;
-      }).join(','))
+      ...rows.map(row =>
+        row
+          .map(val => {
+            const str = val === null || val === undefined ? '' : String(val);
+            return `"${str.replace(/"/g, '""')}"`;
+          })
+          .join(','),
+      ),
     ].join('\r\n');
 
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });

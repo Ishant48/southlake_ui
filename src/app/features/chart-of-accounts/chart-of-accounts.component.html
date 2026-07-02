@@ -6,8 +6,17 @@
       <p class="page-subtitle">Manage corporate ledger structure, account hierarchy, and documents.</p>
     </div>
     <button class="btn-primary" (click)="openAddModal()">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-right: 6px;">
-        <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+      <svg
+        width="16"
+        height="16"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2.5"
+        style="margin-right: 6px"
+      >
+        <line x1="12" y1="5" x2="12" y2="19" />
+        <line x1="5" y1="12" x2="19" y2="12" />
       </svg>
       <span>Add Sub COA</span>
     </button>
@@ -16,129 +25,121 @@
   <!-- Content Card -->
   <div class="content-card">
     <!-- Toolbar Filters -->
-    <div class="filters-bar" style="justify-content: space-between;">
-      <div class="table-entries">
-        <span>Show </span>
-        <select class="filter-select entries-select" [(ngModel)]="pageSize" (ngModelChange)="onPageSizeChange()">
-          <option [value]="10">10</option>
-          <option [value]="25">25</option>
-          <option [value]="50">50</option>
-          <option [value]="100">100</option>
-        </select>
-        <span> entries</span>
+    <div class="filters-bar">
+      <select class="filter-select" [(ngModel)]="statusFilter" (ngModelChange)="onStatusFilter(statusFilter)">
+        <option value="all">All Statuses</option>
+        <option value="active">Active</option>
+        <option value="inactive">Inactive</option>
+      </select>
+
+      <select class="filter-select" [(ngModel)]="typeFilter" (ngModelChange)="onTypeFilter(typeFilter)">
+        <option value="all">All Accounts</option>
+        <option value="parent">Parent COA Only</option>
+        <option value="110000">Assets</option>
+        <option value="210000">Liability</option>
+        <option value="310000">Capital and Equity</option>
+        <option value="410000">Revenue</option>
+        <option value="510000">Expense</option>
+      </select>
+
+      <div class="search-wrap">
+        <input
+          class="search-input"
+          type="text"
+          placeholder="Search here"
+          [(ngModel)]="searchTerm"
+          (ngModelChange)="onSearchChange()"
+          style="padding-left: 12px; padding-right: 34px"
+        />
+        <svg
+          class="search-icon-right"
+          width="15"
+          height="15"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <circle cx="11" cy="11" r="8" />
+          <line x1="21" y1="21" x2="16.65" y2="16.65" />
+        </svg>
       </div>
-
-      <div style="display: flex; gap: 12px; align-items: center;">
-        <select class="filter-select" [(ngModel)]="statusFilter" (ngModelChange)="onStatusFilter(statusFilter)">
-          <option value="all">All Statuses</option>
-          <option value="active">Active</option>
-          <option value="inactive">Inactive</option>
-        </select>
-
-        <select class="filter-select" [(ngModel)]="typeFilter" (ngModelChange)="onTypeFilter(typeFilter)">
-          <option value="all">All Accounts</option>
-          <option value="parent">Parent COA Only</option>
-          <option value="110000">Assets</option>
-          <option value="210000">Liability</option>
-          <option value="310000">Capital and Equity</option>
-          <option value="410000">Revenue</option>
-          <option value="510000">Expense</option>
-        </select>
-
-        <app-search-input placeholder="Search here" (searched)="onSearch($event)" />
-        <button class="btn-action-outline" (click)="exportToExcel()" style="height: 38px; padding: 0 14px; margin-left: 8px; display: inline-flex; align-items: center; gap: 6px;">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
-          </svg>
-          <span>Export</span>
-        </button>
-      </div>
+      <button
+        class="btn-action-outline"
+        (click)="exportToExcel()"
+        style="
+          height: 38px;
+          padding: 0 14px;
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          justify-content: center;
+        "
+      >
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path
+            d="M5 3.5 A1.5 1.5 0 0 1 6.5 2 H14 L19 7 V20.5 A1.5 1.5 0 0 1 17.5 22 H6.5 A1.5 1.5 0 0 1 5 20.5 V3.5 Z"
+            fill="#e2e6e9"
+          />
+          <path d="M14 2 V5.5 A1.5 1.5 0 0 0 15.5 7 H19 Z" fill="#c3c8cc" />
+          <path d="M8 7 H12 M8 9.75 H15 M8 12.5 H14" stroke="#19a347" stroke-width="1.5" stroke-linecap="round" />
+          <path d="M2 14 V12.5 C2 11 3 10 4.5 10 H5 V14 Z" fill="#0d7028" />
+          <rect x="2" y="14" width="20" height="8" rx="1.5" fill="#19a347" />
+          <text
+            x="12"
+            y="20.2"
+            font-family="Arial, sans-serif"
+            font-weight="900"
+            font-size="6.2"
+            fill="#ffffff"
+            text-anchor="middle"
+            letter-spacing="0.2"
+          >
+            CSV
+          </text>
+        </svg>
+        <span>Export</span>
+      </button>
     </div>
 
     <!-- Loading State -->
     @if (loading) {
       <div class="empty-state">
-        <div class="spinner" style="width: 32px; height: 32px; margin-bottom: 12px;"></div>
+        <div class="spinner" style="width: 32px; height: 32px; margin-bottom: 12px"></div>
         <p>Loading chart of accounts...</p>
       </div>
-    } @else if (subCoas.length === 0) {
-      <!-- Empty State -->
+    }
+
+    <!-- Empty State -->
+    @if (subCoas.length === 0 && !loading) {
       <div class="empty-state">
-        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--gray-400)" stroke-width="1.5" style="margin-bottom: 12px; opacity: 0.7;">
-          <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
-          <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+        <svg
+          width="40"
+          height="40"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="var(--gray-400)"
+          stroke-width="1.5"
+          style="margin-bottom: 12px; opacity: 0.7"
+        >
+          <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+          <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
         </svg>
         <p>No sub COAs found. Try adjusting your filters or create a new sub COA.</p>
-        <button class="btn-ghost" (click)="openAddModal()" style="margin-top: 12px;">Create First Sub COA</button>
+        <button class="btn-ghost" (click)="openAddModal()" style="margin-top: 12px">Create First Sub COA</button>
       </div>
-    } @else {
-      <!-- Grouped COA Table -->
-      <div class="table-wrapper">
-        <table class="data-table">
-          <thead>
-            <tr>
-              <th style="width: 12%;">COA TYPE</th>
-              <th style="width: 10%;">CODE</th>
-              <th style="width: 30%;">NAME</th>
-              <th style="width: 12%;">PARENT CODE</th>
-              <th style="width: 12%;">NEXT NUMBER</th>
-              <th style="width: 14%;">NORMAL BALANCE</th>
-              <th class="col-actions" style="width: 10%; text-align: center;">ACTIONS</th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (coa of paginatedSubCoas; track coa.id) {
-              <tr [style.background]="!coa.is_active ? 'var(--gray-50)' : 'transparent'" [class.root-row]="coa.is_root">
-                <td>
-                  <span class="coa-badge" [class.root]="coa.is_root" [class.sub]="!coa.is_root">
-                    {{ coa.is_root ? 'Root COA' : 'Sub COA' }}
-                  </span>
-                </td>
-                <td style="font-family: monospace; font-weight: 700; font-size: 14px;">
-                  {{ coa.account_code }}
-                </td>
-                <td>
-                  <div class="coa-name-cell" [style.padding-left.px]="coa.treeDepth * 32">
-                    @if (coa.treeDepth > 0) {
-                      <span class="tree-connector" [style.left.px]="(coa.treeDepth - 1) * 32 + 12"></span>
-                    }
-                    <div class="coa-name-text">
-                      <div class="coa-title">{{ coa.description }}</div>
-                      <div class="coa-subtitle">{{ coa.notes || (coa.is_root ? 'Insurance ledger root group' : '-') }}</div>
-                    </div>
-                  </div>
-                </td>
-                <td style="font-family: monospace; font-weight: 600;">
-                  {{ coa.is_root ? '-' : getParentCoaId(coa) }}
-                </td>
-                <td style="font-family: monospace;">
-                  {{ coa.is_root ? (coa.next_number || '-') : '-' }}
-                </td>
-                <td>
-                  <span class="balance-badge" [class.debit]="coa.normal_balance === 'debit'" [class.credit]="coa.normal_balance === 'credit'">
-                    {{ (coa.normal_balance || '-') | titlecase }}
-                  </span>
-                </td>
-                <td class="col-actions" style="text-align: center;">
-                  @if (coa.is_root) {
-                    <span class="view-link" (click)="openViewModal(coa)">View</span>
-                  } @else {
-                    <div class="action-buttons-list">
-                      <button class="btn-action-outline" (click)="openDocModal(coa)">Document</button>
-                      <button class="btn-action-outline" (click)="openNotesModal(coa)">Notes</button>
-                      <button class="btn-action-outline" (click)="openEditModal(coa)">Edit</button>
-                    </div>
-                  }
-                </td>
-              </tr>
-            }
-          </tbody>
-        </table>
-      </div>
-
-      <!-- Pagination Footer -->
-      <app-pagination [currentPage]="currentPage" [totalPages]="totalPages" [showAllPages]="true" [totalItems]="totalFilteredItems" [pageSize]="pageSize" (pageChange)="goToPage($event)" />
     }
+
+    <!-- Grouped COA Table -->
+    <ag-grid-angular
+      class="ag-theme-alpine"
+      style="display: block; width: 100%"
+      [domLayout]="'autoHeight'"
+      [gridOptions]="gridOptions"
+      [rowData]="filteredSubCoas"
+      [columnDefs]="columnDefs"
+      (gridReady)="onGridReady($event)"
+    ></ag-grid-angular>
   </div>
 
   <!-- ADD / EDIT ACCOUNT MODAL -->
@@ -149,7 +150,8 @@
           <h3 class="panel-title">{{ modalTitle }}</h3>
           <button class="panel-close" (click)="closeModal()" aria-label="Close modal">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-              <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6" y1="6" x2="18" y2="18" />
             </svg>
           </button>
         </div>
@@ -158,7 +160,14 @@
           <div class="form-row">
             <div class="form-field">
               <label class="form-label">Parent COA *</label>
-              <select [(ngModel)]="accountForm.parent_id" name="parentId" (ngModelChange)="onParentChange($event)" [disabled]="isEditMode || isViewMode" class="form-input" required>
+              <select
+                [(ngModel)]="accountForm.parent_id"
+                name="parentId"
+                (ngModelChange)="onParentChange($event)"
+                [disabled]="isEditMode || isViewMode"
+                class="form-input"
+                required
+              >
                 <option [ngValue]="null" disabled>Select Parent COA</option>
                 @for (root of rootParents; track root.id) {
                   <option [value]="root.id">{{ getParentCoaDisplay(root) }}</option>
@@ -167,66 +176,138 @@
             </div>
             <div class="form-field">
               <label class="form-label">Sub COA ID (Account Code) *</label>
-              <input [(ngModel)]="accountForm.account_code" name="accountCode" (ngModelChange)="onCodeChange($event)" type="number" required placeholder="e.g. 110000" [disabled]="isEditMode || isViewMode" class="form-input">
+              <input
+                [(ngModel)]="accountForm.account_code"
+                name="accountCode"
+                (ngModelChange)="onCodeChange($event)"
+                type="number"
+                required
+                placeholder="e.g. 110000"
+                [disabled]="isEditMode || isViewMode"
+                class="form-input"
+              />
             </div>
           </div>
 
           <div class="form-row">
             <div class="form-field">
               <label class="form-label">Sub COA Name *</label>
-              <input [(ngModel)]="accountForm.description" name="description" type="text" required placeholder="e.g. Current Assets" [disabled]="isViewMode" class="form-input">
+              <input
+                [(ngModel)]="accountForm.description"
+                name="description"
+                type="text"
+                required
+                placeholder="e.g. Current Assets"
+                [disabled]="isViewMode"
+                class="form-input"
+              />
             </div>
             <div class="form-field">
               <label class="form-label">Sub COA Key (Slug)</label>
-              <input [(ngModel)]="accountForm.key" name="key" placeholder="e.g. CURRENT_ASSETS" [disabled]="isViewMode" class="form-input">
+              <input
+                [(ngModel)]="accountForm.key"
+                name="key"
+                placeholder="e.g. CURRENT_ASSETS"
+                [disabled]="isViewMode"
+                class="form-input"
+              />
             </div>
           </div>
 
           <div class="form-row">
             <div class="form-field">
               <label class="form-label">Next Available Number</label>
-              <input [(ngModel)]="accountForm.next_number" name="nextNumber" type="number" placeholder="e.g. 110001" [disabled]="isViewMode" class="form-input">
+              <input
+                [(ngModel)]="accountForm.next_number"
+                name="nextNumber"
+                type="number"
+                placeholder="e.g. 110001"
+                [disabled]="isViewMode"
+                class="form-input"
+              />
             </div>
             <div class="form-field">
               <label class="form-label">Normal Balance</label>
-              <input [value]="(accountForm.normal_balance || '-') | titlecase" type="text" class="form-input" disabled style="background-color: var(--gray-100);">
+              <input
+                [value]="accountForm.normal_balance || '-' | titlecase"
+                type="text"
+                class="form-input"
+                disabled
+                style="background-color: var(--gray-100)"
+              />
             </div>
           </div>
 
           <div class="form-row">
             <div class="form-field">
               <label class="form-label">Account Type</label>
-              <div style="display: flex; gap: 16px; margin-top: 8px;">
+              <div style="display: flex; gap: 16px; margin-top: 8px">
                 <div class="form-checkbox-field">
-                  <input type="checkbox" id="typeActual" [checked]="!accountForm.is_parent" (change)="setAccountType(false)" [disabled]="isViewMode">
-                  <label for="typeActual" style="cursor: pointer; user-select: none;">Actual Account</label>
+                  <input
+                    type="checkbox"
+                    id="typeActual"
+                    [checked]="!accountForm.is_parent"
+                    (change)="setAccountType(false)"
+                    [disabled]="isViewMode"
+                  />
+                  <label for="typeActual" style="cursor: pointer; user-select: none">Actual Account</label>
                 </div>
                 <div class="form-checkbox-field">
-                  <input type="checkbox" id="typeSummary" [checked]="accountForm.is_parent" (change)="setAccountType(true)" [disabled]="isViewMode">
-                  <label for="typeSummary" style="cursor: pointer; user-select: none;">Summary Account</label>
+                  <input
+                    type="checkbox"
+                    id="typeSummary"
+                    [checked]="accountForm.is_parent"
+                    (change)="setAccountType(true)"
+                    [disabled]="isViewMode"
+                  />
+                  <label for="typeSummary" style="cursor: pointer; user-select: none">Summary Account</label>
                 </div>
               </div>
             </div>
-            
-            <div class="form-field" style="display: flex; flex-direction: column; justify-content: flex-end; padding-bottom: 4px;">
-              <label class="form-label" style="margin-bottom: 6px;">Active Status</label>
+
+            <div
+              class="form-field"
+              style="display: flex; flex-direction: column; justify-content: flex-end; padding-bottom: 4px"
+            >
+              <label class="form-label" style="margin-bottom: 6px">Active Status</label>
               <label class="switch">
-                <input [(ngModel)]="accountForm.is_active" name="isActive" type="checkbox" id="isActive" [disabled]="isViewMode">
+                <input
+                  [(ngModel)]="accountForm.is_active"
+                  name="isActive"
+                  type="checkbox"
+                  id="isActive"
+                  [disabled]="isViewMode"
+                />
                 <span class="slider round"></span>
               </label>
             </div>
           </div>
 
           @if (isEarningAccountVisible) {
-            <div class="form-field" style="margin-bottom: 16px;">
+            <div class="form-field" style="margin-bottom: 16px">
               <label class="form-label">Earned Account *</label>
-              <input [(ngModel)]="earningAccountCode" name="earningAccountCode" type="number" required placeholder="e.g. 310000" [disabled]="isViewMode" class="form-input">
+              <input
+                [(ngModel)]="earningAccountCode"
+                name="earningAccountCode"
+                type="number"
+                required
+                placeholder="e.g. 310000"
+                [disabled]="isViewMode"
+                class="form-input"
+              />
             </div>
           }
 
           <div class="form-field">
             <label class="form-label">Sub COA Notes</label>
-            <textarea [(ngModel)]="accountForm.notes" name="notes" rows="4" placeholder="Additional details..." class="form-input form-textarea" [disabled]="isViewMode"></textarea>
+            <textarea
+              [(ngModel)]="accountForm.notes"
+              name="notes"
+              rows="4"
+              placeholder="Additional details..."
+              class="form-input form-textarea"
+              [disabled]="isViewMode"
+            ></textarea>
           </div>
         </form>
 
@@ -237,7 +318,7 @@
             <button type="button" class="btn-ghost" (click)="closeModal()">Cancel</button>
             <button type="button" class="btn-primary" [disabled]="submitting" (click)="submitAccount()">
               @if (submitting) {
-                <span class="spinner btn-spinner" style="width: 14px; height: 14px;"></span>
+                <span class="spinner btn-spinner" style="width: 14px; height: 14px"></span>
                 <span>Saving...</span>
               } @else {
                 <span>Save Sub COA</span>
@@ -257,13 +338,14 @@
           <h3 class="panel-title">{{ notesModalTitle }}</h3>
           <button class="panel-close" (click)="closeNotesModal()" aria-label="Close modal">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-              <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6" y1="6" x2="18" y2="18" />
             </svg>
           </button>
         </div>
         <div class="panel-body">
-          <p style="white-space: pre-wrap; font-size: 14px; color: var(--gray-700); line-height: 1.6;">
-            {{ notesModalContent || 'No notes available for this Sub COA.' }}
+          <p style="white-space: pre-wrap; font-size: 14px; color: var(--gray-700); line-height: 1.6">
+            {{ notesModalContent || "No notes available for this Sub COA." }}
           </p>
         </div>
         <div class="panel-footer">
@@ -280,35 +362,59 @@
         <div class="panel-header">
           <div>
             <h3 class="panel-title">Sub COA Documents</h3>
-            <p class="panel-subtitle" style="font-size: 12px; margin-top: 2px;">Attachments for: {{ selectedAccount?.account_code }} - {{ selectedAccount?.description }}</p>
+            <p class="panel-subtitle" style="font-size: 12px; margin-top: 2px">
+              Attachments for: {{ selectedAccount?.account_code }} - {{ selectedAccount?.description }}
+            </p>
           </div>
           <button class="panel-close" (click)="closeDocModal()" aria-label="Close modal">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-              <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6" y1="6" x2="18" y2="18" />
             </svg>
           </button>
         </div>
 
         <div class="panel-body">
           <div class="upload-section">
-            <span class="upload-label" style="font-weight: 600; color: var(--gray-700);">Attach File</span>
+            <span class="upload-label" style="font-weight: 600; color: var(--gray-700)">Attach File</span>
             <label class="btn-primary upload-btn">
               @if (uploadingDoc) {
-                <span class="spinner btn-spinner" style="width: 12px; height: 12px; margin-right: 6px;"></span>
+                <span class="spinner btn-spinner" style="width: 12px; height: 12px; margin-right: 6px"></span>
                 <span>Uploading...</span>
               } @else {
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-right: 6px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2.5"
+                  style="margin-right: 6px"
+                >
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                  <polyline points="17 8 12 3 7 8" />
+                  <line x1="12" y1="3" x2="12" y2="15" />
+                </svg>
                 <span>Upload File</span>
               }
-              <input type="file" [disabled]="uploadingDoc" (change)="onFileSelected($event)" style="display: none;">
+              <input type="file" [disabled]="uploadingDoc" (change)="onFileSelected($event)" style="display: none" />
             </label>
           </div>
 
           <div class="documents-list">
             @if (documents.length === 0) {
               <div class="empty-docs">
-                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--gray-400)" stroke-width="1.5" style="margin-bottom: 8px;">
-                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>
+                <svg
+                  width="32"
+                  height="32"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="var(--gray-400)"
+                  stroke-width="1.5"
+                  style="margin-bottom: 8px"
+                >
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                  <polyline points="14 2 14 8 20 8" />
                 </svg>
                 <p>No documents uploaded yet.</p>
               </div>
@@ -316,17 +422,40 @@
               @for (doc of documents; track doc.id) {
                 <div class="doc-item">
                   <div class="doc-info">
-                    <svg class="doc-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>
+                    <svg
+                      class="doc-icon"
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                    >
+                      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                      <polyline points="14 2 14 8 20 8" />
                     </svg>
                     <div class="doc-meta">
                       <span class="doc-name" [title]="doc.file_name">{{ doc.file_name }}</span>
-                      <span class="doc-date">Uploaded {{ doc.uploaded_at | date:'short' }}</span>
+                      <span class="doc-date">Uploaded {{ doc.uploaded_at | date: "short" }}</span>
                     </div>
                   </div>
                   <div class="action-buttons-list">
-                    <button (click)="downloadDoc(doc)" class="btn-action-outline" title="Download" style="height: 26px; padding: 0 8px;">Download</button>
-                    <button (click)="deleteDoc(doc)" class="btn-action-outline btn-action-danger-outline" title="Delete" style="height: 26px; padding: 0 8px;">Delete</button>
+                    <button
+                      (click)="downloadDoc(doc)"
+                      class="btn-action-outline"
+                      title="Download"
+                      style="height: 26px; padding: 0 8px"
+                    >
+                      Download
+                    </button>
+                    <button
+                      (click)="deleteDoc(doc)"
+                      class="btn-action-outline btn-action-danger-outline"
+                      title="Delete"
+                      style="height: 26px; padding: 0 8px"
+                    >
+                      Delete
+                    </button>
                   </div>
                 </div>
               }
@@ -341,5 +470,11 @@
   }
 
   <!-- Confirm Delete dialog -->
-  <app-confirm-dialog [open]="confirmOpen" [title]="confirmTitle" [message]="confirmMessage" (confirmed)="onConfirm()" (cancelled)="onCancelConfirm()"/>
+  <app-confirm-dialog
+    [open]="confirmOpen"
+    [title]="confirmTitle"
+    [message]="confirmMessage"
+    (confirmed)="onConfirm()"
+    (cancelled)="onCancelConfirm()"
+  />
 </div>

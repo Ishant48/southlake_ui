@@ -46,7 +46,7 @@ export class RolesComponent implements OnInit {
   loadRoles(): void {
     this.loading = true;
     this.rolesService.getRoles({ page: this.currentPage, per_page: this.perPage }).subscribe({
-      next: (result) => {
+      next: result => {
         this.roles = result.data;
         this.total = result.total;
         this.totalPages = result.total_pages;
@@ -58,7 +58,7 @@ export class RolesComponent implements OnInit {
         this.loading = false;
         this.toast.error('Failed to load roles');
         this.cdr.markForCheck();
-      }
+      },
     });
   }
 
@@ -76,7 +76,7 @@ export class RolesComponent implements OnInit {
   openEditModal(role: Role): void {
     this.loading = true;
     this.rolesService.getRole(role.id).subscribe({
-      next: (detail) => {
+      next: detail => {
         this.editingRole = detail;
         this.loading = false;
         this.modalOpen = true;
@@ -86,7 +86,7 @@ export class RolesComponent implements OnInit {
         this.loading = false;
         this.toast.error('Failed to load role details');
         this.cdr.markForCheck();
-      }
+      },
     });
   }
 
@@ -108,9 +108,9 @@ export class RolesComponent implements OnInit {
         this.toast.success('Role deleted');
         this.loadRoles();
       },
-      error: (err) => {
+      error: err => {
         this.toast.error(err?.error?.message ?? 'Failed to delete role');
-      }
+      },
     });
     this.deletingRoleId = null;
   }

@@ -1,6 +1,26 @@
 <header class="app-header">
-  <div class="header-brand">
-    <span class="brand-name">Southlake Insurance</span>
+  <div class="header-left">
+    <button class="toggle-btn" (click)="sidebarService.toggle()">
+      <svg
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <line x1="3" y1="12" x2="21" y2="12"></line>
+        <line x1="3" y1="6" x2="21" y2="6"></line>
+        <line x1="3" y1="18" x2="21" y2="18"></line>
+      </svg>
+    </button>
+    <div class="header-titles">
+      <div class="header-title-main">
+        Welcome,
+        <span class="header-user">{{ displayName }}</span>
+      </div>
+      <div class="header-title-sub">Insurance Accounting &amp; MGA Financial Operations</div>
+    </div>
   </div>
   <div class="header-right">
     <div class="user-menu" (click)="toggleDropdown()">
@@ -8,8 +28,17 @@
         {{ initials }}
       </div>
       <span class="user-name">{{ displayName }}</span>
-      <svg class="chevron" [class.open]="dropdownOpen" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-        <polyline points="6 9 12 15 18 9"/>
+      <svg
+        class="chevron"
+        [class.open]="dropdownOpen"
+        width="14"
+        height="14"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2.5"
+      >
+        <polyline points="6 9 12 15 18 9" />
       </svg>
       @if (dropdownOpen) {
         <div class="user-dropdown">
@@ -20,7 +49,9 @@
           <div class="dropdown-divider"></div>
           <button class="dropdown-item dropdown-item-danger" (click)="signOut($event)">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>
+              <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4" />
+              <polyline points="16 17 21 12 16 7" />
+              <line x1="21" y1="12" x2="9" y2="12" />
             </svg>
             Sign Out
           </button>

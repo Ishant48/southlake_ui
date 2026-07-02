@@ -1,32 +1,98 @@
 import { Component, inject, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { PaginationComponent } from '../../shared/ui/pagination/pagination.component';
-import { SearchInputComponent } from '../../shared/ui/search-input/search-input.component';
 import { ChartOfAccountsService } from '../../core/services/chart-of-accounts.service';
 import { ChartOfAccount, ChartOfAccountDocument } from '../../core/models/chart-of-account.model';
 import { ToastService } from '../../shared/components/toast/toast.service';
 import { ConfirmDialogComponent } from '../../shared/components/confirm-dialog/confirm-dialog.component';
 import { environment } from '../../../environments/environment';
 
+import { AgGridAngular } from 'ag-grid-angular';
+import { ColDef, GridOptions, GridReadyEvent } from 'ag-grid-community';
+import { AgGridConfigService } from '../../core/services/ag-grid-config.service';
+
+import { CoaBadgeRendererComponent } from './grid-renderers/coa-badge-renderer.component';
+import { CoaTreeNameRendererComponent } from './grid-renderers/coa-tree-name-renderer.component';
+import { BalanceBadgeRendererComponent } from './grid-renderers/balance-badge-renderer.component';
+import { CoaActionsRendererComponent } from './grid-renderers/coa-actions-renderer.component';
+
 @Component({
   selector: 'app-chart-of-accounts',
   standalone: true,
-  imports: [CommonModule, FormsModule, ConfirmDialogComponent, PaginationComponent, SearchInputComponent],
+  imports: [CommonModule, FormsModule, ConfirmDialogComponent, AgGridAngular],
   templateUrl: './chart-of-accounts.component.html',
   styleUrl: './chart-of-accounts.component.scss',
 })
 export class ChartOfAccountsComponent implements OnInit {
   private service = inject(ChartOfAccountsService);
   private toast = inject(ToastService);
+  private agGridConfig = inject(AgGridConfigService);
   private cdr = inject(ChangeDetectorRef);
 
   flatAccounts: ChartOfAccount[] = [];
   rootParents: ChartOfAccount[] = []; // Predefined 5 roots
   subCoas: any[] = []; // List of COAs (roots and subs) displayed in table
-  private codeMap = new Map<string, number>();
+  filteredSubCoas: any[] = []; // Filtered list passed to AG Grid
   loading = false;
-  searchTerm = '';
+  searchTerm: string = '';
+  Math = Math; // To use Math.ceil in template if needed
+
+  // AG Grid Properties
+  gridOptions: GridOptions = this.agGridConfig.getDefaultGridOptions();
+  columnDefs: ColDef[] = [
+    {
+      headerName: 'COA TYPE',
+      field: 'is_root',
+      cellRenderer: CoaBadgeRendererComponent,
+      flex: 12,
+      minWidth: 100,
+    },
+    {
+      headerName: 'CODE',
+      field: 'account_code',
+      cellStyle: { fontFamily: 'monospace', fontWeight: '700' },
+      flex: 10,
+      minWidth: 90,
+    },
+    {
+      headerName: 'NAME',
+      field: 'description',
+      cellRenderer: CoaTreeNameRendererComponent,
+      flex: 40,
+      minWidth: 350,
+    },
+    {
+      headerName: 'PARENT CODE',
+      valueGetter: params => (params.data?.is_root ? '-' : this.getParentCoaId(params.data)),
+      cellStyle: { fontFamily: 'monospace', fontWeight: '600' },
+      flex: 12,
+      minWidth: 100,
+    },
+    {
+      headerName: 'NEXT NUMBER',
+      valueGetter: params => (params.data?.is_root ? params.data?.next_number || '-' : '-'),
+      cellStyle: { fontFamily: 'monospace' },
+      flex: 12,
+      minWidth: 100,
+    },
+    {
+      headerName: 'NORMAL BAL...',
+      field: 'normal_balance',
+      cellRenderer: BalanceBadgeRendererComponent,
+      flex: 14,
+      minWidth: 100,
+    },
+    {
+      headerName: 'ACTIONS',
+      cellRenderer: CoaActionsRendererComponent,
+      sortable: false,
+      minWidth: 230,
+      maxWidth: 240,
+      cellStyle: { textAlign: 'center', justifyContent: 'center' },
+    },
+  ];
+
+  // Modals state
   statusFilter: 'all' | 'active' | 'inactive' = 'all';
   typeFilter: string = 'all';
   earningAccountCode: number | null = null;
@@ -78,78 +144,83 @@ export class ChartOfAccountsComponent implements OnInit {
 
   loadAccounts(): void {
     this.loading = true;
-    this.service.getAccounts(
-      this.searchTerm || undefined,
-      this.statusFilter === 'all' ? undefined : this.statusFilter === 'active'
-    ).subscribe({
-      next: (accounts) => {
-        this.flatAccounts = accounts;
+    this.service
+      .getAccounts(
+        this.searchTerm || undefined,
+        this.statusFilter === 'all' ? undefined : this.statusFilter === 'active',
+      )
+      .subscribe({
+        next: accounts => {
+          this.flatAccounts = accounts;
 
-        // Build fast code lookup map (avoids O(n) find() calls in getParentCoaId)
-        this.codeMap.clear();
-        for (const acc of accounts) {
-          this.codeMap.set(acc.id, Number(acc.account_code));
-        }
+          // Resolve top-level parent accounts if they are present or not cached
+          const hasRoots = accounts.some(a => Number(a.account_code) === 110000);
+          if (hasRoots || this.rootParents.length === 0) {
+            this.rootParents = [
+              accounts.find(a => Number(a.account_code) === 110000), // Assets
+              accounts.find(a => Number(a.account_code) === 210000), // Liability
+              accounts.find(a => Number(a.account_code) === 310000), // Capital and Equity
+              accounts.find(a => Number(a.account_code) === 410000), // Revenue
+              accounts.find(a => Number(a.account_code) === 510000), // Expense
+            ].filter(Boolean) as ChartOfAccount[];
+          }
 
-        // Resolve top-level parent accounts if they are present or not cached
-        const hasRoots = accounts.some(a => Number(a.account_code) === 110000);
-        if (hasRoots || this.rootParents.length === 0) {
-          this.rootParents = [
-            accounts.find(a => Number(a.account_code) === 110000), // Assets
-            accounts.find(a => Number(a.account_code) === 210000), // Liability
-            accounts.find(a => Number(a.account_code) === 310000), // Capital and Equity
-            accounts.find(a => Number(a.account_code) === 410000), // Revenue
-            accounts.find(a => Number(a.account_code) === 510000), // Expense
-          ].filter(Boolean) as ChartOfAccount[];
-        }
+          // Build the nested/hierarchical flat list to display in the table
+          this.subCoas = this.buildTreeList(accounts);
+          this.applyTypeFilter();
 
-        // Build the nested/hierarchical flat list to display in the table
-        this.subCoas = this.buildTreeList(accounts);
+          this.currentPage = 1;
+          this.loading = false;
+          this.cdr.markForCheck();
+        },
+        error: err => {
+          this.toast.error(err.error?.message || 'Failed to load chart of accounts');
+          this.loading = false;
+          this.cdr.markForCheck();
+        },
+      });
+  }
 
-        this.currentPage = 1;
-        this.loading = false;
-        this.cdr.markForCheck();
-      },
-      error: (err) => {
-        this.toast.error(err.error?.message || 'Failed to load chart of accounts');
-        this.loading = false;
-        this.cdr.markForCheck();
-      }
+  onGridReady(params: GridReadyEvent) {
+    // Provide component reference to custom renderers so they can call modals
+    params.api.setGridOption('context', {
+      componentParent: this,
     });
   }
 
-  private buildTreeList(accounts: ChartOfAccount[]): any[] {
-    const rootCodes = new Set([110000, 210000, 310000, 410000, 510000]);
+  applyFilter() {}
 
-    // Pre-group children by parent_id (O(n) once instead of O(n) per node)
-    const childrenMap = new Map<string | null, ChartOfAccount[]>();
-    for (const acc of accounts) {
-      const key = acc.parent_id ?? null;
-      if (!childrenMap.has(key)) childrenMap.set(key, []);
-      childrenMap.get(key)!.push(acc);
-    }
+  buildTreeList(accounts: ChartOfAccount[]): any[] {
+    const rootCodes = [110000, 210000, 310000, 410000, 510000];
+    const roots = accounts.filter(a => rootCodes.includes(Number(a.account_code)));
 
-    const rootOrder: Record<number, number> = {
-      110000: 1, 210000: 2, 310000: 3, 410000: 4, 510000: 5
+    const rootOrder: { [code: number]: number } = {
+      110000: 1, // Assets
+      210000: 2, // Liability
+      310000: 3, // Capital and Equity
+      410000: 4, // Revenue
+      510000: 5, // Expense
     };
 
-    const roots = accounts
-      .filter(a => rootCodes.has(Number(a.account_code)))
-      .sort((a, b) =>
-        (rootOrder[Number(a.account_code)] ?? 99) - (rootOrder[Number(b.account_code)] ?? 99)
-      );
+    roots.sort((a, b) => {
+      const orderA = rootOrder[Number(a.account_code)] || 99;
+      const orderB = rootOrder[Number(b.account_code)] || 99;
+      return orderA - orderB;
+    });
 
     const result: any[] = [];
 
     const traverse = (node: ChartOfAccount, depth: number) => {
+      const isRoot = node.is_parent;
       result.push({
         ...node,
-        is_root: node.is_parent,
-        treeDepth: depth
+        is_root: isRoot,
+        treeDepth: depth,
       });
 
-      const children = (childrenMap.get(node.id) || [])
-        .sort((a, b) => Number(a.account_code) - Number(b.account_code));
+      // Find children
+      const children = accounts.filter(a => a.parent_id === node.id);
+      children.sort((a, b) => Number(a.account_code) - Number(b.account_code));
 
       for (const child of children) {
         traverse(child, depth + 1);
@@ -162,9 +233,15 @@ export class ChartOfAccountsComponent implements OnInit {
 
     // Capture stray accounts to avoid losing data
     const visitedIds = new Set(result.map(r => r.id));
-    for (const acc of accounts) {
-      if (!visitedIds.has(acc.id)) {
-        result.push({ ...acc, is_root: false, treeDepth: 0 });
+    const strays = accounts.filter(a => !visitedIds.has(a.id));
+    if (strays.length > 0) {
+      strays.sort((a, b) => Number(a.account_code) - Number(b.account_code));
+      for (const s of strays) {
+        result.push({
+          ...s,
+          is_root: false,
+          treeDepth: 0,
+        });
       }
     }
 
@@ -174,8 +251,8 @@ export class ChartOfAccountsComponent implements OnInit {
   // Helper mappings
   getParentCoaId(coa: ChartOfAccount): string {
     if (!coa.parent_id) return '-';
-    const parentCode = this.codeMap.get(coa.parent_id);
-    return parentCode !== undefined ? String(parentCode) : '-';
+    const parent = this.flatAccounts.find(p => p.id === coa.parent_id);
+    return parent ? String(parent.account_code) : '-';
   }
 
   getParentCoaDisplay(root: ChartOfAccount): string {
@@ -188,45 +265,25 @@ export class ChartOfAccountsComponent implements OnInit {
     return `${code} - ${root.description}`;
   }
 
-  // Client-side pagination helpers
-  private get filteredCoas(): any[] {
-    if (this.typeFilter === 'all') return this.subCoas;
+  // Client-side filtering for AG Grid
+  applyTypeFilter(): void {
+    let filtered = this.subCoas;
     if (this.typeFilter === 'parent') {
-      return this.subCoas.filter(coa => coa.is_root);
+      filtered = filtered.filter(coa => coa.is_root);
+    } else if (this.typeFilter !== 'all') {
+      const targetCode = Number(this.typeFilter);
+      const targetParent = this.rootParents.find(p => Number(p.account_code) === targetCode);
+      if (targetParent) {
+        // Include the target parent and any account that has this parent
+        filtered = filtered.filter(
+          coa => coa.id === targetParent.id || coa.parent_id === targetParent.id,
+        );
+      }
     }
-    const targetCode = Number(this.typeFilter);
-    const targetParent = this.rootParents.find(p => Number(p.account_code) === targetCode);
-    if (!targetParent) return this.subCoas;
-    return this.subCoas.filter(coa => coa.id === targetParent.id || coa.parent_id === targetParent.id);
+    this.filteredSubCoas = filtered;
   }
 
-  get paginatedSubCoas(): any[] {
-    const filtered = this.filteredCoas;
-    const start = (this.currentPage - 1) * this.pageSize;
-    return filtered.slice(start, start + this.pageSize);
-  }
-
-  get totalPages(): number {
-    return Math.ceil(this.filteredCoas.length / this.pageSize);
-  }
-
-  get totalFilteredItems(): number {
-    return this.filteredCoas.length;
-  }
-
-  goToPage(page: number): void {
-    if (page >= 1 && page <= this.totalPages) {
-      this.currentPage = page;
-    }
-  }
-
-  onPageSizeChange(): void {
-    this.currentPage = 1;
-  }
-
-  onSearch(term: string): void {
-    this.searchTerm = term;
-    this.currentPage = 1;
+  onSearchChange(): void {
     this.loadAccounts();
   }
 
@@ -237,6 +294,7 @@ export class ChartOfAccountsComponent implements OnInit {
 
   onTypeFilter(type: string): void {
     this.typeFilter = type;
+    this.applyTypeFilter();
     this.currentPage = 1;
     this.cdr.markForCheck();
   }
@@ -259,7 +317,7 @@ export class ChartOfAccountsComponent implements OnInit {
     const parent = this.rootParents.find(p => p.id === parentId);
     if (parent) {
       this.accountForm.normal_balance = parent.normal_balance;
-      
+
       const parentCode = Number(parent.account_code);
       // Suggest next code space
       if (parent.next_number && Number(parent.next_number) > parentCode) {
@@ -359,7 +417,11 @@ export class ChartOfAccountsComponent implements OnInit {
 
   submitAccount(): void {
     if (this.isViewMode) return;
-    if (!this.accountForm.account_code || !this.accountForm.description || !this.accountForm.parent_id) {
+    if (
+      !this.accountForm.account_code ||
+      !this.accountForm.description ||
+      !this.accountForm.parent_id
+    ) {
       this.toast.error('Parent COA, Account Code and Description are required');
       return;
     }
@@ -367,9 +429,13 @@ export class ChartOfAccountsComponent implements OnInit {
     // Resolve earning_account_id from earningAccountCode if visible
     if (this.isEarningAccountVisible) {
       if (this.earningAccountCode) {
-        const found = this.flatAccounts.find(a => Number(a.account_code) === Number(this.earningAccountCode));
+        const found = this.flatAccounts.find(
+          a => Number(a.account_code) === Number(this.earningAccountCode),
+        );
         if (!found) {
-          this.toast.error(`Earning Account with code ${this.earningAccountCode} not found in Chart of Accounts`);
+          this.toast.error(
+            `Earning Account with code ${this.earningAccountCode} not found in Chart of Accounts`,
+          );
           return;
         }
         this.accountForm.earning_account_id = found.id;
@@ -394,11 +460,11 @@ export class ChartOfAccountsComponent implements OnInit {
           this.submitting = false;
           this.cdr.markForCheck();
         },
-        error: (err) => {
+        error: err => {
           this.toast.error(err.error?.message || 'Failed to update account');
           this.submitting = false;
           this.cdr.markForCheck();
-        }
+        },
       });
     } else {
       this.service.createAccount(body).subscribe({
@@ -409,11 +475,11 @@ export class ChartOfAccountsComponent implements OnInit {
           this.submitting = false;
           this.cdr.markForCheck();
         },
-        error: (err) => {
+        error: err => {
           this.toast.error(err.error?.message || 'Failed to create account');
           this.submitting = false;
           this.cdr.markForCheck();
-        }
+        },
       });
     }
   }
@@ -428,10 +494,10 @@ export class ChartOfAccountsComponent implements OnInit {
           this.loadAccounts();
           this.cdr.markForCheck();
         },
-        error: (err) => {
+        error: err => {
           this.toast.error(err.error?.message || 'Failed to delete account');
           this.cdr.markForCheck();
-        }
+        },
       });
     };
     this.confirmOpen = true;
@@ -447,14 +513,14 @@ export class ChartOfAccountsComponent implements OnInit {
 
   loadDocuments(coaId: string): void {
     this.service.getAccount(coaId).subscribe({
-      next: (res) => {
+      next: res => {
         this.documents = res.documents || [];
         this.cdr.markForCheck();
       },
       error: () => {
         this.toast.error('Failed to load documents');
         this.cdr.markForCheck();
-      }
+      },
     });
   }
 
@@ -477,16 +543,19 @@ export class ChartOfAccountsComponent implements OnInit {
         event.target.value = '';
         this.cdr.markForCheck();
       },
-      error: (err) => {
+      error: err => {
         this.toast.error(err.error?.message || 'Failed to upload document');
         this.uploadingDoc = false;
         this.cdr.markForCheck();
-      }
+      },
     });
   }
 
   downloadDoc(doc: ChartOfAccountDocument): void {
-    window.open(`${environment.apiUrl}/chart-of-accounts/documents/download/${doc.file_url}`, '_blank');
+    window.open(
+      `${environment.apiUrl}/chart-of-accounts/documents/download/${doc.file_url}`,
+      '_blank',
+    );
   }
 
   deleteDoc(doc: ChartOfAccountDocument): void {
@@ -501,26 +570,35 @@ export class ChartOfAccountsComponent implements OnInit {
           }
           this.cdr.markForCheck();
         },
-        error: (err) => {
+        error: err => {
           this.toast.error(err.error?.message || 'Failed to delete document');
           this.cdr.markForCheck();
-        }
+        },
       });
     };
     this.confirmOpen = true;
   }
 
   exportToExcel(): void {
-    const headers = ['COA Type', 'Account Code', 'Description', 'Notes', 'Parent Code', 'Next Available Number', 'Normal Balance', 'Status'];
+    const headers = [
+      'COA Type',
+      'Account Code',
+      'Description',
+      'Notes',
+      'Parent Code',
+      'Next Available Number',
+      'Normal Balance',
+      'Status',
+    ];
     const rows = this.subCoas.map(coa => [
       coa.is_root ? 'Root COA' : 'Sub COA',
       coa.account_code,
       coa.description,
       coa.notes || '',
       coa.is_root ? '-' : this.getParentCoaId(coa),
-      coa.is_root ? (coa.next_number || '-') : '-',
+      coa.is_root ? coa.next_number || '-' : '-',
       coa.normal_balance ? coa.normal_balance.toUpperCase() : '-',
-      coa.is_active ? 'Active' : 'Inactive'
+      coa.is_active ? 'Active' : 'Inactive',
     ]);
 
     this.downloadCSV(headers, rows, 'chart_of_accounts.csv');
@@ -529,10 +607,14 @@ export class ChartOfAccountsComponent implements OnInit {
   private downloadCSV(headers: string[], rows: any[][], filename: string): void {
     const csvContent = [
       headers.map(h => `"${h.replace(/"/g, '""')}"`).join(','),
-      ...rows.map(row => row.map(val => {
-        const str = val === null || val === undefined ? '' : String(val);
-        return `"${str.replace(/"/g, '""')}"`;
-      }).join(','))
+      ...rows.map(row =>
+        row
+          .map(val => {
+            const str = val === null || val === undefined ? '' : String(val);
+            return `"${str.replace(/"/g, '""')}"`;
+          })
+          .join(','),
+      ),
     ].join('\r\n');
 
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });

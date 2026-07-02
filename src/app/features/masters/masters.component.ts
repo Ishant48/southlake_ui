@@ -1,10 +1,13 @@
-import { Component, inject, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, inject, OnInit, ChangeDetectorRef, ViewChild, ElementRef } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { Observable } from 'rxjs';
-import { PaginationComponent } from '../../shared/ui/pagination/pagination.component';
-import { SearchInputComponent } from '../../shared/ui/search-input/search-input.component';
 import { FormsModule } from '@angular/forms';
+import { AgGridAngular } from 'ag-grid-angular';
+import { ColDef, GridOptions } from 'ag-grid-community';
+import { AgGridConfigService } from '../../core/services/ag-grid-config.service';
+import { ActionButtonsCellRenderer } from '../../shared/components/grid-renderers/action-buttons-cell.component';
+import { StatusBadgeCellRenderer } from '../../shared/components/grid-renderers/status-badge-cell.component';
 import { MastersService } from '../../core/services/masters.service';
 import { ToastService } from '../../shared/components/toast/toast.service';
 import { ConfirmDialogComponent } from '../../shared/components/confirm-dialog/confirm-dialog.component';
@@ -12,12 +15,9 @@ import { DropdownSearchComponent } from '../../shared/components/dropdown-search
 import { environment } from '../../../environments/environment';
 import {
   StateMaster,
-  StateDocument,
   MgaMaster,
-  MgaDocument,
   ReinsurerCompany,
   RiskCompany,
-  RiskCompanyDocument,
   LineOfBusiness,
   CobMaster,
   Treaty,
@@ -30,40 +30,54 @@ import { GlMapping } from '../../core/models/gl-mapping.model';
 import { ChartOfAccount } from '../../core/models/chart-of-account.model';
 import { ReinsuranceService } from '../../core/services/reinsurance.service';
 
-type MasterTab = 'treaties' | 'mgas' | 'lobs' | 'cobs' | 'states' | 'reinsurers' | 'risk-companies' | 'gl-mappings';
+type MasterTab =
+  | 'treaties'
+  | 'mgas'
+  | 'lobs'
+  | 'cobs'
+  | 'states'
+  | 'reinsurers'
+  | 'risk-companies'
+  | 'gl-mappings';
 
 @Component({
   selector: 'app-masters',
   standalone: true,
-  imports: [CommonModule, FormsModule, ConfirmDialogComponent, DropdownSearchComponent, PaginationComponent, SearchInputComponent],
+  imports: [
+    CommonModule,
+    FormsModule,
+    ConfirmDialogComponent,
+    DropdownSearchComponent,
+    AgGridAngular,
+  ],
   templateUrl: './masters.component.html',
   styleUrl: './masters.component.scss',
 })
 export class MastersComponent implements OnInit {
   // Label formatters for searchable dropdowns
-  mgaLabelFn = (item: any) => item ? `${item.name} (${item.mga_code})` : '';
-  riskCompanyLabelFn = (item: any) => item ? `${item.name} (${item.risk_company_id})` : '';
-  reinsurerLabelFn = (item: any) => item ? `${item.name} (${item.reinsurer_company_id})` : '';
-  stateLabelFn = (item: any) => item ? `${item.state_code} - ${item.name}` : '';
-  stateAbbrLabelFn = (item: any) => item ? `${item.state_abbr} - ${item.name}` : '';
-  lobLabelFn = (item: any) => item ? `${item.name} (${item.lob_code})` : '';
-  cobLabelFn = (item: any) => item ? `${item.name} (${item.cob_code})` : '';
-  coaLabelFn = (item: any) => item ? `${item.account_code} - ${item.description}` : '';
-  nameLabelFn = (item: any) => item ? item.name : '';
+  mgaLabelFn = (item: any) => (item ? `${item.name} (${item.mga_code})` : '');
+  riskCompanyLabelFn = (item: any) => (item ? `${item.name} (${item.risk_company_id})` : '');
+  reinsurerLabelFn = (item: any) => (item ? `${item.name} (${item.reinsurer_company_id})` : '');
+  stateLabelFn = (item: any) => (item ? `${item.state_code} - ${item.name}` : '');
+  stateAbbrLabelFn = (item: any) => (item ? `${item.state_abbr} - ${item.name}` : '');
+  lobLabelFn = (item: any) => (item ? `${item.name} (${item.lob_code})` : '');
+  cobLabelFn = (item: any) => (item ? `${item.name} (${item.cob_code})` : '');
+  coaLabelFn = (item: any) => (item ? `${item.account_code} - ${item.description}` : '');
+  nameLabelFn = (item: any) => (item ? item.name : '');
 
   simpleFormTypeOptions = [
     { id: 'Property', name: 'Property' },
     { id: 'Liability', name: 'Liability' },
     { id: 'Automobile', name: 'Automobile' },
     { id: 'Workers Comp', name: 'Workers Comp' },
-    { id: 'Other', name: 'Other' }
+    { id: 'Other', name: 'Other' },
   ];
 
   glMappingTypeOptionsList = [
     { id: 'AR', name: 'AR' },
     { id: 'AP', name: 'AP' },
     { id: 'MGA', name: 'MGA' },
-    { id: 'BRK', name: 'BRK' }
+    { id: 'BRK', name: 'BRK' },
   ];
   private service = inject(MastersService);
   private reinsuranceService = inject(ReinsuranceService);
@@ -73,6 +87,12 @@ export class MastersComponent implements OnInit {
   private router = inject(Router);
   private glMappingsService = inject(GlMappingsService);
   private coaService = inject(ChartOfAccountsService);
+  private agGridConfig = inject(AgGridConfigService);
+
+  gridOptions: GridOptions = this.agGridConfig.getDefaultGridOptions();
+
+  @ViewChild('monthlyExcelInput') monthlyExcelInput!: ElementRef<HTMLInputElement>;
+  @ViewChild('itdExcelInput') itdExcelInput!: ElementRef<HTMLInputElement>;
 
   currentTab: MasterTab = 'treaties';
   glMappings: GlMapping[] = [];
@@ -91,7 +111,6 @@ export class MastersComponent implements OnInit {
   seededProgramITD = new Set<string>();
   itdWorkbookIds = new Map<string, number>();
   treatyWorkbookStatuses = new Map<string, string>();
-
 
   // Data lists
   treaties: Treaty[] = [];
@@ -132,7 +151,7 @@ export class MastersComponent implements OnInit {
     type: '',
     taxable: false,
     priority: 1,
-    fully_earned: false
+    fully_earned: false,
   };
 
   // MGA Modal
@@ -170,7 +189,7 @@ export class MastersComponent implements OnInit {
     phone: '',
     open_item: false,
     op_start_date: '',
-    other_names: []
+    other_names: [],
   };
 
   // State Modal
@@ -245,9 +264,9 @@ export class MastersComponent implements OnInit {
       loss_ratio_cap: 2,
       loss_pick: 5,
       lae_dcc: 7,
-      lae_aoe: 7
+      lae_aoe: 7,
     },
-    exhibits: {}
+    exhibits: {},
   };
   itdSelectedStateCode = 'TOTAL';
   itdStatesList: any[] = [{ code: 'TOTAL', label: 'TOTAL' }];
@@ -265,9 +284,21 @@ export class MastersComponent implements OnInit {
     { value: '09', label: 'September' },
     { value: '10', label: 'October' },
     { value: '11', label: 'November' },
-    { value: '12', label: 'December' }
+    { value: '12', label: 'December' },
   ];
-  yearsList = ['2020', '2021', '2022', '2023', '2024', '2025', '2026', '2027', '2028', '2029', '2030'];
+  yearsList = [
+    '2020',
+    '2021',
+    '2022',
+    '2023',
+    '2024',
+    '2025',
+    '2026',
+    '2027',
+    '2028',
+    '2029',
+    '2030',
+  ];
 
   onItdMonthYearChange(): void {
     const monthObj = this.monthsList.find(m => m.value === this.itdSelectedMonth);
@@ -339,7 +370,19 @@ export class MastersComponent implements OnInit {
 
     this.route.queryParams.subscribe(params => {
       const tab = params['tab'] as MasterTab;
-      if (tab && ['treaties', 'mgas', 'lobs', 'cobs', 'states', 'reinsurers', 'risk-companies', 'gl-mappings'].includes(tab)) {
+      if (
+        tab &&
+        [
+          'treaties',
+          'mgas',
+          'lobs',
+          'cobs',
+          'states',
+          'reinsurers',
+          'risk-companies',
+          'gl-mappings',
+        ].includes(tab)
+      ) {
         this.currentTab = tab;
       } else {
         this.currentTab = 'treaties';
@@ -356,7 +399,7 @@ export class MastersComponent implements OnInit {
     this.router.navigate([], {
       relativeTo: this.route,
       queryParams: { tab },
-      queryParamsHandling: 'merge'
+      queryParamsHandling: 'merge',
     });
   }
 
@@ -374,15 +417,14 @@ export class MastersComponent implements OnInit {
     switch (this.currentTab) {
       case 'treaties':
         this.reinsuranceService.getWorkbooks().subscribe({
-          next: (wbs) => {
+          next: wbs => {
             this.seededProgramITD.clear();
             this.itdWorkbookIds.clear();
             this.treatyWorkbookStatuses.clear();
             wbs.forEach(wb => {
               if (wb.source === 'ITD') {
-                const progName = (wb.program || '').trim();
-                this.seededProgramITD.add(progName);
-                this.itdWorkbookIds.set(progName, wb.id);
+                this.seededProgramITD.add(wb.program);
+                this.itdWorkbookIds.set(wb.program, wb.id);
               }
               const progName = (wb.program || '').trim();
               const existing = this.treatyWorkbookStatuses.get(progName);
@@ -391,64 +433,122 @@ export class MastersComponent implements OnInit {
               }
             });
             this.service.getTreaties(search, active).subscribe({
-              next: (res) => { this.treaties = res; this.loading = false; this.cdr.markForCheck(); },
-              error: () => { this.toast.error('Failed to load treaties'); this.loading = false; this.cdr.markForCheck(); }
+              next: res => {
+                this.treaties = res;
+                this.loading = false;
+                this.cdr.markForCheck();
+              },
+              error: () => {
+                this.toast.error('Failed to load treaties');
+                this.loading = false;
+                this.cdr.markForCheck();
+              },
             });
           },
           error: () => {
             this.service.getTreaties(search, active).subscribe({
-              next: (res) => { this.treaties = res; this.loading = false; this.cdr.markForCheck(); },
-              error: () => { this.toast.error('Failed to load treaties'); this.loading = false; this.cdr.markForCheck(); }
+              next: res => {
+                this.treaties = res;
+                this.loading = false;
+                this.cdr.markForCheck();
+              },
+              error: () => {
+                this.toast.error('Failed to load treaties');
+                this.loading = false;
+                this.cdr.markForCheck();
+              },
             });
-          }
+          },
         });
         break;
       case 'mgas':
         this.service.getMgas(search, active).subscribe({
-          next: (res) => { this.mgas = res; this.loading = false; this.cdr.markForCheck(); },
-          error: () => { this.toast.error('Failed to load MGAs'); this.loading = false; this.cdr.markForCheck(); }
+          next: res => {
+            this.mgas = res;
+            this.loading = false;
+            this.cdr.markForCheck();
+          },
+          error: () => {
+            this.toast.error('Failed to load MGAs');
+            this.loading = false;
+            this.cdr.markForCheck();
+          },
         });
         break;
       case 'lobs':
         this.service.getLobs(search, active).subscribe({
-          next: (res) => { this.lobs = res; this.loading = false; this.cdr.markForCheck(); },
-          error: () => { this.toast.error('Failed to load LOBs'); this.loading = false; this.cdr.markForCheck(); }
+          next: res => {
+            this.lobs = res;
+            this.loading = false;
+            this.cdr.markForCheck();
+          },
+          error: () => {
+            this.toast.error('Failed to load LOBs');
+            this.loading = false;
+            this.cdr.markForCheck();
+          },
         });
         break;
       case 'cobs':
         this.service.getCobs(search, active).subscribe({
-          next: (res) => { this.cobs = res; this.loading = false; this.cdr.markForCheck(); },
-          error: () => { this.toast.error('Failed to load COBs'); this.loading = false; this.cdr.markForCheck(); }
+          next: res => {
+            this.cobs = res;
+            this.loading = false;
+            this.cdr.markForCheck();
+          },
+          error: () => {
+            this.toast.error('Failed to load COBs');
+            this.loading = false;
+            this.cdr.markForCheck();
+          },
         });
         break;
       case 'states':
         this.service.getStates(search, active).subscribe({
-          next: (res) => { this.states = res; this.loading = false; this.cdr.markForCheck(); },
-          error: () => { this.toast.error('Failed to load States'); this.loading = false; this.cdr.markForCheck(); }
+          next: res => {
+            this.states = res;
+            this.loading = false;
+            this.cdr.markForCheck();
+          },
+          error: () => {
+            this.toast.error('Failed to load States');
+            this.loading = false;
+            this.cdr.markForCheck();
+          },
         });
         break;
       case 'reinsurers':
         this.service.getReinsurers(search, active).subscribe({
-          next: (res) => { this.reinsurers = res; this.loading = false; this.cdr.markForCheck(); },
-          error: () => { this.toast.error('Failed to load Reinsurers'); this.loading = false; this.cdr.markForCheck(); }
+          next: res => {
+            this.reinsurers = res;
+            this.loading = false;
+            this.cdr.markForCheck();
+          },
+          error: () => {
+            this.toast.error('Failed to load Reinsurers');
+            this.loading = false;
+            this.cdr.markForCheck();
+          },
         });
         break;
       case 'risk-companies':
         this.service.getRiskCompanies(search, active).subscribe({
-          next: (res) => { this.riskCompanies = res; this.loading = false; this.cdr.markForCheck(); },
-          error: () => { this.toast.error('Failed to load Risk Companies'); this.loading = false; this.cdr.markForCheck(); }
+          next: res => {
+            this.riskCompanies = res;
+            this.loading = false;
+            this.cdr.markForCheck();
+          },
+          error: () => {
+            this.toast.error('Failed to load Risk Companies');
+            this.loading = false;
+            this.cdr.markForCheck();
+          },
         });
         break;
       case 'gl-mappings':
         this.loadGlMappings();
         break;
     }
-  }
-
-  onSearch(term: string): void {
-    this.searchTerm = term;
-    this.currentPage = 1;
-    this.loadData();
   }
 
   onFilterChange(): void {
@@ -468,17 +568,28 @@ export class MastersComponent implements OnInit {
       case 'treaties': {
         let list = this.treaties;
         if (this.mgaFilter && this.mgaFilter !== 'all') {
-          list = list.filter(t => t.mga_id === this.mgaFilter || (t.treaty_mgas && t.treaty_mgas.some(tm => tm.mga_id === this.mgaFilter)));
+          list = list.filter(
+            t =>
+              t.mga_id === this.mgaFilter ||
+              (t.treaty_mgas && t.treaty_mgas.some(tm => tm.mga_id === this.mgaFilter)),
+          );
         }
         return list;
       }
-      case 'mgas': return this.mgas;
-      case 'lobs': return this.lobs;
-      case 'cobs': return this.cobs;
-      case 'states': return this.states;
-      case 'reinsurers': return this.reinsurers;
-      case 'risk-companies': return this.riskCompanies;
-      case 'gl-mappings': return this.glMappings;
+      case 'mgas':
+        return this.mgas;
+      case 'lobs':
+        return this.lobs;
+      case 'cobs':
+        return this.cobs;
+      case 'states':
+        return this.states;
+      case 'reinsurers':
+        return this.reinsurers;
+      case 'risk-companies':
+        return this.riskCompanies;
+      case 'gl-mappings':
+        return this.glMappings;
     }
   }
 
@@ -486,9 +597,398 @@ export class MastersComponent implements OnInit {
     return Math.ceil(this.currentList.length / this.pageSize);
   }
 
+  get pageNumbers(): number[] {
+    const pages = [];
+    for (let i = 1; i <= this.totalPages; i++) pages.push(i);
+    return pages;
+  }
+
   goToPage(page: number): void {
     if (page >= 1 && page <= this.totalPages) {
       this.currentPage = page;
+    }
+  }
+
+  get currentColumnDefs(): ColDef[] {
+    const statusCol: ColDef = {
+      headerName: 'STATUS',
+      field: 'is_active',
+      flex: 1,
+      minWidth: 100,
+      maxWidth: 120,
+      cellRenderer: StatusBadgeCellRenderer,
+    };
+
+    switch (this.currentTab) {
+      case 'treaties':
+        return [
+          { headerName: 'CODE', field: 'treaty_code', flex: 1, minWidth: 100, maxWidth: 120 },
+          { headerName: 'TREATY NAME', field: 'name', flex: 2, minWidth: 150 },
+          {
+            headerName: 'MGA',
+            valueGetter: p => this.getMgasListDisplay(p.data),
+            flex: 1.5,
+            minWidth: 120,
+          },
+          {
+            headerName: 'CARRIERS',
+            valueGetter: p => this.getCarriersListDisplay(p.data),
+            flex: 2,
+            minWidth: 200,
+          },
+          {
+            headerName: 'STATES',
+            valueGetter: p => this.getStatesListDisplay(p.data?.treaty_states),
+            flex: 1.5,
+            minWidth: 120,
+          },
+          {
+            headerName: 'LOBS (COBS)',
+            valueGetter: p => this.getLobsListDisplay(p.data?.treaty_lobs),
+            flex: 2,
+            minWidth: 150,
+          },
+          {
+            headerName: 'STATUS',
+            valueGetter: p => this.getTreatyStatus(p.data?.name),
+            cellRenderer: (p: any) => {
+              const baseStyle =
+                'display: inline-flex; align-items: center; justify-content: center; padding: 4px 10px; font-size: 12px; font-weight: 700; border-radius: 12px; text-transform: uppercase; letter-spacing: 0.3px; white-space: nowrap;';
+              if (p.value === 'Approved')
+                return `<span style="${baseStyle} background-color: #e2f5ec; color: #0d9488; border: 1px solid #ccfbf1;">Approved</span>`;
+              if (p.value === 'Pending')
+                return `<span style="${baseStyle} background-color: #fff3e0; color: #f59e0b; border: 1px solid #fef3c7;">Pending</span>`;
+              return '<span style="color: var(--gray-500);">-</span>';
+            },
+            flex: 1,
+            minWidth: 100,
+            maxWidth: 120,
+          },
+          {
+            headerName: 'ACTIONS',
+            cellRenderer: ActionButtonsCellRenderer,
+            cellRendererParams: {
+              buttons: (data: any) => {
+                const btns = [];
+                if (this.hasITDSeeded(data.name)) {
+                  btns.push({ label: 'Upload Excel', action: 'uploadExcel' });
+                }
+                btns.push({ label: 'Upload ITD', action: 'uploadItd' });
+                btns.push({ label: 'Manual ITD', action: 'manualItd' });
+                btns.push({ label: 'Edit', action: 'edit' });
+                btns.push({ label: 'Delete', action: 'delete', danger: true });
+                return btns;
+              },
+              onClick: (action: string, data: any) => {
+                if (action === 'uploadExcel') this.triggerTreatyMonthlyUpload(data);
+                if (action === 'uploadItd') this.triggerTreatyITDUpload(data);
+                if (action === 'manualItd') this.openAddItdModal(data);
+                if (action === 'edit') this.openTreatyEdit(data);
+                if (action === 'delete') this.deleteTreaty(data);
+              },
+            },
+            flex: 0,
+            width: 220,
+            minWidth: 220,
+            maxWidth: 220,
+            cellStyle: { justifyContent: 'flex-start' },
+          },
+        ];
+
+      case 'mgas':
+        return [
+          { headerName: 'MGA CODE', field: 'mga_code', flex: 1, minWidth: 100, maxWidth: 120 },
+          { headerName: 'MGA NAME', field: 'name', flex: 2, minWidth: 150 },
+          {
+            headerName: 'TAX PAYABLE IN-HOUSE',
+            field: 'tax_payable_inhouse',
+            cellRenderer: StatusBadgeCellRenderer,
+            flex: 1.5,
+            minWidth: 150,
+          },
+          {
+            headerName: 'LEDGER AMOUNT',
+            field: 'ledger_amount',
+            valueFormatter: p =>
+              p.value !== undefined ? `$${Number(p.value).toFixed(2)}` : '$0.00',
+            flex: 1.5,
+            minWidth: 120,
+          },
+          statusCol,
+          {
+            headerName: 'ACTIONS',
+            cellRenderer: ActionButtonsCellRenderer,
+            cellRendererParams: {
+              buttons: [
+                { label: 'Add to Treaties', action: 'addTreaty' },
+                { label: 'Document', action: 'doc' },
+                { label: 'Edit', action: 'edit' },
+                { label: 'Delete', action: 'delete', danger: true },
+              ],
+              onClick: (action: string, data: any) => {
+                if (action === 'addTreaty') this.openTreatyAdd(data.id);
+                if (action === 'doc') this.openDocModal('mga', data);
+                if (action === 'edit') this.openMgaEdit(data);
+                if (action === 'delete') this.deleteMga(data);
+              },
+            },
+            flex: 0,
+            width: 330,
+            minWidth: 330,
+            maxWidth: 330,
+          },
+        ];
+
+      case 'states':
+        return [
+          { headerName: 'STATE CODE', field: 'state_code', flex: 1, minWidth: 100 },
+          { headerName: 'STATE ABBR', field: 'state_abbr', flex: 1, minWidth: 100 },
+          { headerName: 'STATE NAME', field: 'name', flex: 3, minWidth: 200 },
+          {
+            headerName: 'ACTIONS',
+            cellRenderer: ActionButtonsCellRenderer,
+            cellRendererParams: {
+              buttons: [
+                { label: 'Document', action: 'doc' },
+                { label: 'Notes', action: 'notes' },
+                { label: 'Edit', action: 'edit' },
+                { label: 'Delete', action: 'delete', danger: true },
+              ],
+              onClick: (action: string, data: any) => {
+                if (action === 'doc') this.openDocModal('state', data);
+                if (action === 'notes')
+                  this.openNotesModal('State Notes: ' + data.name, data.notes);
+                if (action === 'edit') this.openStateEdit(data);
+                if (action === 'delete') this.deleteState(data);
+              },
+            },
+            flex: 0,
+            width: 280,
+            minWidth: 280,
+            maxWidth: 280,
+          },
+        ];
+
+      case 'risk-companies':
+        return [
+          {
+            headerName: 'COMPANY',
+            valueGetter: p =>
+              `${p.data.company_id}${p.data.risk_company_id ? ` (${p.data.risk_company_id})` : ''}`,
+            flex: 1.5,
+            minWidth: 150,
+          },
+          { headerName: 'ID NAME', field: 'id_name', flex: 1.5, minWidth: 150 },
+          { headerName: 'NAME', field: 'name', flex: 3, minWidth: 200 },
+          { headerName: 'PHONE', field: 'phone', flex: 1.5, minWidth: 120 },
+          {
+            headerName: 'ADMITTED',
+            field: 'is_admitted',
+            cellRenderer: StatusBadgeCellRenderer,
+            flex: 1,
+            minWidth: 100,
+          },
+          { headerName: 'STATE', field: 'state', flex: 1, minWidth: 80 },
+          {
+            headerName: 'ACTIONS',
+            cellRenderer: ActionButtonsCellRenderer,
+            cellRendererParams: {
+              buttons: [
+                { label: 'Document', action: 'doc' },
+                { label: 'Notes', action: 'notes' },
+                { label: 'View Policy', action: 'policy' },
+                { label: 'Edit', action: 'edit' },
+                { label: 'Delete', action: 'delete', danger: true },
+              ],
+              onClick: (action: string, data: any) => {
+                if (action === 'doc') this.openDocModal('risk-company', data);
+                if (action === 'notes')
+                  this.openNotesModal('Risk Company Notes: ' + data.name, data.notes);
+                if (action === 'policy') this.viewPolicy(data);
+                if (action === 'edit') this.openRiskCompanyEdit(data);
+                if (action === 'delete') this.deleteRiskCompany(data);
+              },
+            },
+            flex: 0,
+            width: 360,
+            minWidth: 360,
+            maxWidth: 360,
+          },
+        ];
+
+      case 'gl-mappings':
+        return [
+          {
+            headerName: 'GL NUMBER',
+            valueGetter: p => this.getGLNumberDisplay(p.data),
+            flex: 2,
+            minWidth: 200,
+          },
+          {
+            headerName: 'TYPE',
+            field: 'type',
+            cellRenderer: (p: any) =>
+              `<span class="type-badge ${p.value?.toLowerCase()}">${p.value}</span>`,
+            flex: 1,
+            minWidth: 100,
+          },
+          {
+            headerName: 'ACTIONS',
+            cellRenderer: ActionButtonsCellRenderer,
+            cellRendererParams: {
+              buttons: [
+                { label: 'Edit', action: 'edit' },
+                { label: 'Delete', action: 'delete', danger: true },
+              ],
+              onClick: (action: string, data: any) => {
+                if (action === 'edit') this.openGlMappingEdit(data);
+                if (action === 'delete') this.deleteGlMapping(data);
+              },
+            },
+            flex: 0,
+            width: 160,
+            minWidth: 160,
+            maxWidth: 160,
+          },
+        ];
+
+      case 'lobs':
+        return [
+          { headerName: 'LOB CODE', field: 'lob_code', flex: 1, minWidth: 100, maxWidth: 120 },
+          {
+            headerName: 'LOB NAME',
+            valueGetter: p => p.data.name,
+            cellRenderer: (p: any) => {
+              const desc = p.data.description
+                ? `<div style="font-size: 11px; color: var(--gray-500); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 220px;" title="${p.data.description}">${p.data.description}</div>`
+                : '';
+              return `<div style="line-height:1.2; margin-top:10px;"><div style="font-weight: 500;">${p.data.name}</div>${desc}</div>`;
+            },
+            flex: 3,
+            minWidth: 200,
+          },
+          { headerName: 'LOB TYPE', field: 'type', flex: 1.5, minWidth: 120 },
+          {
+            headerName: 'TAXABLE',
+            field: 'taxable',
+            cellRenderer: StatusBadgeCellRenderer,
+            flex: 1,
+            minWidth: 100,
+          },
+          { headerName: 'PRIORITY', field: 'priority', flex: 1, minWidth: 100 },
+          {
+            headerName: 'FULLY EARNED',
+            field: 'fully_earned',
+            cellRenderer: StatusBadgeCellRenderer,
+            flex: 1,
+            minWidth: 120,
+          },
+          statusCol,
+          {
+            headerName: 'ACTIONS',
+            cellRenderer: ActionButtonsCellRenderer,
+            cellRendererParams: {
+              buttons: [
+                { label: 'Edit', action: 'edit' },
+                { label: 'Delete', action: 'delete', danger: true },
+              ],
+              onClick: (action: string, data: any) => {
+                if (action === 'edit') this.openSimpleEdit('lob', data);
+                if (action === 'delete') this.deleteSimple('lob', data);
+              },
+            },
+            flex: 0,
+            width: 160,
+            minWidth: 160,
+            maxWidth: 160,
+          },
+        ];
+
+      case 'cobs':
+        return [
+          { headerName: 'CLASS CODE', field: 'cob_code', flex: 1, minWidth: 100, maxWidth: 120 },
+          {
+            headerName: 'CLASS NAME',
+            valueGetter: p => p.data.name,
+            cellRenderer: (p: any) => {
+              const desc = p.data.description
+                ? `<div style="font-size: 11px; color: var(--gray-500); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 220px;" title="${p.data.description}">${p.data.description}</div>`
+                : '';
+              return `<div style="line-height:1.2; margin-top:10px;"><div style="font-weight: 500;">${p.data.name}</div>${desc}</div>`;
+            },
+            flex: 3,
+            minWidth: 200,
+          },
+          { headerName: 'CLASS TYPE', field: 'type', flex: 1.5, minWidth: 120 },
+          {
+            headerName: 'TAXABLE',
+            field: 'taxable',
+            cellRenderer: StatusBadgeCellRenderer,
+            flex: 1,
+            minWidth: 100,
+          },
+          { headerName: 'PRIORITY', field: 'priority', flex: 1, minWidth: 100 },
+          {
+            headerName: 'FULLY EARNED',
+            field: 'fully_earned',
+            cellRenderer: StatusBadgeCellRenderer,
+            flex: 1,
+            minWidth: 120,
+          },
+          statusCol,
+          {
+            headerName: 'ACTIONS',
+            cellRenderer: ActionButtonsCellRenderer,
+            cellRendererParams: {
+              buttons: [
+                { label: 'Edit', action: 'edit' },
+                { label: 'Delete', action: 'delete', danger: true },
+              ],
+              onClick: (action: string, data: any) => {
+                if (action === 'edit') this.openSimpleEdit('cob', data);
+                if (action === 'delete') this.deleteSimple('cob', data);
+              },
+            },
+            flex: 0,
+            width: 160,
+            minWidth: 160,
+            maxWidth: 160,
+          },
+        ];
+
+      case 'reinsurers':
+        return [
+          {
+            headerName: 'CODE ID',
+            field: 'reinsurer_company_id',
+            flex: 1.5,
+            minWidth: 120,
+            maxWidth: 180,
+          },
+          { headerName: 'NAME', field: 'name', flex: 3, minWidth: 200 },
+          statusCol,
+          {
+            headerName: 'ACTIONS',
+            cellRenderer: ActionButtonsCellRenderer,
+            cellRendererParams: {
+              buttons: [
+                { label: 'Edit', action: 'edit' },
+                { label: 'Delete', action: 'delete', danger: true },
+              ],
+              onClick: (action: string, data: any) => {
+                if (action === 'edit') this.openSimpleEdit('reinsurer', data);
+                if (action === 'delete') this.deleteSimple('reinsurer', data);
+              },
+            },
+            flex: 0,
+            width: 160,
+            minWidth: 160,
+            maxWidth: 160,
+          },
+        ];
+
+      default:
+        return [];
     }
   }
 
@@ -507,7 +1007,7 @@ export class MastersComponent implements OnInit {
       type: '',
       taxable: false,
       priority: 1,
-      fully_earned: false
+      fully_earned: false,
     };
     this.showSimpleModal = true;
   }
@@ -525,7 +1025,7 @@ export class MastersComponent implements OnInit {
       type: item.type || '',
       taxable: item.taxable || false,
       priority: item.priority || 1,
-      fully_earned: item.fully_earned || false
+      fully_earned: item.fully_earned || false,
     };
     this.showSimpleModal = true;
   }
@@ -546,7 +1046,7 @@ export class MastersComponent implements OnInit {
 
     if (this.simpleMode === 'lob' || this.simpleMode === 'cob') {
       payload.description = this.simpleForm.description || null;
-      payload.type = this.simpleMode === 'cob' ? (this.simpleForm.type || null) : null;
+      payload.type = this.simpleMode === 'cob' ? this.simpleForm.type || null : null;
       payload.taxable = this.simpleForm.taxable || false;
       payload.priority = Number(this.simpleForm.priority || 1);
       payload.fully_earned = this.simpleForm.fully_earned || false;
@@ -556,15 +1056,27 @@ export class MastersComponent implements OnInit {
     if (this.isEditMode) {
       const id = this.simpleForm.id!;
       switch (this.simpleMode) {
-        case 'lob': request = this.service.updateLob(id, payload); break;
-        case 'cob': request = this.service.updateCob(id, payload); break;
-        case 'reinsurer': request = this.service.updateReinsurer(id, payload); break;
+        case 'lob':
+          request = this.service.updateLob(id, payload);
+          break;
+        case 'cob':
+          request = this.service.updateCob(id, payload);
+          break;
+        case 'reinsurer':
+          request = this.service.updateReinsurer(id, payload);
+          break;
       }
     } else {
       switch (this.simpleMode) {
-        case 'lob': request = this.service.createLob(payload); break;
-        case 'cob': request = this.service.createCob(payload); break;
-        case 'reinsurer': request = this.service.createReinsurer(payload); break;
+        case 'lob':
+          request = this.service.createLob(payload);
+          break;
+        case 'cob':
+          request = this.service.createCob(payload);
+          break;
+        case 'reinsurer':
+          request = this.service.createReinsurer(payload);
+          break;
       }
     }
 
@@ -579,7 +1091,7 @@ export class MastersComponent implements OnInit {
         this.toast.error(err.error?.message || 'Failed to save master data');
         this.submitting = false;
         this.cdr.markForCheck();
-      }
+      },
     });
   }
 
@@ -589,9 +1101,15 @@ export class MastersComponent implements OnInit {
     this.pendingAction = () => {
       let request!: Observable<any>;
       switch (mode) {
-        case 'lob': request = this.service.deleteLob(item.id); break;
-        case 'cob': request = this.service.deleteCob(item.id); break;
-        case 'reinsurer': request = this.service.deleteReinsurer(item.id); break;
+        case 'lob':
+          request = this.service.deleteLob(item.id);
+          break;
+        case 'cob':
+          request = this.service.deleteCob(item.id);
+          break;
+        case 'reinsurer':
+          request = this.service.deleteReinsurer(item.id);
+          break;
       }
       request.subscribe({
         next: () => {
@@ -600,7 +1118,7 @@ export class MastersComponent implements OnInit {
         },
         error: (err: any) => {
           this.toast.error(err.error?.message || 'Failed to delete item');
-        }
+        },
       });
     };
     this.confirmOpen = true;
@@ -628,7 +1146,7 @@ export class MastersComponent implements OnInit {
       phone: '',
       open_item: false,
       op_start_date: '',
-      other_names: []
+      other_names: [],
     };
     this.showMgaModal = true;
   }
@@ -653,7 +1171,7 @@ export class MastersComponent implements OnInit {
       phone: mga.phone || '',
       open_item: mga.open_item || false,
       op_start_date: mga.op_start_date ? mga.op_start_date.substring(0, 10) : '',
-      other_names: mga.other_names ? JSON.parse(JSON.stringify(mga.other_names)) : []
+      other_names: mga.other_names ? JSON.parse(JSON.stringify(mga.other_names)) : [],
     };
     this.showMgaModal = true;
   }
@@ -684,7 +1202,10 @@ export class MastersComponent implements OnInit {
       ...this.mgaForm,
       ledger_amount: Number(this.mgaForm.ledger_amount || 0),
       company_id: this.mgaForm.company_id ? Number(this.mgaForm.company_id) : null,
-      other_names: this.mgaForm.other_names && this.mgaForm.other_names.length > 0 ? this.mgaForm.other_names : null
+      other_names:
+        this.mgaForm.other_names && this.mgaForm.other_names.length > 0
+          ? this.mgaForm.other_names
+          : null,
     };
 
     if (this.isEditMode) {
@@ -699,7 +1220,7 @@ export class MastersComponent implements OnInit {
           this.toast.error(err.error?.message || 'Failed to update MGA');
           this.submitting = false;
           this.cdr.markForCheck();
-        }
+        },
       });
     } else {
       this.service.createMga(payload).subscribe({
@@ -713,7 +1234,7 @@ export class MastersComponent implements OnInit {
           this.toast.error(err.error?.message || 'Failed to create MGA');
           this.submitting = false;
           this.cdr.markForCheck();
-        }
+        },
       });
     }
   }
@@ -729,13 +1250,11 @@ export class MastersComponent implements OnInit {
         },
         error: (err: any) => {
           this.toast.error(err.error?.message || 'Failed to delete MGA');
-        }
+        },
       });
     };
     this.confirmOpen = true;
   }
-
-
 
   // ==========================================
   // GENERIC DOCUMENTS DRAWER ACTIONS
@@ -761,13 +1280,13 @@ export class MastersComponent implements OnInit {
     }
 
     request.subscribe({
-      next: (res) => {
+      next: res => {
         this.documentsList = res.documents || [];
         this.cdr.markForCheck();
       },
       error: () => {
         this.toast.error('Failed to load documents');
-      }
+      },
     });
   }
 
@@ -797,7 +1316,7 @@ export class MastersComponent implements OnInit {
         this.toast.error(err.error?.message || 'Failed to upload document');
         this.uploadingDoc = false;
         this.cdr.markForCheck();
-      }
+      },
     });
   }
 
@@ -810,7 +1329,10 @@ export class MastersComponent implements OnInit {
     } else {
       endpoint = 'risk-companies';
     }
-    window.open(`${environment.apiUrl}/masters/${endpoint}/documents/download/${doc.file_url}`, '_blank');
+    window.open(
+      `${environment.apiUrl}/masters/${endpoint}/documents/download/${doc.file_url}`,
+      '_blank',
+    );
   }
 
   deleteDoc(doc: any): void {
@@ -833,7 +1355,7 @@ export class MastersComponent implements OnInit {
         },
         error: (err: any) => {
           this.toast.error(err.error?.message || 'Failed to delete document');
-        }
+        },
       });
     };
     this.confirmOpen = true;
@@ -896,7 +1418,7 @@ export class MastersComponent implements OnInit {
         this.toast.error(err.error?.message || 'Failed to save state');
         this.submitting = false;
         this.cdr.markForCheck();
-      }
+      },
     });
   }
 
@@ -911,7 +1433,7 @@ export class MastersComponent implements OnInit {
         },
         error: (err: any) => {
           this.toast.error(err.error?.message || 'Failed to delete state');
-        }
+        },
       });
     };
     this.confirmOpen = true;
@@ -963,7 +1485,9 @@ export class MastersComponent implements OnInit {
 
   submitRiskCompany(): void {
     if (!this.riskCompanyForm.risk_company_id) {
-      this.riskCompanyForm.risk_company_id = this.riskCompanyForm.company_id ? 'RC-' + this.riskCompanyForm.company_id : 'RC-' + Date.now();
+      this.riskCompanyForm.risk_company_id = this.riskCompanyForm.company_id
+        ? 'RC-' + this.riskCompanyForm.company_id
+        : 'RC-' + Date.now();
     }
     if (!this.riskCompanyForm.name) {
       this.toast.error('Name is required');
@@ -1004,7 +1528,7 @@ export class MastersComponent implements OnInit {
         this.toast.error(err.error?.message || 'Failed to save risk company');
         this.submitting = false;
         this.cdr.markForCheck();
-      }
+      },
     });
   }
 
@@ -1019,7 +1543,7 @@ export class MastersComponent implements OnInit {
         },
         error: (err: any) => {
           this.toast.error(err.error?.message || 'Failed to delete risk company');
-        }
+        },
       });
     };
     this.confirmOpen = true;
@@ -1042,12 +1566,30 @@ export class MastersComponent implements OnInit {
   // TREATY MASTER ACTIONS
   // ==========================================
   loadTreatyOptions(): void {
-    this.service.getMgas(undefined, true).subscribe(res => { this.mgaOptions = res; this.cdr.markForCheck(); });
-    this.service.getReinsurers(undefined, true).subscribe(res => { this.reinsurerOptions = res; this.cdr.markForCheck(); });
-    this.service.getRiskCompanies(undefined, true).subscribe(res => { this.riskCompanyOptions = res; this.cdr.markForCheck(); });
-    this.service.getLobs(undefined, true).subscribe(res => { this.lobOptions = res; this.cdr.markForCheck(); });
-    this.service.getCobs(undefined, true).subscribe(res => { this.cobOptions = res; this.cdr.markForCheck(); });
-    this.service.getStates(undefined, true).subscribe(res => { this.stateOptions = res; this.cdr.markForCheck(); });
+    this.service.getMgas(undefined, true).subscribe(res => {
+      this.mgaOptions = res;
+      this.cdr.markForCheck();
+    });
+    this.service.getReinsurers(undefined, true).subscribe(res => {
+      this.reinsurerOptions = res;
+      this.cdr.markForCheck();
+    });
+    this.service.getRiskCompanies(undefined, true).subscribe(res => {
+      this.riskCompanyOptions = res;
+      this.cdr.markForCheck();
+    });
+    this.service.getLobs(undefined, true).subscribe(res => {
+      this.lobOptions = res;
+      this.cdr.markForCheck();
+    });
+    this.service.getCobs(undefined, true).subscribe(res => {
+      this.cobOptions = res;
+      this.cdr.markForCheck();
+    });
+    this.service.getStates(undefined, true).subscribe(res => {
+      this.stateOptions = res;
+      this.cdr.markForCheck();
+    });
   }
 
   openTreatyAdd(mgaId?: string): void {
@@ -1102,20 +1644,27 @@ export class MastersComponent implements OnInit {
     if (treaty.treaty_carriers && treaty.treaty_carriers.length > 0) {
       carriers = treaty.treaty_carriers.map(tc => ({
         risk_company_id: tc.risk_company_id,
-        retention_pct: tc.retention_pct
+        retention_pct: tc.retention_pct,
       }));
     } else if (treaty.risk_company_id) {
-      carriers = [{ risk_company_id: treaty.risk_company_id, retention_pct: treaty.carrier_retention_pct ?? 100 }];
+      carriers = [
+        {
+          risk_company_id: treaty.risk_company_id,
+          retention_pct: treaty.carrier_retention_pct ?? 100,
+        },
+      ];
     }
 
     let reinsurers: any[] = [];
     if (treaty.treaty_reinsurers && treaty.treaty_reinsurers.length > 0) {
       reinsurers = treaty.treaty_reinsurers.map(tr => ({
         reinsurer_id: tr.reinsurer_id,
-        cession_pct: tr.cession_pct
+        cession_pct: tr.cession_pct,
       }));
     } else if (treaty.reinsurer_id) {
-      reinsurers = [{ reinsurer_id: treaty.reinsurer_id, cession_pct: treaty.reinsurer_cession_pct ?? 100 }];
+      reinsurers = [
+        { reinsurer_id: treaty.reinsurer_id, cession_pct: treaty.reinsurer_cession_pct ?? 100 },
+      ];
     }
 
     this.treatyForm = {
@@ -1125,8 +1674,12 @@ export class MastersComponent implements OnInit {
       mga_id: treaty.mga_id,
       reinsurer_id: treaty.reinsurer_id,
       risk_company_id: treaty.risk_company_id,
-      effective_date: treaty.effective_date ? new Date(treaty.effective_date).toISOString().slice(0, 10) : '',
-      expiration_date: treaty.expiration_date ? new Date(treaty.expiration_date).toISOString().slice(0, 10) : '',
+      effective_date: treaty.effective_date
+        ? new Date(treaty.effective_date).toISOString().slice(0, 10)
+        : '',
+      expiration_date: treaty.expiration_date
+        ? new Date(treaty.expiration_date).toISOString().slice(0, 10)
+        : '',
       qs_pct: treaty.qs_pct,
       cf_pct: treaty.cf_pct,
       comm_pct: treaty.comm_pct,
@@ -1143,7 +1696,7 @@ export class MastersComponent implements OnInit {
       state_ids: [],
       lobs: [],
       carriers,
-      reinsurers
+      reinsurers,
     };
 
     // Prepopulate selections
@@ -1191,11 +1744,17 @@ export class MastersComponent implements OnInit {
     const mga_ids = [this.treatyForm.mga_id];
 
     // Build state_ids
-    const state_ids = Object.keys(this.treatySelectedStates).filter(k => this.treatySelectedStates[k]);
+    const state_ids = Object.keys(this.treatySelectedStates).filter(
+      k => this.treatySelectedStates[k],
+    );
 
     // Build lobs structure
-    const selectedLobIds = Object.keys(this.treatySelectedLobs).filter(lobId => this.treatySelectedLobs[lobId]);
-    const selectedCobIds = Object.keys(this.treatySelectedCobs).filter(cobId => this.treatySelectedCobs[cobId]);
+    const selectedLobIds = Object.keys(this.treatySelectedLobs).filter(
+      lobId => this.treatySelectedLobs[lobId],
+    );
+    const selectedCobIds = Object.keys(this.treatySelectedCobs).filter(
+      cobId => this.treatySelectedCobs[cobId],
+    );
 
     const lobs = selectedLobIds.map(lobId => {
       return {
@@ -1216,7 +1775,7 @@ export class MastersComponent implements OnInit {
       state_ids,
       lobs,
       carriers,
-      reinsurers
+      reinsurers,
     };
 
     let request;
@@ -1237,7 +1796,7 @@ export class MastersComponent implements OnInit {
         this.toast.error(err.error?.message || 'Failed to save treaty');
         this.submitting = false;
         this.cdr.markForCheck();
-      }
+      },
     });
   }
 
@@ -1247,7 +1806,7 @@ export class MastersComponent implements OnInit {
     }
     this.treatyForm.carriers.push({
       risk_company_id: '',
-      retention_pct: 100
+      retention_pct: 100,
     });
     this.cdr.markForCheck();
   }
@@ -1265,7 +1824,7 @@ export class MastersComponent implements OnInit {
     }
     this.treatyForm.reinsurers.push({
       reinsurer_id: '',
-      cession_pct: 0
+      cession_pct: 0,
     });
     this.cdr.markForCheck();
   }
@@ -1288,7 +1847,7 @@ export class MastersComponent implements OnInit {
         },
         error: (err: any) => {
           this.toast.error(err.error?.message || 'Failed to delete treaty');
-        }
+        },
       });
     };
     this.confirmOpen = true;
@@ -1296,14 +1855,19 @@ export class MastersComponent implements OnInit {
 
   getMgasListDisplay(treaty: Treaty): string {
     if (treaty.treaty_mgas && treaty.treaty_mgas.length > 0) {
-      return treaty.treaty_mgas.map(m => m.mga?.name).filter(Boolean).join(', ');
+      return treaty.treaty_mgas
+        .map(m => m.mga?.name)
+        .filter(Boolean)
+        .join(', ');
     }
     return treaty.mga?.name || '-';
   }
 
   getCarriersListDisplay(treaty: Treaty): string {
     if (treaty.treaty_carriers && treaty.treaty_carriers.length > 0) {
-      return treaty.treaty_carriers.map(tc => `${tc.risk_company?.name || 'Unknown'} (${tc.retention_pct}%)`).join(', ');
+      return treaty.treaty_carriers
+        .map(tc => `${tc.risk_company?.name || 'Unknown'} (${tc.retention_pct}%)`)
+        .join(', ');
     }
     if (treaty.risk_company) {
       return `${treaty.risk_company.name} (${treaty.carrier_retention_pct ?? 100}%)`;
@@ -1321,18 +1885,19 @@ export class MastersComponent implements OnInit {
     return codes.join(', ');
   }
 
-  getFullStatesList(states?: TreatyState[]): string {
-    if (!states || states.length === 0) return '';
-    return states.map(s => s.state?.state_code).filter(Boolean).join(', ');
-  }
-
   getLobsListDisplay(lobs?: TreatyLob[]): string {
     if (!lobs || lobs.length === 0) return '-';
-    return lobs.map(l => {
-      const lobName = l.lob?.lob_code;
-      const cobs = l.treaty_lob_cobs?.map(c => c.cob?.cob_code).filter(Boolean).join('/');
-      return cobs ? `${lobName} (${cobs})` : lobName;
-    }).filter(Boolean).join(', ');
+    return lobs
+      .map(l => {
+        const lobName = l.lob?.lob_code;
+        const cobs = l.treaty_lob_cobs
+          ?.map(c => c.cob?.cob_code)
+          .filter(Boolean)
+          .join('/');
+        return cobs ? `${lobName} (${cobs})` : lobName;
+      })
+      .filter(Boolean)
+      .join(', ');
   }
 
   // ==========================================
@@ -1354,23 +1919,35 @@ export class MastersComponent implements OnInit {
   // ==========================================
   private getMasterLabel(mode: string): string {
     switch (mode) {
-      case 'state': return 'State';
-      case 'lob': return 'Line of Business';
-      case 'cob': return 'Class of Business';
-      case 'reinsurer': return 'Reinsurer Company';
-      case 'risk-company': return 'Risk Company';
-      default: return 'Master';
+      case 'state':
+        return 'State';
+      case 'lob':
+        return 'Line of Business';
+      case 'cob':
+        return 'Class of Business';
+      case 'reinsurer':
+        return 'Reinsurer Company';
+      case 'risk-company':
+        return 'Risk Company';
+      default:
+        return 'Master';
     }
   }
 
   private getCodeKey(mode: string): string {
     switch (mode) {
-      case 'state': return 'state_code';
-      case 'lob': return 'lob_code';
-      case 'cob': return 'cob_code';
-      case 'reinsurer': return 'reinsurer_company_id';
-      case 'risk-company': return 'risk_company_id';
-      default: return 'code';
+      case 'state':
+        return 'state_code';
+      case 'lob':
+        return 'lob_code';
+      case 'cob':
+        return 'cob_code';
+      case 'reinsurer':
+        return 'reinsurer_company_id';
+      case 'risk-company':
+        return 'risk_company_id';
+      default:
+        return 'code';
     }
   }
 
@@ -1389,7 +1966,7 @@ export class MastersComponent implements OnInit {
           t.risk_company?.name || '-',
           this.getStatesListDisplay(t.treaty_states),
           this.getLobsListDisplay(t.treaty_lobs),
-          t.is_active ? 'Active' : 'Inactive'
+          t.is_active ? 'Active' : 'Inactive',
         ]);
         filename = 'treaties.csv';
         break;
@@ -1401,7 +1978,7 @@ export class MastersComponent implements OnInit {
           m.name,
           m.tax_payable_inhouse ? 'Yes' : 'No',
           m.ledger_amount !== undefined ? `$${m.ledger_amount.toFixed(2)}` : '$0.00',
-          m.is_active ? 'Active' : 'Inactive'
+          m.is_active ? 'Active' : 'Inactive',
         ]);
         filename = 'mgas.csv';
         break;
@@ -1412,13 +1989,24 @@ export class MastersComponent implements OnInit {
           s.state_code,
           s.state_abbr,
           s.name,
-          s.is_active ? 'Active' : 'Inactive'
+          s.is_active ? 'Active' : 'Inactive',
         ]);
         filename = 'states.csv';
         break;
 
       case 'risk-companies':
-        headers = ['Company', 'ID Name', 'Name', 'Phone', 'Admitted', 'State', 'Address 1', 'Zip', 'City', 'Status'];
+        headers = [
+          'Company',
+          'ID Name',
+          'Name',
+          'Phone',
+          'Admitted',
+          'State',
+          'Address 1',
+          'Zip',
+          'City',
+          'Status',
+        ];
         rows = this.riskCompanies.map(r => [
           r.company_id,
           r.id_name || '-',
@@ -1429,13 +2017,22 @@ export class MastersComponent implements OnInit {
           r.address || '-',
           r.zip || '-',
           r.city || '-',
-          r.is_active ? 'Active' : 'Inactive'
+          r.is_active ? 'Active' : 'Inactive',
         ]);
         filename = 'risk_companies.csv';
         break;
 
       case 'lobs':
-        headers = ['LOB Code', 'LOB Name', 'LOB Type', 'Taxable', 'Priority', 'Fully Earned', 'Status', 'Description'];
+        headers = [
+          'LOB Code',
+          'LOB Name',
+          'LOB Type',
+          'Taxable',
+          'Priority',
+          'Fully Earned',
+          'Status',
+          'Description',
+        ];
         rows = this.lobs.map(l => [
           l.lob_code,
           l.name,
@@ -1444,13 +2041,22 @@ export class MastersComponent implements OnInit {
           l.priority,
           l.fully_earned ? 'Yes' : 'No',
           l.is_active ? 'Active' : 'Inactive',
-          l.description || '-'
+          l.description || '-',
         ]);
         filename = 'lobs.csv';
         break;
 
       case 'cobs':
-        headers = ['Class Code', 'Class Name', 'Class Type', 'Taxable', 'Priority', 'Fully Earned', 'Status', 'Description'];
+        headers = [
+          'Class Code',
+          'Class Name',
+          'Class Type',
+          'Taxable',
+          'Priority',
+          'Fully Earned',
+          'Status',
+          'Description',
+        ];
         rows = this.cobs.map(c => [
           c.cob_code,
           c.name,
@@ -1459,7 +2065,7 @@ export class MastersComponent implements OnInit {
           c.priority,
           c.fully_earned ? 'Yes' : 'No',
           c.is_active ? 'Active' : 'Inactive',
-          c.description || '-'
+          c.description || '-',
         ]);
         filename = 'cobs.csv';
         break;
@@ -1469,17 +2075,14 @@ export class MastersComponent implements OnInit {
         rows = this.reinsurers.map(r => [
           r.reinsurer_company_id,
           r.name,
-          r.is_active ? 'Active' : 'Inactive'
+          r.is_active ? 'Active' : 'Inactive',
         ]);
         filename = 'reinsurers.csv';
         break;
 
       case 'gl-mappings':
         headers = ['GL Number', 'Type'];
-        rows = this.glMappings.map(m => [
-          this.getGLNumberDisplay(m),
-          m.type
-        ]);
+        rows = this.glMappings.map(m => [this.getGLNumberDisplay(m), m.type]);
         filename = 'gl_mappings.csv';
         break;
     }
@@ -1490,10 +2093,14 @@ export class MastersComponent implements OnInit {
   private downloadCSV(headers: string[], rows: any[][], filename: string): void {
     const csvContent = [
       headers.map(h => `"${h.replace(/"/g, '""')}"`).join(','),
-      ...rows.map(row => row.map(val => {
-        const str = val === null || val === undefined ? '' : String(val);
-        return `"${str.replace(/"/g, '""')}"`;
-      }).join(','))
+      ...rows.map(row =>
+        row
+          .map(val => {
+            const str = val === null || val === undefined ? '' : String(val);
+            return `"${str.replace(/"/g, '""')}"`;
+          })
+          .join(','),
+      ),
     ].join('\r\n');
 
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
@@ -1512,10 +2119,10 @@ export class MastersComponent implements OnInit {
   // ==========================================
   loadGlMappings(): void {
     this.glMappingsService.getMappings().subscribe({
-      next: (data) => {
+      next: data => {
         if (this.searchTerm) {
           const term = this.searchTerm.toLowerCase();
-          this.glMappings = data.filter((m) => {
+          this.glMappings = data.filter(m => {
             const typeMatch = m.type.toLowerCase().includes(term);
             const code = m.coa?.account_code?.toString() || '';
             const desc = m.coa?.description?.toLowerCase() || '';
@@ -1537,8 +2144,8 @@ export class MastersComponent implements OnInit {
 
   loadCoaOptions(): void {
     this.coaService.getAccounts(undefined, true).subscribe({
-      next: (data) => {
-        this.coaOptions = data.filter((coa) => !coa.is_parent);
+      next: data => {
+        this.coaOptions = data.filter(coa => !coa.is_parent);
         this.cdr.markForCheck();
       },
       error: () => {
@@ -1594,7 +2201,7 @@ export class MastersComponent implements OnInit {
           this.submitting = false;
           this.loadGlMappings();
         },
-        error: (err) => {
+        error: err => {
           const msg = err.error?.message || 'Failed to update GL mapping';
           this.toast.error(msg);
           this.submitting = false;
@@ -1609,7 +2216,7 @@ export class MastersComponent implements OnInit {
           this.submitting = false;
           this.loadGlMappings();
         },
-        error: (err) => {
+        error: err => {
           const msg = err.error?.message || 'Failed to create GL mapping';
           this.toast.error(msg);
           this.submitting = false;
@@ -1639,8 +2246,9 @@ export class MastersComponent implements OnInit {
     return this.seededProgramITD.has((programName || '').trim());
   }
 
-  getTreatyStatus(programName: string): string {
-    return this.treatyWorkbookStatuses.get((programName || '').trim()) || '-';
+  getTreatyStatus(programName?: string): string {
+    if (!programName) return 'Draft';
+    return this.treatyWorkbookStatuses.get(programName) || 'Pending';
   }
 
   getGLNumberDisplay(mapping: GlMapping): string {
@@ -1650,14 +2258,18 @@ export class MastersComponent implements OnInit {
 
   selectedTreatyForUpload: any = null;
 
-  triggerTreatyMonthlyUpload(treaty: any, inputEl: HTMLInputElement): void {
+  triggerTreatyMonthlyUpload(treaty: any): void {
     this.selectedTreatyForUpload = treaty;
-    inputEl.click();
+    if (this.monthlyExcelInput?.nativeElement) {
+      this.monthlyExcelInput.nativeElement.click();
+    }
   }
 
-  triggerTreatyITDUpload(treaty: any, inputEl: HTMLInputElement): void {
+  triggerTreatyITDUpload(treaty: any): void {
     this.selectedTreatyForUpload = treaty;
-    inputEl.click();
+    if (this.itdExcelInput?.nativeElement) {
+      this.itdExcelInput.nativeElement.click();
+    }
   }
 
   onTreatyMonthlyUpload(event: any): void {
@@ -1673,36 +2285,12 @@ export class MastersComponent implements OnInit {
           event.target.value = '';
           this.loadData();
         },
-        error: (err) => {
-          if (err.status === 409) {
-            const msg = err.error?.message || 'A workbook for this program and month already exists.';
-            const overwrite = confirm(`${msg}\n\nDo you want to overwrite the existing data?`);
-            if (overwrite) {
-              this.reinsuranceService.uploadWorkbook(file, true, programName).subscribe({
-                next: () => {
-                  this.toast.success(`Successfully replaced monthly exhibit for ${programName}.`);
-                  this.selectedTreatyForUpload = null;
-                  event.target.value = '';
-                  this.loadData();
-                },
-                error: (err2) => {
-                  const msg2 = err2.error?.message || 'Failed to replace monthly exhibit';
-                  this.toast.error(msg2);
-                  this.selectedTreatyForUpload = null;
-                  event.target.value = '';
-                }
-              });
-            } else {
-              this.selectedTreatyForUpload = null;
-              event.target.value = '';
-            }
-          } else {
-            const msg = err.error?.message || 'Failed to upload monthly exhibit';
-            this.toast.error(msg);
-            this.selectedTreatyForUpload = null;
-            event.target.value = '';
-          }
-        }
+        error: err => {
+          const msg = err.error?.message || 'Failed to upload monthly exhibit';
+          this.toast.error(msg);
+          this.selectedTreatyForUpload = null;
+          event.target.value = '';
+        },
       });
     }
   }
@@ -1715,17 +2303,19 @@ export class MastersComponent implements OnInit {
 
       this.reinsuranceService.uploadWorkbook(file, true, programName).subscribe({
         next: () => {
-          this.toast.success(`ITD baseline reserves uploaded and seeded for ${programName} successfully.`);
+          this.toast.success(
+            `ITD baseline reserves uploaded and seeded for ${programName} successfully.`,
+          );
           this.selectedTreatyForUpload = null;
           event.target.value = '';
           this.loadData();
         },
-        error: (err) => {
+        error: err => {
           const msg = err.error?.message || 'Failed to seed ITD baseline';
           this.toast.error(msg);
           this.selectedTreatyForUpload = null;
           event.target.value = '';
-        }
+        },
       });
     }
   }
@@ -1737,14 +2327,19 @@ export class MastersComponent implements OnInit {
     this.itdForm.month_key = '2025-12';
     this.itdForm.month_label = 'December 2025';
 
-    const states = (treaty.treaty_states || []).map((s: any) => {
-      const abbr = s.state?.state_abbr || s.state_code;
-      return { code: String(abbr), label: String(abbr) };
-    }).filter((s: any) => s.code && s.code !== 'undefined');
+    const states = (treaty.treaty_states || [])
+      .map((s: any) => {
+        const code = s.state?.state_code || s.state_code;
+        const abbr = s.state?.state_abbr || s.state_code;
+        return { code: String(code), label: String(abbr) };
+      })
+      .filter((s: any) => s.code);
 
     this.itdStatesList = [
       { code: 'TOTAL', label: 'TOTAL' },
-      ...states.filter((s: any) => s.code !== 'TOTAL').sort((a: any, b: any) => a.label.localeCompare(b.label))
+      ...states
+        .filter((s: any) => s.code !== 'TOTAL')
+        .sort((a: any, b: any) => a.label.localeCompare(b.label)),
     ];
     this.itdSelectedStateCode = 'TOTAL';
 
@@ -1755,43 +2350,41 @@ export class MastersComponent implements OnInit {
         loss_ibnr: 0,
         lae_ibnr_dcc: 0,
         lae_ibnr_aoe: 0,
-        ulae_ibnr: 0
+        ulae_ibnr: 0,
       };
     }
 
-    const existingWbId = this.itdWorkbookIds.get((treaty.name || '').trim());
-    if (existingWbId) {
-      this.reinsuranceService.getWorkbook(existingWbId).subscribe({
-        next: (wbDetail) => {
-          const exhibits = wbDetail ? (wbDetail.stateExhibits || wbDetail.state_exhibits) : null;
-          if (exhibits) {
-            exhibits.forEach((se: any) => {
-              const stateCode = (se.stateCode || se.state_code || '').toUpperCase();
-              if (this.itdForm.exhibits[stateCode]) {
-                const getVal = (val: any): number => {
-                  if (Array.isArray(val)) {
-                    return val[1] !== undefined ? Number(val[1]) : (Number(val[0]) || 0);
-                  }
-                  return Number(val) || 0;
-                };
-                this.itdForm.exhibits[stateCode] = {
-                  uep: getVal(se.uep),
-                  loss_ibnr: getVal(se.loss_ibnr),
-                  lae_ibnr_dcc: getVal(se.lae_ibnr_dcc),
-                  lae_ibnr_aoe: getVal(se.lae_ibnr_aoe),
-                  ulae_ibnr: getVal(se.ulae_ibnr),
-                };
-              }
-            });
+    const wbId = this.itdWorkbookIds.get(treaty.name);
+    if (wbId) {
+      this.reinsuranceService.getWorkbook(wbId).subscribe({
+        next: wbDetail => {
+          const exhibits = wbDetail.stateExhibits || wbDetail.state_exhibits || [];
+
+          const getVal = (val: any) => {
+            if (Array.isArray(val)) return Number(val[val.length - 1] || 0);
+            return Number(val || 0);
+          };
+
+          for (const se of exhibits) {
+            const stateCode = String(se.stateCode || se.state_code);
+            if (stateCode && this.itdForm.exhibits[stateCode]) {
+              this.itdForm.exhibits[stateCode] = {
+                uep: getVal(se.uep),
+                loss_ibnr: getVal(se.loss_ibnr ?? se.lossIbnr),
+                lae_ibnr_dcc: getVal(se.lae_ibnr_dcc ?? se.laeIbnrDcc),
+                lae_ibnr_aoe: getVal(se.lae_ibnr_aoe ?? se.laeIbnrAoe),
+                ulae_ibnr: getVal(se.ulae_ibnr ?? se.ulaeIbnr),
+              };
+            }
           }
           this.showItdModal = true;
           this.cdr.markForCheck();
         },
-        error: (err) => {
-          console.error('Failed to load existing ITD workbook details', err);
+        error: () => {
+          console.error('Failed to load existing ITD data');
           this.showItdModal = true;
           this.cdr.markForCheck();
-        }
+        },
       });
     } else {
       this.showItdModal = true;
@@ -1810,7 +2403,7 @@ export class MastersComponent implements OnInit {
         loss_ibnr: Number(ex.loss_ibnr || 0),
         lae_ibnr_dcc: Number(ex.lae_ibnr_dcc || 0),
         lae_ibnr_aoe: Number(ex.lae_ibnr_aoe || 0),
-        ulae_ibnr: Number(ex.ulae_ibnr || 0)
+        ulae_ibnr: Number(ex.ulae_ibnr || 0),
       };
     });
 
@@ -1818,7 +2411,7 @@ export class MastersComponent implements OnInit {
       program: this.itdForm.program,
       monthKey: this.itdForm.month_key,
       monthLabel: this.itdForm.month_label,
-      exhibits: exhibitsArray
+      exhibits: exhibitsArray,
     };
 
     this.reinsuranceService.createManualITD(payload).subscribe({
@@ -1828,9 +2421,9 @@ export class MastersComponent implements OnInit {
         this.selectedTreatyForItd = null;
         this.loadData();
       },
-      error: (err) => {
+      error: err => {
         this.toast.error(err.error?.message || 'Failed to save manual ITD baseline');
-      }
+      },
     });
   }
 }

@@ -25,22 +25,22 @@
           <div class="status-row">
             <span class="status-code">IN</span>
             <span class="status-colon">:</span>
-            <span class="status-amount">{{ formatCurrency(getDifferenceSum('IN')) }}</span>
+            <span class="status-amount">{{ formatCurrency(getDifferenceSum("IN")) }}</span>
           </div>
           <div class="status-row">
             <span class="status-code">CR</span>
             <span class="status-colon">:</span>
-            <span class="status-amount">{{ formatCurrency(getDifferenceSum('CR')) }}</span>
+            <span class="status-amount">{{ formatCurrency(getDifferenceSum("CR")) }}</span>
           </div>
           <div class="status-row">
             <span class="status-code">CK</span>
             <span class="status-colon">:</span>
-            <span class="status-amount">{{ formatCurrency(getDifferenceSum('CK')) }}</span>
+            <span class="status-amount">{{ formatCurrency(getDifferenceSum("CK")) }}</span>
           </div>
           <div class="status-row">
             <span class="status-code">JE</span>
             <span class="status-colon">:</span>
-            <span class="status-amount">{{ formatCurrency(getDifferenceSum('JE')) }}</span>
+            <span class="status-amount">{{ formatCurrency(getDifferenceSum("JE")) }}</span>
           </div>
         </div>
       </div>
@@ -81,13 +81,13 @@
   <!-- Details Section -->
   <div class="details-section" *ngIf="!isLoading && data">
     <h2 class="details-title">Details</h2>
-    
+
     <div class="details-grid">
       <div class="balance-card" *ngFor="let acc of data.accounts">
         <div class="card-header-code">
           {{ acc.code }}
         </div>
-        
+
         <table class="balance-table">
           <thead>
             <tr>
@@ -105,23 +105,28 @@
               <td class="num-val">{{ formatCurrency(row.c_balance) }}</td>
               <td class="num-val">{{ formatCurrency(row.difference) }}</td>
             </tr>
-            
+
             <!-- Beginning Balance Row -->
             <tr class="summary-row border-top-thick">
               <td class="row-type bold-text">BG</td>
               <td class="num-val bold-text" colspan="3">{{ formatCurrency(acc.bg_balance) }}</td>
             </tr>
-            
+
             <!-- Current Balance Row -->
             <tr class="summary-row">
               <td class="row-type bold-text">Current Bal</td>
               <td class="num-val bold-text" colspan="3">{{ formatCurrency(acc.current_balance) }}</td>
             </tr>
-            
+
             <!-- Status Row (AP Active / AR Active) -->
             <tr class="status-badge-row" *ngIf="acc.status">
               <td class="row-type bold-text">Status</td>
-              <td class="status-text bold-text" colspan="3" [class.ap-active]="acc.type === 'AP'" [class.ar-active]="acc.type !== 'AP'">
+              <td
+                class="status-text bold-text"
+                colspan="3"
+                [class.ap-active]="acc.type === 'AP'"
+                [class.ar-active]="acc.type !== 'AP'"
+              >
                 {{ acc.status }}
               </td>
             </tr>

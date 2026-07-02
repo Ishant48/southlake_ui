@@ -1,26 +1,10 @@
-// @use rules must come first in SCSS
-@use "@angular/material" as mat;
 @use "styles/variables" as *;
 @use "styles/auth";
 @use "styles/layout";
 @use "styles/components";
 @use "styles/user-management";
+@use "styles/ag-grid-custom";
 
-// Angular Material M3 theme — defines --mat-sys-* CSS custom properties
-html {
-  @include mat.theme(
-    (
-      color: (
-        primary: mat.$azure-palette,
-        tertiary: mat.$blue-palette,
-      ),
-      typography: Roboto,
-      density: 0,
-    )
-  );
-}
-
-// App base styles
 *,
 *::before,
 *::after {

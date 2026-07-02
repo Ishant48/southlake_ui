@@ -1,4 +1,6 @@
-:host { display: block; }
+:host {
+  display: block;
+}
 
 .input-wrapper {
   position: relative;
@@ -43,5 +45,7 @@
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }

@@ -19,7 +19,9 @@
   z-index: 500;
   transition: right 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 
-  &.open { right: 0; }
+  &.open {
+    right: 0;
+  }
 }
 
 .panel-header {
@@ -31,7 +33,11 @@
   flex-shrink: 0;
 }
 
-.panel-title { font-size: 17px; font-weight: 700; color: var(--gray-900); }
+.panel-title {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--gray-900);
+}
 
 .panel-close {
   width: 32px;
@@ -44,9 +50,14 @@
   align-items: center;
   justify-content: center;
   color: var(--gray-500);
-  transition: background var(--transition), color var(--transition);
+  transition:
+    background var(--transition),
+    color var(--transition);
 
-  &:hover { background: var(--gray-100); color: var(--gray-900); }
+  &:hover {
+    background: var(--gray-100);
+    color: var(--gray-900);
+  }
 }
 
 .panel-body {
@@ -67,8 +78,16 @@
   flex-shrink: 0;
 }
 
-.form-field { display: flex; flex-direction: column; gap: 5px; }
-.form-label { font-size: 13px; font-weight: 600; color: var(--gray-700); }
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.form-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--gray-700);
+}
 
 .form-input {
   height: 40px;
@@ -81,13 +100,22 @@
   outline: none;
   transition: border-color var(--transition);
 
-  &:focus { border-color: var(--navy); }
-  &.input-error { border-color: var(--red); }
+  &:focus {
+    border-color: var(--navy);
+  }
+  &.input-error {
+    border-color: var(--red);
+  }
 }
 
-select.form-input { cursor: pointer; }
+select.form-input {
+  cursor: pointer;
+}
 
-.field-error { font-size: 12px; color: var(--red); }
+.field-error {
+  font-size: 12px;
+  color: var(--red);
+}
 
 .form-error-box {
   background: var(--red-bg);
@@ -110,7 +138,9 @@ select.form-input { cursor: pointer; }
   cursor: pointer;
   transition: background var(--transition);
 
-  &:hover { background: var(--gray-100); }
+  &:hover {
+    background: var(--gray-100);
+  }
 }
 
 .btn-primary {
@@ -123,8 +153,15 @@ select.form-input { cursor: pointer; }
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
-  transition: background var(--transition), opacity var(--transition);
+  transition:
+    background var(--transition),
+    opacity var(--transition);
 
-  &:hover:not(:disabled) { background: var(--coral-hover); }
-  &:disabled { opacity: 0.55; cursor: not-allowed; }
+  &:hover:not(:disabled) {
+    background: var(--coral-hover);
+  }
+  &:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+  }
 }

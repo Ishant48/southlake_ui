@@ -61,12 +61,16 @@ export class RolePermissionsModalComponent implements OnChanges {
       master_data: 'Master Data',
       journal_entry: 'Journal Entries',
       reinsurance: 'Premium and claims Exhibits',
-      general: 'General'
+      general: 'General',
     };
-    return Object.entries(groups).map(([prefix, perms]) => ({
-      moduleName: MODULE_NAMES[prefix] || (prefix.charAt(0).toUpperCase() + prefix.slice(1).replace(/_/g, ' ')),
-      permissions: perms
-    })).sort((a, b) => a.moduleName.localeCompare(b.moduleName));
+    return Object.entries(groups)
+      .map(([prefix, perms]) => ({
+        moduleName:
+          MODULE_NAMES[prefix] ||
+          prefix.charAt(0).toUpperCase() + prefix.slice(1).replace(/_/g, ' '),
+        permissions: perms,
+      }))
+      .sort((a, b) => a.moduleName.localeCompare(b.moduleName));
   }
 
   expandedGroups = new Set<string>();

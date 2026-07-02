@@ -7,7 +7,7 @@ import { AuthService } from './core/services/auth.service';
   standalone: true,
   imports: [RouterOutlet],
   templateUrl: './app.component.html',
-  styleUrl: './app.component.scss'
+  styleUrl: './app.component.scss',
 })
 export class AppComponent implements OnInit {
   private authService = inject(AuthService);
@@ -15,12 +15,12 @@ export class AppComponent implements OnInit {
   ngOnInit(): void {
     if (this.authService.isLoggedIn()) {
       this.authService.fetchCurrentUser().subscribe({
-        next: (user) => {
+        next: user => {
           this.authService.storeSession({ user });
         },
         error: () => {
           // Handled by auth interceptor if it is a 401
-        }
+        },
       });
     }
   }

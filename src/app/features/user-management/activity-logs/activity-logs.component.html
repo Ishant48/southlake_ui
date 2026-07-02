@@ -4,13 +4,42 @@
       <h1 class="page-title">Activity Logs</h1>
       <p class="page-subtitle">Track all user actions across the platform.</p>
     </div>
-    @if (hasPermission('activity_log.export')) {
-      <button class="btn-export" (click)="exportLogs()" aria-label="Export activity logs as CSV">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
-          <polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+    @if (hasPermission("activity_log.export")) {
+      <button
+        class="btn-action-outline"
+        (click)="exportLogs()"
+        style="
+          height: 38px;
+          padding: 0 14px;
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          justify-content: center;
+        "
+      >
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path
+            d="M5 3.5 A1.5 1.5 0 0 1 6.5 2 H14 L19 7 V20.5 A1.5 1.5 0 0 1 17.5 22 H6.5 A1.5 1.5 0 0 1 5 20.5 V3.5 Z"
+            fill="#e2e6e9"
+          />
+          <path d="M14 2 V5.5 A1.5 1.5 0 0 0 15.5 7 H19 Z" fill="#c3c8cc" />
+          <path d="M8 7 H12 M8 9.75 H15 M8 12.5 H14" stroke="#19a347" stroke-width="1.5" stroke-linecap="round" />
+          <path d="M2 14 V12.5 C2 11 3 10 4.5 10 H5 V14 Z" fill="#0d7028" />
+          <rect x="2" y="14" width="20" height="8" rx="1.5" fill="#19a347" />
+          <text
+            x="12"
+            y="20.2"
+            font-family="Arial, sans-serif"
+            font-weight="900"
+            font-size="6.2"
+            fill="#ffffff"
+            text-anchor="middle"
+            letter-spacing="0.2"
+          >
+            CSV
+          </text>
         </svg>
-        Export
+        <span>Export</span>
       </button>
     }
   </div>
@@ -23,8 +52,37 @@
 
   <div class="content-card">
     <div class="filters-bar">
-      <app-search-input placeholder="Search logs..." (searched)="onSearchInput($event)" />
-      <select class="filter-select" [(ngModel)]="filter.action" (ngModelChange)="onFilterChange()" aria-label="Filter by action">
+      <div class="search-wrap">
+        <input
+          class="search-input"
+          type="text"
+          placeholder="Search logs..."
+          [(ngModel)]="filter.search"
+          (ngModelChange)="onFilterChange()"
+          style="padding-left: 12px; padding-right: 34px"
+        />
+        <svg
+          class="search-icon"
+          style="
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--gray-400);
+            pointer-events: none;
+          "
+          width="15"
+          height="15"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <circle cx="11" cy="11" r="8" />
+          <line x1="21" y1="21" x2="16.65" y2="16.65" />
+        </svg>
+      </div>
+      <select class="filter-select" [(ngModel)]="filter.action" (ngModelChange)="onFilterChange()">
         <option value="">All Actions</option>
         <option value="login">Login</option>
         <option value="logout">Logout</option>
@@ -34,37 +92,54 @@
         <option value="approve">Approve</option>
         <option value="export">Export</option>
       </select>
-      <select class="filter-select" [(ngModel)]="filter.module_id" (ngModelChange)="onFilterChange()" aria-label="Filter by module">
+      <select class="filter-select" [(ngModel)]="filter.module_id" (ngModelChange)="onFilterChange()">
         <option value="">All Modules</option>
         @for (mod of modules; track mod.id) {
           <option [value]="mod.id">{{ mod.label }}</option>
         }
       </select>
-      <div class="date-range">
-        <input class="filter-date" type="date" [(ngModel)]="filter.date_from" (ngModelChange)="onFilterChange()" aria-label="From date">
-        <span class="date-sep" aria-hidden="true">to</span>
-        <input class="filter-date" type="date" [(ngModel)]="filter.date_to" (ngModelChange)="onFilterChange()" aria-label="To date">
-      </div>
+      <input
+        class="filter-date"
+        type="date"
+        [(ngModel)]="filter.date_from"
+        (ngModelChange)="onFilterChange()"
+        placeholder="From"
+      />
+      <input
+        class="filter-date"
+        type="date"
+        [(ngModel)]="filter.date_to"
+        (ngModelChange)="onFilterChange()"
+        placeholder="To"
+      />
     </div>
 
     <div class="table-wrapper">
-      <table class="data-table">
-        <thead>
-          <tr>
-            <th class="col-user" scope="col">User</th>
-            <th class="col-action" scope="col">Action</th>
-            <th class="col-module" scope="col">Module</th>
-            <th class="col-entity" scope="col">Entity</th>
-            <th class="col-description" scope="col">Description</th>
-            <th class="col-ip" scope="col">IP Address</th>
-            <th class="col-date" scope="col">Date / Time</th>
-          </tr>
-        </thead>
-        <tbody>
-          @if (loading) {
+      @if (loading) {
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>User</th>
+              <th>Action</th>
+              <th>Module</th>
+              <th>Entity</th>
+              <th>Description</th>
+              <th>IP Address</th>
+              <th>Date / Time</th>
+            </tr>
+          </thead>
+          <tbody>
             @for (i of skeletonRows; track i) {
               <tr class="skeleton-row">
-                <td><div class="user-cell"><div class="skel skel-avatar"></div><div class="user-cell-text"><div class="skel skel-line"></div><div class="skel skel-line-sm"></div></div></div></td>
+                <td>
+                  <div class="user-cell">
+                    <div class="skel skel-avatar"></div>
+                    <div class="user-cell-text">
+                      <div class="skel skel-line"></div>
+                      <div class="skel skel-line-sm"></div>
+                    </div>
+                  </div>
+                </td>
                 <td><div class="skel skel-badge"></div></td>
                 <td><div class="skel skel-line-sm"></div></td>
                 <td><div class="skel skel-line-sm"></div></td>
@@ -73,51 +148,36 @@
                 <td><div class="skel skel-line-sm"></div></td>
               </tr>
             }
-          } @else if (logs.length === 0) {
-            <tr>
-              <td colspan="7" class="empty-cell">
-                <div class="empty-state">
-                  <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" class="empty-icon" aria-hidden="true">
-                    <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
-                  </svg>
-                  <p class="empty-title">No activity logs found</p>
-                  <p class="empty-hint">Try adjusting your search or filter criteria</p>
-                </div>
-              </td>
-            </tr>
-          } @else {
-            @for (log of logs; track log.id) {
-              <tr>
-                <td>
-                  @if (log.user) {
-                    <div class="user-cell">
-                      <div class="user-avatar" [style.background]="log.user.avatar_color">{{ log.user.initials }}</div>
-                      <div class="user-cell-text">
-                        <span class="user-name">{{ log.user.name }}</span>
-                        <span class="user-email">{{ log.user.email }}</span>
-                      </div>
-                    </div>
-                  } @else {
-                    <span class="system-actor">System</span>
-                  }
-                </td>
-                <td>
-                  <span class="action-badge" [style.background]="getActionStyle(log.action).bg" [style.color]="getActionStyle(log.action).text">
-                    {{ log.action }}
-                  </span>
-                </td>
-                <td class="text-muted">{{ formatModule(log.module_id) }}</td>
-                <td class="text-muted">{{ log.entity_type ?? '-' }}</td>
-                <td class="description-cell">{{ log.description ?? '-' }}</td>
-                <td class="text-mono">{{ log.ip_address ?? '-' }}</td>
-                <td class="text-muted">{{ formatDate(log.created_at) }}</td>
-              </tr>
-            }
-          }
-        </tbody>
-      </table>
+          </tbody>
+        </table>
+      } @else {
+        <ag-grid-angular
+          class="ag-theme-alpine"
+          style="display: block; width: 100%"
+          [domLayout]="'autoHeight'"
+          [rowData]="logs"
+          [columnDefs]="columnDefs"
+          [gridOptions]="gridOptions"
+        ></ag-grid-angular>
+      }
     </div>
 
-    <app-pagination [currentPage]="currentPage" [totalPages]="totalPages" [totalItems]="total" [pageSize]="filter.per_page ?? 20" (pageChange)="goToPage($event)" />
+    @if (totalPages > 1) {
+      <div class="pagination">
+        <button class="page-btn" [disabled]="currentPage === 1" (click)="goToPage(currentPage - 1)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <polyline points="15 18 9 12 15 6" />
+          </svg>
+        </button>
+        @for (p of pageNumbers; track p) {
+          <button class="page-btn" [class.active]="p === currentPage" (click)="goToPage(p)">{{ p }}</button>
+        }
+        <button class="page-btn" [disabled]="currentPage === totalPages" (click)="goToPage(currentPage + 1)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <polyline points="9 18 15 12 9 6" />
+          </svg>
+        </button>
+      </div>
+    }
   </div>
 </div>
