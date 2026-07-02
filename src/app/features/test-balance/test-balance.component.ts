@@ -20,7 +20,10 @@ export class TestBalanceComponent implements OnInit {
 
   month = 'June';
   year = 2026;
+  activeTab: 'test-balance' | 'balance-sheet' | 'pl' = 'test-balance';
   data: TestBalanceResponse | null = null;
+  balanceSheetData: any = null;
+  plData: any = null;
   isLoading = false;
 
   months = [
@@ -40,28 +43,63 @@ export class TestBalanceComponent implements OnInit {
   years = [2024, 2025, 2026];
 
   ngOnInit(): void {
-    this.loadBalances();
+    this.loadData();
   }
 
-  loadBalances(): void {
+  selectTab(tab: 'test-balance' | 'balance-sheet' | 'pl'): void {
+    this.activeTab = tab;
+    this.loadData();
+  }
+
+  loadData(): void {
     this.isLoading = true;
     this.cdr.markForCheck();
-    this.balanceService.getTestBalance(this.month, this.year).subscribe({
-      next: res => {
-        this.data = res;
-        this.isLoading = false;
-        this.cdr.markForCheck();
-      },
-      error: err => {
-        console.error('Error loading test balance:', err);
-        this.isLoading = false;
-        this.cdr.markForCheck();
-      },
-    });
+    const period = `${this.month} ${this.year}`;
+
+    if (this.activeTab === 'test-balance') {
+      this.balanceService.getTestBalance(this.month, this.year).subscribe({
+        next: res => {
+          this.data = res;
+          this.isLoading = false;
+          this.cdr.markForCheck();
+        },
+        error: err => {
+          console.error('Error loading test balance:', err);
+          this.isLoading = false;
+          this.cdr.markForCheck();
+        },
+      });
+    } else if (this.activeTab === 'balance-sheet') {
+      this.balanceService.getBalanceSheet(period).subscribe({
+        next: res => {
+          this.balanceSheetData = res;
+          this.isLoading = false;
+          this.cdr.markForCheck();
+        },
+        error: err => {
+          console.error('Error loading balance sheet:', err);
+          this.isLoading = false;
+          this.cdr.markForCheck();
+        },
+      });
+    } else if (this.activeTab === 'pl') {
+      this.balanceService.getPLStatement(period).subscribe({
+        next: res => {
+          this.plData = res;
+          this.isLoading = false;
+          this.cdr.markForCheck();
+        },
+        error: err => {
+          console.error('Error loading P&L statement:', err);
+          this.isLoading = false;
+          this.cdr.markForCheck();
+        },
+      });
+    }
   }
 
   onPeriodChange(): void {
-    this.loadBalances();
+    this.loadData();
   }
 
   formatCurrency(val: number): string {
@@ -84,5 +122,9 @@ export class TestBalanceComponent implements OnInit {
       }
     }
     return sum;
+  }
+
+  abs(val: number): number {
+    return Math.abs(val);
   }
 }

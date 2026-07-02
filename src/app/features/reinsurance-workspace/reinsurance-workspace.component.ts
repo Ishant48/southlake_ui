@@ -178,7 +178,7 @@ export class ReinsuranceWorkspaceComponent implements OnInit {
     if (this.activeTab === 'statement') {
       this.service.getReinsuranceStatement(this.selectedWorkbookId, this.selectedState).subscribe({
         next: res => {
-          this.statementRows = res;
+          this.statementRows = (res as any).rows || res;
           this.loading = false;
           this.cdr.markForCheck();
         },

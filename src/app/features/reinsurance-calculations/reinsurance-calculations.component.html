@@ -14,6 +14,8 @@
         <label>Active Workbook & Month</label>
         <div class="select-with-action">
           <select [(ngModel)]="selectedWorkbookId" (change)="onWorkbookChange()" class="form-control">
+            <option [value]="null" disabled selected *ngIf="workbooks.length === 0">No workbooks uploaded</option>
+            <option [value]="null" disabled selected *ngIf="workbooks.length > 0">Select workbook...</option>
             <option *ngFor="let wb of workbooks" [value]="wb.id">
               {{ wb.program }} - {{ wb.month_label }} ({{ wb.source }})
             </option>
@@ -45,7 +47,7 @@
 
       <div class="select-group">
         <label>Reporting State</label>
-        <select [(ngModel)]="selectedState" (change)="onStateChange()" class="form-control">
+        <select [(ngModel)]="selectedState" (change)="onStateChange()" class="form-control state-select">
           <option *ngFor="let st of states" [value]="st">{{ st }}</option>
         </select>
       </div>
@@ -505,5 +507,33 @@
         </div>
       </div>
     </main>
+  </div>
+
+  <!-- VIEW WHEN NO WORKBOOK IS SELECTED -->
+  <div class="empty-state-card" *ngIf="!selectedWorkbook">
+    <div class="empty-icon-wrap">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+        <polyline points="14 2 14 8 20 8" />
+        <line x1="9" y1="15" x2="15" y2="15" />
+        <line x1="9" y1="19" x2="15" y2="19" />
+        <line x1="9" y1="11" x2="10" y2="11" />
+      </svg>
+    </div>
+    <h3>No Active Workbook Selected</h3>
+    <p>
+      Please select an active program workbook and month from the dropdown above to analyze monthly ceding calculations, cash settlements, and GL segment mappings.
+    </p>
+    <div class="features-teaser">
+      <div class="teaser-item">
+        <span>📊 Ceding calculations</span>
+      </div>
+      <div class="teaser-item">
+        <span>💸 Cash settlements</span>
+      </div>
+      <div class="teaser-item">
+        <span>🔗 GL segment mappings</span>
+      </div>
+    </div>
   </div>
 </div>

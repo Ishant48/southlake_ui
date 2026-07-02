@@ -45,6 +45,10 @@ export interface MgaMaster {
   open_item?: boolean;
   op_start_date?: string | null;
   other_names?: { state: string; displayName: string }[] | null;
+  naics_code?: string | null;
+  contact_name?: string | null;
+  contact_email?: string | null;
+  contact_phone?: string | null;
   created_at?: string;
   updated_at?: string | null;
   documents?: MgaDocument[];
@@ -169,6 +173,15 @@ export interface Treaty {
   carrier_retention_pct?: number | null;
   reinsurer_cession_pct?: number | null;
   is_active: boolean;
+  policy_seq_prefix?: string | null;
+  policy_seq_start?: number | null;
+  policy_seq_next?: number | null;
+  claim_seq_prefix?: string | null;
+  claim_seq_start?: number | null;
+  claim_seq_next?: number | null;
+  ulae_type?: string | null;
+  ulae_basis?: string | null;
+  ulae_flat_amount?: number | null;
   created_at?: string;
   updated_at?: string | null;
   treaty_states?: TreatyState[];
@@ -184,6 +197,8 @@ export interface TreatyCarrier {
   risk_company_id: string;
   risk_company?: RiskCompany;
   retention_pct: number;
+  state_id?: string | null;
+  broker_id?: string | null;
 }
 
 export interface TreatyReinsurer {
@@ -192,4 +207,6 @@ export interface TreatyReinsurer {
   reinsurer_id: string;
   reinsurer?: ReinsurerCompany;
   cession_pct: number;
+  state_id?: string | null;
+  broker_id?: string | null;
 }

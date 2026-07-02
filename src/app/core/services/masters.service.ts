@@ -205,4 +205,55 @@ export class MastersService {
       treaty_ids: treatyIds,
     });
   }
+
+  // ==========================================
+  // BROKER MASTER API
+  // ==========================================
+  getBrokers(search?: string, isActive?: boolean): Observable<any[]> {
+    return this.http.get<any[]>(`${this.base}/brokers`, {
+      params: this.buildParams(search, isActive),
+    });
+  }
+  createBroker(payload: any): Observable<any> {
+    return this.http.post<any>(`${this.base}/brokers`, payload);
+  }
+  updateBroker(id: string, payload: any): Observable<any> {
+    return this.http.patch<any>(`${this.base}/brokers/${id}`, payload);
+  }
+  deleteBroker(id: string): Observable<void> {
+    return this.http.delete<void>(`${this.base}/brokers/${id}`);
+  }
+
+  // ==========================================
+  // PRODUCT MASTER API
+  // ==========================================
+  getProducts(search?: string, isActive?: boolean): Observable<any[]> {
+    return this.http.get<any[]>(`${this.base}/products`, {
+      params: this.buildParams(search, isActive),
+    });
+  }
+  createProduct(payload: any): Observable<any> {
+    return this.http.post<any>(`${this.base}/products`, payload);
+  }
+  updateProduct(id: string, payload: any): Observable<any> {
+    return this.http.patch<any>(`${this.base}/products/${id}`, payload);
+  }
+  deleteProduct(id: string): Observable<void> {
+    return this.http.delete<void>(`${this.base}/products/${id}`);
+  }
+
+  // ==========================================
+  // LOCKED PERIODS MASTER API
+  // ==========================================
+  getLockedPeriods(search?: string): Observable<any[]> {
+    let params = new HttpParams();
+    if (search) params = params.set('search', search);
+    return this.http.get<any[]>(`${this.base}/locked-periods`, { params });
+  }
+  lockPeriod(period: string): Observable<any> {
+    return this.http.post<any>(`${this.base}/locked-periods/lock`, { period });
+  }
+  unlockPeriod(period: string): Observable<any> {
+    return this.http.post<any>(`${this.base}/locked-periods/unlock`, { period });
+  }
 }

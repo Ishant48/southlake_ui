@@ -1,25 +1,25 @@
 .metadata-card {
-  padding: 24px;
+  padding: 12px 20px;
   background: #ffffff;
   border: 1px solid #e2e8f0;
   border-radius: 8px;
-  margin-bottom: 24px;
+  margin-bottom: 12px;
 }
 
 .metadata-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 40px;
+  gap: 20px;
 }
 
 .meta-col {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 6px;
 }
 
 .meta-label {
-  font-size: 13.5px;
+  font-size: 11px;
   font-weight: 700;
   color: #64748b;
   text-transform: uppercase;
@@ -29,7 +29,7 @@
 .meta-value {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
 }
 
 .account-list {
@@ -102,14 +102,14 @@
 }
 
 .details-section {
-  margin-top: 32px;
+  margin-top: 16px;
 }
 
 .details-title {
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 800;
   color: #1e293b;
-  margin-bottom: 20px;
+  margin-bottom: 12px;
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
@@ -117,7 +117,7 @@
 .details-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 24px;
+  gap: 16px;
 }
 
 .balance-card {

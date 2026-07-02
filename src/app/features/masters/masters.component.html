@@ -15,13 +15,15 @@
         <button class="btn-primary" (click)="openRiskCompanyAdd()">Add Risk Company</button>
       } @else if (currentTab === "gl-mappings") {
         <button class="btn-primary" (click)="openGlMappingAdd()">Add Mapping</button>
-      } @else if (currentTab === "lobs" || currentTab === "cobs" || currentTab === "reinsurers") {
+      } @else if (currentTab === "lobs" || currentTab === "cobs" || currentTab === "reinsurers" || currentTab === "brokers" || currentTab === "products") {
         <button
           class="btn-primary"
-          (click)="openSimpleAdd(currentTab === 'lobs' ? 'lob' : currentTab === 'cobs' ? 'cob' : 'reinsurer')"
+          (click)="openSimpleAdd(currentTab === 'lobs' ? 'lob' : currentTab === 'cobs' ? 'cob' : currentTab === 'reinsurers' ? 'reinsurer' : currentTab === 'brokers' ? 'broker' : 'product')"
         >
-          Add {{ currentTab === "lobs" ? "LOB" : currentTab === "cobs" ? "COB" : "Reinsurer" }}
+          Add {{ currentTab === "lobs" ? "LOB" : currentTab === "cobs" ? "COB" : currentTab === "reinsurers" ? "Reinsurer" : currentTab === "brokers" ? "Broker" : "Product" }}
         </button>
+      } @else if (currentTab === "locked-periods") {
+        <button class="btn-primary" (click)="openLockPeriodAdd()">Lock Period</button>
       }
     </div>
   </div>
@@ -40,6 +42,15 @@
     </button>
     <button class="tab-link" [class.active]="currentTab === 'risk-companies'" (click)="selectTab('risk-companies')">
       Risk Companies
+    </button>
+    <button class="tab-link" [class.active]="currentTab === 'brokers'" (click)="selectTab('brokers')">
+      Brokers
+    </button>
+    <button class="tab-link" [class.active]="currentTab === 'products'" (click)="selectTab('products')">
+      Products
+    </button>
+    <button class="tab-link" [class.active]="currentTab === 'locked-periods'" (click)="selectTab('locked-periods')">
+      Month-End Closing
     </button>
     <button class="tab-link" [class.active]="currentTab === 'gl-mappings'" (click)="selectTab('gl-mappings')">
       GL Map
@@ -97,6 +108,7 @@
           align-items: center;
           gap: 6px;
           justify-content: center;
+          margin-left: auto;
         "
       >
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -150,7 +162,7 @@
         <p>No records found. Try adjusting your filters or create a new entry.</p>
       </div>
     } @else {
-      <div class="table-wrapper" style="margin-top: 16px">
+      <div class="table-wrapper" style="padding-left: 33px; margin-top: 16px">
         <ag-grid-angular
           style="display: block; width: 100%"
           class="ag-theme-alpine"
@@ -166,7 +178,7 @@
   <!-- SIMPLE MASTER CREATE / EDIT MODAL -->
   @if (showSimpleModal) {
     <div class="modal-overlay" (click)="$event.target === $event.currentTarget && (showSimpleModal = false)">
-      <div class="modal-box {{ simpleMode === 'lob' || simpleMode === 'cob' ? 'treaty-modal' : 'coa-modal' }}">
+      <div class="modal-box {{ simpleMode === 'lob' || simpleMode === 'cob' || simpleMode === 'product' ? 'treaty-modal' : 'coa-modal' }}">
         <div class="panel-header">
           <h3 class="panel-title">{{ simpleModalTitle }}</h3>
           <button class="panel-close" (click)="showSimpleModal = false" aria-label="Close modal">
@@ -181,7 +193,7 @@
           <div class="form-row">
             <div class="form-field">
               <label class="form-label">
-                {{ simpleMode === "lob" ? "LOB ID *" : simpleMode === "cob" ? "Class ID *" : "Code ID *" }}
+                {{ simpleMode === "lob" ? "LOB ID *" : simpleMode === "cob" ? "Class ID *" : simpleMode === "broker" ? "Broker Code *" : simpleMode === "product" ? "Product ID *" : "Code ID *" }}
               </label>
               <input
                 [(ngModel)]="simpleForm.code"
@@ -189,13 +201,13 @@
                 type="text"
                 required
                 placeholder="e.g. TX"
-                [disabled]="isEditMode"
+                [disabled]="isEditMode || simpleMode === 'product'"
                 class="form-input"
               />
             </div>
             <div class="form-field">
               <label class="form-label">
-                {{ simpleMode === "lob" ? "LOB Name *" : simpleMode === "cob" ? "Class Name *" : "Name *" }}
+                {{ simpleMode === "lob" ? "LOB Name *" : simpleMode === "cob" ? "Class Name *" : simpleMode === "broker" ? "Broker Name *" : simpleMode === "product" ? "Product Name *" : "Name *" }}
               </label>
               <input
                 [(ngModel)]="simpleForm.name"
@@ -203,10 +215,89 @@
                 type="text"
                 required
                 placeholder="e.g. Texas"
+                [disabled]="simpleMode === 'product'"
                 class="form-input"
               />
             </div>
           </div>
+
+          @if (simpleMode === "broker") {
+            <div class="form-row" style="margin-top: 8px">
+              <div class="form-field">
+                <label class="form-label">Contact Name</label>
+                <input
+                  [(ngModel)]="simpleForm.contact_name"
+                  name="contact_name"
+                  type="text"
+                  placeholder="Contact Name"
+                  class="form-input"
+                />
+              </div>
+              <div class="form-field">
+                <label class="form-label">Contact Phone</label>
+                <input
+                  [(ngModel)]="simpleForm.contact_phone"
+                  name="contact_phone"
+                  type="text"
+                  placeholder="Contact Phone"
+                  class="form-input"
+                />
+              </div>
+            </div>
+            <div class="form-row" style="margin-top: 8px">
+              <div class="form-field">
+                <label class="form-label">Contact Email</label>
+                <input
+                  [(ngModel)]="simpleForm.contact_email"
+                  name="contact_email"
+                  type="email"
+                  placeholder="Contact Email"
+                  class="form-input"
+                />
+              </div>
+            </div>
+          }
+
+          @if (simpleMode === "product") {
+            <div class="form-row" style="margin-top: 8px">
+              <div class="form-field">
+                <label class="form-label">Line of Business *</label>
+                <app-dropdown-search
+                  [items]="lobOptions"
+                  [isMultiSelect]="false"
+                  bindValue="id"
+                  placeholder="Select LOB"
+                  [itemLabelFn]="lobLabelFn"
+                  [selectedValue]="simpleForm.lob_id"
+                  (selectedValueChange)="simpleForm.lob_id = $event; onProductLobCobChange()"
+                ></app-dropdown-search>
+              </div>
+              <div class="form-field">
+                <label class="form-label">Class of Business *</label>
+                <app-dropdown-search
+                  [items]="cobOptions"
+                  [isMultiSelect]="false"
+                  bindValue="id"
+                  placeholder="Select COB"
+                  [itemLabelFn]="cobLabelFn"
+                  [selectedValue]="simpleForm.cob_id"
+                  (selectedValueChange)="simpleForm.cob_id = $event; onProductLobCobChange()"
+                ></app-dropdown-search>
+              </div>
+            </div>
+            <div class="form-row" style="margin-top: 8px">
+              <div class="form-field">
+                <label class="form-label">Description</label>
+                <textarea
+                  [(ngModel)]="simpleForm.description"
+                  name="description"
+                  placeholder="Product description..."
+                  class="form-input"
+                  style="height: 60px; resize: vertical"
+                ></textarea>
+              </div>
+            </div>
+          }
 
           @if (simpleMode === "lob" || simpleMode === "cob") {
             <div class="form-row" style="margin-top: 8px">
@@ -483,6 +574,28 @@
             <div class="form-field">
               <label class="form-label">Op Start Date</label>
               <input [(ngModel)]="mgaForm.op_start_date" name="opStartDate" type="date" class="form-input" />
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-field">
+              <label class="form-label">NAICS Code</label>
+              <input [(ngModel)]="mgaForm.naics_code" name="naicsCode" type="text" placeholder="e.g. 524126" class="form-input" />
+            </div>
+            <div class="form-field">
+              <label class="form-label">Contact Name</label>
+              <input [(ngModel)]="mgaForm.contact_name" name="contactName" type="text" placeholder="Contact Name" class="form-input" />
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-field">
+              <label class="form-label">Contact Email</label>
+              <input [(ngModel)]="mgaForm.contact_email" name="contactEmail" type="email" placeholder="contact@email.com" class="form-input" />
+            </div>
+            <div class="form-field">
+              <label class="form-label">Contact Phone</label>
+              <input [(ngModel)]="mgaForm.contact_phone" name="contactPhone" type="text" placeholder="Phone Number" class="form-input" />
             </div>
           </div>
 
@@ -974,6 +1087,32 @@
                   [(selectedValue)]="carrier.risk_company_id"
                 ></app-dropdown-search>
               </div>
+              <div class="form-field" style="flex: 1.5">
+                @if (i === 0) {
+                  <label class="form-label">Specific State (Opt)</label>
+                }
+                <app-dropdown-search
+                  [items]="stateOptions"
+                  [isMultiSelect]="false"
+                  bindValue="id"
+                  placeholder="All States"
+                  [itemLabelFn]="stateLabelFn"
+                  [(selectedValue)]="carrier.state_id"
+                ></app-dropdown-search>
+              </div>
+              <div class="form-field" style="flex: 1.5">
+                @if (i === 0) {
+                  <label class="form-label">Broker (Opt)</label>
+                }
+                <app-dropdown-search
+                  [items]="brokerOptions"
+                  [isMultiSelect]="false"
+                  bindValue="id"
+                  placeholder="None"
+                  [itemLabelFn]="brokerLabelFn"
+                  [(selectedValue)]="carrier.broker_id"
+                ></app-dropdown-search>
+              </div>
               <div class="form-field" style="flex: 1">
                 @if (i === 0) {
                   <label class="form-label">Retention %</label>
@@ -1018,7 +1157,7 @@
               align-items: center;
             "
           >
-            <span>Reinsurer Companies & Cession %</span>
+            <span>Reinsurer Companies & Quota Share %</span>
             <button
               type="button"
               class="btn btn-sm btn-primary"
@@ -1044,9 +1183,35 @@
                   [(selectedValue)]="reinsurer.reinsurer_id"
                 ></app-dropdown-search>
               </div>
+              <div class="form-field" style="flex: 1.5">
+                @if (i === 0) {
+                  <label class="form-label">Specific State (Opt)</label>
+                }
+                <app-dropdown-search
+                  [items]="stateOptions"
+                  [isMultiSelect]="false"
+                  bindValue="id"
+                  placeholder="All States"
+                  [itemLabelFn]="stateLabelFn"
+                  [(selectedValue)]="reinsurer.state_id"
+                ></app-dropdown-search>
+              </div>
+              <div class="form-field" style="flex: 1.5">
+                @if (i === 0) {
+                  <label class="form-label">Broker (Opt)</label>
+                }
+                <app-dropdown-search
+                  [items]="brokerOptions"
+                  [isMultiSelect]="false"
+                  bindValue="id"
+                  placeholder="None"
+                  [itemLabelFn]="brokerLabelFn"
+                  [(selectedValue)]="reinsurer.broker_id"
+                ></app-dropdown-search>
+              </div>
               <div class="form-field" style="flex: 1">
                 @if (i === 0) {
-                  <label class="form-label">Cession %</label>
+                  <label class="form-label">Quota Share %</label>
                 }
                 <input
                   [(ngModel)]="reinsurer.cession_pct"
@@ -1071,7 +1236,7 @@
           }
           @if (!treatyForm.reinsurers || treatyForm.reinsurers.length === 0) {
             <div style="color: var(--gray-500); font-size: 12px; margin-bottom: 12px; font-style: italic">
-              No reinsurers added yet. Click "+ Add Reinsurer" to define a reinsurer cession split.
+              No reinsurers added yet. Click "+ Add Reinsurer" to define a reinsurer quota share split.
             </div>
           }
 
@@ -1126,10 +1291,41 @@
               padding-bottom: 6px;
             "
           >
+            Sequence Prefix & Counters
+          </h4>
+          <div class="form-row">
+            <div class="form-field">
+              <label class="form-label">Policy Seq Prefix</label>
+              <input [(ngModel)]="treatyForm.policy_seq_prefix" name="policySeqPrefix" type="text" class="form-input" placeholder="e.g. POL" />
+            </div>
+            <div class="form-field">
+              <label class="form-label">Policy Seq Start</label>
+              <input [(ngModel)]="treatyForm.policy_seq_start" name="policySeqStart" type="number" class="form-input" placeholder="1" />
+            </div>
+            <div class="form-field">
+              <label class="form-label">Claim Seq Prefix</label>
+              <input [(ngModel)]="treatyForm.claim_seq_prefix" name="claimSeqPrefix" type="text" class="form-input" placeholder="e.g. CLM" />
+            </div>
+            <div class="form-field">
+              <label class="form-label">Claim Seq Start</label>
+              <input [(ngModel)]="treatyForm.claim_seq_start" name="claimSeqStart" type="number" class="form-input" placeholder="1" />
+            </div>
+          </div>
+
+          <h4
+            style="
+              margin: 16px 0 12px 0;
+              color: var(--navy);
+              font-weight: 700;
+              font-size: 14px;
+              border-bottom: 1.5px solid var(--gray-200);
+              padding-bottom: 6px;
+            "
+          >
             Treaty Terms (Percentages)
           </h4>
 
-          <div class="form-row">
+          <div class="treaty-form-grid">
             <div class="form-field">
               <label class="form-label">Quota Share (QS) %</label>
               <input
@@ -1174,20 +1370,47 @@
                 placeholder="0.00"
               />
             </div>
-          </div>
 
-          <div class="form-row">
             <div class="form-field">
-              <label class="form-label">ULAE %</label>
-              <input
-                [(ngModel)]="treatyForm.ulae_pct"
-                name="ulaePct"
-                type="number"
-                step="0.01"
-                class="form-input"
-                placeholder="0.00"
-              />
+              <label class="form-label">ULAE Type</label>
+              <select [(ngModel)]="treatyForm.ulae_type" name="ulaeType" class="form-input">
+                <option value="percent">Percent</option>
+                <option value="flat_rate">Flat Rate</option>
+              </select>
             </div>
+            @if (treatyForm.ulae_type === 'percent') {
+              <div class="form-field">
+                <label class="form-label">ULAE %</label>
+                <input
+                  [(ngModel)]="treatyForm.ulae_pct"
+                  name="ulaePct"
+                  type="number"
+                  step="0.01"
+                  class="form-input"
+                  placeholder="0.00"
+                />
+              </div>
+            } @else {
+              <div class="form-field">
+                <label class="form-label">ULAE Basis</label>
+                <select [(ngModel)]="treatyForm.ulae_basis" name="ulaeBasis" class="form-input">
+                  <option value="earned_premium">Earned Premium</option>
+                  <option value="unearned_premium">Unearned Premium</option>
+                  <option value="flat_amount">Flat Amount</option>
+                </select>
+              </div>
+              <div class="form-field">
+                <label class="form-label">ULAE Flat Amount</label>
+                <input
+                  [(ngModel)]="treatyForm.ulae_flat_amount"
+                  name="ulaeFlatAmount"
+                  type="number"
+                  step="0.01"
+                  class="form-input"
+                  placeholder="0.00"
+                />
+              </div>
+            }
             <div class="form-field">
               <label class="form-label">XOL %</label>
               <input
@@ -1221,9 +1444,7 @@
                 placeholder="0.00"
               />
             </div>
-          </div>
 
-          <div class="form-row">
             <div class="form-field">
               <label class="form-label">LAE DCC %</label>
               <input
@@ -1245,14 +1466,6 @@
                 class="form-input"
                 placeholder="0.00"
               />
-            </div>
-            <div class="form-field" style="visibility: hidden">
-              <label class="form-label">&nbsp;</label>
-              <input class="form-input" />
-            </div>
-            <div class="form-field" style="visibility: hidden">
-              <label class="form-label">&nbsp;</label>
-              <input class="form-input" />
             </div>
           </div>
 
@@ -1535,6 +1748,52 @@
               <span>Saving...</span>
             } @else {
               <span>Save Mapping</span>
+            }
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Lock Period Modal -->
+  @if (showLockPeriodModal) {
+    <div class="modal-overlay" (click)="$event.target === $event.currentTarget && (showLockPeriodModal = false)">
+      <div class="modal-box" style="max-width: 400px">
+        <div class="panel-header">
+          <h3 class="panel-title">Lock Accounting Period</h3>
+          <button class="panel-close" (click)="showLockPeriodModal = false" aria-label="Close modal">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
+          </button>
+        </div>
+
+        <form (submit)="submitLockPeriod()" class="panel-body">
+          <div class="form-field" style="margin-bottom: 16px">
+            <label class="form-label">Period Name *</label>
+            <input
+              [(ngModel)]="newPeriodToLock"
+              name="newPeriodToLock"
+              type="text"
+              required
+              placeholder="e.g. June 2026"
+              class="form-input"
+            />
+            <span class="field-hint" style="font-size: 11px; color: var(--gray-400); margin-top: 4px; display: block">
+              Specify the period label (e.g. Month Year format) to lock journal postings.
+            </span>
+          </div>
+        </form>
+
+        <div class="panel-footer">
+          <button type="button" class="btn-ghost" (click)="showLockPeriodModal = false">Cancel</button>
+          <button type="button" class="btn-primary" [disabled]="submitting" (click)="submitLockPeriod()">
+            @if (submitting) {
+              <span class="spinner btn-spinner" style="width: 14px; height: 14px"></span>
+              <span>Locking...</span>
+            } @else {
+              <span>Lock Period</span>
             }
           </button>
         </div>

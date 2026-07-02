@@ -153,17 +153,8 @@ export class ChartOfAccountsComponent implements OnInit {
         next: accounts => {
           this.flatAccounts = accounts;
 
-          // Resolve top-level parent accounts if they are present or not cached
-          const hasRoots = accounts.some(a => Number(a.account_code) === 110000);
-          if (hasRoots || this.rootParents.length === 0) {
-            this.rootParents = [
-              accounts.find(a => Number(a.account_code) === 110000), // Assets
-              accounts.find(a => Number(a.account_code) === 210000), // Liability
-              accounts.find(a => Number(a.account_code) === 310000), // Capital and Equity
-              accounts.find(a => Number(a.account_code) === 410000), // Revenue
-              accounts.find(a => Number(a.account_code) === 510000), // Expense
-            ].filter(Boolean) as ChartOfAccount[];
-          }
+          // Resolve summary parent accounts hierarchically
+          this.rootParents = this.subCoas.filter(a => a.is_parent);
 
           // Build the nested/hierarchical flat list to display in the table
           this.subCoas = this.buildTreeList(accounts);
@@ -256,13 +247,10 @@ export class ChartOfAccountsComponent implements OnInit {
   }
 
   getParentCoaDisplay(root: ChartOfAccount): string {
+    const depth = (root as any).treeDepth || 0;
+    const indent = '\u00A0\u00A0\u00A0\u00A0'.repeat(depth);
     const code = Number(root.account_code);
-    if (code === 110000) return '110000 - Assets';
-    if (code === 210000) return '210000 - Liability';
-    if (code === 310000) return '310000 - Capital and Equity';
-    if (code === 410000) return '410000 - Revenue';
-    if (code === 510000) return '510000 - Expense';
-    return `${code} - ${root.description}`;
+    return `${indent}${code} - ${root.description || ''}`;
   }
 
   // Client-side filtering for AG Grid
@@ -327,8 +315,17 @@ export class ChartOfAccountsComponent implements OnInit {
       }
       this.onCodeChange(this.accountForm.account_code);
 
-      // Prefill earningAccountCode with 310000 if parent is Revenue (410000) or Expense (510000)
-      if (parentCode === 410000 || parentCode === 510000) {
+      // Prefill earningAccountCode with 310000 if parent is Revenue (410000) or Expense (510000) or their children
+      let currentParent = parent;
+      let parentCodeStr = String(currentParent.account_code);
+      while (currentParent && !parentCodeStr.startsWith('41') && !parentCodeStr.startsWith('51') && currentParent.parent_id) {
+        const nextParent = this.rootParents.find(p => p.id === currentParent.parent_id);
+        if (!nextParent || nextParent.id === currentParent.id) break;
+        currentParent = nextParent;
+        parentCodeStr = String(currentParent.account_code);
+      }
+
+      if (parentCodeStr.startsWith('41') || parentCodeStr.startsWith('51')) {
         this.earningAccountCode = 310000;
       } else {
         this.earningAccountCode = null;
@@ -346,8 +343,17 @@ export class ChartOfAccountsComponent implements OnInit {
     if (!this.accountForm.parent_id) return false;
     const parent = this.rootParents.find(p => p.id === this.accountForm.parent_id);
     if (!parent) return false;
-    const code = Number(parent.account_code);
-    return code === 410000 || code === 510000;
+
+    let currentParent = parent;
+    let parentCodeStr = String(currentParent.account_code);
+    while (currentParent && !parentCodeStr.startsWith('41') && !parentCodeStr.startsWith('51') && currentParent.parent_id) {
+      const nextParent = this.rootParents.find(p => p.id === currentParent.parent_id);
+      if (!nextParent || nextParent.id === currentParent.id) break;
+      currentParent = nextParent;
+      parentCodeStr = String(currentParent.account_code);
+    }
+
+    return parentCodeStr.startsWith('41') || parentCodeStr.startsWith('51');
   }
 
   setAccountType(isParent: boolean): void {

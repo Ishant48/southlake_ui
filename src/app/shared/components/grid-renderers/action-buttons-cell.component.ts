@@ -102,39 +102,42 @@ import { ICellRendererParams } from 'ag-grid-community';
   styles: [
     `
       .btn-action-outline {
-        height: 28px;
-        padding: 0 10px;
-        border-radius: 4px;
-        border: 1.5px solid var(--gray-300);
-        color: var(--gray-600);
-        background: var(--white);
+        height: 30px;
+        padding: 0 12px;
+        border-radius: 6px;
+        border: 1px solid #e2e8f0;
+        color: #475569;
+        background: #ffffff;
         font-size: 12px;
         font-weight: 600;
         cursor: pointer;
-        transition: all 0.2s;
+        transition: all 0.15s ease-in-out;
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        box-sizing: border-box;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
         white-space: nowrap;
       }
       .btn-icon-only {
-        width: 28px;
+        width: 30px;
         padding: 0;
+        border-radius: 6px;
       }
       .btn-action-outline:hover {
-        background: var(--gray-100);
-        border-color: var(--gray-400);
-        color: var(--gray-900);
+        background: #f8fafc;
+        border-color: #cbd5e1;
+        color: #0f172a;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.06);
       }
       .btn-action-danger-outline {
-        border-color: var(--red) !important;
-        color: var(--red) !important;
+        border-color: #fecdd3 !important;
+        color: #e11d48 !important;
+        background: #fff1f2 !important;
       }
       .btn-action-danger-outline:hover {
-        background: var(--red-bg) !important;
-        border-color: var(--red) !important;
-        color: var(--red) !important;
+        background: #ffe4e6 !important;
+        border-color: #fda4af !important;
+        color: #be123c !important;
       }
     `,
   ],

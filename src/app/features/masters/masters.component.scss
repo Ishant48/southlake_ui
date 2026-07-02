@@ -35,6 +35,11 @@
   }
 }
 
+.table-wrapper {
+  padding-left: 33px;
+  margin-top: 16px;
+}
+
 /* Entries and Search bar styling */
 .entries-select {
   margin: 0 4px;
@@ -342,5 +347,17 @@
     background-color: rgba(16, 185, 129, 0.08);
     color: #10b981;
     border: 1px solid rgba(16, 185, 129, 0.15);
+  }
+}
+
+/* Grid layout for treaty terms form to prevent layout breaking when ULAE flat rate shows */
+.treaty-form-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 16px;
+
+  .form-field {
+    min-width: 0;
   }
 }

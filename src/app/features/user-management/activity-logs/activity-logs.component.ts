@@ -108,14 +108,14 @@ export class ActivityLogsComponent implements OnInit {
       },
       {
         headerName: 'MODULE',
-        field: 'module_id',
+        field: 'moduleId',
         valueFormatter: params => this.formatModule(params.value),
         flex: 1,
         minWidth: 150,
       },
       {
         headerName: 'ENTITY',
-        field: 'entity_type',
+        field: 'entityType',
         valueFormatter: params => params.value || '-',
         flex: 1,
         minWidth: 150,
@@ -129,7 +129,7 @@ export class ActivityLogsComponent implements OnInit {
       },
       {
         headerName: 'IP ADDRESS',
-        field: 'ip_address',
+        field: 'ipAddress',
         valueFormatter: params => params.value || '-',
         cellClass: 'text-mono',
         flex: 1,
@@ -137,7 +137,7 @@ export class ActivityLogsComponent implements OnInit {
       },
       {
         headerName: 'DATE / TIME',
-        field: 'created_at',
+        field: 'createdAt',
         valueFormatter: params => this.formatDate(params.value),
         flex: 1,
         minWidth: 160,
