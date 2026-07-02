@@ -7,7 +7,9 @@
   background: var(--white, #ffffff);
   border: 1px solid var(--gray-200, #e2e8f0);
   border-radius: 8px;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+  box-shadow:
+    0 4px 6px -1px rgba(0, 0, 0, 0.05),
+    0 2px 4px -1px rgba(0, 0, 0, 0.03);
   padding: 24px;
   margin-bottom: 24px;
   box-sizing: border-box;
@@ -16,7 +18,7 @@
 /* Header Sections */
 .header-card {
   padding: 20px 24px;
-  
+
   h1 {
     font-size: 20px;
     font-weight: 700;
@@ -40,7 +42,7 @@
   font-size: 13.5px;
   font-weight: 500;
   color: var(--gray-500, #64748b);
-  
+
   .active-crumb {
     font-weight: 700;
     color: var(--navy, #0d1b4b);
@@ -134,15 +136,18 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  height: 38px;
+  height: 38px !important;
   padding: 0 16px;
   font-size: 13.5px;
   font-weight: 600;
   border-radius: 6px;
   cursor: pointer;
   transition: all 0.2s ease-in-out;
-  border: 1.5px solid transparent;
-  box-sizing: border-box;
+  border: 1px solid transparent;
+  box-sizing: border-box !important;
+  flex: none;
+  width: auto;
+  white-space: nowrap;
 
   &:disabled {
     opacity: 0.6;
@@ -152,6 +157,7 @@
 
 .btn-primary {
   background: var(--primary-accent, #e05470);
+  border-color: var(--primary-accent, #e05470);
   color: #fff;
 
   &:hover:not(:disabled) {
@@ -238,7 +244,7 @@
   input {
     width: 100%;
     height: 34px;
-    padding: 0 32px 0 12px;
+    padding: 0 12px 0 32px;
     border: 1px solid var(--gray-300, #cbd5e1);
     border-radius: 4px;
     font-size: 13px;
@@ -253,7 +259,8 @@
 
   .search-icon {
     position: absolute;
-    right: 10px;
+    left: 10px;
+    right: auto;
     top: 50%;
     transform: translateY(-50%);
     width: 14px;
@@ -275,7 +282,8 @@
   font-size: 13.5px;
   text-align: left;
 
-  th, td {
+  th,
+  td {
     padding: 12px 16px;
     border-bottom: 1px solid var(--gray-200, #e2e8f0);
     box-sizing: border-box;
@@ -293,7 +301,7 @@
 
   tbody tr {
     transition: background 0.15s ease-in-out;
-    
+
     &:hover {
       background: var(--gray-50, #f8fafc);
     }
@@ -338,10 +346,19 @@
   }
 }
 
-.text-center { text-align: center; }
-.py-4 { padding-top: 1.5rem; padding-bottom: 1.5rem; }
-.text-success { color: #10b981 !important; }
-.text-danger { color: #dc2626 !important; }
+.text-center {
+  text-align: center;
+}
+.py-4 {
+  padding-top: 1.5rem;
+  padding-bottom: 1.5rem;
+}
+.text-success {
+  color: #10b981 !important;
+}
+.text-danger {
+  color: #dc2626 !important;
+}
 
 /* Table Footer & Pagination */
 .table-footer {
@@ -404,8 +421,9 @@
   width: 100%;
   border-collapse: collapse;
   font-size: 13px;
-  
-  th, td {
+
+  th,
+  td {
     border: 1px solid var(--gray-200, #e2e8f0);
     padding: 8px 10px;
     vertical-align: middle;
@@ -472,6 +490,8 @@
     cursor: pointer;
     font-size: 13.5px;
     color: var(--gray-800, #1e293b);
+    -webkit-appearance: none;
+    appearance: none;
   }
 
   &::after {
@@ -608,7 +628,9 @@
 .modal-card {
   background: #fff;
   border-radius: 8px;
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  box-shadow:
+    0 20px 25px -5px rgba(0, 0, 0, 0.1),
+    0 10px 10px -5px rgba(0, 0, 0, 0.04);
   width: 100%;
   max-width: 480px;
   overflow: hidden;
@@ -688,9 +710,12 @@
   padding: 16px 24px;
   background: var(--gray-50, #f8fafc);
   border-top: 1px solid var(--gray-100, #f1f5f9);
-  display: flex;
-  justify-content: flex-end;
-  gap: 12px;
+  text-align: right;
+
+  .btn {
+    margin-left: 12px;
+    vertical-align: middle;
+  }
 }
 
 /* Animations */
@@ -706,8 +731,12 @@
 }
 
 @keyframes modalFadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes modalSlideUp {

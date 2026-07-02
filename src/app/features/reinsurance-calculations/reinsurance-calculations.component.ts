@@ -11,7 +11,7 @@ import { MastersService } from '../../core/services/masters.service';
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './reinsurance-calculations.component.html',
-  styleUrl: './reinsurance-calculations.component.scss'
+  styleUrl: './reinsurance-calculations.component.scss',
 })
 export class ReinsuranceCalculationsComponent implements OnInit {
   private service = inject(ReinsuranceService);
@@ -52,7 +52,7 @@ export class ReinsuranceCalculationsComponent implements OnInit {
   loadWorkbooks(): void {
     this.loading = true;
     this.service.getWorkbooks().subscribe({
-      next: (res) => {
+      next: res => {
         this.workbooks = (res || []).filter((w: any) => w.source !== 'ITD');
         this.loading = false;
         if (this.workbooks.length > 0 && !this.selectedWorkbookId) {
@@ -65,13 +65,15 @@ export class ReinsuranceCalculationsComponent implements OnInit {
         this.toast.error('Failed to load workbooks');
         this.loading = false;
         this.cdr.markForCheck();
-      }
+      },
     });
   }
 
   deleteWorkbook(): void {
     if (!this.selectedWorkbookId) return;
-    const confirmDelete = confirm('Are you sure you want to delete this workbook and all its state exhibits?');
+    const confirmDelete = confirm(
+      'Are you sure you want to delete this workbook and all its state exhibits?',
+    );
     if (!confirmDelete) return;
 
     this.loading = true;
@@ -86,7 +88,7 @@ export class ReinsuranceCalculationsComponent implements OnInit {
         this.toast.error('Failed to delete workbook');
         this.loading = false;
         this.cdr.markForCheck();
-      }
+      },
     });
   }
 
@@ -95,7 +97,7 @@ export class ReinsuranceCalculationsComponent implements OnInit {
     this.loading = true;
     this.isPosted = false;
     this.service.getWorkbook(this.selectedWorkbookId).subscribe({
-      next: (res) => {
+      next: res => {
         this.selectedWorkbook = res;
         this.ratesForm = { ...res.rates };
         this.mappingsForm = {
@@ -105,28 +107,31 @@ export class ReinsuranceCalculationsComponent implements OnInit {
           comp: res.comp,
           cc: res.cc,
           ext: res.ext,
-          sub: res.sub
+          sub: res.sub,
         };
 
         // Load treaties to filter states
         this.mastersService.getTreaties().subscribe({
-          next: (treaties) => {
-            const matchingTreaty = treaties.find(t => t.name?.trim().toLowerCase() === res.program?.trim().toLowerCase());
-            
+          next: treaties => {
+            const matchingTreaty = treaties.find(
+              t => t.name?.trim().toLowerCase() === res.program?.trim().toLowerCase(),
+            );
+
             // Extract states from exhibits
             if (res.state_exhibits) {
               const codes = res.state_exhibits.map((e: any) => e.state_code);
               const rawStates = ['TOTAL', ...codes.filter((c: string) => c !== 'TOTAL').sort()];
-              
+
               if (matchingTreaty) {
-                const treatyStatesAbbrs = (matchingTreaty.treaty_states || []).map((s: any) => 
-                  (s.state?.state_abbr || s.state_abbr || '').toUpperCase()
-                ).filter(Boolean);
-                
-                this.states = rawStates.filter(s => 
-                  s === 'TOTAL' || 
-                  treatyStatesAbbrs.includes(s.toUpperCase()) ||
-                  (s === '5' && treatyStatesAbbrs.includes('CA'))
+                const treatyStatesAbbrs = (matchingTreaty.treaty_states || [])
+                  .map((s: any) => (s.state?.state_abbr || s.state_abbr || '').toUpperCase())
+                  .filter(Boolean);
+
+                this.states = rawStates.filter(
+                  s =>
+                    s === 'TOTAL' ||
+                    treatyStatesAbbrs.includes(s.toUpperCase()) ||
+                    (s === '5' && treatyStatesAbbrs.includes('CA')),
                 );
               } else {
                 this.states = rawStates;
@@ -162,14 +167,14 @@ export class ReinsuranceCalculationsComponent implements OnInit {
             }
 
             this.loadActiveTabCalculations();
-          }
+          },
         });
       },
       error: () => {
         this.toast.error('Failed to load workbook details');
         this.loading = false;
         this.cdr.markForCheck();
-      }
+      },
     });
   }
 
@@ -200,7 +205,9 @@ export class ReinsuranceCalculationsComponent implements OnInit {
     this.cdr.markForCheck();
 
     // Populate required parameters form from current state exhibit
-    const curEx = this.selectedWorkbook?.state_exhibits?.find((e: any) => e.state_code === this.selectedState);
+    const curEx = this.selectedWorkbook?.state_exhibits?.find(
+      (e: any) => e.state_code === this.selectedState,
+    );
     if (curEx) {
       this.currentStateExhibitObj = curEx;
       this.paramsForm = {
@@ -210,13 +217,13 @@ export class ReinsuranceCalculationsComponent implements OnInit {
         loss_ibnr: curEx.loss_ibnr?.[0] || 0,
         lae_ibnr_dcc: curEx.lae_ibnr_dcc?.[0] || 0,
         lae_ibnr_aoe: curEx.lae_ibnr_aoe?.[0] || 0,
-        ulae_ibnr: curEx.ulae_ibnr?.[0] || 0
+        ulae_ibnr: curEx.ulae_ibnr?.[0] || 0,
       };
     }
 
     if (this.activeTab === 'statement') {
       this.service.getReinsuranceStatement(this.selectedWorkbookId, this.selectedState).subscribe({
-        next: (res) => {
+        next: res => {
           this.statementRows = res;
           this.loading = false;
           this.cdr.markForCheck();
@@ -224,11 +231,11 @@ export class ReinsuranceCalculationsComponent implements OnInit {
         error: () => {
           this.loading = false;
           this.cdr.markForCheck();
-        }
+        },
       });
     } else if (this.activeTab === 'glje') {
       this.service.getGLJournalEntries(this.selectedWorkbookId, this.selectedState).subscribe({
-        next: (res) => {
+        next: res => {
           this.gljeRows = res;
           this.loading = false;
           this.cdr.markForCheck();
@@ -236,11 +243,11 @@ export class ReinsuranceCalculationsComponent implements OnInit {
         error: () => {
           this.loading = false;
           this.cdr.markForCheck();
-        }
+        },
       });
     } else if (this.activeTab === 'cash') {
       this.service.getCashSettlementCalculations(this.selectedWorkbookId).subscribe({
-        next: (res) => {
+        next: res => {
           this.cashSettlement = res;
           this.loading = false;
           this.cdr.markForCheck();
@@ -248,7 +255,7 @@ export class ReinsuranceCalculationsComponent implements OnInit {
         error: () => {
           this.loading = false;
           this.cdr.markForCheck();
-        }
+        },
       });
     } else {
       this.loading = false;
@@ -260,8 +267,11 @@ export class ReinsuranceCalculationsComponent implements OnInit {
     if (!this.selectedWorkbookId || !this.selectedState) return;
     this.loading = true;
 
-    const curEx = this.selectedWorkbook?.state_exhibits?.find((e: any) => e.state_code === this.selectedState) || {};
-    const getArr = (arr: any) => arr && Array.isArray(arr) ? [...arr] : [0, 0, 0];
+    const curEx =
+      this.selectedWorkbook?.state_exhibits?.find(
+        (e: any) => e.state_code === this.selectedState,
+      ) || {};
+    const getArr = (arr: any) => (arr && Array.isArray(arr) ? [...arr] : [0, 0, 0]);
 
     const pw = getArr(curEx.pw);
     pw[1] = Number(this.paramsForm.pw || 0);
@@ -298,7 +308,7 @@ export class ReinsuranceCalculationsComponent implements OnInit {
       loss_ibnr,
       lae_ibnr_dcc,
       lae_ibnr_aoe,
-      ulae_ibnr
+      ulae_ibnr,
     };
 
     this.service.updateExhibit(this.selectedWorkbookId, this.selectedState, exData).subscribe({
@@ -310,7 +320,7 @@ export class ReinsuranceCalculationsComponent implements OnInit {
         this.toast.error('Failed to update parameters');
         this.loading = false;
         this.cdr.markForCheck();
-      }
+      },
     });
   }
 
@@ -326,7 +336,7 @@ export class ReinsuranceCalculationsComponent implements OnInit {
         this.toast.error('Failed to update rates');
         this.loading = false;
         this.cdr.markForCheck();
-      }
+      },
     });
   }
 
@@ -342,7 +352,7 @@ export class ReinsuranceCalculationsComponent implements OnInit {
         this.toast.error('Failed to update mappings');
         this.loading = false;
         this.cdr.markForCheck();
-      }
+      },
     });
   }
 
@@ -351,7 +361,7 @@ export class ReinsuranceCalculationsComponent implements OnInit {
     this.loading = true;
     const data = {
       begBal: Number(this.cashSettlement.beg_bal || 0),
-      amtPaid: Number(this.cashSettlement.amt_paid || 0)
+      amtPaid: Number(this.cashSettlement.amt_paid || 0),
     };
     this.service.updateCashSettlement(this.selectedWorkbookId, data).subscribe({
       next: () => {
@@ -362,7 +372,7 @@ export class ReinsuranceCalculationsComponent implements OnInit {
         this.toast.error('Failed to update cash settlement balances');
         this.loading = false;
         this.cdr.markForCheck();
-      }
+      },
     });
   }
 
@@ -374,20 +384,22 @@ export class ReinsuranceCalculationsComponent implements OnInit {
     // Call post to journal entries endpoint directly
     const url = `${this.service['apiUrl']}/workbooks/${this.selectedWorkbookId}/post-to-journal-entries/${this.selectedState}`;
     this.service['http'].post<any>(url, { customRows: this.gljeRows }).subscribe({
-      next: (batch) => {
-        this.toast.success(`Successfully posted ceding entries to Journal Entry batch: ${batch.batch_number}`);
+      next: batch => {
+        this.toast.success(
+          `Successfully posted ceding entries to Journal Entry batch: ${batch.batch_number}`,
+        );
         this.postingBatch = false;
         this.isPosted = true;
         this.cdr.markForCheck();
         // Redirect to Manual Journal Entries Workspace with batchId query param
         this.router.navigate(['/journal-entries'], { queryParams: { batchId: batch.id } });
       },
-      error: (err) => {
+      error: err => {
         const msg = err.error?.message || 'Failed to post to journal entries';
         this.toast.error(msg);
         this.postingBatch = false;
         this.cdr.markForCheck();
-      }
+      },
     });
   }
 
@@ -404,7 +416,7 @@ export class ReinsuranceCalculationsComponent implements OnInit {
       sub: this.selectedWorkbook?.sub || '',
       debit: null,
       credit: null,
-      isNew: true
+      isNew: true,
     });
     this.isPosted = false;
     this.cdr.markForCheck();
@@ -433,7 +445,7 @@ export class ReinsuranceCalculationsComponent implements OnInit {
   exportGLJECSV(): void {
     if (this.gljeRows.length === 0) return;
     let csv = 'Account Description,Comp,ACCOUNT,CC,MGA,LOB,ST,EXT,Sub,Description,Debit,Credit\n';
-    
+
     let totalDebit = 0;
     let totalCredit = 0;
 
@@ -451,7 +463,7 @@ export class ReinsuranceCalculationsComponent implements OnInit {
     link.href = URL.createObjectURL(blob);
     link.setAttribute(
       'download',
-      `GL_JE_Mapping_${this.selectedWorkbook?.program || 'Treaty'}_${this.selectedWorkbook?.month_key || 'Period'}_${this.selectedState}.csv`
+      `GL_JE_Mapping_${this.selectedWorkbook?.program || 'Treaty'}_${this.selectedWorkbook?.month_key || 'Period'}_${this.selectedState}.csv`,
     );
     link.click();
   }
@@ -463,7 +475,7 @@ export class ReinsuranceCalculationsComponent implements OnInit {
     const isNegative = num < 0;
     const formatted = new Intl.NumberFormat('en-US', {
       minimumFractionDigits: 2,
-      maximumFractionDigits: 2
+      maximumFractionDigits: 2,
     }).format(Math.abs(num));
     return isNegative ? `-$${formatted}` : `$${formatted}`;
   }

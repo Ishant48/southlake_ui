@@ -27,7 +27,7 @@
   overflow: hidden;
 
   &::before {
-    content: '';
+    content: "";
     position: absolute;
     width: 340px;
     height: 340px;
@@ -38,7 +38,7 @@
   }
 
   &::after {
-    content: '';
+    content: "";
     position: absolute;
     width: 200px;
     height: 200px;
@@ -265,7 +265,8 @@
   font-size: 12.5px;
   margin-top: 14px;
 
-  a, button {
+  a,
+  button {
     color: var(--coral);
     font-weight: 700;
     cursor: pointer;
@@ -306,7 +307,9 @@
   font-size: 14.5px;
   font-weight: 500;
   cursor: pointer;
-  transition: background var(--transition), color var(--transition);
+  transition:
+    background var(--transition),
+    color var(--transition);
   display: flex;
   align-items: center;
   justify-content: center;

@@ -1,6 +1,6 @@
 <div class="journal-entries-container">
   <!-- VIEW 1: BATCH REGISTER LIST VIEW -->
-  @if (currentView === 'list') {
+  @if (currentView === "list") {
     <div class="card header-card">
       <div class="header-title-section">
         <h1>Journal Entry Register</h1>
@@ -10,7 +10,7 @@
         <div class="filter-item">
           <label>Period:</label>
           <div class="select-wrapper">
-            <select [(ngModel)]="selectedPeriod" (change)="onFilterChange()">
+            <select [(ngModel)]="selectedPeriod" (ngModelChange)="onFilterChange()">
               @for (p of periods; track p) {
                 <option [value]="p">{{ p }}</option>
               }
@@ -22,7 +22,7 @@
         <div class="filter-item">
           <label>Agent Name:</label>
           <div class="select-wrapper">
-            <select [(ngModel)]="selectedAgent" (change)="onFilterChange()">
+            <select [(ngModel)]="selectedAgent" (ngModelChange)="onFilterChange()">
               @for (a of agentsList; track a) {
                 <option [value]="a">{{ a }}</option>
               }
@@ -42,78 +42,37 @@
     </div>
 
     <div class="card table-card">
-      <div class="table-toolbar">
-        <div class="entries-control">
-          <span>Show</span>
-          <select>
-            <option value="25">25</option>
-            <option value="50">50</option>
-            <option value="100">100</option>
-          </select>
-          <span>entries</span>
-        </div>
+      <div class="filters-bar">
         <div class="search-control">
-          <input type="text" [(ngModel)]="searchTerm" (ngModelChange)="loadBatches()" placeholder="Search here">
-          <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          <input type="text" [(ngModel)]="searchTerm" (ngModelChange)="loadBatches()" placeholder="Search here" />
+          <svg
+            class="search-icon"
+            width="15"
+            height="15"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <circle cx="11" cy="11" r="8" />
+            <line x1="21" y1="21" x2="16.65" y2="16.65" />
           </svg>
         </div>
       </div>
 
-      <div class="table-responsive">
-        <table class="data-table">
-          <thead>
-            <tr>
-              <th style="width: 60px;">#</th>
-              <th>Batch</th>
-              <th>Amount</th>
-              <th>Count</th>
-              <th style="text-align: right; width: 350px;">Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            @if (loading) {
-              <tr>
-                <td colspan="5" class="text-center py-4">Loading batches...</td>
-              </tr>
-            } @else if (batches.length === 0) {
-              <tr>
-                <td colspan="5" class="text-center py-4">No batches found for this selection.</td>
-              </tr>
-            } @else {
-              @for (b of batches; track b.id; let idx = $index) {
-                <tr>
-                  <td>{{ idx + 1 }}</td>
-                  <td><strong class="text-link" (click)="viewBatchDetails(b)">{{ b.batch_number }}</strong></td>
-                  <td>{{ formatCurrency(b.total_amount) }}</td>
-                  <td>{{ b.count }}</td>
-                  <td style="text-align: right;">
-                    <button class="btn-table" (click)="viewBatchDetails(b)">Edit</button>
-                    <button class="btn-table" (click)="viewBatchDetails(b)">Journal Entry</button>
-                    <button class="btn-table btn-table-danger" (click)="deleteBatch(b, $event)">Delete</button>
-                  </td>
-                </tr>
-              }
-            }
-          </tbody>
-        </table>
-      </div>
-
-      <div class="table-footer">
-        <div class="showing-info">
-          Showing 1 to {{ batches.length }} of {{ batches.length }} entries
-        </div>
-        <div class="pagination">
-          <button class="btn-page" disabled>< Previous</button>
-          <button class="btn-page active">1</button>
-          <button class="btn-page" disabled>Next ></button>
-        </div>
-      </div>
+      <ag-grid-angular
+        style="display: block; width: 100%"
+        class="ag-theme-alpine"
+        [domLayout]="'autoHeight'"
+        [gridOptions]="gridOptions"
+        [rowData]="batches"
+        [columnDefs]="batchColDefs"
+      ></ag-grid-angular>
     </div>
   }
 
   <!-- VIEW 2: BATCH DETAIL ENTRIES VIEW -->
-  @if (currentView === 'detail') {
+  @if (currentView === "detail") {
     <div class="card header-card">
       <div class="detail-header-row">
         <h1>Journal Entry</h1>
@@ -139,7 +98,11 @@
         </div>
         <div class="metric-box">
           <span class="metric-label">Diff:</span>
-          <span class="metric-val" [class.text-success]="batchDifference === 0" [class.text-danger]="batchDifference > 0">
+          <span
+            class="metric-val"
+            [class.text-success]="batchDifference === 0"
+            [class.text-danger]="batchDifference > 0"
+          >
             {{ formatCurrency(batchDifference) }}
           </span>
         </div>
@@ -151,90 +114,42 @@
     </div>
 
     <div class="card table-card">
-      <div class="table-toolbar">
-        <div class="entries-control">
-          <span>Show</span>
-          <select>
-            <option value="25">25</option>
-            <option value="50">50</option>
-            <option value="100">100</option>
-          </select>
-          <span>entries</span>
-        </div>
+      <div class="filters-bar">
         <div class="search-control">
-          <input type="text" placeholder="Search here">
-          <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          <input type="text" placeholder="Search here" />
+          <svg
+            class="search-icon"
+            width="15"
+            height="15"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <circle cx="11" cy="11" r="8" />
+            <line x1="21" y1="21" x2="16.65" y2="16.65" />
           </svg>
         </div>
       </div>
 
-      <div class="table-responsive">
-        <table class="data-table">
-          <thead>
-            <tr>
-              <th>Journal</th>
-              <th>Description</th>
-              <th>G/L</th>
-              <th>Sub</th>
-              <th>Debit</th>
-              <th>Credit</th>
-              <th>Date</th>
-              <th>DP</th>
-              <th>Policy</th>
-              <th style="text-align: right;">Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            @if (loadingEntries) {
-              <tr>
-                <td colspan="10" class="text-center py-4">Loading entries...</td>
-              </tr>
-            } @else if (entries.length === 0) {
-              <tr>
-                <td colspan="10" class="text-center py-4">No entries in this batch. Click Add to create one.</td>
-              </tr>
-            } @else {
-              @for (entry of entries; track entry.id) {
-                <tr>
-                  <td>{{ entry.je_number }}</td>
-                  <td>{{ entry.description }}</td>
-                  <td>{{ entry.coa?.account_code }}</td>
-                  <td>{{ entry.sub || '-' }}</td>
-                  <td>{{ entry.debit ? formatCurrency(entry.debit) : '' }}</td>
-                  <td>{{ entry.credit ? formatCurrency(entry.credit) : '' }}</td>
-                  <td>{{ entry.date }}</td>
-                  <td>{{ entry.dp || '-' }}</td>
-                  <td>{{ entry.policy || '-' }}</td>
-                  <td style="text-align: right;">
-                    <button class="btn-table" (click)="editJournalEntry(entry)">Edit</button>
-                  </td>
-                </tr>
-              }
-            }
-          </tbody>
-        </table>
-      </div>
-
-      <div class="table-footer">
-        <div class="showing-info">
-          Showing 1 to {{ entries.length }} of {{ entries.length }} entries
-        </div>
-        <div class="pagination">
-          <button class="btn-page" disabled>< Previous</button>
-          <button class="btn-page active">1</button>
-          <button class="btn-page" disabled>Next ></button>
-        </div>
-      </div>
+      <ag-grid-angular
+        style="display: block; width: 100%"
+        class="ag-theme-alpine"
+        [domLayout]="'autoHeight'"
+        [gridOptions]="gridOptions"
+        [rowData]="entries"
+        [columnDefs]="entriesColDefs"
+      ></ag-grid-angular>
     </div>
   }
 
   <!-- VIEW 3: ADD/EDIT ENTRIES SPREADSHEET FORM VIEW -->
-  @if (currentView === 'form') {
+  @if (currentView === "form") {
     <div class="card header-card">
       <div class="detail-header-row">
         <div class="breadcrumb-nav">
-          Journal Entry Register / Journal Entry / <span class="active-crumb">{{ isEditingForm ? 'Edit' : 'Add New' }}</span>
+          Journal Entry Register / Journal Entry /
+          <span class="active-crumb">{{ isEditingForm ? "Edit" : "Add New" }}</span>
         </div>
         <button class="btn btn-dark" (click)="cancelForm()">Back to List</button>
       </div>
@@ -245,26 +160,26 @@
         <table class="spreadsheet-table">
           <thead>
             <tr>
-              <th style="width: 100px;">JE Number</th>
+              <th style="width: 100px">JE Number</th>
               <th>Description</th>
-              <th style="width: 250px;">GL Number</th>
-              <th style="width: 130px;">Sub</th>
-              <th style="width: 130px;">Debit</th>
-              <th style="width: 130px;">Credit</th>
-              <th style="width: 160px;">Date</th>
-              <th style="width: 100px;">DP</th>
+              <th style="width: 250px">GL Number</th>
+              <th style="width: 130px">Sub</th>
+              <th style="width: 130px">Debit</th>
+              <th style="width: 130px">Credit</th>
+              <th style="width: 160px">Date</th>
+              <th style="width: 100px">DP</th>
               <th>Memo</th>
-              <th style="width: 140px; text-align: center;">Copy</th>
+              <th style="width: 140px; text-align: center">Copy</th>
             </tr>
           </thead>
           <tbody>
             @for (row of formEntries; track row.rowId; let idx = $index) {
               <tr>
                 <td>
-                  <input type="number" class="form-control" [(ngModel)]="row.je_number" readonly>
+                  <input type="number" class="form-control" [(ngModel)]="row.je_number" readonly />
                 </td>
                 <td>
-                  <input type="text" class="form-control" [(ngModel)]="row.description" placeholder="description">
+                  <input type="text" class="form-control" [(ngModel)]="row.description" placeholder="description" />
                 </td>
                 <td>
                   <app-dropdown-search
@@ -286,47 +201,57 @@
                     [(selectedValue)]="row.sub"
                   ></app-dropdown-search>
                 </td>
-                 <td>
-                  <input type="number" class="form-control" [(ngModel)]="row.debit" placeholder="debit"
-                    [disabled]="row.credit !== null && row.credit !== '' && row.credit !== 0">
+                <td>
+                  <input
+                    type="number"
+                    class="form-control"
+                    [(ngModel)]="row.debit"
+                    placeholder="debit"
+                    [disabled]="row.credit !== null && row.credit !== '' && row.credit !== 0"
+                  />
                 </td>
                 <td>
-                  <input type="number" class="form-control" [(ngModel)]="row.credit" placeholder="credit"
-                    [disabled]="row.debit !== null && row.debit !== '' && row.debit !== 0">
+                  <input
+                    type="number"
+                    class="form-control"
+                    [(ngModel)]="row.credit"
+                    placeholder="credit"
+                    [disabled]="row.debit !== null && row.debit !== '' && row.debit !== 0"
+                  />
                 </td>
                 <td>
                   <div class="date-input-wrapper">
-                    <input type="date" class="form-control" [(ngModel)]="row.date">
+                    <input type="date" class="form-control" [(ngModel)]="row.date" />
                   </div>
                 </td>
                 <td>
-                  <input type="text" class="form-control" [(ngModel)]="row.dp" placeholder="DP">
+                  <input type="text" class="form-control" [(ngModel)]="row.dp" placeholder="DP" />
                 </td>
                 <td>
-                  <input type="text" class="form-control" [(ngModel)]="row.memo" placeholder="memo">
+                  <input type="text" class="form-control" [(ngModel)]="row.memo" placeholder="memo" />
                 </td>
-                <td style="text-align: center; vertical-align: middle;">
+                <td style="text-align: center; vertical-align: middle">
                   <div class="action-icons-row">
                     <!-- Duplicate Row Icon -->
                     <button class="btn-icon" title="Duplicate Row" (click)="copyRow(idx)">
                       <svg class="action-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
-                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
                       </svg>
                     </button>
                     <!-- Delete Row Icon -->
                     <button class="btn-icon text-danger" title="Delete Row" (click)="deleteRow(idx)">
                       <svg class="action-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <polyline points="3 6 5 6 21 6"/>
-                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                        <polyline points="3 6 5 6 21 6" />
+                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
                       </svg>
                     </button>
                     <!-- Add Row Icon -->
                     @if (idx === formEntries.length - 1) {
                       <button class="btn-icon text-primary" title="Add New Row" (click)="addRow()">
                         <svg class="action-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                          <line x1="12" y1="5" x2="12" y2="19"/>
-                          <line x1="5" y1="12" x2="19" y2="12"/>
+                          <line x1="12" y1="5" x2="12" y2="19" />
+                          <line x1="5" y1="12" x2="19" y2="12" />
                         </svg>
                       </button>
                     }
@@ -350,7 +275,11 @@
         </div>
         <div class="balance-metric">
           <span class="metric-title">Difference:</span>
-          <span class="metric-amount" [class.text-success]="formDifference === 0" [class.text-danger]="formDifference > 0">
+          <span
+            class="metric-amount"
+            [class.text-success]="formDifference === 0"
+            [class.text-danger]="formDifference > 0"
+          >
             {{ formatCurrency(formDifference) }}
           </span>
         </div>
@@ -364,8 +293,12 @@
       </div>
 
       <div class="form-actions-row">
-        <button class="btn btn-primary" [disabled]="!isFormBalanced || submittingEntries" (click)="postJournalEntries()">
-          {{ submittingEntries ? 'Posting...' : 'Post' }}
+        <button
+          class="btn btn-primary"
+          [disabled]="!isFormBalanced || submittingEntries"
+          (click)="postJournalEntries()"
+        >
+          {{ submittingEntries ? "Posting..." : "Post" }}
         </button>
         <button class="btn btn-cancel" (click)="cancelForm()">Cancel</button>
       </div>
@@ -383,12 +316,12 @@
         <div class="modal-body">
           <div class="form-group">
             <label>Process Period</label>
-            <input type="text" class="form-control" [value]="selectedPeriod" readonly>
+            <input type="text" class="form-control" [value]="selectedPeriod" readonly />
           </div>
         </div>
         <div class="modal-footer">
           <button class="btn btn-primary" [disabled]="submittingBatch" (click)="createBatch()">
-            {{ submittingBatch ? 'Adding...' : 'Add' }}
+            {{ submittingBatch ? "Adding..." : "Add" }}
           </button>
           <button class="btn btn-cancel" (click)="closeAddBatch()">Cancel</button>
         </div>
@@ -402,6 +335,6 @@
     [title]="confirmTitle"
     [message]="confirmMessage"
     (confirmed)="onConfirmed()"
-    (cancelled)="onCancelled()">
-  </app-confirm-dialog>
+    (cancelled)="onCancelled()"
+  ></app-confirm-dialog>
 </div>

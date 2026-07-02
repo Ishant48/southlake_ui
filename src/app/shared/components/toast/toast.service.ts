@@ -20,10 +20,18 @@ export class ToastService {
     setTimeout(() => this.dismiss(id), 4000);
   }
 
-  success(message: string, title?: string): void { this.show('success', message, title); }
-  error(message: string, title?: string): void { this.show('error', message, title); }
-  warning(message: string, title?: string): void { this.show('warning', message, title); }
-  info(message: string, title?: string): void { this.show('info', message, title); }
+  success(message: string, title?: string): void {
+    this.show('success', message, title);
+  }
+  error(message: string, title?: string): void {
+    this.show('error', message, title);
+  }
+  warning(message: string, title?: string): void {
+    this.show('warning', message, title);
+  }
+  info(message: string, title?: string): void {
+    this.show('info', message, title);
+  }
 
   dismiss(id: string): void {
     this.toastsSubject.next(this.toastsSubject.value.filter(t => t.id !== id));

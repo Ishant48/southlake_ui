@@ -70,12 +70,16 @@ export class UserDetailPanelComponent implements OnChanges {
       master_data: 'Master Data',
       journal_entry: 'Journal Entries',
       reinsurance: 'Premium and claims Exhibits',
-      general: 'General'
+      general: 'General',
     };
-    return Object.entries(groups).map(([prefix, perms]) => ({
-      moduleName: MODULE_NAMES[prefix] || (prefix.charAt(0).toUpperCase() + prefix.slice(1).replace(/_/g, ' ')),
-      permissions: perms
-    })).sort((a, b) => a.moduleName.localeCompare(b.moduleName));
+    return Object.entries(groups)
+      .map(([prefix, perms]) => ({
+        moduleName:
+          MODULE_NAMES[prefix] ||
+          prefix.charAt(0).toUpperCase() + prefix.slice(1).replace(/_/g, ' '),
+        permissions: perms,
+      }))
+      .sort((a, b) => a.moduleName.localeCompare(b.moduleName));
   }
 
   expandedGroups = new Set<string>();
@@ -199,7 +203,11 @@ export class UserDetailPanelComponent implements OnChanges {
       let initials = '';
       const parts = this.editName.trim().split(/\s+/);
       if (parts.length > 1) {
-        initials = parts.map(p => p[0]).join('').slice(0, 4).toUpperCase();
+        initials = parts
+          .map(p => p[0])
+          .join('')
+          .slice(0, 4)
+          .toUpperCase();
       } else if (parts.length === 1 && parts[0]) {
         initials = parts[0].slice(0, 2).toUpperCase();
       }

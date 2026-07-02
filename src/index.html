@@ -1,13 +1,23 @@
 <!doctype html>
 <html lang="en">
-<head>
-  <meta charset="utf-8">
-  <title>Southlake Insurance</title>
-  <base href="/">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="icon" type="image/x-icon" href="favicon.ico">
-</head>
-<body>
-  <app-root></app-root>
-</body>
+  <head>
+    <meta charset="utf-8" />
+    <title>Southlake Insurance</title>
+    <base href="/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" type="image/x-icon" href="favicon.ico" />
+  </head>
+  <body>
+    <app-root></app-root>
+    <script>
+      // Globally fix date pickers so clicking anywhere on the input opens the native calendar
+      document.addEventListener("click", function (e) {
+        if (e.target && e.target.matches('input[type="date"]')) {
+          try {
+            e.target.showPicker();
+          } catch (err) {}
+        }
+      });
+    </script>
+  </body>
 </html>

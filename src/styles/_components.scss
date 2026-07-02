@@ -24,14 +24,28 @@
 }
 
 @keyframes toastSlideIn {
-  from { transform: translateX(40px); opacity: 0; }
-  to { transform: translateX(0); opacity: 1; }
+  from {
+    transform: translateX(40px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
 }
 
-.toast-success { border-left-color: var(--green); }
-.toast-error { border-left-color: var(--red); }
-.toast-warning { border-left-color: var(--orange); }
-.toast-info { border-left-color: var(--navy); }
+.toast-success {
+  border-left-color: var(--green);
+}
+.toast-error {
+  border-left-color: var(--red);
+}
+.toast-warning {
+  border-left-color: var(--orange);
+}
+.toast-info {
+  border-left-color: var(--navy);
+}
 
 /* Slide Panel */
 .panel-overlay {
@@ -86,7 +100,9 @@
   align-items: center;
   justify-content: center;
   color: var(--gray-500);
-  transition: background var(--transition), color var(--transition);
+  transition:
+    background var(--transition),
+    color var(--transition);
 
   &:hover {
     background: var(--gray-100);
@@ -138,8 +154,14 @@
 }
 
 @keyframes modalFadeIn {
-  from { transform: scale(0.97); opacity: 0; }
-  to { transform: scale(1); opacity: 1; }
+  from {
+    transform: scale(0.97);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
 
 /* Loading Spinner */
@@ -152,7 +174,9 @@
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* Avatar */
@@ -177,9 +201,18 @@
   white-space: nowrap;
 }
 
-.status-active { background: var(--green-bg); color: var(--green); }
-.status-inactive { background: var(--gray-200); color: var(--gray-600); }
-.status-pending { background: var(--orange-bg); color: var(--orange); }
+.status-active {
+  background: var(--green-bg);
+  color: var(--green);
+}
+.status-inactive {
+  background: var(--gray-200);
+  color: var(--gray-600);
+}
+.status-pending {
+  background: var(--orange-bg);
+  color: var(--orange);
+}
 
 /* Role Badge */
 .role-badge {
@@ -206,7 +239,9 @@
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
-  transition: background var(--transition), opacity var(--transition);
+  transition:
+    background var(--transition),
+    opacity var(--transition);
   white-space: nowrap;
 
   &:hover:not(:disabled) {
@@ -259,8 +294,14 @@
 }
 
 @keyframes dialogFadeIn {
-  from { transform: scale(0.95); opacity: 0; }
-  to { transform: scale(1); opacity: 1; }
+  from {
+    transform: scale(0.95);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
 
 /* Form Fields */

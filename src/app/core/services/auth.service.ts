@@ -14,7 +14,10 @@ export class AuthService {
   private router = inject(Router);
 
   login(email: string, password: string): Observable<{ message: string }> {
-    return this.http.post<{ message: string }>(`${environment.apiUrl}/auth/login`, { email, password });
+    return this.http.post<{ message: string }>(`${environment.apiUrl}/auth/login`, {
+      email,
+      password,
+    });
   }
 
   verifyOtp(email: string, otp: string): Observable<SessionToken> {
@@ -58,9 +61,12 @@ export class AuthService {
   hasPermission(moduleOrPermission: string, action?: string): boolean {
     const user = this.getCurrentUser();
     if (!user) return false;
-    
+
     // Super Admin has full access unconditionally
-    if (user.role && (user.role === 'superadmin' || user.role.name === 'superadmin' || user.is_super_admin)) {
+    if (
+      user.role &&
+      (user.role === 'superadmin' || user.role.name === 'superadmin' || user.is_super_admin)
+    ) {
       return true;
     }
 
@@ -70,22 +76,31 @@ export class AuthService {
         return user.effective_permissions.includes(moduleOrPermission);
       }
       if (user.permissions && Array.isArray(user.permissions)) {
-        return user.permissions.includes(moduleOrPermission) || 
-               user.permissions.some((p: any) => typeof p === 'object' && p.action === moduleOrPermission) ||
-               user.permissions.some((p: any) => typeof p === 'object' && `${p.module_id}.${p.action}` === moduleOrPermission);
+        return (
+          user.permissions.includes(moduleOrPermission) ||
+          user.permissions.some(
+            (p: any) => typeof p === 'object' && p.action === moduleOrPermission,
+          ) ||
+          user.permissions.some(
+            (p: any) =>
+              typeof p === 'object' && `${p.module_id}.${p.action}` === moduleOrPermission,
+          )
+        );
       }
       return false;
     }
-    
+
     // 2-argument signature: checks user.permissions for module/action pair
     if (!user.permissions) return false;
-    
+
     // If permissions is an array of strings
     if (Array.isArray(user.permissions) && typeof user.permissions[0] === 'string') {
-      return user.permissions.includes(`${moduleOrPermission}.${action}`) ||
-             user.permissions.includes(action);
+      return (
+        user.permissions.includes(`${moduleOrPermission}.${action}`) ||
+        user.permissions.includes(action)
+      );
     }
-    
+
     // If permissions is an array of objects
     if (Array.isArray(user.permissions)) {
       const modulePerm = user.permissions.find((p: any) => p.module_id === moduleOrPermission);
@@ -93,9 +108,13 @@ export class AuthService {
         return !!modulePerm[action];
       }
       // If it's flat permissions object array returned by akhil's service
-      return user.permissions.some((p: any) => p.action === `${moduleOrPermission}.${action}` || (p.module_id === moduleOrPermission && p.action === action));
+      return user.permissions.some(
+        (p: any) =>
+          p.action === `${moduleOrPermission}.${action}` ||
+          (p.module_id === moduleOrPermission && p.action === action),
+      );
     }
-    
+
     return false;
   }
 
@@ -110,13 +129,19 @@ export class AuthService {
   }
 
   getInviteDetails(token: string): Observable<{ email: string; name: string }> {
-    return this.http.get<{ email: string; name: string }>(`${environment.apiUrl}/auth/invite-details`, {
-      params: { token }
-    });
+    return this.http.get<{ email: string; name: string }>(
+      `${environment.apiUrl}/auth/invite-details`,
+      {
+        params: { token },
+      },
+    );
   }
 
   acceptInvite(token: string, password: string): Observable<SessionToken> {
-    return this.http.post<SessionToken>(`${environment.apiUrl}/auth/accept-invite`, { token, password });
+    return this.http.post<SessionToken>(`${environment.apiUrl}/auth/accept-invite`, {
+      token,
+      password,
+    });
   }
 
   fetchCurrentUser(): Observable<any> {

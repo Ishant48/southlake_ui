@@ -7,7 +7,6 @@
   animation: fadeIn 0.4s ease-out;
 }
 
-
 /* Entries and Search Bar styling */
 .entries-select {
   margin: 0 4px;
@@ -41,7 +40,10 @@
   font-size: 12px;
   font-weight: 600;
   cursor: pointer;
-  transition: background var(--transition), border-color var(--transition), color var(--transition);
+  transition:
+    background var(--transition),
+    border-color var(--transition),
+    color var(--transition);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -277,15 +279,15 @@
       &:before {
         border-radius: 50%;
       }
+    }
   }
-}
 }
 
 /* Custom Tree Table & Badges for COA */
 .root-row {
   background-color: #fafbfd !important;
   border-bottom: 1.5px solid var(--gray-200) !important;
-  
+
   td {
     color: var(--gray-900);
     font-weight: 500;
@@ -370,11 +372,11 @@
 .balance-badge {
   font-weight: 600;
   font-size: 12.5px;
-  
+
   &.debit {
     color: #2563eb;
   }
-  
+
   &.credit {
     color: #4f46e5;
   }

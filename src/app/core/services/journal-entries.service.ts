@@ -21,11 +21,18 @@ export class JournalEntriesService {
     return this.http.get<JournalEntryBatch>(`${this.base}/${id}`);
   }
 
-  createBatch(payload: { batch_number?: string; period: string; agent_name: string }): Observable<JournalEntryBatch> {
+  createBatch(payload: {
+    batch_number?: string;
+    period: string;
+    agent_name: string;
+  }): Observable<JournalEntryBatch> {
     return this.http.post<JournalEntryBatch>(this.base, payload);
   }
 
-  updateBatch(id: string, payload: Partial<{ batch_number: string; period: string; agent_name: string }>): Observable<JournalEntryBatch> {
+  updateBatch(
+    id: string,
+    payload: Partial<{ batch_number: string; period: string; agent_name: string }>,
+  ): Observable<JournalEntryBatch> {
     return this.http.patch<JournalEntryBatch>(`${this.base}/${id}`, payload);
   }
 
@@ -37,7 +44,10 @@ export class JournalEntriesService {
     return this.http.get<JournalEntry[]>(`${this.base}/${batchId}/entries`);
   }
 
-  postEntries(batchId: string, payload: { je_number: number; lines: any[] }): Observable<JournalEntry[]> {
+  postEntries(
+    batchId: string,
+    payload: { je_number: number; lines: any[] },
+  ): Observable<JournalEntry[]> {
     return this.http.post<JournalEntry[]>(`${this.base}/${batchId}/entries`, payload);
   }
 }

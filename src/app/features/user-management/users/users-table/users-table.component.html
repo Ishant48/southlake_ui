@@ -1,32 +1,26 @@
 <div class="table-wrapper">
-  <table class="data-table">
-    <thead>
-      <tr>
-        @if (showCheckboxes) {
-          <th class="col-check">
-            <input
-              type="checkbox"
-              [checked]="allSelected()"
-              [indeterminate]="someSelected()"
-              (change)="toggleAll($event)"
-              aria-label="Select all"
-            >
-          </th>
-        }
-        <th>User</th>
-        <th>Role</th>
-        <th>Department</th>
-        <th>Title</th>
-        <th>Status</th>
-        <th>Last Login</th>
-        <th class="col-actions">Actions</th>
-      </tr>
-    </thead>
-    <tbody>
-      @if (loading) {
+  @if (loading) {
+    <table class="data-table">
+      <thead>
+        <tr>
+          @if (showCheckboxes) {
+            <th class="col-check"></th>
+          }
+          <th>User</th>
+          <th>Role</th>
+          <th>Department</th>
+          <th>Title</th>
+          <th>Status</th>
+          <th>Last Login</th>
+          <th class="col-actions">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
         @for (i of skeletonRows; track i) {
           <tr class="skeleton-row">
-            @if (showCheckboxes) { <td><div class="skel skel-sm"></div></td> }
+            @if (showCheckboxes) {
+              <td><div class="skel skel-sm"></div></td>
+            }
             <td>
               <div class="user-cell">
                 <div class="skel skel-avatar"></div>
@@ -44,81 +38,17 @@
             <td><div class="skel skel-sm"></div></td>
           </tr>
         }
-      } @else if (users.length === 0) {
-        <tr>
-          <td [attr.colspan]="showCheckboxes ? 8 : 7" class="empty-cell">
-            <div class="empty-state">
-              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#d1d5db" stroke-width="1.5">
-                <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/>
-                <circle cx="9" cy="7" r="4"/>
-                <path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/>
-              </svg>
-              <p>No users found</p>
-            </div>
-          </td>
-        </tr>
-      } @else {
-        @for (user of users; track user.id) {
-          <tr [class.row-selected]="isSelected(user.id)">
-            @if (showCheckboxes) {
-              <td class="col-check">
-                <input
-                  type="checkbox"
-                  [checked]="isSelected(user.id)"
-                  (change)="toggleUser(user.id)"
-                  [attr.aria-label]="'Select ' + user.name"
-                >
-              </td>
-            }
-            <td>
-              <div class="user-cell">
-                <div class="user-avatar" [style.background]="user.avatar_color">{{ user.initials }}</div>
-                <div class="user-cell-text">
-                  <span class="user-name">{{ user.name }}</span>
-                  <span class="user-email">{{ user.email }}</span>
-                </div>
-              </div>
-            </td>
-            <td>
-              @if (user.role) {
-                <span class="role-badge" [style.background]="hexToRgba(user.role.color, 0.1)" [style.color]="user.role.color">
-                  {{ user.role.label }}
-                </span>
-              } @else {
-                <span class="text-muted">-</span>
-              }
-            </td>
-            <td class="text-muted">{{ user.department ?? '-' }}</td>
-            <td class="text-muted">{{ user.title ?? '-' }}</td>
-            <td><app-user-status-badge [status]="user.status" /></td>
-            <td class="text-muted">{{ formatDate(user.last_login_at) }}</td>
-            <td>
-              <div class="action-buttons">
-                <button class="action-btn" title="View" (click)="viewUser.emit(user)" aria-label="View user">
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
-                  </svg>
-                </button>
-                @if (hasPermission('user.edit')) {
-                  <button class="action-btn" title="Edit" (click)="editUser.emit(user)" aria-label="Edit user">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                      <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
-                      <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
-                    </svg>
-                  </button>
-                }
-                @if (user.status !== 'inactive' && hasPermission('user.edit')) {
-                  <button class="action-btn action-btn-danger" title="Deactivate" (click)="deactivateUser.emit(user)" aria-label="Deactivate user">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                      <circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/>
-                    </svg>
-                  </button>
-                }
-              </div>
-            </td>
-          </tr>
-        }
-      }
-    </tbody>
-  </table>
+      </tbody>
+    </table>
+  } @else {
+    <ag-grid-angular
+      class="ag-theme-alpine"
+      style="display: block; width: 100%"
+      [domLayout]="'autoHeight'"
+      [rowData]="users"
+      [columnDefs]="columnDefs"
+      [gridOptions]="gridOptions"
+      (selectionChanged)="onSelectionChanged($event)"
+    ></ag-grid-angular>
+  }
 </div>

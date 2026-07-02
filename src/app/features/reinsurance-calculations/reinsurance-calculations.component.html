@@ -2,7 +2,9 @@
   <div class="view-header">
     <div class="header-text">
       <h1>Premium and claims Exhibits Workspace</h1>
-      <p class="subtitle">Analyze ceding calculations, cash settlements, and GL segment mappings for uploaded programs.</p>
+      <p class="subtitle">
+        Analyze ceding calculations, cash settlements, and GL segment mappings for uploaded programs.
+      </p>
     </div>
   </div>
 
@@ -16,8 +18,22 @@
               {{ wb.program }} - {{ wb.month_label }} ({{ wb.source }})
             </option>
           </select>
-          <button (click)="deleteWorkbook()" class="btn-delete" title="Delete this workbook" [disabled]="!selectedWorkbookId">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <button
+            (click)="deleteWorkbook()"
+            class="btn-delete"
+            title="Delete this workbook"
+            [disabled]="!selectedWorkbookId"
+          >
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
               <polyline points="3 6 5 6 21 6"></polyline>
               <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
               <line x1="10" y1="11" x2="10" y2="17"></line>
@@ -41,11 +57,19 @@
     <div class="settings-grid mb-4">
       <!-- 1. Required Parameters Form -->
       <div class="card settings-card">
-        <div class="card-header" (click)="toggleAccordion('parameters')" style="cursor: pointer; display: flex; justify-content: space-between; align-items: center; user-select: none;">
+        <div
+          class="card-header"
+          (click)="toggleAccordion('parameters')"
+          style="cursor: pointer; display: flex; justify-content: space-between; align-items: center; user-select: none"
+        >
           <h2>📝 Required Parameters ({{ selectedState }})</h2>
-          <span class="accordion-arrow" [style.transform]="parametersExpanded ? 'rotate(90deg)' : 'rotate(0deg)'" style="transition: transform 0.2s; display: inline-flex; align-items: center; color: var(--gray-500);">
+          <span
+            class="accordion-arrow"
+            [style.transform]="parametersExpanded ? 'rotate(90deg)' : 'rotate(0deg)'"
+            style="transition: transform 0.2s; display: inline-flex; align-items: center; color: var(--gray-500)"
+          >
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-              <path d="M9 5l7 7-7 7"/>
+              <path d="M9 5l7 7-7 7" />
             </svg>
           </span>
         </div>
@@ -87,11 +111,19 @@
 
       <!-- 2. Actuarial Rates Form -->
       <div class="card settings-card">
-        <div class="card-header" (click)="toggleAccordion('rates')" style="cursor: pointer; display: flex; justify-content: space-between; align-items: center; user-select: none;">
+        <div
+          class="card-header"
+          (click)="toggleAccordion('rates')"
+          style="cursor: pointer; display: flex; justify-content: space-between; align-items: center; user-select: none"
+        >
           <h2>📊 Actuarial Rates & Commissions (%)</h2>
-          <span class="accordion-arrow" [style.transform]="ratesExpanded ? 'rotate(90deg)' : 'rotate(0deg)'" style="transition: transform 0.2s; display: inline-flex; align-items: center; color: var(--gray-500);">
+          <span
+            class="accordion-arrow"
+            [style.transform]="ratesExpanded ? 'rotate(90deg)' : 'rotate(0deg)'"
+            style="transition: transform 0.2s; display: inline-flex; align-items: center; color: var(--gray-500)"
+          >
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-              <path d="M9 5l7 7-7 7"/>
+              <path d="M9 5l7 7-7 7" />
             </svg>
           </span>
         </div>
@@ -141,11 +173,19 @@
 
       <!-- 3. GL Account Segment Mappings Form -->
       <div class="card settings-card">
-        <div class="card-header" (click)="toggleAccordion('mappings')" style="cursor: pointer; display: flex; justify-content: space-between; align-items: center; user-select: none;">
+        <div
+          class="card-header"
+          (click)="toggleAccordion('mappings')"
+          style="cursor: pointer; display: flex; justify-content: space-between; align-items: center; user-select: none"
+        >
           <h2>💼 GL Segment Mappings</h2>
-          <span class="accordion-arrow" [style.transform]="mappingsExpanded ? 'rotate(90deg)' : 'rotate(0deg)'" style="transition: transform 0.2s; display: inline-flex; align-items: center; color: var(--gray-500);">
+          <span
+            class="accordion-arrow"
+            [style.transform]="mappingsExpanded ? 'rotate(90deg)' : 'rotate(0deg)'"
+            style="transition: transform 0.2s; display: inline-flex; align-items: center; color: var(--gray-500)"
+          >
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-              <path d="M9 5l7 7-7 7"/>
+              <path d="M9 5l7 7-7 7" />
             </svg>
           </span>
         </div>
@@ -220,10 +260,17 @@
                 </tr>
               </thead>
               <tbody>
-                <tr *ngFor="let row of statementRows" [class.header-row]="row.isHeader" [class.bold-row]="row.isBold" [class.underline-row]="row.borderClass === 'single-underline'">
+                <tr
+                  *ngFor="let row of statementRows"
+                  [class.header-row]="row.isHeader"
+                  [class.bold-row]="row.isBold"
+                  [class.underline-row]="row.borderClass === 'single-underline'"
+                >
                   <td [class.pl-4]="!row.isHeader && !row.isBold">{{ row.label }}</td>
-                  <td class="text-right" [class.bold-text]="row.isBold">{{ row.isHeader ? '' : formatCurrency(row.value) }}</td>
-                  <td class="formula-text">{{ row.formula || '' }}</td>
+                  <td class="text-right" [class.bold-text]="row.isBold">
+                    {{ row.isHeader ? "" : formatCurrency(row.value) }}
+                  </td>
+                  <td class="formula-text">{{ row.formula || "" }}</td>
                 </tr>
               </tbody>
             </table>
@@ -236,9 +283,7 @@
             <button class="btn btn-success" (click)="postToJournalEntries()" [disabled]="postingBatch || isPosted">
               🚀 Post to Journal Entries Batch
             </button>
-            <button class="btn btn-primary" (click)="exportGLJECSV()">
-              📥 Export Mappings to CSV
-            </button>
+            <button class="btn btn-primary" (click)="exportGLJECSV()">📥 Export Mappings to CSV</button>
           </div>
           <div class="table-container">
             <table class="data-table font-mono">
@@ -262,50 +307,128 @@
                 <tr *ngFor="let row of gljeRows; let i = index">
                   <td class="font-sans font-semibold">
                     <ng-container *ngIf="!row.isNew">{{ row.desc }}</ng-container>
-                    <input *ngIf="row.isNew" type="text" [(ngModel)]="row.desc" (ngModelChange)="onRowChange()" placeholder="Account description">
+                    <input
+                      *ngIf="row.isNew"
+                      type="text"
+                      [(ngModel)]="row.desc"
+                      (ngModelChange)="onRowChange()"
+                      placeholder="Account description"
+                    />
                   </td>
                   <td>
                     <ng-container *ngIf="!row.isNew">{{ row.comp }}</ng-container>
-                    <input *ngIf="row.isNew" type="text" [(ngModel)]="row.comp" (ngModelChange)="onRowChange()" style="width: 50px;">
+                    <input
+                      *ngIf="row.isNew"
+                      type="text"
+                      [(ngModel)]="row.comp"
+                      (ngModelChange)="onRowChange()"
+                      style="width: 50px"
+                    />
                   </td>
                   <td>
                     <ng-container *ngIf="!row.isNew">{{ row.account }}</ng-container>
-                    <input *ngIf="row.isNew" type="text" [(ngModel)]="row.account" (ngModelChange)="onRowChange()" style="width: 75px;" placeholder="Code">
+                    <input
+                      *ngIf="row.isNew"
+                      type="text"
+                      [(ngModel)]="row.account"
+                      (ngModelChange)="onRowChange()"
+                      style="width: 75px"
+                      placeholder="Code"
+                    />
                   </td>
                   <td>
                     <ng-container *ngIf="!row.isNew">{{ row.cc }}</ng-container>
-                    <input *ngIf="row.isNew" type="text" [(ngModel)]="row.cc" (ngModelChange)="onRowChange()" style="width: 50px;">
+                    <input
+                      *ngIf="row.isNew"
+                      type="text"
+                      [(ngModel)]="row.cc"
+                      (ngModelChange)="onRowChange()"
+                      style="width: 50px"
+                    />
                   </td>
                   <td>
                     <ng-container *ngIf="!row.isNew">{{ row.mga }}</ng-container>
-                    <input *ngIf="row.isNew" type="text" [(ngModel)]="row.mga" (ngModelChange)="onRowChange()" style="width: 50px;">
+                    <input
+                      *ngIf="row.isNew"
+                      type="text"
+                      [(ngModel)]="row.mga"
+                      (ngModelChange)="onRowChange()"
+                      style="width: 50px"
+                    />
                   </td>
                   <td>
                     <ng-container *ngIf="!row.isNew">{{ row.lob }}</ng-container>
-                    <input *ngIf="row.isNew" type="text" [(ngModel)]="row.lob" (ngModelChange)="onRowChange()" style="width: 70px;">
+                    <input
+                      *ngIf="row.isNew"
+                      type="text"
+                      [(ngModel)]="row.lob"
+                      (ngModelChange)="onRowChange()"
+                      style="width: 70px"
+                    />
                   </td>
                   <td>
                     <ng-container *ngIf="!row.isNew">{{ row.st }}</ng-container>
-                    <input *ngIf="row.isNew" type="text" [(ngModel)]="row.st" (ngModelChange)="onRowChange()" style="width: 45px;">
+                    <input
+                      *ngIf="row.isNew"
+                      type="text"
+                      [(ngModel)]="row.st"
+                      (ngModelChange)="onRowChange()"
+                      style="width: 45px"
+                    />
                   </td>
                   <td>
                     <ng-container *ngIf="!row.isNew">{{ row.ext }}</ng-container>
-                    <input *ngIf="row.isNew" type="text" [(ngModel)]="row.ext" (ngModelChange)="onRowChange()" style="width: 50px;">
+                    <input
+                      *ngIf="row.isNew"
+                      type="text"
+                      [(ngModel)]="row.ext"
+                      (ngModelChange)="onRowChange()"
+                      style="width: 50px"
+                    />
                   </td>
                   <td>
-                    <ng-container *ngIf="!row.isNew">{{ row.sub || '-' }}</ng-container>
-                    <input *ngIf="row.isNew" type="text" [(ngModel)]="row.sub" (ngModelChange)="onRowChange()" style="width: 50px;">
+                    <ng-container *ngIf="!row.isNew">{{ row.sub || "-" }}</ng-container>
+                    <input
+                      *ngIf="row.isNew"
+                      type="text"
+                      [(ngModel)]="row.sub"
+                      (ngModelChange)="onRowChange()"
+                      style="width: 50px"
+                    />
                   </td>
                   <td class="text-right text-green font-bold">
-                    <ng-container *ngIf="!row.isNew">{{ row.debit > 0 ? formatCurrency(row.debit) : '-' }}</ng-container>
-                    <input *ngIf="row.isNew" type="number" [(ngModel)]="row.debit" style="width: 95px;" (change)="onRowAmountChange(row, 'debit')">
+                    <ng-container *ngIf="!row.isNew">
+                      {{ row.debit > 0 ? formatCurrency(row.debit) : "-" }}
+                    </ng-container>
+                    <input
+                      *ngIf="row.isNew"
+                      type="number"
+                      [(ngModel)]="row.debit"
+                      style="width: 95px"
+                      (change)="onRowAmountChange(row, 'debit')"
+                    />
                   </td>
                   <td class="text-right text-red font-bold">
-                    <ng-container *ngIf="!row.isNew">{{ row.credit > 0 ? formatCurrency(row.credit) : '-' }}</ng-container>
-                    <input *ngIf="row.isNew" type="number" [(ngModel)]="row.credit" style="width: 95px;" (change)="onRowAmountChange(row, 'credit')">
+                    <ng-container *ngIf="!row.isNew">
+                      {{ row.credit > 0 ? formatCurrency(row.credit) : "-" }}
+                    </ng-container>
+                    <input
+                      *ngIf="row.isNew"
+                      type="number"
+                      [(ngModel)]="row.credit"
+                      style="width: 95px"
+                      (change)="onRowAmountChange(row, 'credit')"
+                    />
                   </td>
                   <td class="text-center">
-                    <button *ngIf="row.isNew" class="btn-table btn-table-danger" (click)="removeGLJERow(i)" style="padding: 2px 6px; font-size: 11px;">Delete</button>
+                    <button
+                      *ngIf="row.isNew"
+                      class="btn-table btn-table-danger"
+                      (click)="removeGLJERow(i)"
+                      style="padding: 2px 6px; font-size: 11px"
+                    >
+                      Delete
+                    </button>
                     <span *ngIf="!row.isNew">-</span>
                   </td>
                 </tr>
@@ -313,9 +436,7 @@
             </table>
           </div>
           <div class="flex-start mt-2">
-            <button class="btn btn-primary" (click)="addGLJERow()">
-              ➕ Add Row
-            </button>
+            <button class="btn btn-primary" (click)="addGLJERow()">➕ Add Row</button>
           </div>
         </div>
 
@@ -330,9 +451,7 @@
               <label>Amount Paid (Loss Funding)</label>
               <input type="number" [(ngModel)]="cashSettlement.amt_paid" class="form-control-sm" />
             </div>
-            <button class="btn btn-primary" (click)="saveCashParams()">
-              Update Balances
-            </button>
+            <button class="btn btn-primary" (click)="saveCashParams()">Update Balances</button>
           </div>
 
           <div class="table-container mt-4">
@@ -347,8 +466,8 @@
               <tbody>
                 <tr>
                   <td>Quota Share Percentage</td>
-                  <td class="text-right">{{ (100 - (selectedWorkbook.rates.qs || 100)) }}%</td>
-                  <td class="text-right">{{ (selectedWorkbook.rates.qs || 100) }}%</td>
+                  <td class="text-right">{{ 100 - (selectedWorkbook.rates.qs || 100) }}%</td>
+                  <td class="text-right">{{ selectedWorkbook.rates.qs || 100 }}%</td>
                 </tr>
                 <tr class="bold-row">
                   <td>Beginning Balance</td>

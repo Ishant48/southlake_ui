@@ -11,10 +11,7 @@ describe('OtpComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [OtpComponent],
-      providers: [
-        provideRouter([]),
-        provideHttpClient(),
-      ],
+      providers: [provideRouter([]), provideHttpClient()],
       schemas: [NO_ERRORS_SCHEMA],
     }).compileComponents();
 

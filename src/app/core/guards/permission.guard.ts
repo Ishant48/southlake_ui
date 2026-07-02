@@ -21,7 +21,7 @@ export function permissionGuard(module: string, action: string = 'view'): CanAct
           return of(true);
         }
         return of(router.createUrlTree(['/dashboard']));
-      })
+      }),
     );
   };
 }
