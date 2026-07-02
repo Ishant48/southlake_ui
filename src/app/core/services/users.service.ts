@@ -3,12 +3,12 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import {
   User,
-  PaginatedResult,
   UsersFilter,
   InviteUserPayload,
   PendingInvite,
   UserStats,
 } from '../models/user.model';
+import { PaginatedResult } from '../models/paginated-result.model';
 import { environment } from '../../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
