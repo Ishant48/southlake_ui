@@ -89,6 +89,7 @@ export class MastersComponent implements OnInit {
   statusFilter: 'all' | 'active' | 'inactive' = 'all';
   mgaFilter: string = 'all';
   seededProgramITD = new Set<string>();
+  itdWorkbookIds = new Map<string, number>();
   treatyWorkbookStatuses = new Map<string, string>();
 
 
@@ -375,14 +376,18 @@ export class MastersComponent implements OnInit {
         this.reinsuranceService.getWorkbooks().subscribe({
           next: (wbs) => {
             this.seededProgramITD.clear();
+            this.itdWorkbookIds.clear();
             this.treatyWorkbookStatuses.clear();
             wbs.forEach(wb => {
               if (wb.source === 'ITD') {
-                this.seededProgramITD.add(wb.program);
+                const progName = (wb.program || '').trim();
+                this.seededProgramITD.add(progName);
+                this.itdWorkbookIds.set(progName, wb.id);
               }
-              const existing = this.treatyWorkbookStatuses.get(wb.program);
+              const progName = (wb.program || '').trim();
+              const existing = this.treatyWorkbookStatuses.get(progName);
               if (existing !== 'Approved') {
-                this.treatyWorkbookStatuses.set(wb.program, wb.status || 'Pending');
+                this.treatyWorkbookStatuses.set(progName, wb.status || 'Pending');
               }
             });
             this.service.getTreaties(search, active).subscribe({
@@ -1631,11 +1636,11 @@ export class MastersComponent implements OnInit {
   }
 
   hasITDSeeded(programName: string): boolean {
-    return this.seededProgramITD.has(programName);
+    return this.seededProgramITD.has((programName || '').trim());
   }
 
   getTreatyStatus(programName: string): string {
-    return this.treatyWorkbookStatuses.get(programName) || '-';
+    return this.treatyWorkbookStatuses.get((programName || '').trim()) || '-';
   }
 
   getGLNumberDisplay(mapping: GlMapping): string {
@@ -1754,8 +1759,44 @@ export class MastersComponent implements OnInit {
       };
     }
 
-    this.showItdModal = true;
-    this.cdr.markForCheck();
+    const existingWbId = this.itdWorkbookIds.get((treaty.name || '').trim());
+    if (existingWbId) {
+      this.reinsuranceService.getWorkbook(existingWbId).subscribe({
+        next: (wbDetail) => {
+          const exhibits = wbDetail ? (wbDetail.stateExhibits || wbDetail.state_exhibits) : null;
+          if (exhibits) {
+            exhibits.forEach((se: any) => {
+              const stateCode = (se.stateCode || se.state_code || '').toUpperCase();
+              if (this.itdForm.exhibits[stateCode]) {
+                const getVal = (val: any): number => {
+                  if (Array.isArray(val)) {
+                    return val[1] !== undefined ? Number(val[1]) : (Number(val[0]) || 0);
+                  }
+                  return Number(val) || 0;
+                };
+                this.itdForm.exhibits[stateCode] = {
+                  uep: getVal(se.uep),
+                  loss_ibnr: getVal(se.loss_ibnr),
+                  lae_ibnr_dcc: getVal(se.lae_ibnr_dcc),
+                  lae_ibnr_aoe: getVal(se.lae_ibnr_aoe),
+                  ulae_ibnr: getVal(se.ulae_ibnr),
+                };
+              }
+            });
+          }
+          this.showItdModal = true;
+          this.cdr.markForCheck();
+        },
+        error: (err) => {
+          console.error('Failed to load existing ITD workbook details', err);
+          this.showItdModal = true;
+          this.cdr.markForCheck();
+        }
+      });
+    } else {
+      this.showItdModal = true;
+      this.cdr.markForCheck();
+    }
   }
 
   saveManualITD(): void {
