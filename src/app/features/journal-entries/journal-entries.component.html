@@ -44,12 +44,7 @@
     <div class="card table-card">
       <div class="filters-bar">
         <div class="search-control">
-          <input
-            type="text"
-            [(ngModel)]="searchTerm"
-            (ngModelChange)="loadBatches()"
-            placeholder="Search here"
-          />
+          <input type="text" [(ngModel)]="searchTerm" (ngModelChange)="loadBatches()" placeholder="Search here" />
           <svg
             class="search-icon"
             width="15"
@@ -121,10 +116,7 @@
     <div class="card table-card">
       <div class="filters-bar">
         <div class="search-control">
-          <input
-            type="text"
-            placeholder="Search here"
-          />
+          <input type="text" placeholder="Search here" />
           <svg
             class="search-icon"
             width="15"
@@ -301,7 +293,13 @@
       </div>
 
       <div class="form-actions-row">
-        <button class="btn btn-primary" [disabled]="!isFormBalanced || submittingEntries" (click)="postJournalEntries()">{{ submittingEntries ? "Posting..." : "Post" }}</button>
+        <button
+          class="btn btn-primary"
+          [disabled]="!isFormBalanced || submittingEntries"
+          (click)="postJournalEntries()"
+        >
+          {{ submittingEntries ? "Posting..." : "Post" }}
+        </button>
         <button class="btn btn-cancel" (click)="cancelForm()">Cancel</button>
       </div>
     </div>
@@ -322,7 +320,9 @@
           </div>
         </div>
         <div class="modal-footer">
-          <button class="btn btn-primary" [disabled]="submittingBatch" (click)="createBatch()">{{ submittingBatch ? "Adding..." : "Add" }}</button>
+          <button class="btn btn-primary" [disabled]="submittingBatch" (click)="createBatch()">
+            {{ submittingBatch ? "Adding..." : "Add" }}
+          </button>
           <button class="btn btn-cancel" (click)="closeAddBatch()">Cancel</button>
         </div>
       </div>

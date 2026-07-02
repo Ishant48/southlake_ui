@@ -54,7 +54,10 @@ export const routes: Routes = [
       {
         path: 'reinsurance-calculations',
         canActivate: [permissionGuard('reinsurance')],
-        loadComponent: () => import('./features/reinsurance-calculations/reinsurance-calculations.component').then(m => m.ReinsuranceCalculationsComponent)
+        loadComponent: () =>
+          import('./features/reinsurance-calculations/reinsurance-calculations.component').then(
+            m => m.ReinsuranceCalculationsComponent,
+          ),
       },
       {
         path: 'masters',

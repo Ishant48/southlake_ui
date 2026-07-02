@@ -419,15 +419,17 @@ export class MastersComponent implements OnInit {
         this.reinsuranceService.getWorkbooks().subscribe({
           next: wbs => {
             this.seededProgramITD.clear();
+            this.itdWorkbookIds.clear();
             this.treatyWorkbookStatuses.clear();
             wbs.forEach(wb => {
               if (wb.source === 'ITD') {
                 this.seededProgramITD.add(wb.program);
                 this.itdWorkbookIds.set(wb.program, wb.id);
               }
-              const existing = this.treatyWorkbookStatuses.get(wb.program);
+              const progName = (wb.program || '').trim();
+              const existing = this.treatyWorkbookStatuses.get(progName);
               if (existing !== 'Approved') {
-                this.treatyWorkbookStatuses.set(wb.program, wb.status || 'Pending');
+                this.treatyWorkbookStatuses.set(progName, wb.status || 'Pending');
               }
             });
             this.service.getTreaties(search, active).subscribe({
@@ -2241,7 +2243,7 @@ export class MastersComponent implements OnInit {
   }
 
   hasITDSeeded(programName: string): boolean {
-    return this.seededProgramITD.has(programName);
+    return this.seededProgramITD.has((programName || '').trim());
   }
 
   getTreatyStatus(programName?: string): string {
@@ -2357,7 +2359,7 @@ export class MastersComponent implements OnInit {
       this.reinsuranceService.getWorkbook(wbId).subscribe({
         next: wbDetail => {
           const exhibits = wbDetail.stateExhibits || wbDetail.state_exhibits || [];
-          
+
           const getVal = (val: any) => {
             if (Array.isArray(val)) return Number(val[val.length - 1] || 0);
             return Number(val || 0);
@@ -2382,7 +2384,7 @@ export class MastersComponent implements OnInit {
           console.error('Failed to load existing ITD data');
           this.showItdModal = true;
           this.cdr.markForCheck();
-        }
+        },
       });
     } else {
       this.showItdModal = true;

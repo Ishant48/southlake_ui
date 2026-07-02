@@ -239,7 +239,7 @@ export class JournalEntriesComponent implements OnInit {
             const dateB = new Date('1 ' + b);
             return dateB.getTime() - dateA.getTime();
           });
-          
+
           // If no matching periods found from DB, fallback to allowed so dropdown isn't empty
           if (this.periods.length === 0) {
             this.periods = allowedPeriods.reverse();
