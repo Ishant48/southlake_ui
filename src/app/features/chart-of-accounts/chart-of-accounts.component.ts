@@ -153,11 +153,11 @@ export class ChartOfAccountsComponent implements OnInit {
         next: accounts => {
           this.flatAccounts = accounts;
 
-          // Resolve summary parent accounts hierarchically
-          this.rootParents = this.subCoas.filter(a => a.is_parent);
-
           // Build the nested/hierarchical flat list to display in the table
           this.subCoas = this.buildTreeList(accounts);
+
+          // Resolve summary parent accounts hierarchically
+          this.rootParents = this.subCoas.filter(a => a.is_parent);
           this.applyTypeFilter();
 
           this.currentPage = 1;
@@ -253,6 +253,17 @@ export class ChartOfAccountsComponent implements OnInit {
     return `${indent}${code} - ${root.description || ''}`;
   }
 
+  isDescendantOf(coa: any, targetParentId: string): boolean {
+    let current = coa;
+    while (current) {
+      if (current.parent_id === targetParentId || current.id === targetParentId) {
+        return true;
+      }
+      current = this.flatAccounts.find(p => p.id === current.parent_id);
+    }
+    return false;
+  }
+
   // Client-side filtering for AG Grid
   applyTypeFilter(): void {
     let filtered = this.subCoas;
@@ -262,10 +273,10 @@ export class ChartOfAccountsComponent implements OnInit {
       const targetCode = Number(this.typeFilter);
       const targetParent = this.rootParents.find(p => Number(p.account_code) === targetCode);
       if (targetParent) {
-        // Include the target parent and any account that has this parent
-        filtered = filtered.filter(
-          coa => coa.id === targetParent.id || coa.parent_id === targetParent.id,
-        );
+        filtered = filtered.filter(coa => this.isDescendantOf(coa, targetParent.id));
+      } else {
+        const firstDigit = String(targetCode)[0];
+        filtered = filtered.filter(coa => String(coa.account_code).startsWith(firstDigit));
       }
     }
     this.filteredSubCoas = filtered;
