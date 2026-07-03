@@ -949,7 +949,6 @@ export class MastersComponent implements OnInit {
             flex: 3,
             minWidth: 200,
           },
-          { headerName: 'LOB TYPE', field: 'type', flex: 1.5, minWidth: 120 },
           {
             headerName: 'TAXABLE',
             field: 'taxable',
@@ -2301,7 +2300,6 @@ export class MastersComponent implements OnInit {
         headers = [
           'LOB Code',
           'LOB Name',
-          'LOB Type',
           'Taxable',
           'Priority',
           'Fully Earned',
@@ -2311,7 +2309,6 @@ export class MastersComponent implements OnInit {
         rows = this.lobs.map(l => [
           l.lob_code,
           l.name,
-          l.type || '-',
           l.taxable ? 'Yes' : 'No',
           l.priority,
           l.fully_earned ? 'Yes' : 'No',
