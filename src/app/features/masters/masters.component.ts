@@ -25,6 +25,7 @@ import {
   TreatyLob,
   TreatyCarrier,
   TreatyReinsurer,
+  DocumentType,
 } from '../../core/models/master.model';
 import { GlMappingsService } from '../../core/services/gl-mappings.service';
 import { ChartOfAccountsService } from '../../core/services/chart-of-accounts.service';
