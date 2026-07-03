@@ -796,21 +796,13 @@ export class MastersComponent implements OnInit {
             flex: 1.5,
             minWidth: 150,
           },
-          {
-            headerName: 'LEDGER AMOUNT',
-            field: 'ledger_amount',
-            valueFormatter: p =>
-              p.value !== undefined ? `$${Number(p.value).toFixed(2)}` : '$0.00',
-            flex: 1.5,
-            minWidth: 120,
-          },
           statusCol,
           {
             headerName: 'ACTIONS',
             cellRenderer: ActionButtonsCellRenderer,
             cellRendererParams: {
               buttons: [
-                { label: 'Add to Treaties', action: 'addTreaty' },
+                { label: 'Add Treaties', action: 'addTreaty' },
                 { label: 'Document', action: 'doc' },
                 { label: 'Edit', action: 'edit' },
                 { label: 'Delete', action: 'delete', danger: true },
@@ -823,9 +815,9 @@ export class MastersComponent implements OnInit {
               },
             },
             flex: 0,
-            width: 330,
-            minWidth: 330,
-            maxWidth: 330,
+            width: 320,
+            minWidth: 320,
+            maxWidth: 320,
           },
         ];
 
