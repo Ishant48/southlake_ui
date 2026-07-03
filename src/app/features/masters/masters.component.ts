@@ -1973,7 +1973,7 @@ export class MastersComponent implements OnInit {
       is_active: true,
       state_ids: [],
       lobs: [],
-      carriers: [],
+      carriers: [{ risk_company_id: '', retention_pct: 100 }],
       reinsurers: [],
     };
 
@@ -1995,16 +1995,25 @@ export class MastersComponent implements OnInit {
 
     let carriers: any[] = [];
     if (treaty.treaty_carriers && treaty.treaty_carriers.length > 0) {
-      carriers = treaty.treaty_carriers.map(tc => ({
-        risk_company_id: tc.risk_company_id,
-        retention_pct: tc.retention_pct,
-      }));
+      carriers = [
+        {
+          risk_company_id: treaty.treaty_carriers[0].risk_company_id,
+          retention_pct: treaty.treaty_carriers[0].retention_pct,
+        }
+      ];
     } else if (treaty.risk_company_id) {
       carriers = [
         {
           risk_company_id: treaty.risk_company_id,
           retention_pct: treaty.carrier_retention_pct ?? 100,
         },
+      ];
+    } else {
+      carriers = [
+        {
+          risk_company_id: '',
+          retention_pct: 100,
+        }
       ];
     }
 

@@ -1129,47 +1129,22 @@
               align-items: center;
             "
           >
-            <span>Carrier Companies (Risk Companies)</span>
-            <button
-              type="button"
-              class="btn btn-sm btn-primary"
-              (click)="addCarrierRow()"
-              style="font-size: 11px; padding: 4px 8px"
-            >
-              + Add Carrier
-            </button>
+            <span>Carrier Company (Risk Company)</span>
           </h4>
 
-          @for (carrier of treatyForm.carriers; track $index; let i = $index) {
-            <div class="form-row" style="align-items: flex-end; margin-bottom: 8px">
+          @if (treatyForm.carriers && treatyForm.carriers[0]) {
+            <div class="form-row" style="margin-bottom: 8px">
               <div class="form-field" style="flex: 1">
-                @if (i === 0) {
-                  <label class="form-label">Carrier Company</label>
-                }
+                <label class="form-label">Carrier Company *</label>
                 <app-dropdown-search
                   [items]="riskCompanyOptions"
                   [isMultiSelect]="false"
                   bindValue="id"
                   placeholder="Select Carrier"
                   [itemLabelFn]="riskCompanyLabelFn"
-                  [(selectedValue)]="carrier.risk_company_id"
+                  [(selectedValue)]="treatyForm.carriers[0].risk_company_id"
                 ></app-dropdown-search>
               </div>
-              <div style="margin-left: 8px; margin-bottom: 4px">
-                <button
-                  type="button"
-                  class="btn btn-danger"
-                  (click)="removeCarrierRow(i)"
-                  style="padding: 6px 10px; font-size: 12px; height: 38px"
-                >
-                  ✕
-                </button>
-              </div>
-            </div>
-          }
-          @if (!treatyForm.carriers || treatyForm.carriers.length === 0) {
-            <div style="color: var(--gray-500); font-size: 12px; margin-bottom: 12px; font-style: italic">
-              No carriers added yet. Click "+ Add Carrier" to define a carrier retention split.
             </div>
           }
 
