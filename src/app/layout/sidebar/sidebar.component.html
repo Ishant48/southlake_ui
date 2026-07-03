@@ -401,6 +401,28 @@
               </svg>
               <span>Document Types</span>
             </a>
+            <a
+              class="nav-item sub-item"
+              routerLink="/masters"
+              [queryParams]="{ tab: 'sequence-prefix-counters' }"
+              routerLinkActive="active"
+              [routerLinkActiveOptions]="{ queryParams: 'exact', exact: false }"
+            >
+              <svg
+                class="sub-nav-icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <line x1="18" y1="20" x2="18" y2="10" />
+                <line x1="12" y1="20" x2="12" y2="4" />
+                <line x1="6" y1="20" x2="6" y2="14" />
+              </svg>
+              <span>Sequence Counters</span>
+            </a>
             @if (hasPermission("admin_tool", "view")) {
               <a
                 class="nav-item sub-item"

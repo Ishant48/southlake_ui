@@ -26,6 +26,7 @@ import {
   TreatyCarrier,
   TreatyReinsurer,
   DocumentType,
+  SequencePrefixCounter,
 } from '../../core/models/master.model';
 import { GlMappingsService } from '../../core/services/gl-mappings.service';
 import { ChartOfAccountsService } from '../../core/services/chart-of-accounts.service';
@@ -45,7 +46,8 @@ type MasterTab =
   | 'brokers'
   | 'products'
   | 'locked-periods'
-  | 'document-types';
+  | 'document-types'
+  | 'sequence-prefix-counters';
 
 @Component({
   selector: 'app-masters',
@@ -131,6 +133,7 @@ export class MastersComponent implements OnInit {
   products: any[] = [];
   lockedPeriods: any[] = [];
   documentTypes: DocumentType[] = [];
+  sequencePrefixCounters: SequencePrefixCounter[] = [];
 
   // Pagination
   pageSize = 25;
@@ -139,7 +142,7 @@ export class MastersComponent implements OnInit {
   // Simple Modals (LOB, COB, Reinsurer, Broker, Product)
   showSimpleModal = false;
   simpleModalTitle = '';
-  simpleMode: 'lob' | 'cob' | 'reinsurer' | 'broker' | 'product' | 'document-type' = 'lob';
+  simpleMode: 'lob' | 'cob' | 'reinsurer' | 'broker' | 'product' | 'document-type' | 'sequence-prefix-counter' = 'lob';
   isEditMode = false;
   submitting = false;
 
@@ -159,6 +162,9 @@ export class MastersComponent implements OnInit {
     contact_phone?: string;
     lob_id?: string;
     cob_id?: string;
+    prefix?: string;
+    next_value?: number;
+    padding_width?: number;
   } = {
     code: '',
     name: '',
@@ -173,6 +179,9 @@ export class MastersComponent implements OnInit {
     contact_phone: '',
     lob_id: '',
     cob_id: '',
+    prefix: '',
+    next_value: 1,
+    padding_width: 4,
   };
 
   // MGA Modal
@@ -420,6 +429,7 @@ export class MastersComponent implements OnInit {
           'products',
           'locked-periods',
           'document-types',
+          'sequence-prefix-counters',
         ].includes(tab)
       ) {
         this.currentTab = tab;
@@ -643,6 +653,20 @@ export class MastersComponent implements OnInit {
           },
         });
         break;
+      case 'sequence-prefix-counters':
+        this.service.getSequencePrefixCounters(search, active).subscribe({
+          next: res => {
+            this.sequencePrefixCounters = res;
+            this.loading = false;
+            this.cdr.markForCheck();
+          },
+          error: () => {
+            this.toast.error('Failed to load Sequence Prefix & Counters');
+            this.loading = false;
+            this.cdr.markForCheck();
+          },
+        });
+        break;
     }
   }
 
@@ -693,6 +717,8 @@ export class MastersComponent implements OnInit {
         return this.lockedPeriods;
       case 'document-types':
         return this.documentTypes;
+      case 'sequence-prefix-counters':
+        return this.sequencePrefixCounters;
       default:
         return [];
     }
@@ -1192,6 +1218,45 @@ export class MastersComponent implements OnInit {
           },
         ];
 
+      case 'sequence-prefix-counters':
+        return [
+          { headerName: 'CODE', field: 'code', flex: 1.5, minWidth: 120 },
+          { headerName: 'NAME', field: 'name', flex: 2, minWidth: 150 },
+          { headerName: 'PREFIX', field: 'prefix', flex: 1, minWidth: 100 },
+          { 
+            headerName: 'NEXT VALUE', 
+            valueGetter: p => p.data.next_value !== undefined ? p.data.next_value : p.data.nextValue, 
+            flex: 1, 
+            minWidth: 100 
+          },
+          { 
+            headerName: 'PADDING WIDTH', 
+            valueGetter: p => p.data.padding_width !== undefined ? p.data.padding_width : p.data.paddingWidth, 
+            flex: 1, 
+            minWidth: 100 
+          },
+          { headerName: 'DESCRIPTION', field: 'description', flex: 2.5, minWidth: 180 },
+          statusCol,
+          {
+            headerName: 'ACTIONS',
+            cellRenderer: ActionButtonsCellRenderer,
+            cellRendererParams: {
+              buttons: [
+                { label: 'Edit', action: 'edit' },
+                { label: 'Delete', action: 'delete', danger: true },
+              ],
+              onClick: (action: string, data: any) => {
+                if (action === 'edit') this.openSimpleEdit('sequence-prefix-counter', data);
+                if (action === 'delete') this.deleteSimple('sequence-prefix-counter', data);
+              },
+            },
+            flex: 0,
+            width: 160,
+            minWidth: 160,
+            maxWidth: 160,
+          },
+        ];
+
       default:
         return [];
     }
@@ -1218,6 +1283,9 @@ export class MastersComponent implements OnInit {
       contact_phone: '',
       lob_id: '',
       cob_id: '',
+      prefix: '',
+      next_value: 1,
+      padding_width: 4,
     };
     this.showSimpleModal = true;
   }
@@ -1241,6 +1309,9 @@ export class MastersComponent implements OnInit {
       contact_phone: item.contact_phone || item.contactPhone || '',
       lob_id: item.lob_id || item.lobId || '',
       cob_id: item.cob_id || item.cobId || '',
+      prefix: item.prefix || '',
+      next_value: item.next_value !== undefined ? item.next_value : (item.nextValue || 1),
+      padding_width: item.padding_width !== undefined ? item.padding_width : (item.paddingWidth || 4),
     };
     this.showSimpleModal = true;
   }
@@ -1273,6 +1344,11 @@ export class MastersComponent implements OnInit {
       payload.description = this.simpleForm.description || null;
       payload.lob_id = this.simpleForm.lob_id || null;
       payload.cob_id = this.simpleForm.cob_id || null;
+    } else if (this.simpleMode === 'sequence-prefix-counter') {
+      payload.description = this.simpleForm.description || null;
+      payload.prefix = this.simpleForm.prefix || null;
+      payload.next_value = Number(this.simpleForm.next_value ?? 1);
+      payload.padding_width = Number(this.simpleForm.padding_width ?? 4);
     }
 
     let request!: Observable<any>;
@@ -1297,6 +1373,9 @@ export class MastersComponent implements OnInit {
         case 'document-type':
           request = this.service.updateDocumentType(id, payload);
           break;
+        case 'sequence-prefix-counter':
+          request = this.service.updateSequencePrefixCounter(id, payload);
+          break;
       }
     } else {
       switch (this.simpleMode) {
@@ -1317,6 +1396,9 @@ export class MastersComponent implements OnInit {
           break;
         case 'document-type':
           request = this.service.createDocumentType(payload);
+          break;
+        case 'sequence-prefix-counter':
+          request = this.service.createSequencePrefixCounter(payload);
           break;
       }
     }
@@ -1359,6 +1441,9 @@ export class MastersComponent implements OnInit {
           break;
         case 'document-type':
           request = this.service.deleteDocumentType(item.id);
+          break;
+        case 'sequence-prefix-counter':
+          request = this.service.deleteSequencePrefixCounter(item.id);
           break;
       }
       request.subscribe({
@@ -2203,6 +2288,8 @@ export class MastersComponent implements OnInit {
         return 'Product';
       case 'document-type':
         return 'Document Type';
+      case 'sequence-prefix-counter':
+        return 'Sequence Prefix & Counter';
       default:
         return 'Master';
     }
@@ -2367,6 +2454,20 @@ export class MastersComponent implements OnInit {
           d.isActive ? 'Active' : 'Inactive',
         ]);
         filename = 'document_types.csv';
+        break;
+
+      case 'sequence-prefix-counters':
+        headers = ['Code', 'Name', 'Prefix', 'Next Value', 'Padding Width', 'Description', 'Status'];
+        rows = this.sequencePrefixCounters.map(s => [
+          s.code,
+          s.name,
+          s.prefix || '-',
+          s.next_value !== undefined ? s.next_value : (s.nextValue || 1),
+          s.padding_width !== undefined ? s.padding_width : (s.paddingWidth || 4),
+          s.description || '-',
+          s.isActive ? 'Active' : 'Inactive',
+        ]);
+        filename = 'sequence_prefix_counters.csv';
         break;
     }
 

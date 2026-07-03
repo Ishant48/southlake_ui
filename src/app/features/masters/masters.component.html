@@ -15,12 +15,12 @@
         <button class="btn-primary" (click)="openRiskCompanyAdd()">Add Risk Company</button>
       } @else if (currentTab === "gl-mappings") {
         <button class="btn-primary" (click)="openGlMappingAdd()">Add Mapping</button>
-      } @else if (currentTab === "lobs" || currentTab === "cobs" || currentTab === "reinsurers" || currentTab === "brokers" || currentTab === "products" || currentTab === "document-types") {
+      } @else if (currentTab === "lobs" || currentTab === "cobs" || currentTab === "reinsurers" || currentTab === "brokers" || currentTab === "products" || currentTab === "document-types" || currentTab === "sequence-prefix-counters") {
         <button
           class="btn-primary"
-          (click)="openSimpleAdd(currentTab === 'lobs' ? 'lob' : currentTab === 'cobs' ? 'cob' : currentTab === 'reinsurers' ? 'reinsurer' : currentTab === 'brokers' ? 'broker' : currentTab === 'products' ? 'product' : 'document-type')"
+          (click)="openSimpleAdd(currentTab === 'lobs' ? 'lob' : currentTab === 'cobs' ? 'cob' : currentTab === 'reinsurers' ? 'reinsurer' : currentTab === 'brokers' ? 'broker' : currentTab === 'products' ? 'product' : currentTab === 'document-types' ? 'document-type' : 'sequence-prefix-counter')"
         >
-          Add {{ currentTab === "lobs" ? "LOB" : currentTab === "cobs" ? "COB" : currentTab === "reinsurers" ? "Reinsurer" : currentTab === "brokers" ? "Broker" : currentTab === "products" ? "Product" : "Document Type" }}
+          Add {{ currentTab === "lobs" ? "LOB" : currentTab === "cobs" ? "COB" : currentTab === "reinsurers" ? "Reinsurer" : currentTab === "brokers" ? "Broker" : currentTab === "products" ? "Product" : currentTab === "document-types" ? "Document Type" : "Sequence Counter" }}
         </button>
       } @else if (currentTab === "locked-periods") {
         <button class="btn-primary" (click)="openLockPeriodAdd()">Lock Period</button>
@@ -54,6 +54,9 @@
     </button>
     <button class="tab-link" [class.active]="currentTab === 'document-types'" (click)="selectTab('document-types')">
       Document Types
+    </button>
+    <button class="tab-link" [class.active]="currentTab === 'sequence-prefix-counters'" (click)="selectTab('sequence-prefix-counters')">
+      Sequence Counters
     </button>
     <button class="tab-link" [class.active]="currentTab === 'gl-mappings'" (click)="selectTab('gl-mappings')">
       GL Map
@@ -196,7 +199,7 @@
           <div class="form-row">
             <div class="form-field">
               <label class="form-label">
-                {{ simpleMode === "lob" ? "LOB ID *" : simpleMode === "cob" ? "Class ID *" : simpleMode === "broker" ? "Broker Code *" : simpleMode === "product" ? "Product ID *" : "Code ID *" }}
+                {{ simpleMode === "lob" ? "LOB ID *" : simpleMode === "cob" ? "Class ID *" : simpleMode === "broker" ? "Broker Code *" : simpleMode === "product" ? "Product ID *" : simpleMode === "sequence-prefix-counter" ? "Sequence Code *" : "Code ID *" }}
               </label>
               <input
                 [(ngModel)]="simpleForm.code"
@@ -210,7 +213,7 @@
             </div>
             <div class="form-field">
               <label class="form-label">
-                {{ simpleMode === "lob" ? "LOB Name *" : simpleMode === "cob" ? "Class Name *" : simpleMode === "broker" ? "Broker Name *" : simpleMode === "product" ? "Product Name *" : "Name *" }}
+                {{ simpleMode === "lob" ? "LOB Name *" : simpleMode === "cob" ? "Class Name *" : simpleMode === "broker" ? "Broker Name *" : simpleMode === "product" ? "Product Name *" : simpleMode === "sequence-prefix-counter" ? "Sequence Name *" : "Name *" }}
               </label>
               <input
                 [(ngModel)]="simpleForm.name"
@@ -365,6 +368,57 @@
                   [(ngModel)]="simpleForm.description"
                   name="description"
                   placeholder="Description details..."
+                  class="form-input"
+                  style="height: 60px; resize: vertical"
+                ></textarea>
+              </div>
+            </div>
+          }
+
+          @if (simpleMode === "sequence-prefix-counter") {
+            <div class="form-row" style="margin-top: 8px">
+              <div class="form-field">
+                <label class="form-label">Prefix</label>
+                <input
+                  [(ngModel)]="simpleForm.prefix"
+                  name="prefix"
+                  type="text"
+                  placeholder="e.g. POL"
+                  class="form-input"
+                />
+              </div>
+            </div>
+            <div class="form-row" style="margin-top: 8px">
+              <div class="form-field">
+                <label class="form-label">Next Value *</label>
+                <input
+                  [(ngModel)]="simpleForm.next_value"
+                  name="next_value"
+                  type="number"
+                  placeholder="1"
+                  class="form-input"
+                  required
+                />
+              </div>
+              <div class="form-field">
+                <label class="form-label">Padding Width *</label>
+                <input
+                  [(ngModel)]="simpleForm.padding_width"
+                  name="padding_width"
+                  type="number"
+                  placeholder="4"
+                  class="form-input"
+                  required
+                />
+              </div>
+            </div>
+            <div class="form-row" style="margin-top: 8px">
+              <div class="form-field">
+                <label class="form-label">Description</label>
+                <textarea
+                  [(ngModel)]="simpleForm.description"
+                  name="description"
+                  placeholder="Description..."
                   class="form-input"
                   style="height: 60px; resize: vertical"
                 ></textarea>

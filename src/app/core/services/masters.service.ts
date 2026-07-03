@@ -14,6 +14,7 @@ import {
   CobMaster,
   Treaty,
   DocumentType,
+  SequencePrefixCounter,
 } from '../models/master.model';
 
 @Injectable({ providedIn: 'root' })
@@ -277,5 +278,23 @@ export class MastersService {
   }
   deleteDocumentType(id: string): Observable<void> {
     return this.http.delete<void>(`${this.base}/document-types/${id}`);
+  }
+
+  // ==========================================
+  // SEQUENCE PREFIX & COUNTERS MASTER API
+  // ==========================================
+  getSequencePrefixCounters(search?: string, isActive?: boolean): Observable<SequencePrefixCounter[]> {
+    return this.http.get<SequencePrefixCounter[]>(`${this.base}/sequence-prefix-counters`, {
+      params: this.buildParams(search, isActive),
+    });
+  }
+  createSequencePrefixCounter(payload: Partial<SequencePrefixCounter>): Observable<SequencePrefixCounter> {
+    return this.http.post<SequencePrefixCounter>(`${this.base}/sequence-prefix-counters`, payload);
+  }
+  updateSequencePrefixCounter(id: string, payload: Partial<SequencePrefixCounter>): Observable<SequencePrefixCounter> {
+    return this.http.patch<SequencePrefixCounter>(`${this.base}/sequence-prefix-counters/${id}`, payload);
+  }
+  deleteSequencePrefixCounter(id: string): Observable<void> {
+    return this.http.delete<void>(`${this.base}/sequence-prefix-counters/${id}`);
   }
 }
