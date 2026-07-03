@@ -1098,7 +1098,7 @@
               align-items: center;
             "
           >
-            <span>Carrier Companies (Risk Companies) & Retention %</span>
+            <span>Carrier Companies (Risk Companies)</span>
             <button
               type="button"
               class="btn btn-sm btn-primary"
@@ -1111,7 +1111,7 @@
 
           @for (carrier of treatyForm.carriers; track $index; let i = $index) {
             <div class="form-row" style="align-items: flex-end; margin-bottom: 8px">
-              <div class="form-field" style="flex: 2">
+              <div class="form-field" style="flex: 1">
                 @if (i === 0) {
                   <label class="form-label">Carrier Company</label>
                 }
@@ -1123,45 +1123,6 @@
                   [itemLabelFn]="riskCompanyLabelFn"
                   [(selectedValue)]="carrier.risk_company_id"
                 ></app-dropdown-search>
-              </div>
-              <div class="form-field" style="flex: 1.5">
-                @if (i === 0) {
-                  <label class="form-label">Specific State (Opt)</label>
-                }
-                <app-dropdown-search
-                  [items]="stateOptions"
-                  [isMultiSelect]="false"
-                  bindValue="id"
-                  placeholder="All States"
-                  [itemLabelFn]="stateLabelFn"
-                  [(selectedValue)]="carrier.state_id"
-                ></app-dropdown-search>
-              </div>
-              <div class="form-field" style="flex: 1.5">
-                @if (i === 0) {
-                  <label class="form-label">Broker (Opt)</label>
-                }
-                <app-dropdown-search
-                  [items]="brokerOptions"
-                  [isMultiSelect]="false"
-                  bindValue="id"
-                  placeholder="None"
-                  [itemLabelFn]="brokerLabelFn"
-                  [(selectedValue)]="carrier.broker_id"
-                ></app-dropdown-search>
-              </div>
-              <div class="form-field" style="flex: 1">
-                @if (i === 0) {
-                  <label class="form-label">Retention %</label>
-                }
-                <input
-                  [(ngModel)]="carrier.retention_pct"
-                  [name]="'carrierRet_' + i"
-                  type="number"
-                  step="0.01"
-                  class="form-input"
-                  placeholder="100.00"
-                />
               </div>
               <div style="margin-left: 8px; margin-bottom: 4px">
                 <button
