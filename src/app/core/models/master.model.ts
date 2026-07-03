@@ -210,3 +210,14 @@ export interface TreatyReinsurer {
   state_id?: string | null;
   broker_id?: string | null;
 }
+
+export interface DocumentType {
+  id?: string;
+  code: string;
+  name: string;
+  description?: string | null;
+  is_active?: boolean;
+  isActive?: boolean;
+  createdAt?: string;
+  updatedAt?: string | null;
+}

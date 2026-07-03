@@ -43,7 +43,8 @@ type MasterTab =
   | 'gl-mappings'
   | 'brokers'
   | 'products'
-  | 'locked-periods';
+  | 'locked-periods'
+  | 'document-types';
 
 @Component({
   selector: 'app-masters',
@@ -128,6 +129,7 @@ export class MastersComponent implements OnInit {
   brokers: any[] = [];
   products: any[] = [];
   lockedPeriods: any[] = [];
+  documentTypes: DocumentType[] = [];
 
   // Pagination
   pageSize = 25;
@@ -136,7 +138,7 @@ export class MastersComponent implements OnInit {
   // Simple Modals (LOB, COB, Reinsurer, Broker, Product)
   showSimpleModal = false;
   simpleModalTitle = '';
-  simpleMode: 'lob' | 'cob' | 'reinsurer' | 'broker' | 'product' = 'lob';
+  simpleMode: 'lob' | 'cob' | 'reinsurer' | 'broker' | 'product' | 'document-type' = 'lob';
   isEditMode = false;
   submitting = false;
 
@@ -268,6 +270,8 @@ export class MastersComponent implements OnInit {
   selectedItem: any = null;
   documentsList: any[] = [];
   uploadingDoc = false;
+  documentTypesOptions: any[] = [];
+  selectedDocType = '';
 
   // Notes View Modal
   showNotesModal = false;
@@ -414,6 +418,7 @@ export class MastersComponent implements OnInit {
           'brokers',
           'products',
           'locked-periods',
+          'document-types',
         ].includes(tab)
       ) {
         this.currentTab = tab;
@@ -623,6 +628,20 @@ export class MastersComponent implements OnInit {
           },
         });
         break;
+      case 'document-types':
+        this.service.getDocumentTypes(search, active).subscribe({
+          next: res => {
+            this.documentTypes = res;
+            this.loading = false;
+            this.cdr.markForCheck();
+          },
+          error: () => {
+            this.toast.error('Failed to load Document Types');
+            this.loading = false;
+            this.cdr.markForCheck();
+          },
+        });
+        break;
     }
   }
 
@@ -671,6 +690,8 @@ export class MastersComponent implements OnInit {
         return this.products;
       case 'locked-periods':
         return this.lockedPeriods;
+      case 'document-types':
+        return this.documentTypes;
       default:
         return [];
     }
@@ -1153,6 +1174,32 @@ export class MastersComponent implements OnInit {
           },
         ];
 
+      case 'document-types':
+        return [
+          { headerName: 'CODE', field: 'code', flex: 1.5, minWidth: 120 },
+          { headerName: 'NAME', field: 'name', flex: 2, minWidth: 150 },
+          { headerName: 'DESCRIPTION', field: 'description', flex: 3, minWidth: 200 },
+          statusCol,
+          {
+            headerName: 'ACTIONS',
+            cellRenderer: ActionButtonsCellRenderer,
+            cellRendererParams: {
+              buttons: [
+                { label: 'Edit', action: 'edit' },
+                { label: 'Delete', action: 'delete', danger: true },
+              ],
+              onClick: (action: string, data: any) => {
+                if (action === 'edit') this.openSimpleEdit('document-type', data);
+                if (action === 'delete') this.deleteSimple('document-type', data);
+              },
+            },
+            flex: 0,
+            width: 160,
+            minWidth: 160,
+            maxWidth: 160,
+          },
+        ];
+
       default:
         return [];
     }
@@ -1189,7 +1236,7 @@ export class MastersComponent implements OnInit {
     this.simpleModalTitle = `Edit ${this.getMasterLabel(mode)}`;
     this.simpleForm = {
       id: item.id,
-      code: item.lob_code || item.cob_code || item.reinsurer_company_id || item.broker_code || item.product_id || '',
+      code: item.lob_code || item.cob_code || item.reinsurer_company_id || item.broker_code || item.product_id || item.code || '',
       name: item.name,
       is_active: item.is_active,
       description: item.description || '',
@@ -1255,6 +1302,9 @@ export class MastersComponent implements OnInit {
         case 'product':
           request = this.service.updateProduct(id, payload);
           break;
+        case 'document-type':
+          request = this.service.updateDocumentType(id, payload);
+          break;
       }
     } else {
       switch (this.simpleMode) {
@@ -1272,6 +1322,9 @@ export class MastersComponent implements OnInit {
           break;
         case 'product':
           request = this.service.createProduct(payload);
+          break;
+        case 'document-type':
+          request = this.service.createDocumentType(payload);
           break;
       }
     }
@@ -1311,6 +1364,9 @@ export class MastersComponent implements OnInit {
           break;
         case 'product':
           request = this.service.deleteProduct(item.id);
+          break;
+        case 'document-type':
+          request = this.service.deleteDocumentType(item.id);
           break;
       }
       request.subscribe({
@@ -1465,7 +1521,15 @@ export class MastersComponent implements OnInit {
     this.documentMode = mode;
     this.selectedItem = item;
     this.documentsList = [];
+    this.selectedDocType = '';
+    this.documentTypesOptions = [];
     this.showDocModal = true;
+    
+    this.service.getDocumentTypes(undefined, true).subscribe(res => {
+      this.documentTypesOptions = res;
+      this.cdr.markForCheck();
+    });
+
     this.loadDocuments();
   }
 
@@ -1496,14 +1560,20 @@ export class MastersComponent implements OnInit {
     const file: File = event.target.files[0];
     if (!file || !this.selectedItem) return;
 
+    if (!this.selectedDocType) {
+      this.toast.error('Please select a Document Type first');
+      event.target.value = '';
+      return;
+    }
+
     this.uploadingDoc = true;
     let request: Observable<any>;
     if (this.documentMode === 'mga') {
-      request = this.service.uploadMgaDocument(this.selectedItem.id, file);
+      request = this.service.uploadMgaDocument(this.selectedItem.id, file, this.selectedDocType);
     } else if (this.documentMode === 'state') {
-      request = this.service.uploadStateDocument(this.selectedItem.id, file);
+      request = this.service.uploadStateDocument(this.selectedItem.id, file, this.selectedDocType);
     } else {
-      request = this.service.uploadRiskCompanyDocument(this.selectedItem.id, file);
+      request = this.service.uploadRiskCompanyDocument(this.selectedItem.id, file, this.selectedDocType);
     }
 
     request.subscribe({
@@ -2135,6 +2205,12 @@ export class MastersComponent implements OnInit {
         return 'Reinsurer Company';
       case 'risk-company':
         return 'Risk Company';
+      case 'broker':
+        return 'Broker';
+      case 'product':
+        return 'Product';
+      case 'document-type':
+        return 'Document Type';
       default:
         return 'Master';
     }
@@ -2290,6 +2366,17 @@ export class MastersComponent implements OnInit {
         headers = ['GL Number', 'Type'];
         rows = this.glMappings.map(m => [this.getGLNumberDisplay(m), m.type]);
         filename = 'gl_mappings.csv';
+        break;
+
+      case 'document-types':
+        headers = ['Code', 'Name', 'Description', 'Status'];
+        rows = this.documentTypes.map(d => [
+          d.code,
+          d.name,
+          d.description || '-',
+          d.isActive ? 'Active' : 'Inactive',
+        ]);
+        filename = 'document_types.csv';
         break;
     }
 

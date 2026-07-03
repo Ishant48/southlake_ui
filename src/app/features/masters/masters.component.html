@@ -15,12 +15,12 @@
         <button class="btn-primary" (click)="openRiskCompanyAdd()">Add Risk Company</button>
       } @else if (currentTab === "gl-mappings") {
         <button class="btn-primary" (click)="openGlMappingAdd()">Add Mapping</button>
-      } @else if (currentTab === "lobs" || currentTab === "cobs" || currentTab === "reinsurers" || currentTab === "brokers" || currentTab === "products") {
+      } @else if (currentTab === "lobs" || currentTab === "cobs" || currentTab === "reinsurers" || currentTab === "brokers" || currentTab === "products" || currentTab === "document-types") {
         <button
           class="btn-primary"
-          (click)="openSimpleAdd(currentTab === 'lobs' ? 'lob' : currentTab === 'cobs' ? 'cob' : currentTab === 'reinsurers' ? 'reinsurer' : currentTab === 'brokers' ? 'broker' : 'product')"
+          (click)="openSimpleAdd(currentTab === 'lobs' ? 'lob' : currentTab === 'cobs' ? 'cob' : currentTab === 'reinsurers' ? 'reinsurer' : currentTab === 'brokers' ? 'broker' : currentTab === 'products' ? 'product' : 'document-type')"
         >
-          Add {{ currentTab === "lobs" ? "LOB" : currentTab === "cobs" ? "COB" : currentTab === "reinsurers" ? "Reinsurer" : currentTab === "brokers" ? "Broker" : "Product" }}
+          Add {{ currentTab === "lobs" ? "LOB" : currentTab === "cobs" ? "COB" : currentTab === "reinsurers" ? "Reinsurer" : currentTab === "brokers" ? "Broker" : currentTab === "products" ? "Product" : "Document Type" }}
         </button>
       } @else if (currentTab === "locked-periods") {
         <button class="btn-primary" (click)="openLockPeriodAdd()">Lock Period</button>
@@ -51,6 +51,9 @@
     </button>
     <button class="tab-link" [class.active]="currentTab === 'locked-periods'" (click)="selectTab('locked-periods')">
       Month-End Closing
+    </button>
+    <button class="tab-link" [class.active]="currentTab === 'document-types'" (click)="selectTab('document-types')">
+      Document Types
     </button>
     <button class="tab-link" [class.active]="currentTab === 'gl-mappings'" (click)="selectTab('gl-mappings')">
       GL Map
@@ -906,32 +909,57 @@
         </div>
 
         <div class="panel-body">
-          <div class="upload-section">
-            <span class="upload-label" style="font-weight: 600; color: var(--gray-700)">Attach File</span>
-            <label class="btn-primary upload-btn">
-              @if (uploadingDoc) {
-                <span class="spinner btn-spinner" style="width: 12px; height: 12px; margin-right: 6px"></span>
-                <span>Uploading...</span>
-              } @else {
-                <svg
-                  width="14"
-                  height="14"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2.5"
-                  style="margin-right: 6px"
-                >
-                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                  <polyline points="17 8 12 3 7 8" />
-                  <line x1="12" y1="3" x2="12" y2="15" />
-                </svg>
-                <span>Upload File</span>
-              }
-              <input type="file" [disabled]="uploadingDoc" (change)="onFileSelected($event)" style="display: none" />
-            </label>
+          <div class="upload-section" style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px; border-bottom: 1px solid var(--gray-200); padding-bottom: 16px;">
+            <div style="display: flex; flex-direction: column; gap: 6px;">
+              <span class="upload-label" style="font-weight: 600; color: var(--gray-700)">Document Type</span>
+              <select 
+                [(ngModel)]="selectedDocType" 
+                class="form-control" 
+                style="width: 100%; height: 38px; border: 1px solid var(--gray-300); border-radius: 6px; padding: 0 12px; font-family: 'Instrument Sans', sans-serif;"
+              >
+                <option value="">-- Select Document Type --</option>
+                @for (dt of documentTypesOptions; track dt.id) {
+                  <option [value]="dt.code">{{ dt.name }}</option>
+                }
+              </select>
+            </div>
+            
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 4px;">
+              <span class="upload-label" style="font-weight: 600; color: var(--gray-700)">Attach File</span>
+              <label 
+                class="btn-primary upload-btn" 
+                [style.opacity]="selectedDocType ? '1' : '0.5'" 
+                [style.cursor]="selectedDocType ? 'pointer' : 'not-allowed'"
+              >
+                @if (uploadingDoc) {
+                  <span class="spinner btn-spinner" style="width: 12px; height: 12px; margin-right: 6px"></span>
+                  <span>Uploading...</span>
+                } @else {
+                  <svg
+                    width="14"
+                    height="14"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2.5"
+                    style="margin-right: 6px"
+                  >
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                    <polyline points="17 8 12 3 7 8" />
+                    <line x1="12" y1="3" x2="12" y2="15" />
+                  </svg>
+                  <span>Upload File</span>
+                }
+                <input 
+                  type="file" 
+                  [disabled]="uploadingDoc || !selectedDocType" 
+                  (change)="onFileSelected($event)" 
+                  style="display: none" 
+                />
+              </label>
+            </div>
           </div>
-
+ 
           <div class="documents-list">
             @if (documentsList.length === 0) {
               <div class="empty-docs">
@@ -966,7 +994,16 @@
                       <polyline points="14 2 14 8 20 8" />
                     </svg>
                     <div class="doc-meta">
-                      <span class="doc-name" [title]="doc.file_name">{{ doc.file_name }}</span>
+                      <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                        <span class="doc-name" [title]="doc.file_name">{{ doc.file_name }}</span>
+                        @if (doc.document_type || doc.documentType) {
+                          <span 
+                            style="font-size: 10px; font-weight: 700; background: var(--gray-100); color: var(--gray-600); padding: 2px 6px; border-radius: 4px; border: 1px solid var(--gray-200);"
+                          >
+                            {{ doc.document_type || doc.documentType }}
+                          </span>
+                        }
+                      </div>
                       <span class="doc-date">Uploaded {{ doc.uploaded_at | date: "short" }}</span>
                     </div>
                   </div>
