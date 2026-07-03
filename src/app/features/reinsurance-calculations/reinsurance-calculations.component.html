@@ -282,7 +282,7 @@
         <!-- 2. GL Journal Entries Tab -->
         <div *ngIf="activeTab === 'glje'">
           <div class="export-bar flex-between">
-            <button class="btn btn-success" (click)="postToJournalEntries()" [disabled]="postingBatch || isPosted">
+            <button class="btn btn-success" (click)="onPostClick()" [disabled]="postingBatch">
               🚀 Post to Journal Entries Batch
             </button>
             <button class="btn btn-primary" (click)="exportGLJECSV()">📥 Export Mappings to CSV</button>
@@ -536,4 +536,11 @@
       </div>
     </div>
   </div>
+  <app-confirm-dialog
+    [open]="confirmOpen"
+    [title]="confirmTitle"
+    [message]="confirmMessage"
+    (confirmed)="onConfirm()"
+    (cancelled)="onCancelConfirm()"
+  ></app-confirm-dialog>
 </div>

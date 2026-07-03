@@ -5,11 +5,12 @@ import { Router } from '@angular/router';
 import { ReinsuranceService } from '../../core/services/reinsurance.service';
 import { ToastService } from '../../shared/components/toast/toast.service';
 import { MastersService } from '../../core/services/masters.service';
+import { ConfirmDialogComponent } from '../../shared/components/confirm-dialog/confirm-dialog.component';
 
 @Component({
   selector: 'app-reinsurance-calculations',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, ConfirmDialogComponent],
   templateUrl: './reinsurance-calculations.component.html',
   styleUrl: './reinsurance-calculations.component.scss',
 })
@@ -34,6 +35,11 @@ export class ReinsuranceCalculationsComponent implements OnInit {
 
   loading = false;
   postingBatch = false;
+
+  confirmOpen = false;
+  confirmTitle = '';
+  confirmMessage = '';
+  pendingAction: (() => void) | null = null;
 
   // Forms
   ratesForm: any = {};
@@ -375,6 +381,36 @@ export class ReinsuranceCalculationsComponent implements OnInit {
         this.cdr.markForCheck();
       },
     });
+  }
+
+  onPostClick(): void {
+    if (this.isPosted) {
+      this.toast.error('You have already posted to journal entries');
+      return;
+    }
+
+    this.confirmTitle = 'Post to Journal Entries';
+    this.confirmMessage = 'Do you want to post to journal entries Batch?';
+    this.pendingAction = () => {
+      this.postToJournalEntries();
+    };
+    this.confirmOpen = true;
+    this.cdr.markForCheck();
+  }
+
+  onConfirm(): void {
+    if (this.pendingAction) {
+      this.pendingAction();
+    }
+    this.confirmOpen = false;
+    this.pendingAction = null;
+    this.cdr.markForCheck();
+  }
+
+  onCancelConfirm(): void {
+    this.confirmOpen = false;
+    this.pendingAction = null;
+    this.cdr.markForCheck();
   }
 
   postToJournalEntries(): void {
