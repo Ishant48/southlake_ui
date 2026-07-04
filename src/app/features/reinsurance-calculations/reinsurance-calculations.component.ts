@@ -256,7 +256,7 @@ export class ReinsuranceCalculationsComponent implements OnInit {
         },
       });
     } else if (this.activeTab === 'cash') {
-      this.service.getCashSettlementCalculations(this.selectedWorkbookId).subscribe({
+      this.service.getCashSettlementCalculations(this.selectedWorkbookId, this.selectedState).subscribe({
         next: res => {
           this.cashSettlement = res;
           this.loading = false;
@@ -542,5 +542,16 @@ export class ReinsuranceCalculationsComponent implements OnInit {
       maximumFractionDigits: 2,
     }).format(Math.abs(num));
     return isNegative ? `-$${formatted}` : `$${formatted}`;
+  }
+
+  formatAccounting(value: number | string | null | undefined): string {
+    if (value === null || value === undefined || value === '') return '-';
+    const num = Number(value);
+    if (isNaN(num) || Math.abs(num) < 0.001) return '-';
+    const absVal = new Intl.NumberFormat('en-US', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(Math.abs(num));
+    return num < 0 ? `(${absVal})` : absVal;
   }
 }
