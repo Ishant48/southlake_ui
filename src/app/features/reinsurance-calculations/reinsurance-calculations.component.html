@@ -107,6 +107,14 @@
                 <input type="number" [(ngModel)]="paramsForm.lae_ibnr_aoe" class="form-control" readonly />
               </div>
               <div class="form-group">
+                <label>Previous LAE Reserves - DCC</label>
+                <input type="number" [(ngModel)]="paramsForm.prev_lae_reserves_dcc" class="form-control" readonly />
+              </div>
+              <div class="form-group">
+                <label>Previous LAE Reserves - AOE</label>
+                <input type="number" [(ngModel)]="paramsForm.prev_lae_reserves_aoe" class="form-control" readonly />
+              </div>
+              <div class="form-group">
                 <label>Previous ULAE IBNR Reserves</label>
                 <input type="number" [(ngModel)]="paramsForm.ulae_ibnr" class="form-control" readonly />
               </div>
@@ -451,59 +459,51 @@
           <div class="cash-inputs-bar">
             <div class="form-group-inline">
               <label>Beginning Balance</label>
-              <input type="number" [(ngModel)]="cashSettlement.beg_bal" class="form-control-sm" />
+              <input type="number" [(ngModel)]="cashSettlement.beg_bal" (change)="saveCashParams()" class="form-control-sm" />
             </div>
             <div class="form-group-inline">
               <label>Amount Paid (Loss Funding)</label>
-              <input type="number" [(ngModel)]="cashSettlement.amt_paid" class="form-control-sm" />
+              <input type="number" [(ngModel)]="cashSettlement.amt_paid" (change)="saveCashParams()" class="form-control-sm" />
             </div>
             <button class="btn btn-primary" (click)="saveCashParams()">Update Balances</button>
           </div>
 
           <div class="table-container mt-4">
-            <table class="data-table">
+            <table class="cash-settlement-table">
               <thead>
-                <tr>
-                  <th>Cash Settlement Metric</th>
-                  <th class="text-right">SSIC Cession (Carrier)</th>
-                  <th class="text-right">Reinsurer Cession (100%)</th>
+                <tr class="header-main">
+                  <th rowspan="2" class="col-desc">Description</th>
+                  <th class="col-total text-center">(1) TOTAL</th>
+                  <th class="col-reins text-center">(2) REINSURERS AMOUNT</th>
+                  <th class="col-ssic text-center">(3) SSIC AMOUNT</th>
+                </tr>
+                <tr class="header-sub">
+                  <th class="col-total text-center">100 %</th>
+                  <th class="col-reins text-center">{{ (cashSettlement.reinsurerName || 'Starlight Re') + ' ' + (cashSettlement.qsPct || 100) + '%' }}</th>
+                  <th class="col-ssic text-center">{{ (100 - (cashSettlement.qsPct || 100)) + '%' }}</th>
                 </tr>
               </thead>
               <tbody>
-                <tr>
-                  <td>Quota Share Percentage</td>
-                  <td class="text-right">{{ 100 - (selectedWorkbook.rates.qs || 100) }}%</td>
-                  <td class="text-right">{{ selectedWorkbook.rates.qs || 100 }}%</td>
-                </tr>
-                <tr class="bold-row">
-                  <td>Beginning Balance</td>
-                  <td class="text-right">-</td>
-                  <td class="text-right">{{ formatCurrency(cashSettlement.beg_bal) }}</td>
-                </tr>
-                <tr>
-                  <td>Premiums Written (Net Ceding Comm & Fee)</td>
-                  <td class="text-right">{{ formatCurrency(cashSettlement.premium_carrier) }}</td>
-                  <td class="text-right">{{ formatCurrency(cashSettlement.premium_reinsurer) }}</td>
-                </tr>
-                <tr>
-                  <td>Losses Paid (ALAE & ULAE)</td>
-                  <td class="text-right">{{ formatCurrency(cashSettlement.loss_paid_carrier) }}</td>
-                  <td class="text-right">{{ formatCurrency(cashSettlement.loss_paid_reinsurer) }}</td>
-                </tr>
-                <tr class="bold-row">
-                  <td>Net Cash Settlement</td>
-                  <td class="text-right">{{ formatCurrency(cashSettlement.net_carrier) }}</td>
-                  <td class="text-right">{{ formatCurrency(cashSettlement.net_reinsurer) }}</td>
-                </tr>
-                <tr>
-                  <td>Amount Paid (Loss Funding / Drawdowns)</td>
-                  <td class="text-right">-</td>
-                  <td class="text-right">{{ formatCurrency(cashSettlement.amt_paid) }}</td>
-                </tr>
-                <tr class="bold-row underline-row">
-                  <td>Ending Cash Settlement Balance</td>
-                  <td class="text-right">-</td>
-                  <td class="text-right text-green">{{ formatCurrency(cashSettlement.ending_balance) }}</td>
+                <tr *ngFor="let r of cashSettlement.rows" [class.bold-row]="r.isBold" [class.subtotal-row]="r.isSubtotal">
+                  <td class="col-desc">{{ r.label }}</td>
+                  <td class="text-right col-total">{{ formatAccounting(r.total) }}</td>
+                  <td class="text-right col-reins" [class.text-red]="r.reinsColor === 'red'" [class.text-purple]="r.reinsColor === 'purple'">
+                    {{ formatAccounting(r.reins) }}
+                  </td>
+                  <td class="text-right col-ssic"
+                      [class.text-green]="r.ssicColor === 'green'"
+                      [class.single-underline]="r.ssicUnderline"
+                      [class.editable-cell]="r.isInput">
+                    <ng-container *ngIf="r.isInput === 'beg_bal'">
+                      <input type="number" [(ngModel)]="cashSettlement.beg_bal" (change)="saveCashParams()" class="table-inline-input" />
+                    </ng-container>
+                    <ng-container *ngIf="r.isInput === 'amt_paid'">
+                      <input type="number" [(ngModel)]="cashSettlement.amt_paid" (change)="saveCashParams()" class="table-inline-input" />
+                    </ng-container>
+                    <ng-container *ngIf="!r.isInput">
+                      {{ formatAccounting(r.ssic) }}
+                    </ng-container>
+                  </td>
                 </tr>
               </tbody>
             </table>

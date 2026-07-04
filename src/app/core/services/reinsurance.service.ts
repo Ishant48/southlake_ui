@@ -60,8 +60,8 @@ export class ReinsuranceService {
     return this.http.get<any[]>(`${this.apiUrl}/workbooks/${id}/gl-journal-entries/${stateCode}`);
   }
 
-  getCashSettlementCalculations(id: number): Observable<any> {
-    return this.http.get<any>(`${this.apiUrl}/workbooks/${id}/cash-settlement-calculations`);
+  getCashSettlementCalculations(id: number, stateCode: string = 'TOTAL'): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/workbooks/${id}/cash-settlement-calculations?stateCode=${stateCode}`);
   }
 
   updateMappings(id: number, data: any): Observable<any> {

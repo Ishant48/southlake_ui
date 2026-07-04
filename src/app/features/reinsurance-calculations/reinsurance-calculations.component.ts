@@ -222,7 +222,9 @@ export class ReinsuranceCalculationsComponent implements OnInit {
         curr_uep: curEx.uep?.[1] || 0,
         prev_loss_reserves: curEx.loss_reserves?.[0] || 0,
         loss_ibnr: curEx.loss_ibnr?.[0] || 0,
+        prev_lae_reserves_dcc: curEx.lae_reserves_dcc?.[0] || 0,
         lae_ibnr_dcc: curEx.lae_ibnr_dcc?.[0] || 0,
+        prev_lae_reserves_aoe: curEx.lae_reserves_aoe?.[0] || 0,
         lae_ibnr_aoe: curEx.lae_ibnr_aoe?.[0] || 0,
         ulae_ibnr: curEx.ulae_ibnr?.[0] || 0,
       };
@@ -254,7 +256,7 @@ export class ReinsuranceCalculationsComponent implements OnInit {
         },
       });
     } else if (this.activeTab === 'cash') {
-      this.service.getCashSettlementCalculations(this.selectedWorkbookId).subscribe({
+      this.service.getCashSettlementCalculations(this.selectedWorkbookId, this.selectedState).subscribe({
         next: res => {
           this.cashSettlement = res;
           this.loading = false;
@@ -315,6 +317,16 @@ export class ReinsuranceCalculationsComponent implements OnInit {
     lae_ibnr_aoe[1] = Number(lae_ibnr_aoe[1] || 0);
     lae_ibnr_aoe[2] = lae_ibnr_aoe[0] + lae_ibnr_aoe[1];
 
+    const lae_reserves_dcc = getArr(curEx.lae_reserves_dcc);
+    lae_reserves_dcc[0] = Number(this.paramsForm.prev_lae_reserves_dcc || 0);
+    lae_reserves_dcc[1] = Number(lae_reserves_dcc[1] || 0);
+    lae_reserves_dcc[2] = lae_reserves_dcc[0] + lae_reserves_dcc[1];
+
+    const lae_reserves_aoe = getArr(curEx.lae_reserves_aoe);
+    lae_reserves_aoe[0] = Number(this.paramsForm.prev_lae_reserves_aoe || 0);
+    lae_reserves_aoe[1] = Number(lae_reserves_aoe[1] || 0);
+    lae_reserves_aoe[2] = lae_reserves_aoe[0] + lae_reserves_aoe[1];
+
     const ulae_ibnr = getArr(curEx.ulae_ibnr);
     ulae_ibnr[0] = Number(this.paramsForm.ulae_ibnr || 0);
     ulae_ibnr[1] = Number(ulae_ibnr[1] || 0);
@@ -326,6 +338,8 @@ export class ReinsuranceCalculationsComponent implements OnInit {
       loss_reserves,
       lu,
       loss_ibnr,
+      lae_reserves_dcc,
+      lae_reserves_aoe,
       lae_ibnr_dcc,
       lae_ibnr_aoe,
       ulae_ibnr,
@@ -528,5 +542,16 @@ export class ReinsuranceCalculationsComponent implements OnInit {
       maximumFractionDigits: 2,
     }).format(Math.abs(num));
     return isNegative ? `-$${formatted}` : `$${formatted}`;
+  }
+
+  formatAccounting(value: number | string | null | undefined): string {
+    if (value === null || value === undefined || value === '') return '-';
+    const num = Number(value);
+    if (isNaN(num) || Math.abs(num) < 0.001) return '-';
+    const absVal = new Intl.NumberFormat('en-US', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(Math.abs(num));
+    return num < 0 ? `(${absVal})` : absVal;
   }
 }
