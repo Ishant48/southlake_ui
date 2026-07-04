@@ -220,6 +220,7 @@ export class ReinsuranceCalculationsComponent implements OnInit {
         pw: curEx.pw?.[1] || 0,
         prev_uep: curEx.uep?.[0] || 0,
         curr_uep: curEx.uep?.[1] || 0,
+        prev_loss_reserves: curEx.loss_reserves?.[0] || 0,
         loss_ibnr: curEx.loss_ibnr?.[0] || 0,
         lae_ibnr_dcc: curEx.lae_ibnr_dcc?.[0] || 0,
         lae_ibnr_aoe: curEx.lae_ibnr_aoe?.[0] || 0,
@@ -289,6 +290,16 @@ export class ReinsuranceCalculationsComponent implements OnInit {
     uep[1] = Number(this.paramsForm.curr_uep || 0);
     uep[2] = uep[0] + uep[1];
 
+    const loss_reserves = getArr(curEx.loss_reserves);
+    loss_reserves[0] = Number(this.paramsForm.prev_loss_reserves || 0);
+    loss_reserves[1] = Number(loss_reserves[1] || 0);
+    loss_reserves[2] = loss_reserves[0] + loss_reserves[1];
+
+    const lu = getArr(curEx.lu);
+    lu[0] = Number(this.paramsForm.prev_loss_reserves || 0);
+    lu[1] = Number(lu[1] || 0);
+    lu[2] = lu[0] + lu[1];
+
     const loss_ibnr = getArr(curEx.loss_ibnr);
     loss_ibnr[0] = Number(this.paramsForm.loss_ibnr || 0);
     loss_ibnr[1] = Number(loss_ibnr[1] || 0);
@@ -312,6 +323,8 @@ export class ReinsuranceCalculationsComponent implements OnInit {
     const exData = {
       pw,
       uep,
+      loss_reserves,
+      lu,
       loss_ibnr,
       lae_ibnr_dcc,
       lae_ibnr_aoe,
