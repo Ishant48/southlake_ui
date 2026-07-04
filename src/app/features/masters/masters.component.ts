@@ -2740,6 +2740,7 @@ export class MastersComponent implements OnInit {
     for (const st of this.itdStatesList) {
       this.itdForm.exhibits[st.code] = {
         uep: 0,
+        loss_reserves: 0,
         loss_ibnr: 0,
         lae_ibnr_dcc: 0,
         lae_ibnr_aoe: 0,
@@ -2763,6 +2764,7 @@ export class MastersComponent implements OnInit {
             if (stateCode && this.itdForm.exhibits[stateCode]) {
               this.itdForm.exhibits[stateCode] = {
                 uep: getVal(se.uep),
+                loss_reserves: getVal(se.loss_reserves ?? se.lossReserves),
                 loss_ibnr: getVal(se.loss_ibnr ?? se.lossIbnr),
                 lae_ibnr_dcc: getVal(se.lae_ibnr_dcc ?? se.laeIbnrDcc),
                 lae_ibnr_aoe: getVal(se.lae_ibnr_aoe ?? se.laeIbnrAoe),
@@ -2793,6 +2795,7 @@ export class MastersComponent implements OnInit {
       return {
         state_code: code,
         uep: Number(ex.uep || 0),
+        loss_reserves: Number(ex.loss_reserves || 0),
         loss_ibnr: Number(ex.loss_ibnr || 0),
         lae_ibnr_dcc: Number(ex.lae_ibnr_dcc || 0),
         lae_ibnr_aoe: Number(ex.lae_ibnr_aoe || 0),
