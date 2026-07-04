@@ -40,30 +40,6 @@
               </select>
             </div>
           </div>
-
-          <div class="filter-control-group">
-            <label>State</label>
-            <div class="select-wrapper state-select">
-              <select [(ngModel)]="selectedState" (ngModelChange)="onFilterChange()">
-                <option value="all">All States</option>
-                @for (s of statesOptions; track s) {
-                  <option [value]="s">{{ s }}</option>
-                }
-              </select>
-            </div>
-          </div>
-
-          <div class="filter-control-group">
-            <label>Amount Range</label>
-            <div class="select-wrapper amount-select">
-              <select [(ngModel)]="selectedAmountRange" (ngModelChange)="onFilterChange()">
-                <option value="all">All Amounts</option>
-                <option value="under-10k">Under $10k</option>
-                <option value="10k-100k">$10k - $100k</option>
-                <option value="over-100k">Over $100k</option>
-              </select>
-            </div>
-          </div>
         </div>
 
         <button class="btn-add-batch" (click)="openAddBatch()">

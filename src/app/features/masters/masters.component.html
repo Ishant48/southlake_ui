@@ -15,12 +15,12 @@
         <button class="btn-primary" (click)="openRiskCompanyAdd()">Add Risk Company</button>
       } @else if (currentTab === "gl-mappings") {
         <button class="btn-primary" (click)="openGlMappingAdd()">Add Mapping</button>
-      } @else if (currentTab === "lobs" || currentTab === "cobs" || currentTab === "reinsurers" || currentTab === "brokers" || currentTab === "products") {
+      } @else if (currentTab === "lobs" || currentTab === "cobs" || currentTab === "reinsurers" || currentTab === "brokers" || currentTab === "products" || currentTab === "document-types" || currentTab === "sequence-prefix-counters") {
         <button
           class="btn-primary"
-          (click)="openSimpleAdd(currentTab === 'lobs' ? 'lob' : currentTab === 'cobs' ? 'cob' : currentTab === 'reinsurers' ? 'reinsurer' : currentTab === 'brokers' ? 'broker' : 'product')"
+          (click)="openSimpleAdd(currentTab === 'lobs' ? 'lob' : currentTab === 'cobs' ? 'cob' : currentTab === 'reinsurers' ? 'reinsurer' : currentTab === 'brokers' ? 'broker' : currentTab === 'products' ? 'product' : currentTab === 'document-types' ? 'document-type' : 'sequence-prefix-counter')"
         >
-          Add {{ currentTab === "lobs" ? "LOB" : currentTab === "cobs" ? "COB" : currentTab === "reinsurers" ? "Reinsurer" : currentTab === "brokers" ? "Broker" : "Product" }}
+          Add {{ currentTab === "lobs" ? "LOB" : currentTab === "cobs" ? "COB" : currentTab === "reinsurers" ? "Reinsurer" : currentTab === "brokers" ? "Broker" : currentTab === "products" ? "Product" : currentTab === "document-types" ? "Document Type" : "Sequence Counter" }}
         </button>
       } @else if (currentTab === "locked-periods") {
         <button class="btn-primary" (click)="openLockPeriodAdd()">Lock Period</button>
@@ -51,6 +51,12 @@
     </button>
     <button class="tab-link" [class.active]="currentTab === 'locked-periods'" (click)="selectTab('locked-periods')">
       Month-End Closing
+    </button>
+    <button class="tab-link" [class.active]="currentTab === 'document-types'" (click)="selectTab('document-types')">
+      Document Types
+    </button>
+    <button class="tab-link" [class.active]="currentTab === 'sequence-prefix-counters'" (click)="selectTab('sequence-prefix-counters')">
+      Sequence Counters
     </button>
     <button class="tab-link" [class.active]="currentTab === 'gl-mappings'" (click)="selectTab('gl-mappings')">
       GL Map
@@ -193,7 +199,7 @@
           <div class="form-row">
             <div class="form-field">
               <label class="form-label">
-                {{ simpleMode === "lob" ? "LOB ID *" : simpleMode === "cob" ? "Class ID *" : simpleMode === "broker" ? "Broker Code *" : simpleMode === "product" ? "Product ID *" : "Code ID *" }}
+                {{ simpleMode === "lob" ? "LOB ID *" : simpleMode === "cob" ? "Class ID *" : simpleMode === "broker" ? "Broker Code *" : simpleMode === "product" ? "Product ID *" : simpleMode === "sequence-prefix-counter" ? "Sequence Code *" : "Code ID *" }}
               </label>
               <input
                 [(ngModel)]="simpleForm.code"
@@ -207,7 +213,7 @@
             </div>
             <div class="form-field">
               <label class="form-label">
-                {{ simpleMode === "lob" ? "LOB Name *" : simpleMode === "cob" ? "Class Name *" : simpleMode === "broker" ? "Broker Name *" : simpleMode === "product" ? "Product Name *" : "Name *" }}
+                {{ simpleMode === "lob" ? "LOB Name *" : simpleMode === "cob" ? "Class Name *" : simpleMode === "broker" ? "Broker Name *" : simpleMode === "product" ? "Product Name *" : simpleMode === "sequence-prefix-counter" ? "Sequence Name *" : "Name *" }}
               </label>
               <input
                 [(ngModel)]="simpleForm.name"
@@ -362,6 +368,57 @@
                   [(ngModel)]="simpleForm.description"
                   name="description"
                   placeholder="Description details..."
+                  class="form-input"
+                  style="height: 60px; resize: vertical"
+                ></textarea>
+              </div>
+            </div>
+          }
+
+          @if (simpleMode === "sequence-prefix-counter") {
+            <div class="form-row" style="margin-top: 8px">
+              <div class="form-field">
+                <label class="form-label">Prefix</label>
+                <input
+                  [(ngModel)]="simpleForm.prefix"
+                  name="prefix"
+                  type="text"
+                  placeholder="e.g. POL"
+                  class="form-input"
+                />
+              </div>
+            </div>
+            <div class="form-row" style="margin-top: 8px">
+              <div class="form-field">
+                <label class="form-label">Next Value *</label>
+                <input
+                  [(ngModel)]="simpleForm.next_value"
+                  name="next_value"
+                  type="number"
+                  placeholder="1"
+                  class="form-input"
+                  required
+                />
+              </div>
+              <div class="form-field">
+                <label class="form-label">Padding Width *</label>
+                <input
+                  [(ngModel)]="simpleForm.padding_width"
+                  name="padding_width"
+                  type="number"
+                  placeholder="4"
+                  class="form-input"
+                  required
+                />
+              </div>
+            </div>
+            <div class="form-row" style="margin-top: 8px">
+              <div class="form-field">
+                <label class="form-label">Description</label>
+                <textarea
+                  [(ngModel)]="simpleForm.description"
+                  name="description"
+                  placeholder="Description..."
                   class="form-input"
                   style="height: 60px; resize: vertical"
                 ></textarea>
@@ -535,29 +592,6 @@
           </div>
 
           <div class="form-row">
-            <div class="form-field">
-              <label class="form-label">Tax Payable Inhouse</label>
-              <div class="radio-group">
-                <label>
-                  <input
-                    type="radio"
-                    [value]="true"
-                    [(ngModel)]="mgaForm.tax_payable_inhouse"
-                    name="taxPayableInhouse"
-                  />
-                  Yes
-                </label>
-                <label>
-                  <input
-                    type="radio"
-                    [value]="false"
-                    [(ngModel)]="mgaForm.tax_payable_inhouse"
-                    name="taxPayableInhouse"
-                  />
-                  No
-                </label>
-              </div>
-            </div>
             <div class="form-field">
               <label class="form-label">Open Item</label>
               <div class="radio-group">
@@ -906,32 +940,57 @@
         </div>
 
         <div class="panel-body">
-          <div class="upload-section">
-            <span class="upload-label" style="font-weight: 600; color: var(--gray-700)">Attach File</span>
-            <label class="btn-primary upload-btn">
-              @if (uploadingDoc) {
-                <span class="spinner btn-spinner" style="width: 12px; height: 12px; margin-right: 6px"></span>
-                <span>Uploading...</span>
-              } @else {
-                <svg
-                  width="14"
-                  height="14"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2.5"
-                  style="margin-right: 6px"
-                >
-                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                  <polyline points="17 8 12 3 7 8" />
-                  <line x1="12" y1="3" x2="12" y2="15" />
-                </svg>
-                <span>Upload File</span>
-              }
-              <input type="file" [disabled]="uploadingDoc" (change)="onFileSelected($event)" style="display: none" />
-            </label>
+          <div class="upload-section" style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px; border-bottom: 1px solid var(--gray-200); padding-bottom: 16px;">
+            <div style="display: flex; flex-direction: column; gap: 6px;">
+              <span class="upload-label" style="font-weight: 600; color: var(--gray-700)">Document Type</span>
+              <select 
+                [(ngModel)]="selectedDocType" 
+                class="form-control" 
+                style="width: 100%; height: 38px; border: 1px solid var(--gray-300); border-radius: 6px; padding: 0 12px; font-family: 'Instrument Sans', sans-serif;"
+              >
+                <option value="">-- Select Document Type --</option>
+                @for (dt of documentTypesOptions; track dt.id) {
+                  <option [value]="dt.code">{{ dt.name }}</option>
+                }
+              </select>
+            </div>
+            
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 4px;">
+              <span class="upload-label" style="font-weight: 600; color: var(--gray-700)">Attach File</span>
+              <label 
+                class="btn-primary upload-btn" 
+                [style.opacity]="selectedDocType ? '1' : '0.5'" 
+                [style.cursor]="selectedDocType ? 'pointer' : 'not-allowed'"
+              >
+                @if (uploadingDoc) {
+                  <span class="spinner btn-spinner" style="width: 12px; height: 12px; margin-right: 6px"></span>
+                  <span>Uploading...</span>
+                } @else {
+                  <svg
+                    width="14"
+                    height="14"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2.5"
+                    style="margin-right: 6px"
+                  >
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                    <polyline points="17 8 12 3 7 8" />
+                    <line x1="12" y1="3" x2="12" y2="15" />
+                  </svg>
+                  <span>Upload File</span>
+                }
+                <input 
+                  type="file" 
+                  [disabled]="uploadingDoc || !selectedDocType" 
+                  (change)="onFileSelected($event)" 
+                  style="display: none" 
+                />
+              </label>
+            </div>
           </div>
-
+ 
           <div class="documents-list">
             @if (documentsList.length === 0) {
               <div class="empty-docs">
@@ -966,7 +1025,16 @@
                       <polyline points="14 2 14 8 20 8" />
                     </svg>
                     <div class="doc-meta">
-                      <span class="doc-name" [title]="doc.file_name">{{ doc.file_name }}</span>
+                      <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                        <span class="doc-name" [title]="doc.file_name">{{ doc.file_name }}</span>
+                        @if (doc.document_type || doc.documentType) {
+                          <span 
+                            style="font-size: 10px; font-weight: 700; background: var(--gray-100); color: var(--gray-600); padding: 2px 6px; border-radius: 4px; border: 1px solid var(--gray-200);"
+                          >
+                            {{ doc.document_type || doc.documentType }}
+                          </span>
+                        }
+                      </div>
                       <span class="doc-date">Uploaded {{ doc.uploaded_at | date: "short" }}</span>
                     </div>
                   </div>
@@ -1061,86 +1129,22 @@
               align-items: center;
             "
           >
-            <span>Carrier Companies (Risk Companies) & Retention %</span>
-            <button
-              type="button"
-              class="btn btn-sm btn-primary"
-              (click)="addCarrierRow()"
-              style="font-size: 11px; padding: 4px 8px"
-            >
-              + Add Carrier
-            </button>
+            <span>Carrier Company (Risk Company)</span>
           </h4>
 
-          @for (carrier of treatyForm.carriers; track $index; let i = $index) {
-            <div class="form-row" style="align-items: flex-end; margin-bottom: 8px">
-              <div class="form-field" style="flex: 2">
-                @if (i === 0) {
-                  <label class="form-label">Carrier Company</label>
-                }
+          @if (treatyForm.carriers && treatyForm.carriers[0]) {
+            <div class="form-row" style="margin-bottom: 8px">
+              <div class="form-field" style="flex: 1">
+                <label class="form-label">Carrier Company *</label>
                 <app-dropdown-search
                   [items]="riskCompanyOptions"
                   [isMultiSelect]="false"
                   bindValue="id"
                   placeholder="Select Carrier"
                   [itemLabelFn]="riskCompanyLabelFn"
-                  [(selectedValue)]="carrier.risk_company_id"
+                  [(selectedValue)]="treatyForm.carriers[0].risk_company_id"
                 ></app-dropdown-search>
               </div>
-              <div class="form-field" style="flex: 1.5">
-                @if (i === 0) {
-                  <label class="form-label">Specific State (Opt)</label>
-                }
-                <app-dropdown-search
-                  [items]="stateOptions"
-                  [isMultiSelect]="false"
-                  bindValue="id"
-                  placeholder="All States"
-                  [itemLabelFn]="stateLabelFn"
-                  [(selectedValue)]="carrier.state_id"
-                ></app-dropdown-search>
-              </div>
-              <div class="form-field" style="flex: 1.5">
-                @if (i === 0) {
-                  <label class="form-label">Broker (Opt)</label>
-                }
-                <app-dropdown-search
-                  [items]="brokerOptions"
-                  [isMultiSelect]="false"
-                  bindValue="id"
-                  placeholder="None"
-                  [itemLabelFn]="brokerLabelFn"
-                  [(selectedValue)]="carrier.broker_id"
-                ></app-dropdown-search>
-              </div>
-              <div class="form-field" style="flex: 1">
-                @if (i === 0) {
-                  <label class="form-label">Retention %</label>
-                }
-                <input
-                  [(ngModel)]="carrier.retention_pct"
-                  [name]="'carrierRet_' + i"
-                  type="number"
-                  step="0.01"
-                  class="form-input"
-                  placeholder="100.00"
-                />
-              </div>
-              <div style="margin-left: 8px; margin-bottom: 4px">
-                <button
-                  type="button"
-                  class="btn btn-danger"
-                  (click)="removeCarrierRow(i)"
-                  style="padding: 6px 10px; font-size: 12px; height: 38px"
-                >
-                  ✕
-                </button>
-              </div>
-            </div>
-          }
-          @if (!treatyForm.carriers || treatyForm.carriers.length === 0) {
-            <div style="color: var(--gray-500); font-size: 12px; margin-bottom: 12px; font-style: italic">
-              No carriers added yet. Click "+ Add Carrier" to define a carrier retention split.
             </div>
           }
 
@@ -1270,14 +1274,8 @@
               <input [(ngModel)]="treatyForm.effective_date" name="effDate" type="date" class="form-input" />
             </div>
             <div class="form-field">
-              <label class="form-label">Expiration Date (Blank = Open)</label>
+              <label class="form-label">Expiration Date <span style="color: var(--gray-500); font-weight: normal; font-size: 11px; margin-left: 4px;">(Continuous)</span></label>
               <input [(ngModel)]="treatyForm.expiration_date" name="expDate" type="date" class="form-input" />
-            </div>
-            <div class="form-field" style="display: flex; align-items: flex-end; padding-bottom: 8px">
-              <div class="form-checkbox-field">
-                <input [(ngModel)]="treatyForm.is_active" name="isActive" type="checkbox" id="treatyIsActive" />
-                <label for="treatyIsActive" style="cursor: pointer">Active Status</label>
-              </div>
             </div>
           </div>
 
@@ -1645,6 +1643,10 @@
               <div class="form-field">
                 <label class="form-label">Unearned Premium Reserve</label>
                 <input type="number" class="form-input" [(ngModel)]="itdForm.exhibits[itdSelectedStateCode].uep" />
+              </div>
+              <div class="form-field">
+                <label class="form-label">Loss Reserves</label>
+                <input type="number" class="form-input" [(ngModel)]="itdForm.exhibits[itdSelectedStateCode].loss_reserves" />
               </div>
               <div class="form-field">
                 <label class="form-label">Loss IBNR Reserves</label>

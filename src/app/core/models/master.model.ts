@@ -210,3 +210,30 @@ export interface TreatyReinsurer {
   state_id?: string | null;
   broker_id?: string | null;
 }
+
+export interface DocumentType {
+  id?: string;
+  code: string;
+  name: string;
+  description?: string | null;
+  is_active?: boolean;
+  isActive?: boolean;
+  createdAt?: string;
+  updatedAt?: string | null;
+}
+
+export interface SequencePrefixCounter {
+  id?: string;
+  code: string;
+  name: string;
+  prefix?: string | null;
+  nextValue?: number;
+  next_value?: number;
+  paddingWidth?: number;
+  padding_width?: number;
+  description?: string | null;
+  is_active?: boolean;
+  isActive?: boolean;
+  createdAt?: string;
+  updatedAt?: string | null;
+}

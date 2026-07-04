@@ -91,6 +91,10 @@
                 <input type="number" [(ngModel)]="paramsForm.curr_uep" class="form-control" readonly />
               </div>
               <div class="form-group">
+                <label>Previous Loss Reserves</label>
+                <input type="number" [(ngModel)]="paramsForm.prev_loss_reserves" class="form-control" readonly />
+              </div>
+              <div class="form-group">
                 <label>Previous Loss IBNR Reserves</label>
                 <input type="number" [(ngModel)]="paramsForm.loss_ibnr" class="form-control" readonly />
               </div>
@@ -282,7 +286,7 @@
         <!-- 2. GL Journal Entries Tab -->
         <div *ngIf="activeTab === 'glje'">
           <div class="export-bar flex-between">
-            <button class="btn btn-success" (click)="postToJournalEntries()" [disabled]="postingBatch || isPosted">
+            <button class="btn btn-success" (click)="onPostClick()" [disabled]="postingBatch">
               🚀 Post to Journal Entries Batch
             </button>
             <button class="btn btn-primary" (click)="exportGLJECSV()">📥 Export Mappings to CSV</button>
@@ -536,4 +540,11 @@
       </div>
     </div>
   </div>
+  <app-confirm-dialog
+    [open]="confirmOpen"
+    [title]="confirmTitle"
+    [message]="confirmMessage"
+    (confirmed)="onConfirm()"
+    (cancelled)="onCancelConfirm()"
+  ></app-confirm-dialog>
 </div>

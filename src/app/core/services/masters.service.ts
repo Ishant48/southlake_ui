@@ -13,6 +13,8 @@ import {
   LineOfBusiness,
   CobMaster,
   Treaty,
+  DocumentType,
+  SequencePrefixCounter,
 } from '../models/master.model';
 
 @Injectable({ providedIn: 'root' })
@@ -48,9 +50,10 @@ export class MastersService {
   deleteState(id: string): Observable<void> {
     return this.http.delete<void>(`${this.base}/states/${id}`);
   }
-  uploadStateDocument(stateId: string, file: File): Observable<StateDocument> {
+  uploadStateDocument(stateId: string, file: File, documentType: string): Observable<StateDocument> {
     const formData = new FormData();
     formData.append('file', file);
+    formData.append('document_type', documentType);
     return this.http.post<StateDocument>(`${this.base}/states/${stateId}/documents`, formData);
   }
   deleteStateDocument(docId: string): Observable<void> {
@@ -77,9 +80,10 @@ export class MastersService {
   deleteMga(id: string): Observable<void> {
     return this.http.delete<void>(`${this.base}/mgas/${id}`);
   }
-  uploadMgaDocument(mgaId: string, file: File): Observable<MgaDocument> {
+  uploadMgaDocument(mgaId: string, file: File, documentType: string): Observable<MgaDocument> {
     const formData = new FormData();
     formData.append('file', file);
+    formData.append('document_type', documentType);
     return this.http.post<MgaDocument>(`${this.base}/mgas/${mgaId}/documents`, formData);
   }
   deleteMgaDocument(docId: string): Observable<void> {
@@ -126,9 +130,10 @@ export class MastersService {
   deleteRiskCompany(id: string): Observable<void> {
     return this.http.delete<void>(`${this.base}/risk-companies/${id}`);
   }
-  uploadRiskCompanyDocument(riskCompanyId: string, file: File): Observable<RiskCompanyDocument> {
+  uploadRiskCompanyDocument(riskCompanyId: string, file: File, documentType: string): Observable<RiskCompanyDocument> {
     const formData = new FormData();
     formData.append('file', file);
+    formData.append('document_type', documentType);
     return this.http.post<RiskCompanyDocument>(
       `${this.base}/risk-companies/${riskCompanyId}/documents`,
       formData,
@@ -255,5 +260,41 @@ export class MastersService {
   }
   unlockPeriod(period: string): Observable<any> {
     return this.http.post<any>(`${this.base}/locked-periods/unlock`, { period });
+  }
+
+  // ==========================================
+  // DOCUMENT TYPE MASTER API
+  // ==========================================
+  getDocumentTypes(search?: string, isActive?: boolean): Observable<DocumentType[]> {
+    return this.http.get<DocumentType[]>(`${this.base}/document-types`, {
+      params: this.buildParams(search, isActive),
+    });
+  }
+  createDocumentType(payload: Partial<DocumentType>): Observable<DocumentType> {
+    return this.http.post<DocumentType>(`${this.base}/document-types`, payload);
+  }
+  updateDocumentType(id: string, payload: Partial<DocumentType>): Observable<DocumentType> {
+    return this.http.patch<DocumentType>(`${this.base}/document-types/${id}`, payload);
+  }
+  deleteDocumentType(id: string): Observable<void> {
+    return this.http.delete<void>(`${this.base}/document-types/${id}`);
+  }
+
+  // ==========================================
+  // SEQUENCE PREFIX & COUNTERS MASTER API
+  // ==========================================
+  getSequencePrefixCounters(search?: string, isActive?: boolean): Observable<SequencePrefixCounter[]> {
+    return this.http.get<SequencePrefixCounter[]>(`${this.base}/sequence-prefix-counters`, {
+      params: this.buildParams(search, isActive),
+    });
+  }
+  createSequencePrefixCounter(payload: Partial<SequencePrefixCounter>): Observable<SequencePrefixCounter> {
+    return this.http.post<SequencePrefixCounter>(`${this.base}/sequence-prefix-counters`, payload);
+  }
+  updateSequencePrefixCounter(id: string, payload: Partial<SequencePrefixCounter>): Observable<SequencePrefixCounter> {
+    return this.http.patch<SequencePrefixCounter>(`${this.base}/sequence-prefix-counters/${id}`, payload);
+  }
+  deleteSequencePrefixCounter(id: string): Observable<void> {
+    return this.http.delete<void>(`${this.base}/sequence-prefix-counters/${id}`);
   }
 }

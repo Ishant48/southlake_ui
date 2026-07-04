@@ -25,6 +25,8 @@ import {
   TreatyLob,
   TreatyCarrier,
   TreatyReinsurer,
+  DocumentType,
+  SequencePrefixCounter,
 } from '../../core/models/master.model';
 import { GlMappingsService } from '../../core/services/gl-mappings.service';
 import { ChartOfAccountsService } from '../../core/services/chart-of-accounts.service';
@@ -43,7 +45,9 @@ type MasterTab =
   | 'gl-mappings'
   | 'brokers'
   | 'products'
-  | 'locked-periods';
+  | 'locked-periods'
+  | 'document-types'
+  | 'sequence-prefix-counters';
 
 @Component({
   selector: 'app-masters',
@@ -128,6 +132,8 @@ export class MastersComponent implements OnInit {
   brokers: any[] = [];
   products: any[] = [];
   lockedPeriods: any[] = [];
+  documentTypes: DocumentType[] = [];
+  sequencePrefixCounters: SequencePrefixCounter[] = [];
 
   // Pagination
   pageSize = 25;
@@ -136,7 +142,7 @@ export class MastersComponent implements OnInit {
   // Simple Modals (LOB, COB, Reinsurer, Broker, Product)
   showSimpleModal = false;
   simpleModalTitle = '';
-  simpleMode: 'lob' | 'cob' | 'reinsurer' | 'broker' | 'product' = 'lob';
+  simpleMode: 'lob' | 'cob' | 'reinsurer' | 'broker' | 'product' | 'document-type' | 'sequence-prefix-counter' = 'lob';
   isEditMode = false;
   submitting = false;
 
@@ -156,6 +162,9 @@ export class MastersComponent implements OnInit {
     contact_phone?: string;
     lob_id?: string;
     cob_id?: string;
+    prefix?: string;
+    next_value?: number;
+    padding_width?: number;
   } = {
     code: '',
     name: '',
@@ -170,6 +179,9 @@ export class MastersComponent implements OnInit {
     contact_phone: '',
     lob_id: '',
     cob_id: '',
+    prefix: '',
+    next_value: 1,
+    padding_width: 4,
   };
 
   // MGA Modal
@@ -268,6 +280,8 @@ export class MastersComponent implements OnInit {
   selectedItem: any = null;
   documentsList: any[] = [];
   uploadingDoc = false;
+  documentTypesOptions: any[] = [];
+  selectedDocType = '';
 
   // Notes View Modal
   showNotesModal = false;
@@ -414,6 +428,8 @@ export class MastersComponent implements OnInit {
           'brokers',
           'products',
           'locked-periods',
+          'document-types',
+          'sequence-prefix-counters',
         ].includes(tab)
       ) {
         this.currentTab = tab;
@@ -623,6 +639,34 @@ export class MastersComponent implements OnInit {
           },
         });
         break;
+      case 'document-types':
+        this.service.getDocumentTypes(search, active).subscribe({
+          next: res => {
+            this.documentTypes = res;
+            this.loading = false;
+            this.cdr.markForCheck();
+          },
+          error: () => {
+            this.toast.error('Failed to load Document Types');
+            this.loading = false;
+            this.cdr.markForCheck();
+          },
+        });
+        break;
+      case 'sequence-prefix-counters':
+        this.service.getSequencePrefixCounters(search, active).subscribe({
+          next: res => {
+            this.sequencePrefixCounters = res;
+            this.loading = false;
+            this.cdr.markForCheck();
+          },
+          error: () => {
+            this.toast.error('Failed to load Sequence Prefix & Counters');
+            this.loading = false;
+            this.cdr.markForCheck();
+          },
+        });
+        break;
     }
   }
 
@@ -671,6 +715,10 @@ export class MastersComponent implements OnInit {
         return this.products;
       case 'locked-periods':
         return this.lockedPeriods;
+      case 'document-types':
+        return this.documentTypes;
+      case 'sequence-prefix-counters':
+        return this.sequencePrefixCounters;
       default:
         return [];
     }
@@ -774,21 +822,13 @@ export class MastersComponent implements OnInit {
             flex: 1.5,
             minWidth: 150,
           },
-          {
-            headerName: 'LEDGER AMOUNT',
-            field: 'ledger_amount',
-            valueFormatter: p =>
-              p.value !== undefined ? `$${Number(p.value).toFixed(2)}` : '$0.00',
-            flex: 1.5,
-            minWidth: 120,
-          },
           statusCol,
           {
             headerName: 'ACTIONS',
             cellRenderer: ActionButtonsCellRenderer,
             cellRendererParams: {
               buttons: [
-                { label: 'Add to Treaties', action: 'addTreaty' },
+                { label: 'Add Treaties', action: 'addTreaty' },
                 { label: 'Document', action: 'doc' },
                 { label: 'Edit', action: 'edit' },
                 { label: 'Delete', action: 'delete', danger: true },
@@ -801,9 +841,9 @@ export class MastersComponent implements OnInit {
               },
             },
             flex: 0,
-            width: 330,
-            minWidth: 330,
-            maxWidth: 330,
+            width: 320,
+            minWidth: 320,
+            maxWidth: 320,
           },
         ];
 
@@ -935,7 +975,6 @@ export class MastersComponent implements OnInit {
             flex: 3,
             minWidth: 200,
           },
-          { headerName: 'LOB TYPE', field: 'type', flex: 1.5, minWidth: 120 },
           {
             headerName: 'TAXABLE',
             field: 'taxable',
@@ -1153,6 +1192,71 @@ export class MastersComponent implements OnInit {
           },
         ];
 
+      case 'document-types':
+        return [
+          { headerName: 'CODE', field: 'code', flex: 1.5, minWidth: 120 },
+          { headerName: 'NAME', field: 'name', flex: 2, minWidth: 150 },
+          { headerName: 'DESCRIPTION', field: 'description', flex: 3, minWidth: 200 },
+          statusCol,
+          {
+            headerName: 'ACTIONS',
+            cellRenderer: ActionButtonsCellRenderer,
+            cellRendererParams: {
+              buttons: [
+                { label: 'Edit', action: 'edit' },
+                { label: 'Delete', action: 'delete', danger: true },
+              ],
+              onClick: (action: string, data: any) => {
+                if (action === 'edit') this.openSimpleEdit('document-type', data);
+                if (action === 'delete') this.deleteSimple('document-type', data);
+              },
+            },
+            flex: 0,
+            width: 160,
+            minWidth: 160,
+            maxWidth: 160,
+          },
+        ];
+
+      case 'sequence-prefix-counters':
+        return [
+          { headerName: 'CODE', field: 'code', flex: 1.5, minWidth: 120 },
+          { headerName: 'NAME', field: 'name', flex: 2, minWidth: 150 },
+          { headerName: 'PREFIX', field: 'prefix', flex: 1, minWidth: 100 },
+          { 
+            headerName: 'NEXT VALUE', 
+            valueGetter: p => p.data.next_value !== undefined ? p.data.next_value : p.data.nextValue, 
+            flex: 1, 
+            minWidth: 100 
+          },
+          { 
+            headerName: 'PADDING WIDTH', 
+            valueGetter: p => p.data.padding_width !== undefined ? p.data.padding_width : p.data.paddingWidth, 
+            flex: 1, 
+            minWidth: 100 
+          },
+          { headerName: 'DESCRIPTION', field: 'description', flex: 2.5, minWidth: 180 },
+          statusCol,
+          {
+            headerName: 'ACTIONS',
+            cellRenderer: ActionButtonsCellRenderer,
+            cellRendererParams: {
+              buttons: [
+                { label: 'Edit', action: 'edit' },
+                { label: 'Delete', action: 'delete', danger: true },
+              ],
+              onClick: (action: string, data: any) => {
+                if (action === 'edit') this.openSimpleEdit('sequence-prefix-counter', data);
+                if (action === 'delete') this.deleteSimple('sequence-prefix-counter', data);
+              },
+            },
+            flex: 0,
+            width: 160,
+            minWidth: 160,
+            maxWidth: 160,
+          },
+        ];
+
       default:
         return [];
     }
@@ -1179,6 +1283,9 @@ export class MastersComponent implements OnInit {
       contact_phone: '',
       lob_id: '',
       cob_id: '',
+      prefix: '',
+      next_value: 1,
+      padding_width: 4,
     };
     this.showSimpleModal = true;
   }
@@ -1189,7 +1296,7 @@ export class MastersComponent implements OnInit {
     this.simpleModalTitle = `Edit ${this.getMasterLabel(mode)}`;
     this.simpleForm = {
       id: item.id,
-      code: item.lob_code || item.cob_code || item.reinsurer_company_id || item.broker_code || item.product_id || '',
+      code: item.lob_code || item.cob_code || item.reinsurer_company_id || item.broker_code || item.product_id || item.code || '',
       name: item.name,
       is_active: item.is_active,
       description: item.description || '',
@@ -1202,6 +1309,9 @@ export class MastersComponent implements OnInit {
       contact_phone: item.contact_phone || item.contactPhone || '',
       lob_id: item.lob_id || item.lobId || '',
       cob_id: item.cob_id || item.cobId || '',
+      prefix: item.prefix || '',
+      next_value: item.next_value !== undefined ? item.next_value : (item.nextValue || 1),
+      padding_width: item.padding_width !== undefined ? item.padding_width : (item.paddingWidth || 4),
     };
     this.showSimpleModal = true;
   }
@@ -1234,6 +1344,11 @@ export class MastersComponent implements OnInit {
       payload.description = this.simpleForm.description || null;
       payload.lob_id = this.simpleForm.lob_id || null;
       payload.cob_id = this.simpleForm.cob_id || null;
+    } else if (this.simpleMode === 'sequence-prefix-counter') {
+      payload.description = this.simpleForm.description || null;
+      payload.prefix = this.simpleForm.prefix || null;
+      payload.next_value = Number(this.simpleForm.next_value ?? 1);
+      payload.padding_width = Number(this.simpleForm.padding_width ?? 4);
     }
 
     let request!: Observable<any>;
@@ -1255,6 +1370,12 @@ export class MastersComponent implements OnInit {
         case 'product':
           request = this.service.updateProduct(id, payload);
           break;
+        case 'document-type':
+          request = this.service.updateDocumentType(id, payload);
+          break;
+        case 'sequence-prefix-counter':
+          request = this.service.updateSequencePrefixCounter(id, payload);
+          break;
       }
     } else {
       switch (this.simpleMode) {
@@ -1272,6 +1393,12 @@ export class MastersComponent implements OnInit {
           break;
         case 'product':
           request = this.service.createProduct(payload);
+          break;
+        case 'document-type':
+          request = this.service.createDocumentType(payload);
+          break;
+        case 'sequence-prefix-counter':
+          request = this.service.createSequencePrefixCounter(payload);
           break;
       }
     }
@@ -1311,6 +1438,12 @@ export class MastersComponent implements OnInit {
           break;
         case 'product':
           request = this.service.deleteProduct(item.id);
+          break;
+        case 'document-type':
+          request = this.service.deleteDocumentType(item.id);
+          break;
+        case 'sequence-prefix-counter':
+          request = this.service.deleteSequencePrefixCounter(item.id);
           break;
       }
       request.subscribe({
@@ -1465,7 +1598,15 @@ export class MastersComponent implements OnInit {
     this.documentMode = mode;
     this.selectedItem = item;
     this.documentsList = [];
+    this.selectedDocType = '';
+    this.documentTypesOptions = [];
     this.showDocModal = true;
+    
+    this.service.getDocumentTypes(undefined, true).subscribe(res => {
+      this.documentTypesOptions = res;
+      this.cdr.markForCheck();
+    });
+
     this.loadDocuments();
   }
 
@@ -1496,14 +1637,20 @@ export class MastersComponent implements OnInit {
     const file: File = event.target.files[0];
     if (!file || !this.selectedItem) return;
 
+    if (!this.selectedDocType) {
+      this.toast.error('Please select a Document Type first');
+      event.target.value = '';
+      return;
+    }
+
     this.uploadingDoc = true;
     let request: Observable<any>;
     if (this.documentMode === 'mga') {
-      request = this.service.uploadMgaDocument(this.selectedItem.id, file);
+      request = this.service.uploadMgaDocument(this.selectedItem.id, file, this.selectedDocType);
     } else if (this.documentMode === 'state') {
-      request = this.service.uploadStateDocument(this.selectedItem.id, file);
+      request = this.service.uploadStateDocument(this.selectedItem.id, file, this.selectedDocType);
     } else {
-      request = this.service.uploadRiskCompanyDocument(this.selectedItem.id, file);
+      request = this.service.uploadRiskCompanyDocument(this.selectedItem.id, file, this.selectedDocType);
     }
 
     request.subscribe({
@@ -1826,7 +1973,7 @@ export class MastersComponent implements OnInit {
       is_active: true,
       state_ids: [],
       lobs: [],
-      carriers: [],
+      carriers: [{ risk_company_id: '', retention_pct: 100 }],
       reinsurers: [],
     };
 
@@ -1848,16 +1995,25 @@ export class MastersComponent implements OnInit {
 
     let carriers: any[] = [];
     if (treaty.treaty_carriers && treaty.treaty_carriers.length > 0) {
-      carriers = treaty.treaty_carriers.map(tc => ({
-        risk_company_id: tc.risk_company_id,
-        retention_pct: tc.retention_pct,
-      }));
+      carriers = [
+        {
+          risk_company_id: treaty.treaty_carriers[0].risk_company_id,
+          retention_pct: treaty.treaty_carriers[0].retention_pct,
+        }
+      ];
     } else if (treaty.risk_company_id) {
       carriers = [
         {
           risk_company_id: treaty.risk_company_id,
           retention_pct: treaty.carrier_retention_pct ?? 100,
         },
+      ];
+    } else {
+      carriers = [
+        {
+          risk_company_id: '',
+          retention_pct: 100,
+        }
       ];
     }
 
@@ -2135,6 +2291,14 @@ export class MastersComponent implements OnInit {
         return 'Reinsurer Company';
       case 'risk-company':
         return 'Risk Company';
+      case 'broker':
+        return 'Broker';
+      case 'product':
+        return 'Product';
+      case 'document-type':
+        return 'Document Type';
+      case 'sequence-prefix-counter':
+        return 'Sequence Prefix & Counter';
       default:
         return 'Master';
     }
@@ -2232,7 +2396,6 @@ export class MastersComponent implements OnInit {
         headers = [
           'LOB Code',
           'LOB Name',
-          'LOB Type',
           'Taxable',
           'Priority',
           'Fully Earned',
@@ -2242,7 +2405,6 @@ export class MastersComponent implements OnInit {
         rows = this.lobs.map(l => [
           l.lob_code,
           l.name,
-          l.type || '-',
           l.taxable ? 'Yes' : 'No',
           l.priority,
           l.fully_earned ? 'Yes' : 'No',
@@ -2290,6 +2452,31 @@ export class MastersComponent implements OnInit {
         headers = ['GL Number', 'Type'];
         rows = this.glMappings.map(m => [this.getGLNumberDisplay(m), m.type]);
         filename = 'gl_mappings.csv';
+        break;
+
+      case 'document-types':
+        headers = ['Code', 'Name', 'Description', 'Status'];
+        rows = this.documentTypes.map(d => [
+          d.code,
+          d.name,
+          d.description || '-',
+          d.isActive ? 'Active' : 'Inactive',
+        ]);
+        filename = 'document_types.csv';
+        break;
+
+      case 'sequence-prefix-counters':
+        headers = ['Code', 'Name', 'Prefix', 'Next Value', 'Padding Width', 'Description', 'Status'];
+        rows = this.sequencePrefixCounters.map(s => [
+          s.code,
+          s.name,
+          s.prefix || '-',
+          s.next_value !== undefined ? s.next_value : (s.nextValue || 1),
+          s.padding_width !== undefined ? s.padding_width : (s.paddingWidth || 4),
+          s.description || '-',
+          s.isActive ? 'Active' : 'Inactive',
+        ]);
+        filename = 'sequence_prefix_counters.csv';
         break;
     }
 
@@ -2553,6 +2740,7 @@ export class MastersComponent implements OnInit {
     for (const st of this.itdStatesList) {
       this.itdForm.exhibits[st.code] = {
         uep: 0,
+        loss_reserves: 0,
         loss_ibnr: 0,
         lae_ibnr_dcc: 0,
         lae_ibnr_aoe: 0,
@@ -2576,6 +2764,7 @@ export class MastersComponent implements OnInit {
             if (stateCode && this.itdForm.exhibits[stateCode]) {
               this.itdForm.exhibits[stateCode] = {
                 uep: getVal(se.uep),
+                loss_reserves: getVal(se.loss_reserves ?? se.lossReserves),
                 loss_ibnr: getVal(se.loss_ibnr ?? se.lossIbnr),
                 lae_ibnr_dcc: getVal(se.lae_ibnr_dcc ?? se.laeIbnrDcc),
                 lae_ibnr_aoe: getVal(se.lae_ibnr_aoe ?? se.laeIbnrAoe),
@@ -2606,6 +2795,7 @@ export class MastersComponent implements OnInit {
       return {
         state_code: code,
         uep: Number(ex.uep || 0),
+        loss_reserves: Number(ex.loss_reserves || 0),
         loss_ibnr: Number(ex.loss_ibnr || 0),
         lae_ibnr_dcc: Number(ex.lae_ibnr_dcc || 0),
         lae_ibnr_aoe: Number(ex.lae_ibnr_aoe || 0),

@@ -5,11 +5,12 @@ import { Router } from '@angular/router';
 import { ReinsuranceService } from '../../core/services/reinsurance.service';
 import { ToastService } from '../../shared/components/toast/toast.service';
 import { MastersService } from '../../core/services/masters.service';
+import { ConfirmDialogComponent } from '../../shared/components/confirm-dialog/confirm-dialog.component';
 
 @Component({
   selector: 'app-reinsurance-calculations',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, ConfirmDialogComponent],
   templateUrl: './reinsurance-calculations.component.html',
   styleUrl: './reinsurance-calculations.component.scss',
 })
@@ -34,6 +35,11 @@ export class ReinsuranceCalculationsComponent implements OnInit {
 
   loading = false;
   postingBatch = false;
+
+  confirmOpen = false;
+  confirmTitle = '';
+  confirmMessage = '';
+  pendingAction: (() => void) | null = null;
 
   // Forms
   ratesForm: any = {};
@@ -214,6 +220,7 @@ export class ReinsuranceCalculationsComponent implements OnInit {
         pw: curEx.pw?.[1] || 0,
         prev_uep: curEx.uep?.[0] || 0,
         curr_uep: curEx.uep?.[1] || 0,
+        prev_loss_reserves: curEx.loss_reserves?.[0] || 0,
         loss_ibnr: curEx.loss_ibnr?.[0] || 0,
         lae_ibnr_dcc: curEx.lae_ibnr_dcc?.[0] || 0,
         lae_ibnr_aoe: curEx.lae_ibnr_aoe?.[0] || 0,
@@ -283,6 +290,16 @@ export class ReinsuranceCalculationsComponent implements OnInit {
     uep[1] = Number(this.paramsForm.curr_uep || 0);
     uep[2] = uep[0] + uep[1];
 
+    const loss_reserves = getArr(curEx.loss_reserves);
+    loss_reserves[0] = Number(this.paramsForm.prev_loss_reserves || 0);
+    loss_reserves[1] = Number(loss_reserves[1] || 0);
+    loss_reserves[2] = loss_reserves[0] + loss_reserves[1];
+
+    const lu = getArr(curEx.lu);
+    lu[0] = Number(this.paramsForm.prev_loss_reserves || 0);
+    lu[1] = Number(lu[1] || 0);
+    lu[2] = lu[0] + lu[1];
+
     const loss_ibnr = getArr(curEx.loss_ibnr);
     loss_ibnr[0] = Number(this.paramsForm.loss_ibnr || 0);
     loss_ibnr[1] = Number(loss_ibnr[1] || 0);
@@ -306,6 +323,8 @@ export class ReinsuranceCalculationsComponent implements OnInit {
     const exData = {
       pw,
       uep,
+      loss_reserves,
+      lu,
       loss_ibnr,
       lae_ibnr_dcc,
       lae_ibnr_aoe,
@@ -375,6 +394,36 @@ export class ReinsuranceCalculationsComponent implements OnInit {
         this.cdr.markForCheck();
       },
     });
+  }
+
+  onPostClick(): void {
+    if (this.isPosted) {
+      this.toast.error('You have already posted to journal entries');
+      return;
+    }
+
+    this.confirmTitle = 'Post to Journal Entries';
+    this.confirmMessage = 'Do you want to post to journal entries Batch?';
+    this.pendingAction = () => {
+      this.postToJournalEntries();
+    };
+    this.confirmOpen = true;
+    this.cdr.markForCheck();
+  }
+
+  onConfirm(): void {
+    if (this.pendingAction) {
+      this.pendingAction();
+    }
+    this.confirmOpen = false;
+    this.pendingAction = null;
+    this.cdr.markForCheck();
+  }
+
+  onCancelConfirm(): void {
+    this.confirmOpen = false;
+    this.pendingAction = null;
+    this.cdr.markForCheck();
   }
 
   postToJournalEntries(): void {

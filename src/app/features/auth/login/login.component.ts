@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, ChangeDetectorRef } from '@angular/core';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { Router, ActivatedRoute, RouterLink } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
@@ -10,7 +10,8 @@ import { AuthService } from '../../../core/services/auth.service';
   templateUrl: './login.component.html',
   styleUrl: './login.component.scss',
 })
-export class LoginComponent implements OnInit {
+export class LoginComponent implements OnInit, OnDestroy {
+  private autofillIntervalId: any;
   private fb = inject(FormBuilder);
   private auth = inject(AuthService);
   private router = inject(Router);
@@ -63,6 +64,30 @@ export class LoginComponent implements OnInit {
         this.loadInviteDetails(token);
       }
     });
+
+    // Start autofill detection interval to enable button when browser saves/autofills values
+    this.autofillIntervalId = setInterval(() => {
+      const emailEl = document.getElementById('email') as HTMLInputElement;
+      const passwordEl = document.getElementById('password') as HTMLInputElement;
+      let changed = false;
+
+      if (emailEl && emailEl.value && this.form.get('email')?.value !== emailEl.value) {
+        this.form.get('email')?.setValue(emailEl.value);
+        this.form.get('email')?.markAsDirty();
+        this.form.get('email')?.markAsTouched();
+        changed = true;
+      }
+      if (passwordEl && passwordEl.value && this.form.get('password')?.value !== passwordEl.value) {
+        this.form.get('password')?.setValue(passwordEl.value);
+        this.form.get('password')?.markAsDirty();
+        this.form.get('password')?.markAsTouched();
+        changed = true;
+      }
+
+      if (changed) {
+        this.cdr.detectChanges();
+      }
+    }, 200);
   }
 
   loadInviteDetails(token: string): void {
@@ -130,5 +155,11 @@ export class LoginComponent implements OnInit {
         this.cdr.markForCheck();
       },
     });
+  }
+
+  ngOnDestroy(): void {
+    if (this.autofillIntervalId) {
+      clearInterval(this.autofillIntervalId);
+    }
   }
 }
