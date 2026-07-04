@@ -1639,118 +1639,48 @@
 
           <!-- Fields editor for the selected state -->
           @if (itdForm.exhibits[itdSelectedStateCode]) {
-            <!-- Group 1: Premiums & Fees -->
-            <h5 style="margin-top: 15px; margin-bottom: 10px; color: var(--navy); font-weight: 600; font-size: 13px">Premiums, Fees & Taxes</h5>
             <div class="form-row">
               <div class="form-field">
-                <label class="form-label">Premiums Written</label>
-                <input type="number" class="form-input" [(ngModel)]="itdForm.exhibits[itdSelectedStateCode].pw" />
-              </div>
-              <div class="form-field">
-                <label class="form-label">Policy Fees Written</label>
-                <input type="number" class="form-input" [(ngModel)]="itdForm.exhibits[itdSelectedStateCode].pfw" />
-              </div>
-              <div class="form-field">
-                <label class="form-label">Premium Taxes</label>
-                <input type="number" class="form-input" [(ngModel)]="itdForm.exhibits[itdSelectedStateCode].tax" />
-              </div>
-            </div>
-            <div class="form-row" style="margin-top: 10px">
-              <div class="form-field">
-                <label class="form-label">Premiums Collected</label>
-                <input type="number" class="form-input" [(ngModel)]="itdForm.exhibits[itdSelectedStateCode].pc" />
-              </div>
-              <div class="form-field">
-                <label class="form-label">Policy Fees Collected</label>
-                <input type="number" class="form-input" [(ngModel)]="itdForm.exhibits[itdSelectedStateCode].pfc" />
-              </div>
-            </div>
-
-            <!-- Group 2: Underwriting Activity -->
-            <h5 style="margin-top: 20px; margin-bottom: 10px; color: var(--navy); font-weight: 600; font-size: 13px">Underwriting Activity</h5>
-            <div class="form-row">
-              <div class="form-field">
-                <label class="form-label">Premium Earned - YTD</label>
-                <input type="number" class="form-input" [(ngModel)]="itdForm.exhibits[itdSelectedStateCode].pe" />
-              </div>
-              <div class="form-field">
-                <label class="form-label">Policy Fees Earned - YTD</label>
-                <input type="number" class="form-input" [(ngModel)]="itdForm.exhibits[itdSelectedStateCode].pfe" />
-              </div>
-              <div class="form-field">
-                <label class="form-label">Unearned Premium Reserves</label>
+                <label class="form-label">Unearned Premium Reserve</label>
                 <input type="number" class="form-input" [(ngModel)]="itdForm.exhibits[itdSelectedStateCode].uep" />
               </div>
-            </div>
-
-            <!-- Group 3: Claims & Expenses Paid -->
-            <h5 style="margin-top: 20px; margin-bottom: 10px; color: var(--navy); font-weight: 600; font-size: 13px">Claims & Expenses Paid</h5>
-            <div class="form-row">
               <div class="form-field">
-                <label class="form-label">Losses Paid (Net of Salvage & Subro)</label>
-                <input type="number" class="form-input" [(ngModel)]="itdForm.exhibits[itdSelectedStateCode].lp" />
-              </div>
-              <div class="form-field">
-                <label class="form-label">DCC Expenses Paid (ALAE)</label>
-                <input type="number" class="form-input" [(ngModel)]="itdForm.exhibits[itdSelectedStateCode].laep" />
-              </div>
-              <div class="form-field">
-                <label class="form-label">Adjusting & Other Paid (ULAE-TPA)</label>
-                <input type="number" class="form-input" [(ngModel)]="itdForm.exhibits[itdSelectedStateCode].ae_paid" />
-              </div>
-            </div>
-
-            <!-- Group 4: Case Reserves & Unpaid Claims -->
-            <h5 style="margin-top: 20px; margin-bottom: 10px; color: var(--navy); font-weight: 600; font-size: 13px">Case Reserves & Unpaid Claims</h5>
-            <div class="form-row">
-              <div class="form-field">
-                <label class="form-label">Loss Reserves / Case Reserves</label>
+                <label class="form-label">Loss Reserves</label>
                 <input type="number" class="form-input" [(ngModel)]="itdForm.exhibits[itdSelectedStateCode].loss_reserves" />
               </div>
               <div class="form-field">
-                <label class="form-label">LAE Reserves - DCC</label>
-                <input type="number" class="form-input" [(ngModel)]="itdForm.exhibits[itdSelectedStateCode].lae_reserves_dcc" />
-              </div>
-              <div class="form-field">
-                <label class="form-label">LAE Reserves - AOE</label>
-                <input type="number" class="form-input" [(ngModel)]="itdForm.exhibits[itdSelectedStateCode].lae_reserves_aoe" />
-              </div>
-            </div>
-            <div class="form-row" style="margin-top: 10px">
-              <div class="form-field">
-                <label class="form-label">Direct Losses Unpaid</label>
-                <input type="number" class="form-input" [(ngModel)]="itdForm.exhibits[itdSelectedStateCode].lu" />
-              </div>
-              <div class="form-field">
-                <label class="form-label">DCC Unpaid (ALAE)</label>
-                <input type="number" class="form-input" [(ngModel)]="itdForm.exhibits[itdSelectedStateCode].laeu" />
-              </div>
-              <div class="form-field">
-                <label class="form-label">Adjusting & Other Unpaid (ULAE-TPA)</label>
-                <input type="number" class="form-input" [(ngModel)]="itdForm.exhibits[itdSelectedStateCode].aeu" />
-              </div>
-            </div>
-
-            <!-- Group 5: IBNR Reserves -->
-            <h5 style="margin-top: 20px; margin-bottom: 10px; color: var(--navy); font-weight: 600; font-size: 13px">IBNR Reserves</h5>
-            <div class="form-row">
-              <div class="form-field">
                 <label class="form-label">Loss IBNR Reserves</label>
-                <input type="number" class="form-input" [(ngModel)]="itdForm.exhibits[itdSelectedStateCode].loss_ibnr" />
+                <input
+                  type="number"
+                  class="form-input"
+                  [(ngModel)]="itdForm.exhibits[itdSelectedStateCode].loss_ibnr"
+                />
               </div>
+            </div>
+            <div class="form-row" style="margin-bottom: 20px">
               <div class="form-field">
                 <label class="form-label">LAE IBNR Reserves - DCC</label>
-                <input type="number" class="form-input" [(ngModel)]="itdForm.exhibits[itdSelectedStateCode].lae_ibnr_dcc" />
+                <input
+                  type="number"
+                  class="form-input"
+                  [(ngModel)]="itdForm.exhibits[itdSelectedStateCode].lae_ibnr_dcc"
+                />
               </div>
-            </div>
-            <div class="form-row" style="margin-top: 10px; margin-bottom: 20px">
               <div class="form-field">
                 <label class="form-label">LAE IBNR Reserves - AOE</label>
-                <input type="number" class="form-input" [(ngModel)]="itdForm.exhibits[itdSelectedStateCode].lae_ibnr_aoe" />
+                <input
+                  type="number"
+                  class="form-input"
+                  [(ngModel)]="itdForm.exhibits[itdSelectedStateCode].lae_ibnr_aoe"
+                />
               </div>
               <div class="form-field">
                 <label class="form-label">ULAE IBNR Reserves</label>
-                <input type="number" class="form-input" [(ngModel)]="itdForm.exhibits[itdSelectedStateCode].ulae_ibnr" />
+                <input
+                  type="number"
+                  class="form-input"
+                  [(ngModel)]="itdForm.exhibits[itdSelectedStateCode].ulae_ibnr"
+                />
               </div>
             </div>
           }
