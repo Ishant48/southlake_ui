@@ -38,14 +38,6 @@ export class RolesComponent implements OnInit {
   total = 0;
   totalPages = 1;
 
-  get pageNumbers(): number[] {
-    const pages: number[] = [];
-    const start = Math.max(1, this.currentPage - 2);
-    const end = Math.min(this.totalPages, this.currentPage + 2);
-    for (let i = start; i <= end; i++) pages.push(i);
-    return pages;
-  }
-
   ngOnInit(): void {
     this.loadRoles();
   }
@@ -67,6 +59,10 @@ export class RolesComponent implements OnInit {
         this.cdr.markForCheck();
       },
     });
+  }
+
+  get pageNumbers(): number[] {
+    return Array.from({ length: this.totalPages }, (_, i) => i + 1);
   }
 
   goToPage(page: number): void {
