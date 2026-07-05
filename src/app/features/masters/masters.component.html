@@ -150,7 +150,16 @@
       </button>
     </div>
 
-    <!-- GL Mappings and Locked Periods tabs render their own child components -->
+    <!-- Treaty Master – always rendered; isActive controls grid visibility -->
+    <app-treaty-master
+      [isActive]="currentTab === 'treaties'"
+      [searchTerm]="searchTerm"
+      [statusFilter]="statusFilter"
+      [mgaFilter]="mgaFilter"
+      [mgaOptions]="mgaOptions"
+    ></app-treaty-master>
+
+    <!-- All other tab children -->
     @if (currentTab === 'gl-mappings') {
       <app-gl-mappings [searchTerm]="searchTerm"></app-gl-mappings>
     } @else if (currentTab === 'locked-periods') {
@@ -188,45 +197,8 @@
         [searchTerm]="searchTerm"
         [statusFilter]="statusFilter"
         (docOpen)="openDocModal('mga', $event)"
-        (addTreatiesFor)="openTreatyAdd($event)"
+        (addTreatiesFor)="treatyMasterChild?.openAdd($event)"
       ></app-mga-master>
-    } @else {
-      <!-- Loading State -->
-      @if (loading) {
-        <div class="empty-state">
-          <div class="spinner" style="width: 32px; height: 32px; margin-bottom: 12px"></div>
-          <p>Loading master data...</p>
-        </div>
-      } @else if (currentList.length === 0) {
-        <div class="empty-state">
-          <svg
-            width="40"
-            height="40"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="var(--gray-400)"
-            stroke-width="1.5"
-            style="margin-bottom: 12px; opacity: 0.7"
-          >
-            <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
-            <line x1="9" y1="9" x2="15" y2="9" />
-            <line x1="9" y1="13" x2="15" y2="13" />
-            <line x1="9" y1="17" x2="13" y2="17" />
-          </svg>
-          <p>No records found. Try adjusting your filters or create a new entry.</p>
-        </div>
-      } @else {
-        <div class="table-wrapper" style="padding-left: 33px; margin-top: 16px">
-          <ag-grid-angular
-            style="display: block; width: 100%"
-            class="ag-theme-alpine"
-            [domLayout]="'autoHeight'"
-            [gridOptions]="gridOptions"
-            [columnDefs]="currentColumnDefs"
-            [rowData]="currentList"
-          ></ag-grid-angular>
-        </div>
-      }
     }
   </div>
 
@@ -288,9 +260,9 @@
           <div class="upload-section" style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px; border-bottom: 1px solid var(--gray-200); padding-bottom: 16px;">
             <div style="display: flex; flex-direction: column; gap: 6px;">
               <span class="upload-label" style="font-weight: 600; color: var(--gray-700)">Document Type</span>
-              <select 
-                [(ngModel)]="selectedDocType" 
-                class="form-control" 
+              <select
+                [(ngModel)]="selectedDocType"
+                class="form-control"
                 style="width: 100%; height: 38px; border: 1px solid var(--gray-300); border-radius: 6px; padding: 0 12px; font-family: 'Instrument Sans', sans-serif;"
               >
                 <option value="">-- Select Document Type --</option>
@@ -299,12 +271,12 @@
                 }
               </select>
             </div>
-            
+
             <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 4px;">
               <span class="upload-label" style="font-weight: 600; color: var(--gray-700)">Attach File</span>
-              <label 
-                class="btn-primary upload-btn" 
-                [style.opacity]="selectedDocType ? '1' : '0.5'" 
+              <label
+                class="btn-primary upload-btn"
+                [style.opacity]="selectedDocType ? '1' : '0.5'"
                 [style.cursor]="selectedDocType ? 'pointer' : 'not-allowed'"
               >
                 @if (uploadingDoc) {
@@ -326,16 +298,16 @@
                   </svg>
                   <span>Upload File</span>
                 }
-                <input 
-                  type="file" 
-                  [disabled]="uploadingDoc || !selectedDocType" 
-                  (change)="onFileSelected($event)" 
-                  style="display: none" 
+                <input
+                  type="file"
+                  [disabled]="uploadingDoc || !selectedDocType"
+                  (change)="onFileSelected($event)"
+                  style="display: none"
                 />
               </label>
             </div>
           </div>
- 
+
           <div class="documents-list">
             @if (documentsList.length === 0) {
               <div class="empty-docs">
@@ -373,7 +345,7 @@
                       <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
                         <span class="doc-name" [title]="doc.file_name">{{ doc.file_name }}</span>
                         @if (doc.document_type || doc.documentType) {
-                          <span 
+                          <span
                             style="font-size: 10px; font-weight: 700; background: var(--gray-100); color: var(--gray-600); padding: 2px 6px; border-radius: 4px; border: 1px solid var(--gray-200);"
                           >
                             {{ doc.document_type || doc.documentType }}
@@ -407,679 +379,12 @@
     </div>
   }
 
-  <!-- TREATY CREATE / EDIT MODAL -->
-  @if (showTreatyModal) {
-    <div class="modal-overlay" (click)="$event.target === $event.currentTarget && (showTreatyModal = false)">
-      <div class="modal-box coa-modal treaty-modal" style="max-width: 800px !important">
-        <div class="panel-header">
-          <h3 class="panel-title">{{ treatyModalTitle }}</h3>
-          <button class="panel-close" (click)="showTreatyModal = false" aria-label="Close modal">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-              <line x1="18" y1="6" x2="6" y2="18" />
-              <line x1="6" y1="6" x2="18" y2="18" />
-            </svg>
-          </button>
-        </div>
-
-        <form (submit)="submitTreaty()" class="panel-body" style="max-height: 70vh; overflow-y: auto">
-          <h4
-            style="
-              margin: 0 0 12px 0;
-              color: var(--navy);
-              font-weight: 700;
-              font-size: 14px;
-              border-bottom: 1.5px solid var(--gray-200);
-              padding-bottom: 6px;
-            "
-          >
-            Basic Details
-          </h4>
-
-          <div class="form-row">
-            <div class="form-field">
-              <label class="form-label">Treaty Code *</label>
-              <input
-                [(ngModel)]="treatyForm.treaty_code"
-                name="treatyCode"
-                type="text"
-                required
-                placeholder="e.g. TR-100"
-                [disabled]="isEditMode"
-                class="form-input"
-              />
-            </div>
-            <div class="form-field">
-              <label class="form-label">Treaty Name *</label>
-              <input
-                [(ngModel)]="treatyForm.name"
-                name="treatyName"
-                type="text"
-                required
-                placeholder="e.g. Casualty Quota Share"
-                class="form-input"
-              />
-            </div>
-          </div>
-
-          <h4
-            style="
-              margin: 16px 0 12px 0;
-              color: var(--navy);
-              font-weight: 700;
-              font-size: 14px;
-              border-bottom: 1.5px solid var(--gray-200);
-              padding-bottom: 6px;
-              display: flex;
-              justify-content: space-between;
-              align-items: center;
-            "
-          >
-            <span>Carrier Company (Risk Company)</span>
-          </h4>
-
-          @if (treatyForm.carriers && treatyForm.carriers[0]) {
-            <div class="form-row" style="margin-bottom: 8px">
-              <div class="form-field" style="flex: 1">
-                <label class="form-label">Carrier Company *</label>
-                <app-dropdown-search
-                  [items]="riskCompanyOptions"
-                  [isMultiSelect]="false"
-                  bindValue="id"
-                  placeholder="Select Carrier"
-                  [itemLabelFn]="riskCompanyLabelFn"
-                  [(selectedValue)]="treatyForm.carriers[0].risk_company_id"
-                ></app-dropdown-search>
-              </div>
-            </div>
-          }
-
-          <h4
-            style="
-              margin: 16px 0 12px 0;
-              color: var(--navy);
-              font-weight: 700;
-              font-size: 14px;
-              border-bottom: 1.5px solid var(--gray-200);
-              padding-bottom: 6px;
-              display: flex;
-              justify-content: space-between;
-              align-items: center;
-            "
-          >
-            <span>Reinsurer Companies & Quota Share %</span>
-            <button
-              type="button"
-              class="btn btn-sm btn-primary"
-              (click)="addReinsurerRow()"
-              style="font-size: 11px; padding: 4px 8px"
-            >
-              + Add Reinsurer
-            </button>
-          </h4>
-
-          @for (reinsurer of treatyForm.reinsurers; track $index; let i = $index) {
-            <div class="form-row" style="align-items: flex-end; margin-bottom: 8px">
-              <div class="form-field" style="flex: 2">
-                @if (i === 0) {
-                  <label class="form-label">Reinsurer Company</label>
-                }
-                <app-dropdown-search
-                  [items]="reinsurerOptions"
-                  [isMultiSelect]="false"
-                  bindValue="id"
-                  placeholder="Select Reinsurer"
-                  [itemLabelFn]="reinsurerLabelFn"
-                  [(selectedValue)]="reinsurer.reinsurer_id"
-                ></app-dropdown-search>
-              </div>
-              <div class="form-field" style="flex: 1.5">
-                @if (i === 0) {
-                  <label class="form-label">Specific State (Opt)</label>
-                }
-                <app-dropdown-search
-                  [items]="stateOptions"
-                  [isMultiSelect]="false"
-                  bindValue="id"
-                  placeholder="All States"
-                  [itemLabelFn]="stateLabelFn"
-                  [(selectedValue)]="reinsurer.state_id"
-                ></app-dropdown-search>
-              </div>
-              <div class="form-field" style="flex: 1.5">
-                @if (i === 0) {
-                  <label class="form-label">Broker (Opt)</label>
-                }
-                <app-dropdown-search
-                  [items]="brokerOptions"
-                  [isMultiSelect]="false"
-                  bindValue="id"
-                  placeholder="None"
-                  [itemLabelFn]="brokerLabelFn"
-                  [(selectedValue)]="reinsurer.broker_id"
-                ></app-dropdown-search>
-              </div>
-              <div class="form-field" style="flex: 1">
-                @if (i === 0) {
-                  <label class="form-label">Quota Share %</label>
-                }
-                <input
-                  [(ngModel)]="reinsurer.cession_pct"
-                  [name]="'reinsurerCes_' + i"
-                  type="number"
-                  step="0.01"
-                  class="form-input"
-                  placeholder="0.00"
-                />
-              </div>
-              <div style="margin-left: 8px; margin-bottom: 4px">
-                <button
-                  type="button"
-                  class="btn btn-danger"
-                  (click)="removeReinsurerRow(i)"
-                  style="padding: 6px 10px; font-size: 12px; height: 38px"
-                >
-                  ✕
-                </button>
-              </div>
-            </div>
-          }
-          @if (!treatyForm.reinsurers || treatyForm.reinsurers.length === 0) {
-            <div style="color: var(--gray-500); font-size: 12px; margin-bottom: 12px; font-style: italic">
-              No reinsurers added yet. Click "+ Add Reinsurer" to define a reinsurer quota share split.
-            </div>
-          }
-
-          <h4
-            style="
-              margin: 16px 0 12px 0;
-              color: var(--navy);
-              font-weight: 700;
-              font-size: 14px;
-              border-bottom: 1.5px solid var(--gray-200);
-              padding-bottom: 6px;
-            "
-          >
-            Authorized MGA Underwriter *
-          </h4>
-          <div style="margin-bottom: 16px">
-            <app-dropdown-search
-              [items]="mgaOptions"
-              [isMultiSelect]="false"
-              bindValue="id"
-              placeholder="Select MGA Underwriter"
-              [itemLabelFn]="mgaLabelFn"
-              [(selectedValue)]="treatyForm.mga_id"
-              [disabled]="isEditMode || !!treatyForm.mga_id"
-            ></app-dropdown-search>
-          </div>
-
-          <div class="form-row">
-            <div class="form-field">
-              <label class="form-label">Effective Date</label>
-              <input [(ngModel)]="treatyForm.effective_date" name="effDate" type="date" class="form-input" />
-            </div>
-            <div class="form-field">
-              <label class="form-label">Expiration Date <span style="color: var(--gray-500); font-weight: normal; font-size: 11px; margin-left: 4px;">(Continuous)</span></label>
-              <input [(ngModel)]="treatyForm.expiration_date" name="expDate" type="date" class="form-input" />
-            </div>
-          </div>
-
-          <h4
-            style="
-              margin: 16px 0 12px 0;
-              color: var(--navy);
-              font-weight: 700;
-              font-size: 14px;
-              border-bottom: 1.5px solid var(--gray-200);
-              padding-bottom: 6px;
-            "
-          >
-            Sequence Prefix & Counters
-          </h4>
-          <div class="form-row">
-            <div class="form-field">
-              <label class="form-label">Policy Seq Prefix</label>
-              <input [(ngModel)]="treatyForm.policy_seq_prefix" name="policySeqPrefix" type="text" class="form-input" placeholder="e.g. POL" />
-            </div>
-            <div class="form-field">
-              <label class="form-label">Policy Seq Start</label>
-              <input [(ngModel)]="treatyForm.policy_seq_start" name="policySeqStart" type="number" class="form-input" placeholder="1" />
-            </div>
-            <div class="form-field">
-              <label class="form-label">Claim Seq Prefix</label>
-              <input [(ngModel)]="treatyForm.claim_seq_prefix" name="claimSeqPrefix" type="text" class="form-input" placeholder="e.g. CLM" />
-            </div>
-            <div class="form-field">
-              <label class="form-label">Claim Seq Start</label>
-              <input [(ngModel)]="treatyForm.claim_seq_start" name="claimSeqStart" type="number" class="form-input" placeholder="1" />
-            </div>
-          </div>
-
-          <h4
-            style="
-              margin: 16px 0 12px 0;
-              color: var(--navy);
-              font-weight: 700;
-              font-size: 14px;
-              border-bottom: 1.5px solid var(--gray-200);
-              padding-bottom: 6px;
-            "
-          >
-            Treaty Terms (Percentages)
-          </h4>
-
-          <div class="treaty-form-grid">
-            <div class="form-field">
-              <label class="form-label">Quota Share (QS) %</label>
-              <input
-                [(ngModel)]="treatyForm.qs_pct"
-                name="qsPct"
-                type="number"
-                step="0.01"
-                class="form-input"
-                placeholder="0.00"
-              />
-            </div>
-            <div class="form-field">
-              <label class="form-label">CF %</label>
-              <input
-                [(ngModel)]="treatyForm.cf_pct"
-                name="cfPct"
-                type="number"
-                step="0.01"
-                class="form-input"
-                placeholder="0.00"
-              />
-            </div>
-            <div class="form-field">
-              <label class="form-label">Commission %</label>
-              <input
-                [(ngModel)]="treatyForm.comm_pct"
-                name="commPct"
-                type="number"
-                step="0.01"
-                class="form-input"
-                placeholder="0.00"
-              />
-            </div>
-            <div class="form-field">
-              <label class="form-label">BB %</label>
-              <input
-                [(ngModel)]="treatyForm.bb_pct"
-                name="bbPct"
-                type="number"
-                step="0.01"
-                class="form-input"
-                placeholder="0.00"
-              />
-            </div>
-
-            <div class="form-field">
-              <label class="form-label">ULAE Type</label>
-              <select [(ngModel)]="treatyForm.ulae_type" name="ulaeType" class="form-input">
-                <option value="percent">Percent</option>
-                <option value="flat_rate">Flat Rate</option>
-              </select>
-            </div>
-            @if (treatyForm.ulae_type === 'percent') {
-              <div class="form-field">
-                <label class="form-label">ULAE %</label>
-                <input
-                  [(ngModel)]="treatyForm.ulae_pct"
-                  name="ulaePct"
-                  type="number"
-                  step="0.01"
-                  class="form-input"
-                  placeholder="0.00"
-                />
-              </div>
-            } @else {
-              <div class="form-field">
-                <label class="form-label">ULAE Basis</label>
-                <select [(ngModel)]="treatyForm.ulae_basis" name="ulaeBasis" class="form-input">
-                  <option value="earned_premium">Earned Premium</option>
-                  <option value="unearned_premium">Unearned Premium</option>
-                  <option value="flat_amount">Flat Amount</option>
-                </select>
-              </div>
-              <div class="form-field">
-                <label class="form-label">ULAE Flat Amount</label>
-                <input
-                  [(ngModel)]="treatyForm.ulae_flat_amount"
-                  name="ulaeFlatAmount"
-                  type="number"
-                  step="0.01"
-                  class="form-input"
-                  placeholder="0.00"
-                />
-              </div>
-            }
-            <div class="form-field">
-              <label class="form-label">XOL %</label>
-              <input
-                [(ngModel)]="treatyForm.xol_pct"
-                name="xolPct"
-                type="number"
-                step="0.01"
-                class="form-input"
-                placeholder="0.00"
-              />
-            </div>
-            <div class="form-field">
-              <label class="form-label">LR Cap %</label>
-              <input
-                [(ngModel)]="treatyForm.lr_cap_pct"
-                name="lrCapPct"
-                type="number"
-                step="0.01"
-                class="form-input"
-                placeholder="0.00"
-              />
-            </div>
-            <div class="form-field">
-              <label class="form-label">Loss Pick %</label>
-              <input
-                [(ngModel)]="treatyForm.ibnr_pct"
-                name="ibnrPct"
-                type="number"
-                step="0.01"
-                class="form-input"
-                placeholder="0.00"
-              />
-            </div>
-
-            <div class="form-field">
-              <label class="form-label">LAE DCC %</label>
-              <input
-                [(ngModel)]="treatyForm.lae_dcc_pct"
-                name="laeDccPct"
-                type="number"
-                step="0.01"
-                class="form-input"
-                placeholder="0.00"
-              />
-            </div>
-            <div class="form-field">
-              <label class="form-label">LAE AOE %</label>
-              <input
-                [(ngModel)]="treatyForm.lae_aoe_pct"
-                name="laeAoePct"
-                type="number"
-                step="0.01"
-                class="form-input"
-                placeholder="0.00"
-              />
-            </div>
-          </div>
-
-          <h4
-            style="
-              margin: 16px 0 12px 0;
-              color: var(--navy);
-              font-weight: 700;
-              font-size: 14px;
-              border-bottom: 1.5px solid var(--gray-200);
-              padding-bottom: 6px;
-            "
-          >
-            Authorized Writing States
-          </h4>
-          <div style="margin-bottom: 16px">
-            <app-dropdown-search
-              [items]="stateOptions"
-              [isMultiSelect]="true"
-              bindValue="id"
-              placeholder="Select Writing States"
-              [itemLabelFn]="stateLabelFn"
-              [(selectedValues)]="treatySelectedStates"
-            ></app-dropdown-search>
-          </div>
-
-          <h4
-            style="
-              margin: 16px 0 12px 0;
-              color: var(--navy);
-              font-weight: 700;
-              font-size: 14px;
-              border-bottom: 1.5px solid var(--gray-200);
-              padding-bottom: 6px;
-            "
-          >
-            Authorized Lines of Business (LOBs)
-          </h4>
-          <div style="margin-bottom: 16px">
-            <app-dropdown-search
-              [items]="lobOptions"
-              [isMultiSelect]="true"
-              bindValue="id"
-              placeholder="Select Lines of Business"
-              [itemLabelFn]="lobLabelFn"
-              [(selectedValues)]="treatySelectedLobs"
-            ></app-dropdown-search>
-          </div>
-
-          <h4
-            style="
-              margin: 16px 0 12px 0;
-              color: var(--navy);
-              font-weight: 700;
-              font-size: 14px;
-              border-bottom: 1.5px solid var(--gray-200);
-              padding-bottom: 6px;
-            "
-          >
-            Authorized Classes of Business (COBs)
-          </h4>
-          <div style="margin-bottom: 16px">
-            <app-dropdown-search
-              [items]="cobOptions"
-              [isMultiSelect]="true"
-              bindValue="id"
-              placeholder="Select Classes of Business"
-              [itemLabelFn]="cobLabelFn"
-              [(selectedValues)]="treatySelectedCobs"
-            ></app-dropdown-search>
-          </div>
-        </form>
-
-        <div class="panel-footer">
-          <button type="button" class="btn-ghost" (click)="showTreatyModal = false">Cancel</button>
-          <button type="button" class="btn-primary" [disabled]="submitting" (click)="submitTreaty()">
-            @if (submitting) {
-              <span class="spinner btn-spinner" style="width: 14px; height: 14px"></span>
-              <span>Saving...</span>
-            } @else {
-              <span>Save Treaty</span>
-            }
-          </button>
-        </div>
-      </div>
-    </div>
-  }
-
-  <!-- Add ITD Manual Modal -->
-  @if (showItdModal) {
-    <div class="modal-overlay" (click)="showItdModal = false">
-      <div
-        class="modal-box"
-        (click)="$event.stopPropagation()"
-        style="max-width: 900px; width: 90%; max-height: 90vh; display: flex; flex-direction: column"
-      >
-        <div class="panel-header" style="flex-shrink: 0">
-          <h2>{{ hasITDSeeded(itdForm.program) ? "Edit" : "Add" }} ITD Baseline for {{ itdForm.program }}</h2>
-          <button class="btn-close" (click)="showItdModal = false">×</button>
-        </div>
-
-        <div class="panel-body" style="overflow-y: auto; flex-grow: 1; padding: 20px">
-          <!-- Select Month & Year -->
-          <div class="form-row" style="margin-bottom: 20px">
-            <div class="form-field">
-              <label class="form-label">Select Month</label>
-              <select
-                class="form-input"
-                [(ngModel)]="itdSelectedMonth"
-                (change)="onItdMonthYearChange()"
-                style="height: 38px; padding: 4px 8px"
-              >
-                @for (m of monthsList; track m.value) {
-                  <option [value]="m.value">{{ m.label }}</option>
-                }
-              </select>
-            </div>
-            <div class="form-field">
-              <label class="form-label">Select Year</label>
-              <select
-                class="form-input"
-                [(ngModel)]="itdSelectedYear"
-                (change)="onItdMonthYearChange()"
-                style="height: 38px; padding: 4px 8px"
-              >
-                @for (y of yearsList; track y) {
-                  <option [value]="y">{{ y }}</option>
-                }
-              </select>
-            </div>
-          </div>
-
-          <!-- Month Key & Month Label -->
-          <div class="form-row" style="margin-bottom: 20px">
-            <div class="form-field">
-              <label class="form-label">Month Key</label>
-              <input type="text" class="form-input" [(ngModel)]="itdForm.month_key" readonly />
-            </div>
-            <div class="form-field">
-              <label class="form-label">Month Label</label>
-              <input type="text" class="form-input" [(ngModel)]="itdForm.month_label" readonly />
-            </div>
-          </div>
-
-          <!-- State Exhibits section -->
-          <h4
-            style="
-              margin: 24px 0 12px 0;
-              color: var(--navy);
-              font-weight: 700;
-              font-size: 14px;
-              border-bottom: 1.5px solid var(--gray-200);
-              padding-bottom: 6px;
-            "
-          >
-            Reporting States Data Baseline
-          </h4>
-
-          <div style="display: flex; gap: 12px; margin-bottom: 20px; align-items: center">
-            <label class="form-label" style="margin-bottom: 0; font-weight: 600; font-size: 13.5px; color: var(--navy)">
-              Select State to Edit:
-            </label>
-            <select
-              class="form-input"
-              [(ngModel)]="itdSelectedStateCode"
-              style="max-width: 150px; height: 38px; padding: 4px 8px"
-            >
-              @for (st of itdStatesList; track st.code) {
-                <option [value]="st.code">{{ st.label }}</option>
-              }
-            </select>
-          </div>
-
-          <!-- Fields editor for the selected state -->
-          @if (itdForm.exhibits[itdSelectedStateCode]) {
-            <div class="form-row">
-              <div class="form-field">
-                <label class="form-label">Unearned Premium Reserve</label>
-                <input type="number" class="form-input" [(ngModel)]="itdForm.exhibits[itdSelectedStateCode].uep" />
-              </div>
-              <div class="form-field">
-                <label class="form-label">Loss Reserves</label>
-                <input type="number" class="form-input" [(ngModel)]="itdForm.exhibits[itdSelectedStateCode].loss_reserves" />
-              </div>
-              <div class="form-field">
-                <label class="form-label">Loss IBNR Reserves</label>
-                <input
-                  type="number"
-                  class="form-input"
-                  [(ngModel)]="itdForm.exhibits[itdSelectedStateCode].loss_ibnr"
-                />
-              </div>
-            </div>
-            <div class="form-row">
-              <div class="form-field">
-                <label class="form-label">LAE Reserves - DCC</label>
-                <input
-                  type="number"
-                  class="form-input"
-                  [(ngModel)]="itdForm.exhibits[itdSelectedStateCode].lae_reserves_dcc"
-                />
-              </div>
-              <div class="form-field">
-                <label class="form-label">LAE Reserves - AOE</label>
-                <input
-                  type="number"
-                  class="form-input"
-                  [(ngModel)]="itdForm.exhibits[itdSelectedStateCode].lae_reserves_aoe"
-                />
-              </div>
-            </div>
-            <div class="form-row" style="margin-bottom: 20px">
-              <div class="form-field">
-                <label class="form-label">LAE IBNR Reserves - DCC</label>
-                <input
-                  type="number"
-                  class="form-input"
-                  [(ngModel)]="itdForm.exhibits[itdSelectedStateCode].lae_ibnr_dcc"
-                />
-              </div>
-              <div class="form-field">
-                <label class="form-label">LAE IBNR Reserves - AOE</label>
-                <input
-                  type="number"
-                  class="form-input"
-                  [(ngModel)]="itdForm.exhibits[itdSelectedStateCode].lae_ibnr_aoe"
-                />
-              </div>
-              <div class="form-field">
-                <label class="form-label">ULAE IBNR Reserves</label>
-                <input
-                  type="number"
-                  class="form-input"
-                  [(ngModel)]="itdForm.exhibits[itdSelectedStateCode].ulae_ibnr"
-                />
-              </div>
-            </div>
-          }
-        </div>
-
-        <div class="panel-footer" style="flex-shrink: 0; border-top: 1px solid var(--gray-200); padding: 12px 20px">
-          <button type="button" class="btn-ghost" (click)="showItdModal = false">Cancel</button>
-          <button type="button" class="btn-primary" (click)="saveManualITD()">
-            {{ hasITDSeeded(itdForm.program) ? "Save ITD Baseline" : "Add ITD Baseline" }}
-          </button>
-        </div>
-      </div>
-    </div>
-  }
-
-  <!-- Confirm Dialog component binding -->
+  <!-- Confirm Dialog (for document deletions) -->
   <app-confirm-dialog
     [open]="confirmOpen"
     [title]="confirmTitle"
     [message]="confirmMessage"
     (confirmed)="onConfirm()"
     (cancelled)="onCancelConfirm()"
-  />
-
-  <input
-    type="file"
-    #monthlyExcelInput
-    style="display: none"
-    (change)="onTreatyMonthlyUpload($event)"
-    accept=".xlsx,.xls,.csv"
-  />
-  <input
-    type="file"
-    #itdExcelInput
-    style="display: none"
-    (change)="onTreatyITDUpload($event)"
-    accept=".xlsx,.xls,.csv"
   />
 </div>
