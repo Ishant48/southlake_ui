@@ -7,7 +7,6 @@ import { AgGridAngular } from 'ag-grid-angular';
 import { ColDef, GridOptions } from 'ag-grid-community';
 import { AgGridConfigService } from '../../core/services/ag-grid-config.service';
 import { ActionButtonsCellRenderer } from '../../shared/components/grid-renderers/action-buttons-cell.component';
-import { StatusBadgeCellRenderer } from '../../shared/components/grid-renderers/status-badge-cell.component';
 import { MastersService } from '../../core/services/masters.service';
 import { ToastService } from '../../shared/components/toast/toast.service';
 import { ConfirmDialogComponent } from '../../shared/components/confirm-dialog/confirm-dialog.component';
@@ -25,14 +24,14 @@ import {
   TreatyLob,
   TreatyCarrier,
   TreatyReinsurer,
-  DocumentType,
-  SequencePrefixCounter,
 } from '../../core/models/master.model';
-import { GlMappingsService } from '../../core/services/gl-mappings.service';
-import { ChartOfAccountsService } from '../../core/services/chart-of-accounts.service';
-import { GlMapping } from '../../core/models/gl-mapping.model';
-import { ChartOfAccount } from '../../core/models/chart-of-account.model';
 import { ReinsuranceService } from '../../core/services/reinsurance.service';
+import { GlMappingsComponent } from './gl-mappings/gl-mappings.component';
+import { LockedPeriodsComponent } from './locked-periods/locked-periods.component';
+import { SimpleMasterComponent } from './simple-master/simple-master.component';
+import { StateMasterComponent } from './state-master/state-master.component';
+import { RiskCompanyMasterComponent } from './risk-company-master/risk-company-master.component';
+import { MgaMasterComponent } from './mga-master/mga-master.component';
 
 type MasterTab =
   | 'treaties'
@@ -58,6 +57,12 @@ type MasterTab =
     ConfirmDialogComponent,
     DropdownSearchComponent,
     AgGridAngular,
+    GlMappingsComponent,
+    LockedPeriodsComponent,
+    SimpleMasterComponent,
+    StateMasterComponent,
+    RiskCompanyMasterComponent,
+    MgaMasterComponent,
   ],
   templateUrl: './masters.component.html',
   styleUrl: './masters.component.scss',
@@ -68,34 +73,17 @@ export class MastersComponent implements OnInit {
   riskCompanyLabelFn = (item: any) => (item ? `${item.name} (${item.risk_company_id})` : '');
   reinsurerLabelFn = (item: any) => (item ? `${item.name} (${item.reinsurer_company_id})` : '');
   stateLabelFn = (item: any) => (item ? `${item.state_code} - ${item.name}` : '');
-  stateAbbrLabelFn = (item: any) => (item ? `${item.state_abbr} - ${item.name}` : '');
   lobLabelFn = (item: any) => (item ? `${item.name} (${item.lob_code})` : '');
   cobLabelFn = (item: any) => (item ? `${item.name} (${item.cob_code})` : '');
-  coaLabelFn = (item: any) => (item ? `${item.account_code} - ${item.description}` : '');
   nameLabelFn = (item: any) => (item ? item.name : '');
 
-  simpleFormTypeOptions = [
-    { id: 'Property', name: 'Property' },
-    { id: 'Liability', name: 'Liability' },
-    { id: 'Automobile', name: 'Automobile' },
-    { id: 'Workers Comp', name: 'Workers Comp' },
-    { id: 'Other', name: 'Other' },
-  ];
 
-  glMappingTypeOptionsList = [
-    { id: 'AR', name: 'AR' },
-    { id: 'AP', name: 'AP' },
-    { id: 'MGA', name: 'MGA' },
-    { id: 'BRK', name: 'BRK' },
-  ];
   private service = inject(MastersService);
   private reinsuranceService = inject(ReinsuranceService);
   private toast = inject(ToastService);
   private cdr = inject(ChangeDetectorRef);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
-  private glMappingsService = inject(GlMappingsService);
-  private coaService = inject(ChartOfAccountsService);
   private agGridConfig = inject(AgGridConfigService);
 
   gridOptions: GridOptions = this.agGridConfig.getDefaultGridOptions();
@@ -103,16 +91,14 @@ export class MastersComponent implements OnInit {
   @ViewChild('monthlyExcelInput') monthlyExcelInput!: ElementRef<HTMLInputElement>;
   @ViewChild('itdExcelInput') itdExcelInput!: ElementRef<HTMLInputElement>;
 
+  @ViewChild(GlMappingsComponent) glMappingsChild?: GlMappingsComponent;
+  @ViewChild(LockedPeriodsComponent) lockedPeriodsChild?: LockedPeriodsComponent;
+  @ViewChild(SimpleMasterComponent) simpleMasterChild?: SimpleMasterComponent;
+  @ViewChild(StateMasterComponent) stateMasterChild?: StateMasterComponent;
+  @ViewChild(RiskCompanyMasterComponent) riskCompanyMasterChild?: RiskCompanyMasterComponent;
+  @ViewChild(MgaMasterComponent) mgaMasterChild?: MgaMasterComponent;
+
   currentTab: MasterTab = 'treaties';
-  glMappings: GlMapping[] = [];
-  coaOptions: ChartOfAccount[] = [];
-  showGlMappingModal = false;
-  glMappingModalTitle = 'Add GL Mapping';
-  glMappingForm: Partial<GlMapping> = {
-    coa_id: '',
-    type: '',
-  };
-  glMappingTypeOptions = ['AR', 'AP', 'MGA', 'BRK'];
   loading = false;
   searchTerm = '';
   statusFilter: 'all' | 'active' | 'inactive' = 'all';
@@ -123,156 +109,13 @@ export class MastersComponent implements OnInit {
 
   // Data lists
   treaties: Treaty[] = [];
-  mgas: MgaMaster[] = [];
-  lobs: LineOfBusiness[] = [];
-  cobs: CobMaster[] = [];
-  states: StateMaster[] = [];
-  reinsurers: ReinsurerCompany[] = [];
-  riskCompanies: RiskCompany[] = [];
-  brokers: any[] = [];
-  products: any[] = [];
-  lockedPeriods: any[] = [];
-  documentTypes: DocumentType[] = [];
-  sequencePrefixCounters: SequencePrefixCounter[] = [];
 
   // Pagination
   pageSize = 25;
   currentPage = 1;
 
-  // Simple Modals (LOB, COB, Reinsurer, Broker, Product)
-  showSimpleModal = false;
-  simpleModalTitle = '';
-  simpleMode: 'lob' | 'cob' | 'reinsurer' | 'broker' | 'product' | 'document-type' | 'sequence-prefix-counter' = 'lob';
   isEditMode = false;
   submitting = false;
-
-  // Simple Form Binding
-  simpleForm: {
-    id?: string;
-    code: string;
-    name: string;
-    is_active: boolean;
-    description: string;
-    type: string;
-    taxable: boolean;
-    priority: number;
-    fully_earned: boolean;
-    contact_name?: string;
-    contact_email?: string;
-    contact_phone?: string;
-    lob_id?: string;
-    cob_id?: string;
-    prefix?: string;
-    next_value?: number;
-    padding_width?: number;
-  } = {
-    code: '',
-    name: '',
-    is_active: true,
-    description: '',
-    type: '',
-    taxable: false,
-    priority: 1,
-    fully_earned: false,
-    contact_name: '',
-    contact_email: '',
-    contact_phone: '',
-    lob_id: '',
-    cob_id: '',
-    prefix: '',
-    next_value: 1,
-    padding_width: 4,
-  };
-
-  // MGA Modal
-  showMgaModal = false;
-  mgaModalTitle = '';
-  mgaForm: {
-    id?: string;
-    mga_code: string;
-    name: string;
-    tax_payable_inhouse: boolean;
-    ledger_amount: number;
-    is_active: boolean;
-    company_id: number | null;
-    id_name: string;
-    address: string;
-    zip: string;
-    city: string;
-    state: string;
-    phone: string;
-    open_item: boolean;
-    op_start_date: string;
-    other_names: { state: string; displayName: string }[];
-    naics_code?: string;
-    contact_name?: string;
-    contact_email?: string;
-    contact_phone?: string;
-  } = {
-    mga_code: '',
-    name: '',
-    tax_payable_inhouse: false,
-    ledger_amount: 0,
-    is_active: true,
-    company_id: null,
-    id_name: '',
-    address: '',
-    zip: '',
-    city: '',
-    state: '',
-    phone: '',
-    open_item: false,
-    op_start_date: '',
-    other_names: [],
-    naics_code: '',
-    contact_name: '',
-    contact_email: '',
-    contact_phone: '',
-  };
-
-  // State Modal
-  showStateModal = false;
-  stateModalTitle = '';
-  stateForm: {
-    id?: string;
-    state_code: number | null;
-    state_abbr: string;
-    name: string;
-    notes: string;
-    is_active: boolean;
-  } = { state_code: null, state_abbr: '', name: '', notes: '', is_active: true };
-
-  // Risk Company Modal
-  showRiskCompanyModal = false;
-  riskCompanyModalTitle = '';
-  riskCompanyForm: {
-    id?: string;
-    risk_company_id: string;
-    company_id: number | null;
-    id_name: string;
-    name: string;
-    phone: string;
-    is_admitted: boolean;
-    state: string;
-    address: string;
-    zip: string;
-    city: string;
-    notes: string;
-    is_active: boolean;
-  } = {
-    risk_company_id: '',
-    company_id: null,
-    id_name: '',
-    name: '',
-    phone: '',
-    is_admitted: true,
-    state: '',
-    address: '',
-    zip: '',
-    city: '',
-    notes: '',
-    is_active: true,
-  };
 
   // Generic Documents Drawer
   showDocModal = false;
@@ -389,8 +232,6 @@ export class MastersComponent implements OnInit {
   cobOptions: CobMaster[] = [];
   brokerOptions: any[] = [];
   brokerLabelFn = (item: any) => item.name || '';
-  showLockPeriodModal = false;
-  newPeriodToLock = '';
 
   // Treaty UI selectors
   treatySelectedStates: { [stateId: string]: boolean } = {};
@@ -458,6 +299,19 @@ export class MastersComponent implements OnInit {
     return undefined;
   }
 
+  get currentSimpleMode(): 'lob' | 'cob' | 'reinsurer' | 'broker' | 'product' | 'document-type' | 'sequence-prefix-counter' {
+    const map: Record<string, 'lob' | 'cob' | 'reinsurer' | 'broker' | 'product' | 'document-type' | 'sequence-prefix-counter'> = {
+      'lobs': 'lob',
+      'cobs': 'cob',
+      'reinsurers': 'reinsurer',
+      'brokers': 'broker',
+      'products': 'product',
+      'document-types': 'document-type',
+      'sequence-prefix-counters': 'sequence-prefix-counter',
+    };
+    return map[this.currentTab] ?? 'lob';
+  }
+
   loadData(): void {
     this.loading = true;
     const search = this.searchTerm || undefined;
@@ -511,161 +365,52 @@ export class MastersComponent implements OnInit {
         });
         break;
       case 'mgas':
-        this.service.getMgas(search, active).subscribe({
-          next: res => {
-            this.mgas = res;
-            this.loading = false;
-            this.cdr.markForCheck();
-          },
-          error: () => {
-            this.toast.error('Failed to load MGAs');
-            this.loading = false;
-            this.cdr.markForCheck();
-          },
-        });
+        this.loading = false;
+        this.mgaMasterChild?.load(this.searchTerm, this.statusFilter);
         break;
       case 'lobs':
-        this.service.getLobs(search, active).subscribe({
-          next: res => {
-            this.lobs = res;
-            this.loading = false;
-            this.cdr.markForCheck();
-          },
-          error: () => {
-            this.toast.error('Failed to load LOBs');
-            this.loading = false;
-            this.cdr.markForCheck();
-          },
-        });
+        this.loading = false;
+        this.simpleMasterChild?.load('lob', this.searchTerm, this.statusFilter);
         break;
       case 'cobs':
-        this.service.getCobs(search, active).subscribe({
-          next: res => {
-            this.cobs = res;
-            this.loading = false;
-            this.cdr.markForCheck();
-          },
-          error: () => {
-            this.toast.error('Failed to load COBs');
-            this.loading = false;
-            this.cdr.markForCheck();
-          },
-        });
+        this.loading = false;
+        this.simpleMasterChild?.load('cob', this.searchTerm, this.statusFilter);
         break;
       case 'states':
-        this.service.getStates(search, active).subscribe({
-          next: res => {
-            this.states = res;
-            this.loading = false;
-            this.cdr.markForCheck();
-          },
-          error: () => {
-            this.toast.error('Failed to load States');
-            this.loading = false;
-            this.cdr.markForCheck();
-          },
-        });
+        this.loading = false;
+        this.stateMasterChild?.load(this.searchTerm, this.statusFilter);
         break;
       case 'reinsurers':
-        this.service.getReinsurers(search, active).subscribe({
-          next: res => {
-            this.reinsurers = res;
-            this.loading = false;
-            this.cdr.markForCheck();
-          },
-          error: () => {
-            this.toast.error('Failed to load Reinsurers');
-            this.loading = false;
-            this.cdr.markForCheck();
-          },
-        });
+        this.loading = false;
+        this.simpleMasterChild?.load('reinsurer', this.searchTerm, this.statusFilter);
         break;
       case 'risk-companies':
-        this.service.getRiskCompanies(search, active).subscribe({
-          next: res => {
-            this.riskCompanies = res;
-            this.loading = false;
-            this.cdr.markForCheck();
-          },
-          error: () => {
-            this.toast.error('Failed to load Risk Companies');
-            this.loading = false;
-            this.cdr.markForCheck();
-          },
-        });
+        this.loading = false;
+        this.riskCompanyMasterChild?.load(this.searchTerm, this.statusFilter);
         break;
       case 'gl-mappings':
-        this.loadGlMappings();
+        this.loading = false;
+        this.glMappingsChild?.load(this.searchTerm);
         break;
       case 'brokers':
-        this.service.getBrokers(search, active).subscribe({
-          next: res => {
-            this.brokers = res;
-            this.loading = false;
-            this.cdr.markForCheck();
-          },
-          error: () => {
-            this.toast.error('Failed to load Brokers');
-            this.loading = false;
-            this.cdr.markForCheck();
-          },
-        });
+        this.loading = false;
+        this.simpleMasterChild?.load('broker', this.searchTerm, this.statusFilter);
         break;
       case 'products':
-        this.service.getProducts(search, active).subscribe({
-          next: res => {
-            this.products = res;
-            this.loading = false;
-            this.cdr.markForCheck();
-          },
-          error: () => {
-            this.toast.error('Failed to load Products');
-            this.loading = false;
-            this.cdr.markForCheck();
-          },
-        });
+        this.loading = false;
+        this.simpleMasterChild?.load('product', this.searchTerm, this.statusFilter);
         break;
       case 'locked-periods':
-        this.service.getLockedPeriods(search).subscribe({
-          next: res => {
-            this.lockedPeriods = res;
-            this.loading = false;
-            this.cdr.markForCheck();
-          },
-          error: () => {
-            this.toast.error('Failed to load Locked Periods');
-            this.loading = false;
-            this.cdr.markForCheck();
-          },
-        });
+        this.loading = false;
+        this.lockedPeriodsChild?.load(this.searchTerm);
         break;
       case 'document-types':
-        this.service.getDocumentTypes(search, active).subscribe({
-          next: res => {
-            this.documentTypes = res;
-            this.loading = false;
-            this.cdr.markForCheck();
-          },
-          error: () => {
-            this.toast.error('Failed to load Document Types');
-            this.loading = false;
-            this.cdr.markForCheck();
-          },
-        });
+        this.loading = false;
+        this.simpleMasterChild?.load('document-type', this.searchTerm, this.statusFilter);
         break;
       case 'sequence-prefix-counters':
-        this.service.getSequencePrefixCounters(search, active).subscribe({
-          next: res => {
-            this.sequencePrefixCounters = res;
-            this.loading = false;
-            this.cdr.markForCheck();
-          },
-          error: () => {
-            this.toast.error('Failed to load Sequence Prefix & Counters');
-            this.loading = false;
-            this.cdr.markForCheck();
-          },
-        });
+        this.loading = false;
+        this.simpleMasterChild?.load('sequence-prefix-counter', this.searchTerm, this.statusFilter);
         break;
     }
   }
@@ -695,30 +440,6 @@ export class MastersComponent implements OnInit {
         }
         return list;
       }
-      case 'mgas':
-        return this.mgas;
-      case 'lobs':
-        return this.lobs;
-      case 'cobs':
-        return this.cobs;
-      case 'states':
-        return this.states;
-      case 'reinsurers':
-        return this.reinsurers;
-      case 'risk-companies':
-        return this.riskCompanies;
-      case 'gl-mappings':
-        return this.glMappings;
-      case 'brokers':
-        return this.brokers;
-      case 'products':
-        return this.products;
-      case 'locked-periods':
-        return this.lockedPeriods;
-      case 'document-types':
-        return this.documentTypes;
-      case 'sequence-prefix-counters':
-        return this.sequencePrefixCounters;
       default:
         return [];
     }
@@ -741,15 +462,6 @@ export class MastersComponent implements OnInit {
   }
 
   get currentColumnDefs(): ColDef[] {
-    const statusCol: ColDef = {
-      headerName: 'STATUS',
-      field: 'is_active',
-      flex: 1,
-      minWidth: 100,
-      maxWidth: 120,
-      cellRenderer: StatusBadgeCellRenderer,
-    };
-
     switch (this.currentTab) {
       case 'treaties':
         return [
@@ -810,785 +522,9 @@ export class MastersComponent implements OnInit {
           },
         ];
 
-      case 'mgas':
-        return [
-          { headerName: 'MGA CODE', field: 'mga_code', flex: 1, minWidth: 100, maxWidth: 120 },
-          { headerName: 'MGA NAME', field: 'name', flex: 2, minWidth: 150 },
-          { headerName: 'NAICS CODE', field: 'naics_code', flex: 1.2, minWidth: 120 },
-          {
-            headerName: 'TAX PAYABLE IN-HOUSE',
-            field: 'tax_payable_inhouse',
-            cellRenderer: StatusBadgeCellRenderer,
-            flex: 1.5,
-            minWidth: 150,
-          },
-          statusCol,
-          {
-            headerName: 'ACTIONS',
-            cellRenderer: ActionButtonsCellRenderer,
-            cellRendererParams: {
-              buttons: [
-                { label: 'Add Treaties', action: 'addTreaty' },
-                { label: 'Document', action: 'doc' },
-                { label: 'Edit', action: 'edit' },
-                { label: 'Delete', action: 'delete', danger: true },
-              ],
-              onClick: (action: string, data: any) => {
-                if (action === 'addTreaty') this.openTreatyAdd(data.id);
-                if (action === 'doc') this.openDocModal('mga', data);
-                if (action === 'edit') this.openMgaEdit(data);
-                if (action === 'delete') this.deleteMga(data);
-              },
-            },
-            flex: 0,
-            width: 320,
-            minWidth: 320,
-            maxWidth: 320,
-          },
-        ];
-
-      case 'states':
-        return [
-          { headerName: 'STATE CODE', field: 'state_code', flex: 1, minWidth: 100 },
-          { headerName: 'STATE ABBR', field: 'state_abbr', flex: 1, minWidth: 100 },
-          { headerName: 'STATE NAME', field: 'name', flex: 3, minWidth: 200 },
-          {
-            headerName: 'ACTIONS',
-            cellRenderer: ActionButtonsCellRenderer,
-            cellRendererParams: {
-              buttons: [
-                { label: 'Document', action: 'doc' },
-                { label: 'Notes', action: 'notes' },
-                { label: 'Edit', action: 'edit' },
-                { label: 'Delete', action: 'delete', danger: true },
-              ],
-              onClick: (action: string, data: any) => {
-                if (action === 'doc') this.openDocModal('state', data);
-                if (action === 'notes')
-                  this.openNotesModal('State Notes: ' + data.name, data.notes);
-                if (action === 'edit') this.openStateEdit(data);
-                if (action === 'delete') this.deleteState(data);
-              },
-            },
-            flex: 0,
-            width: 280,
-            minWidth: 280,
-            maxWidth: 280,
-          },
-        ];
-
-      case 'risk-companies':
-        return [
-          {
-            headerName: 'COMPANY',
-            valueGetter: p =>
-              `${p.data.company_id}${p.data.risk_company_id ? ` (${p.data.risk_company_id})` : ''}`,
-            flex: 1.5,
-            minWidth: 150,
-          },
-          { headerName: 'ID NAME', field: 'id_name', flex: 1.5, minWidth: 150 },
-          { headerName: 'NAME', field: 'name', flex: 3, minWidth: 200 },
-          { headerName: 'PHONE', field: 'phone', flex: 1.5, minWidth: 120 },
-          {
-            headerName: 'ADMITTED',
-            field: 'is_admitted',
-            cellRenderer: StatusBadgeCellRenderer,
-            flex: 1,
-            minWidth: 100,
-          },
-          { headerName: 'STATE', field: 'state', flex: 1, minWidth: 80 },
-          {
-            headerName: 'ACTIONS',
-            cellRenderer: ActionButtonsCellRenderer,
-            cellRendererParams: {
-              buttons: [
-                { label: 'Document', action: 'doc' },
-                { label: 'Notes', action: 'notes' },
-                { label: 'View Policy', action: 'policy' },
-                { label: 'Edit', action: 'edit' },
-                { label: 'Delete', action: 'delete', danger: true },
-              ],
-              onClick: (action: string, data: any) => {
-                if (action === 'doc') this.openDocModal('risk-company', data);
-                if (action === 'notes')
-                  this.openNotesModal('Risk Company Notes: ' + data.name, data.notes);
-                if (action === 'policy') this.viewPolicy(data);
-                if (action === 'edit') this.openRiskCompanyEdit(data);
-                if (action === 'delete') this.deleteRiskCompany(data);
-              },
-            },
-            flex: 0,
-            width: 360,
-            minWidth: 360,
-            maxWidth: 360,
-          },
-        ];
-
-      case 'gl-mappings':
-        return [
-          {
-            headerName: 'GL NUMBER',
-            valueGetter: p => this.getGLNumberDisplay(p.data),
-            flex: 2,
-            minWidth: 200,
-          },
-          {
-            headerName: 'TYPE',
-            field: 'type',
-            cellRenderer: (p: any) =>
-              `<span class="type-badge ${p.value?.toLowerCase()}">${p.value}</span>`,
-            flex: 1,
-            minWidth: 100,
-          },
-          {
-            headerName: 'ACTIONS',
-            cellRenderer: ActionButtonsCellRenderer,
-            cellRendererParams: {
-              buttons: [
-                { label: 'Edit', action: 'edit' },
-                { label: 'Delete', action: 'delete', danger: true },
-              ],
-              onClick: (action: string, data: any) => {
-                if (action === 'edit') this.openGlMappingEdit(data);
-                if (action === 'delete') this.deleteGlMapping(data);
-              },
-            },
-            flex: 0,
-            width: 160,
-            minWidth: 160,
-            maxWidth: 160,
-          },
-        ];
-
-      case 'lobs':
-        return [
-          { headerName: 'LOB CODE', field: 'lob_code', flex: 1, minWidth: 100, maxWidth: 120 },
-          {
-            headerName: 'LOB NAME',
-            valueGetter: p => p.data.name,
-            cellRenderer: (p: any) => {
-              const desc = p.data.description
-                ? `<div style="font-size: 11px; color: var(--gray-500); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 220px;" title="${p.data.description}">${p.data.description}</div>`
-                : '';
-              return `<div style="line-height:1.2; margin-top:10px;"><div style="font-weight: 500;">${p.data.name}</div>${desc}</div>`;
-            },
-            flex: 3,
-            minWidth: 200,
-          },
-          {
-            headerName: 'TAXABLE',
-            field: 'taxable',
-            cellRenderer: StatusBadgeCellRenderer,
-            flex: 1,
-            minWidth: 100,
-          },
-          { headerName: 'PRIORITY', field: 'priority', flex: 1, minWidth: 100 },
-          {
-            headerName: 'FULLY EARNED',
-            field: 'fully_earned',
-            cellRenderer: StatusBadgeCellRenderer,
-            flex: 1,
-            minWidth: 120,
-          },
-          statusCol,
-          {
-            headerName: 'ACTIONS',
-            cellRenderer: ActionButtonsCellRenderer,
-            cellRendererParams: {
-              buttons: [
-                { label: 'Edit', action: 'edit' },
-                { label: 'Delete', action: 'delete', danger: true },
-              ],
-              onClick: (action: string, data: any) => {
-                if (action === 'edit') this.openSimpleEdit('lob', data);
-                if (action === 'delete') this.deleteSimple('lob', data);
-              },
-            },
-            flex: 0,
-            width: 160,
-            minWidth: 160,
-            maxWidth: 160,
-          },
-        ];
-
-      case 'cobs':
-        return [
-          { headerName: 'CLASS CODE', field: 'cob_code', flex: 1, minWidth: 100, maxWidth: 120 },
-          {
-            headerName: 'CLASS NAME',
-            valueGetter: p => p.data.name,
-            cellRenderer: (p: any) => {
-              const desc = p.data.description
-                ? `<div style="font-size: 11px; color: var(--gray-500); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 220px;" title="${p.data.description}">${p.data.description}</div>`
-                : '';
-              return `<div style="line-height:1.2; margin-top:10px;"><div style="font-weight: 500;">${p.data.name}</div>${desc}</div>`;
-            },
-            flex: 3,
-            minWidth: 200,
-          },
-          { headerName: 'CLASS TYPE', field: 'type', flex: 1.5, minWidth: 120 },
-          {
-            headerName: 'TAXABLE',
-            field: 'taxable',
-            cellRenderer: StatusBadgeCellRenderer,
-            flex: 1,
-            minWidth: 100,
-          },
-          { headerName: 'PRIORITY', field: 'priority', flex: 1, minWidth: 100 },
-          {
-            headerName: 'FULLY EARNED',
-            field: 'fully_earned',
-            cellRenderer: StatusBadgeCellRenderer,
-            flex: 1,
-            minWidth: 120,
-          },
-          statusCol,
-          {
-            headerName: 'ACTIONS',
-            cellRenderer: ActionButtonsCellRenderer,
-            cellRendererParams: {
-              buttons: [
-                { label: 'Edit', action: 'edit' },
-                { label: 'Delete', action: 'delete', danger: true },
-              ],
-              onClick: (action: string, data: any) => {
-                if (action === 'edit') this.openSimpleEdit('cob', data);
-                if (action === 'delete') this.deleteSimple('cob', data);
-              },
-            },
-            flex: 0,
-            width: 160,
-            minWidth: 160,
-            maxWidth: 160,
-          },
-        ];
-
-      case 'reinsurers':
-        return [
-          {
-            headerName: 'CODE ID',
-            field: 'reinsurer_company_id',
-            flex: 1.5,
-            minWidth: 120,
-            maxWidth: 180,
-          },
-          { headerName: 'NAME', field: 'name', flex: 3, minWidth: 200 },
-          statusCol,
-          {
-            headerName: 'ACTIONS',
-            cellRenderer: ActionButtonsCellRenderer,
-            cellRendererParams: {
-              buttons: [
-                { label: 'Edit', action: 'edit' },
-                { label: 'Delete', action: 'delete', danger: true },
-              ],
-              onClick: (action: string, data: any) => {
-                if (action === 'edit') this.openSimpleEdit('reinsurer', data);
-                if (action === 'delete') this.deleteSimple('reinsurer', data);
-              },
-            },
-            flex: 0,
-            width: 160,
-            minWidth: 160,
-            maxWidth: 160,
-          },
-        ];
-
-      case 'brokers':
-        return [
-          { headerName: 'BROKER CODE', field: 'brokerCode', flex: 1.5, minWidth: 120 },
-          { headerName: 'NAME', field: 'name', flex: 2, minWidth: 150 },
-          { headerName: 'CONTACT NAME', field: 'contactName', flex: 1.5, minWidth: 120 },
-          { headerName: 'EMAIL', field: 'contactEmail', flex: 2, minWidth: 150 },
-          { headerName: 'PHONE', field: 'contactPhone', flex: 1.5, minWidth: 120 },
-          statusCol,
-          {
-            headerName: 'ACTIONS',
-            cellRenderer: ActionButtonsCellRenderer,
-            cellRendererParams: {
-              buttons: [
-                { label: 'Edit', action: 'edit' },
-                { label: 'Delete', action: 'delete', danger: true },
-              ],
-              onClick: (action: string, data: any) => {
-                if (action === 'edit') this.openSimpleEdit('broker', data);
-                if (action === 'delete') this.deleteSimple('broker', data);
-              },
-            },
-            flex: 0,
-            width: 160,
-            minWidth: 160,
-            maxWidth: 160,
-          },
-        ];
-
-      case 'products':
-        return [
-          { headerName: 'PRODUCT ID', field: 'productId', flex: 1.5, minWidth: 120 },
-          { headerName: 'NAME', field: 'name', flex: 2, minWidth: 150 },
-          { headerName: 'LOB', valueGetter: p => p.data.lob?.name || '-', flex: 1.5, minWidth: 120 },
-          { headerName: 'COB', valueGetter: p => p.data.cob?.name || '-', flex: 1.5, minWidth: 120 },
-          { headerName: 'DESCRIPTION', field: 'description', flex: 2.5, minWidth: 180 },
-          statusCol,
-          {
-            headerName: 'ACTIONS',
-            cellRenderer: ActionButtonsCellRenderer,
-            cellRendererParams: {
-              buttons: [
-                { label: 'Edit', action: 'edit' },
-                { label: 'Delete', action: 'delete', danger: true },
-              ],
-              onClick: (action: string, data: any) => {
-                if (action === 'edit') this.openSimpleEdit('product', data);
-                if (action === 'delete') this.deleteSimple('product', data);
-              },
-            },
-            flex: 0,
-            width: 160,
-            minWidth: 160,
-            maxWidth: 160,
-          },
-        ];
-
-      case 'locked-periods':
-        return [
-          { headerName: 'PERIOD', field: 'period', flex: 1.5, minWidth: 120 },
-          {
-            headerName: 'STATUS',
-            valueGetter: p => p.data.isLocked ? 'Locked' : 'Open',
-            cellRenderer: (p: any) => {
-              const color = p.value === 'Locked' ? '#e05470' : '#19a347';
-              return `<span style="font-weight: 700; color: ${color};">${p.value}</span>`;
-            },
-            flex: 1,
-            minWidth: 100,
-          },
-          { headerName: 'LOCKED BY', valueGetter: p => p.data.user?.name || '-', flex: 1.5, minWidth: 120 },
-          {
-            headerName: 'LOCKED AT',
-            valueGetter: p => p.data.lockedAt ? new Date(p.data.lockedAt).toLocaleString() : '-',
-            flex: 2,
-            minWidth: 150,
-          },
-          {
-            headerName: 'ACTIONS',
-            cellRenderer: ActionButtonsCellRenderer,
-            cellRendererParams: {
-              buttons: (data: any) => [
-                {
-                  label: data.isLocked ? 'Unlock' : 'Lock',
-                  action: data.isLocked ? 'unlock' : 'lock',
-                },
-              ],
-              onClick: (action: string, data: any) => {
-                if (action === 'lock') this.togglePeriodLock(data.period, true);
-                if (action === 'unlock') this.togglePeriodLock(data.period, false);
-              },
-            },
-            flex: 0,
-            width: 120,
-            minWidth: 120,
-            maxWidth: 120,
-          },
-        ];
-
-      case 'document-types':
-        return [
-          { headerName: 'CODE', field: 'code', flex: 1.5, minWidth: 120 },
-          { headerName: 'NAME', field: 'name', flex: 2, minWidth: 150 },
-          { headerName: 'DESCRIPTION', field: 'description', flex: 3, minWidth: 200 },
-          statusCol,
-          {
-            headerName: 'ACTIONS',
-            cellRenderer: ActionButtonsCellRenderer,
-            cellRendererParams: {
-              buttons: [
-                { label: 'Edit', action: 'edit' },
-                { label: 'Delete', action: 'delete', danger: true },
-              ],
-              onClick: (action: string, data: any) => {
-                if (action === 'edit') this.openSimpleEdit('document-type', data);
-                if (action === 'delete') this.deleteSimple('document-type', data);
-              },
-            },
-            flex: 0,
-            width: 160,
-            minWidth: 160,
-            maxWidth: 160,
-          },
-        ];
-
-      case 'sequence-prefix-counters':
-        return [
-          { headerName: 'CODE', field: 'code', flex: 1.5, minWidth: 120 },
-          { headerName: 'NAME', field: 'name', flex: 2, minWidth: 150 },
-          { headerName: 'PREFIX', field: 'prefix', flex: 1, minWidth: 100 },
-          { 
-            headerName: 'NEXT VALUE', 
-            valueGetter: p => p.data.next_value !== undefined ? p.data.next_value : p.data.nextValue, 
-            flex: 1, 
-            minWidth: 100 
-          },
-          { 
-            headerName: 'PADDING WIDTH', 
-            valueGetter: p => p.data.padding_width !== undefined ? p.data.padding_width : p.data.paddingWidth, 
-            flex: 1, 
-            minWidth: 100 
-          },
-          { headerName: 'DESCRIPTION', field: 'description', flex: 2.5, minWidth: 180 },
-          statusCol,
-          {
-            headerName: 'ACTIONS',
-            cellRenderer: ActionButtonsCellRenderer,
-            cellRendererParams: {
-              buttons: [
-                { label: 'Edit', action: 'edit' },
-                { label: 'Delete', action: 'delete', danger: true },
-              ],
-              onClick: (action: string, data: any) => {
-                if (action === 'edit') this.openSimpleEdit('sequence-prefix-counter', data);
-                if (action === 'delete') this.deleteSimple('sequence-prefix-counter', data);
-              },
-            },
-            flex: 0,
-            width: 160,
-            minWidth: 160,
-            maxWidth: 160,
-          },
-        ];
-
       default:
         return [];
     }
-  }
-
-  // ==========================================
-  // SIMPLE MASTERS ACTIONS
-  // ==========================================
-  openSimpleAdd(mode: typeof this.simpleMode): void {
-    this.simpleMode = mode;
-    this.isEditMode = false;
-    this.simpleModalTitle = `Add New ${this.getMasterLabel(mode)}`;
-    this.simpleForm = {
-      code: '',
-      name: '',
-      is_active: true,
-      description: '',
-      type: '',
-      taxable: false,
-      priority: 1,
-      fully_earned: false,
-      contact_name: '',
-      contact_email: '',
-      contact_phone: '',
-      lob_id: '',
-      cob_id: '',
-      prefix: '',
-      next_value: 1,
-      padding_width: 4,
-    };
-    this.showSimpleModal = true;
-  }
-
-  openSimpleEdit(mode: typeof this.simpleMode, item: any): void {
-    this.simpleMode = mode;
-    this.isEditMode = true;
-    this.simpleModalTitle = `Edit ${this.getMasterLabel(mode)}`;
-    this.simpleForm = {
-      id: item.id,
-      code: item.lob_code || item.cob_code || item.reinsurer_company_id || item.broker_code || item.product_id || item.code || '',
-      name: item.name,
-      is_active: item.is_active,
-      description: item.description || '',
-      type: item.type || '',
-      taxable: item.taxable || false,
-      priority: item.priority || 1,
-      fully_earned: item.fully_earned || false,
-      contact_name: item.contact_name || item.contactName || '',
-      contact_email: item.contact_email || item.contactEmail || '',
-      contact_phone: item.contact_phone || item.contactPhone || '',
-      lob_id: item.lob_id || item.lobId || '',
-      cob_id: item.cob_id || item.cobId || '',
-      prefix: item.prefix || '',
-      next_value: item.next_value !== undefined ? item.next_value : (item.nextValue || 1),
-      padding_width: item.padding_width !== undefined ? item.padding_width : (item.paddingWidth || 4),
-    };
-    this.showSimpleModal = true;
-  }
-
-  submitSimple(): void {
-    if (!this.simpleForm.code || !this.simpleForm.name) {
-      this.toast.error('Code and Name are required');
-      return;
-    }
-    this.submitting = true;
-
-    const codeKey = this.getCodeKey(this.simpleMode);
-    const payload: any = {
-      [codeKey]: this.simpleForm.code,
-      name: this.simpleForm.name,
-      is_active: this.simpleForm.is_active,
-    };
-
-    if (this.simpleMode === 'lob' || this.simpleMode === 'cob') {
-      payload.description = this.simpleForm.description || null;
-      payload.type = this.simpleMode === 'cob' ? this.simpleForm.type || null : null;
-      payload.taxable = this.simpleForm.taxable || false;
-      payload.priority = Number(this.simpleForm.priority || 1);
-      payload.fully_earned = this.simpleForm.fully_earned || false;
-    } else if (this.simpleMode === 'broker') {
-      payload.contact_name = this.simpleForm.contact_name || null;
-      payload.contact_email = this.simpleForm.contact_email || null;
-      payload.contact_phone = this.simpleForm.contact_phone || null;
-    } else if (this.simpleMode === 'product') {
-      payload.description = this.simpleForm.description || null;
-      payload.lob_id = this.simpleForm.lob_id || null;
-      payload.cob_id = this.simpleForm.cob_id || null;
-    } else if (this.simpleMode === 'sequence-prefix-counter') {
-      payload.description = this.simpleForm.description || null;
-      payload.prefix = this.simpleForm.prefix || null;
-      payload.next_value = Number(this.simpleForm.next_value ?? 1);
-      payload.padding_width = Number(this.simpleForm.padding_width ?? 4);
-    }
-
-    let request!: Observable<any>;
-    if (this.isEditMode) {
-      const id = this.simpleForm.id!;
-      switch (this.simpleMode) {
-        case 'lob':
-          request = this.service.updateLob(id, payload);
-          break;
-        case 'cob':
-          request = this.service.updateCob(id, payload);
-          break;
-        case 'reinsurer':
-          request = this.service.updateReinsurer(id, payload);
-          break;
-        case 'broker':
-          request = this.service.updateBroker(id, payload);
-          break;
-        case 'product':
-          request = this.service.updateProduct(id, payload);
-          break;
-        case 'document-type':
-          request = this.service.updateDocumentType(id, payload);
-          break;
-        case 'sequence-prefix-counter':
-          request = this.service.updateSequencePrefixCounter(id, payload);
-          break;
-      }
-    } else {
-      switch (this.simpleMode) {
-        case 'lob':
-          request = this.service.createLob(payload);
-          break;
-        case 'cob':
-          request = this.service.createCob(payload);
-          break;
-        case 'reinsurer':
-          request = this.service.createReinsurer(payload);
-          break;
-        case 'broker':
-          request = this.service.createBroker(payload);
-          break;
-        case 'product':
-          request = this.service.createProduct(payload);
-          break;
-        case 'document-type':
-          request = this.service.createDocumentType(payload);
-          break;
-        case 'sequence-prefix-counter':
-          request = this.service.createSequencePrefixCounter(payload);
-          break;
-      }
-    }
-
-    request.subscribe({
-      next: () => {
-        this.toast.success(`${this.getMasterLabel(this.simpleMode)} saved successfully`);
-        this.showSimpleModal = false;
-        this.submitting = false;
-        this.loadData();
-      },
-      error: (err: any) => {
-        this.toast.error(err.error?.message || 'Failed to save master data');
-        this.submitting = false;
-        this.cdr.markForCheck();
-      },
-    });
-  }
-
-  deleteSimple(mode: typeof this.simpleMode, item: any): void {
-    this.confirmTitle = `Delete ${this.getMasterLabel(mode)}`;
-    this.confirmMessage = `Are you sure you want to delete "${item.name}"? This action cannot be undone.`;
-    this.pendingAction = () => {
-      let request!: Observable<any>;
-      switch (mode) {
-        case 'lob':
-          request = this.service.deleteLob(item.id);
-          break;
-        case 'cob':
-          request = this.service.deleteCob(item.id);
-          break;
-        case 'reinsurer':
-          request = this.service.deleteReinsurer(item.id);
-          break;
-        case 'broker':
-          request = this.service.deleteBroker(item.id);
-          break;
-        case 'product':
-          request = this.service.deleteProduct(item.id);
-          break;
-        case 'document-type':
-          request = this.service.deleteDocumentType(item.id);
-          break;
-        case 'sequence-prefix-counter':
-          request = this.service.deleteSequencePrefixCounter(item.id);
-          break;
-      }
-      request.subscribe({
-        next: () => {
-          this.toast.success(`${this.getMasterLabel(mode)} deleted`);
-          this.loadData();
-        },
-        error: (err: any) => {
-          this.toast.error(err.error?.message || 'Failed to delete item');
-        },
-      });
-    };
-    this.confirmOpen = true;
-  }
-
-  // ==========================================
-  // MGA MASTER ACTIONS
-  // ==========================================
-  openMgaAdd(): void {
-    this.isEditMode = false;
-    this.mgaModalTitle = 'Add MGA';
-    this.loadTreatyOptions();
-    this.mgaForm = {
-      mga_code: '',
-      name: '',
-      tax_payable_inhouse: false,
-      ledger_amount: 0,
-      is_active: true,
-      company_id: null,
-      id_name: '',
-      address: '',
-      zip: '',
-      city: '',
-      state: '',
-      phone: '',
-      open_item: false,
-      op_start_date: '',
-      other_names: [],
-    };
-    this.showMgaModal = true;
-  }
-
-  openMgaEdit(mga: MgaMaster): void {
-    this.isEditMode = true;
-    this.mgaModalTitle = `Edit MGA: ${mga.name}`;
-    this.loadTreatyOptions();
-    this.mgaForm = {
-      id: mga.id,
-      mga_code: mga.mga_code,
-      name: mga.name,
-      tax_payable_inhouse: mga.tax_payable_inhouse,
-      ledger_amount: mga.ledger_amount || 0,
-      is_active: mga.is_active,
-      company_id: mga.company_id ? Number(mga.company_id) : null,
-      id_name: mga.id_name || '',
-      address: mga.address || '',
-      zip: mga.zip || '',
-      city: mga.city || '',
-      state: mga.state || '',
-      phone: mga.phone || '',
-      open_item: mga.open_item || false,
-      op_start_date: mga.op_start_date ? mga.op_start_date.substring(0, 10) : '',
-      other_names: mga.other_names ? JSON.parse(JSON.stringify(mga.other_names)) : [],
-    };
-    this.showMgaModal = true;
-  }
-
-  addOtherNameRow(): void {
-    if (!this.mgaForm.other_names) {
-      this.mgaForm.other_names = [];
-    }
-    this.mgaForm.other_names.push({ state: '', displayName: '' });
-    this.cdr.markForCheck();
-  }
-
-  removeOtherNameRow(index: number): void {
-    if (this.mgaForm.other_names) {
-      this.mgaForm.other_names.splice(index, 1);
-    }
-    this.cdr.markForCheck();
-  }
-
-  submitMga(): void {
-    if (!this.mgaForm.mga_code || !this.mgaForm.name) {
-      this.toast.error('MGA Code and Name are required');
-      return;
-    }
-    this.submitting = true;
-
-    const payload = {
-      ...this.mgaForm,
-      ledger_amount: Number(this.mgaForm.ledger_amount || 0),
-      company_id: this.mgaForm.company_id ? Number(this.mgaForm.company_id) : null,
-      other_names:
-        this.mgaForm.other_names && this.mgaForm.other_names.length > 0
-          ? this.mgaForm.other_names
-          : null,
-    };
-
-    if (this.isEditMode) {
-      this.service.updateMga(this.mgaForm.id!, payload).subscribe({
-        next: () => {
-          this.toast.success('MGA updated successfully');
-          this.showMgaModal = false;
-          this.submitting = false;
-          this.loadData();
-        },
-        error: (err: any) => {
-          this.toast.error(err.error?.message || 'Failed to update MGA');
-          this.submitting = false;
-          this.cdr.markForCheck();
-        },
-      });
-    } else {
-      this.service.createMga(payload).subscribe({
-        next: () => {
-          this.toast.success('MGA created successfully');
-          this.showMgaModal = false;
-          this.submitting = false;
-          this.loadData();
-        },
-        error: (err: any) => {
-          this.toast.error(err.error?.message || 'Failed to create MGA');
-          this.submitting = false;
-          this.cdr.markForCheck();
-        },
-      });
-    }
-  }
-
-  deleteMga(mga: MgaMaster): void {
-    this.confirmTitle = 'Delete MGA';
-    this.confirmMessage = `Are you sure you want to delete MGA "${mga.name}"? This action cannot be undone.`;
-    this.pendingAction = () => {
-      this.service.deleteMga(mga.id).subscribe({
-        next: () => {
-          this.toast.success('MGA deleted successfully');
-          this.loadData();
-        },
-        error: (err: any) => {
-          this.toast.error(err.error?.message || 'Failed to delete MGA');
-        },
-      });
-    };
-    this.confirmOpen = true;
   }
 
   // ==========================================
@@ -1708,198 +644,6 @@ export class MastersComponent implements OnInit {
       });
     };
     this.confirmOpen = true;
-  }
-
-  // ==========================================
-  // STATE MASTER ACTIONS
-  // ==========================================
-  openStateAdd(): void {
-    this.isEditMode = false;
-    this.stateModalTitle = 'Add State';
-    this.stateForm = { state_code: null, state_abbr: '', name: '', notes: '', is_active: true };
-    this.showStateModal = true;
-  }
-
-  openStateEdit(state: StateMaster): void {
-    this.isEditMode = true;
-    this.stateModalTitle = `Edit State: ${state.name}`;
-    this.stateForm = {
-      id: state.id,
-      state_code: state.state_code,
-      state_abbr: state.state_abbr,
-      name: state.name,
-      notes: state.notes || '',
-      is_active: state.is_active,
-    };
-    this.showStateModal = true;
-  }
-
-  submitState(): void {
-    if (this.stateForm.state_code === null || !this.stateForm.state_abbr || !this.stateForm.name) {
-      this.toast.error('State Code, State Abbr, and Name are required');
-      return;
-    }
-    this.submitting = true;
-
-    const payload = {
-      state_code: Number(this.stateForm.state_code),
-      state_abbr: this.stateForm.state_abbr,
-      name: this.stateForm.name,
-      notes: this.stateForm.notes || null,
-      is_active: this.stateForm.is_active,
-    };
-
-    let request: Observable<any>;
-    if (this.isEditMode) {
-      request = this.service.updateState(this.stateForm.id!, payload);
-    } else {
-      request = this.service.createState(payload);
-    }
-
-    request.subscribe({
-      next: () => {
-        this.toast.success('State saved successfully');
-        this.showStateModal = false;
-        this.submitting = false;
-        this.loadData();
-      },
-      error: (err: any) => {
-        this.toast.error(err.error?.message || 'Failed to save state');
-        this.submitting = false;
-        this.cdr.markForCheck();
-      },
-    });
-  }
-
-  deleteState(state: StateMaster): void {
-    this.confirmTitle = 'Delete State';
-    this.confirmMessage = `Are you sure you want to delete state "${state.name}"? This action cannot be undone.`;
-    this.pendingAction = () => {
-      this.service.deleteState(state.id).subscribe({
-        next: () => {
-          this.toast.success('State deleted successfully');
-          this.loadData();
-        },
-        error: (err: any) => {
-          this.toast.error(err.error?.message || 'Failed to delete state');
-        },
-      });
-    };
-    this.confirmOpen = true;
-  }
-
-  // ==========================================
-  // RISK COMPANY MASTER ACTIONS
-  // ==========================================
-  openRiskCompanyAdd(): void {
-    this.isEditMode = false;
-    this.riskCompanyModalTitle = 'Add Risk Company';
-    this.riskCompanyForm = {
-      risk_company_id: '',
-      company_id: null,
-      id_name: '',
-      name: '',
-      phone: '',
-      is_admitted: true,
-      state: '',
-      address: '',
-      zip: '',
-      city: '',
-      notes: '',
-      is_active: true,
-    };
-    this.showRiskCompanyModal = true;
-  }
-
-  openRiskCompanyEdit(rc: RiskCompany): void {
-    this.isEditMode = true;
-    this.riskCompanyModalTitle = `Edit Risk Company: ${rc.name}`;
-    this.riskCompanyForm = {
-      id: rc.id,
-      risk_company_id: rc.risk_company_id,
-      company_id: rc.company_id,
-      id_name: rc.id_name || '',
-      name: rc.name,
-      phone: rc.phone || '',
-      is_admitted: rc.is_admitted,
-      state: rc.state || '',
-      address: rc.address || '',
-      zip: rc.zip || '',
-      city: rc.city || '',
-      notes: rc.notes || '',
-      is_active: rc.is_active,
-    };
-    this.showRiskCompanyModal = true;
-  }
-
-  submitRiskCompany(): void {
-    if (!this.riskCompanyForm.risk_company_id) {
-      this.riskCompanyForm.risk_company_id = this.riskCompanyForm.company_id
-        ? 'RC-' + this.riskCompanyForm.company_id
-        : 'RC-' + Date.now();
-    }
-    if (!this.riskCompanyForm.name) {
-      this.toast.error('Name is required');
-      return;
-    }
-    this.submitting = true;
-
-    const payload = {
-      risk_company_id: this.riskCompanyForm.risk_company_id,
-      company_id: this.riskCompanyForm.company_id ? Number(this.riskCompanyForm.company_id) : null,
-      id_name: this.riskCompanyForm.id_name || null,
-      name: this.riskCompanyForm.name,
-      phone: this.riskCompanyForm.phone || null,
-      is_admitted: this.riskCompanyForm.is_admitted,
-      state: this.riskCompanyForm.state || null,
-      address: this.riskCompanyForm.address || null,
-      zip: this.riskCompanyForm.zip || null,
-      city: this.riskCompanyForm.city || null,
-      notes: this.riskCompanyForm.notes || null,
-      is_active: this.riskCompanyForm.is_active,
-    };
-
-    let request: Observable<any>;
-    if (this.isEditMode) {
-      request = this.service.updateRiskCompany(this.riskCompanyForm.id!, payload);
-    } else {
-      request = this.service.createRiskCompany(payload);
-    }
-
-    request.subscribe({
-      next: () => {
-        this.toast.success('Risk Company saved successfully');
-        this.showRiskCompanyModal = false;
-        this.submitting = false;
-        this.loadData();
-      },
-      error: (err: any) => {
-        this.toast.error(err.error?.message || 'Failed to save risk company');
-        this.submitting = false;
-        this.cdr.markForCheck();
-      },
-    });
-  }
-
-  deleteRiskCompany(rc: RiskCompany): void {
-    this.confirmTitle = 'Delete Risk Company';
-    this.confirmMessage = `Are you sure you want to delete risk company "${rc.name}"? This action cannot be undone.`;
-    this.pendingAction = () => {
-      this.service.deleteRiskCompany(rc.id).subscribe({
-        next: () => {
-          this.toast.success('Risk Company deleted successfully');
-          this.loadData();
-        },
-        error: (err: any) => {
-          this.toast.error(err.error?.message || 'Failed to delete risk company');
-        },
-      });
-    };
-    this.confirmOpen = true;
-  }
-
-  viewPolicy(rc: RiskCompany): void {
-    this.toast.info(`View Policy clicked for risk company: ${rc.name}`);
   }
 
   // ==========================================
@@ -2279,48 +1023,6 @@ export class MastersComponent implements OnInit {
   // ==========================================
   // HELPERS
   // ==========================================
-  private getMasterLabel(mode: string): string {
-    switch (mode) {
-      case 'state':
-        return 'State';
-      case 'lob':
-        return 'Line of Business';
-      case 'cob':
-        return 'Class of Business';
-      case 'reinsurer':
-        return 'Reinsurer Company';
-      case 'risk-company':
-        return 'Risk Company';
-      case 'broker':
-        return 'Broker';
-      case 'product':
-        return 'Product';
-      case 'document-type':
-        return 'Document Type';
-      case 'sequence-prefix-counter':
-        return 'Sequence Prefix & Counter';
-      default:
-        return 'Master';
-    }
-  }
-
-  private getCodeKey(mode: string): string {
-    switch (mode) {
-      case 'state':
-        return 'state_code';
-      case 'lob':
-        return 'lob_code';
-      case 'cob':
-        return 'cob_code';
-      case 'reinsurer':
-        return 'reinsurer_company_id';
-      case 'risk-company':
-        return 'risk_company_id';
-      default:
-        return 'code';
-    }
-  }
-
   exportToExcel(): void {
     let headers: string[] = [];
     let rows: any[][] = [];
@@ -2342,142 +1044,48 @@ export class MastersComponent implements OnInit {
         break;
 
       case 'mgas':
-        headers = ['MGA Code', 'MGA Name', 'Tax Payable In-house', 'Ledger Amount', 'Status'];
-        rows = this.mgas.map(m => [
-          m.mga_code,
-          m.name,
-          m.tax_payable_inhouse ? 'Yes' : 'No',
-          m.ledger_amount !== undefined ? `$${m.ledger_amount.toFixed(2)}` : '$0.00',
-          m.is_active ? 'Active' : 'Inactive',
-        ]);
-        filename = 'mgas.csv';
-        break;
+        this.mgaMasterChild?.exportToExcel();
+        return;
 
       case 'states':
-        headers = ['State Code', 'State Abbr', 'State Name', 'Status'];
-        rows = this.states.map(s => [
-          s.state_code,
-          s.state_abbr,
-          s.name,
-          s.is_active ? 'Active' : 'Inactive',
-        ]);
-        filename = 'states.csv';
-        break;
+        this.stateMasterChild?.exportToExcel();
+        return;
 
       case 'risk-companies':
-        headers = [
-          'Company',
-          'ID Name',
-          'Name',
-          'Phone',
-          'Admitted',
-          'State',
-          'Address 1',
-          'Zip',
-          'City',
-          'Status',
-        ];
-        rows = this.riskCompanies.map(r => [
-          r.company_id,
-          r.id_name || '-',
-          r.name,
-          r.phone || '-',
-          r.is_admitted ? 'Yes' : 'No',
-          r.state || '-',
-          r.address || '-',
-          r.zip || '-',
-          r.city || '-',
-          r.is_active ? 'Active' : 'Inactive',
-        ]);
-        filename = 'risk_companies.csv';
-        break;
+        this.riskCompanyMasterChild?.exportToExcel();
+        return;
 
       case 'lobs':
-        headers = [
-          'LOB Code',
-          'LOB Name',
-          'Taxable',
-          'Priority',
-          'Fully Earned',
-          'Status',
-          'Description',
-        ];
-        rows = this.lobs.map(l => [
-          l.lob_code,
-          l.name,
-          l.taxable ? 'Yes' : 'No',
-          l.priority,
-          l.fully_earned ? 'Yes' : 'No',
-          l.is_active ? 'Active' : 'Inactive',
-          l.description || '-',
-        ]);
-        filename = 'lobs.csv';
-        break;
+        this.simpleMasterChild?.exportToExcel();
+        return;
 
       case 'cobs':
-        headers = [
-          'Class Code',
-          'Class Name',
-          'Class Type',
-          'Taxable',
-          'Priority',
-          'Fully Earned',
-          'Status',
-          'Description',
-        ];
-        rows = this.cobs.map(c => [
-          c.cob_code,
-          c.name,
-          c.type || '-',
-          c.taxable ? 'Yes' : 'No',
-          c.priority,
-          c.fully_earned ? 'Yes' : 'No',
-          c.is_active ? 'Active' : 'Inactive',
-          c.description || '-',
-        ]);
-        filename = 'cobs.csv';
-        break;
+        this.simpleMasterChild?.exportToExcel();
+        return;
 
       case 'reinsurers':
-        headers = ['Code ID', 'Name', 'Status'];
-        rows = this.reinsurers.map(r => [
-          r.reinsurer_company_id,
-          r.name,
-          r.is_active ? 'Active' : 'Inactive',
-        ]);
-        filename = 'reinsurers.csv';
-        break;
+        this.simpleMasterChild?.exportToExcel();
+        return;
+
+      case 'brokers':
+        this.simpleMasterChild?.exportToExcel();
+        return;
+
+      case 'products':
+        this.simpleMasterChild?.exportToExcel();
+        return;
 
       case 'gl-mappings':
-        headers = ['GL Number', 'Type'];
-        rows = this.glMappings.map(m => [this.getGLNumberDisplay(m), m.type]);
-        filename = 'gl_mappings.csv';
-        break;
+        this.glMappingsChild?.exportToExcel();
+        return;
 
       case 'document-types':
-        headers = ['Code', 'Name', 'Description', 'Status'];
-        rows = this.documentTypes.map(d => [
-          d.code,
-          d.name,
-          d.description || '-',
-          d.isActive ? 'Active' : 'Inactive',
-        ]);
-        filename = 'document_types.csv';
-        break;
+        this.simpleMasterChild?.exportToExcel();
+        return;
 
       case 'sequence-prefix-counters':
-        headers = ['Code', 'Name', 'Prefix', 'Next Value', 'Padding Width', 'Description', 'Status'];
-        rows = this.sequencePrefixCounters.map(s => [
-          s.code,
-          s.name,
-          s.prefix || '-',
-          s.next_value !== undefined ? s.next_value : (s.nextValue || 1),
-          s.padding_width !== undefined ? s.padding_width : (s.paddingWidth || 4),
-          s.description || '-',
-          s.isActive ? 'Active' : 'Inactive',
-        ]);
-        filename = 'sequence_prefix_counters.csv';
-        break;
+        this.simpleMasterChild?.exportToExcel();
+        return;
     }
 
     this.downloadCSV(headers, rows, filename);
@@ -2507,134 +1115,6 @@ export class MastersComponent implements OnInit {
     document.body.removeChild(link);
   }
 
-  // ==========================================
-  // GL MAPPINGS ACTIONS
-  // ==========================================
-  loadGlMappings(): void {
-    this.glMappingsService.getMappings().subscribe({
-      next: data => {
-        if (this.searchTerm) {
-          const term = this.searchTerm.toLowerCase();
-          this.glMappings = data.filter(m => {
-            const typeMatch = m.type.toLowerCase().includes(term);
-            const code = m.coa?.account_code?.toString() || '';
-            const desc = m.coa?.description?.toLowerCase() || '';
-            return typeMatch || code.includes(term) || desc.includes(term);
-          });
-        } else {
-          this.glMappings = data;
-        }
-        this.loading = false;
-        this.cdr.markForCheck();
-      },
-      error: () => {
-        this.toast.error('Failed to load GL mappings');
-        this.loading = false;
-        this.cdr.markForCheck();
-      },
-    });
-  }
-
-  loadCoaOptions(): void {
-    this.coaService.getAccounts(undefined, true).subscribe({
-      next: data => {
-        this.coaOptions = data.filter(coa => !coa.is_parent);
-        this.cdr.markForCheck();
-      },
-      error: () => {
-        this.toast.error('Failed to load Chart of Accounts options');
-      },
-    });
-  }
-
-  openGlMappingAdd(): void {
-    this.isEditMode = false;
-    this.glMappingModalTitle = 'Add GL Mapping';
-    this.glMappingForm = {
-      coa_id: '',
-      type: '',
-    };
-    this.loadCoaOptions();
-    this.showGlMappingModal = true;
-    this.cdr.markForCheck();
-  }
-
-  openGlMappingEdit(mapping: GlMapping): void {
-    this.isEditMode = true;
-    this.glMappingModalTitle = 'Edit GL Mapping';
-    this.glMappingForm = {
-      id: mapping.id,
-      coa_id: mapping.coa_id,
-      type: mapping.type,
-    };
-    this.loadCoaOptions();
-    this.showGlMappingModal = true;
-    this.cdr.markForCheck();
-  }
-
-  submitGlMapping(): void {
-    if (!this.glMappingForm.coa_id || !this.glMappingForm.type) {
-      this.toast.error('Both Chart of Account and Mapping Type are required');
-      return;
-    }
-
-    this.submitting = true;
-    this.cdr.markForCheck();
-
-    const payload = {
-      coa_id: this.glMappingForm.coa_id,
-      type: this.glMappingForm.type,
-    };
-
-    if (this.isEditMode && this.glMappingForm.id) {
-      this.glMappingsService.updateMapping(this.glMappingForm.id, payload).subscribe({
-        next: () => {
-          this.toast.success('GL Mapping updated successfully');
-          this.showGlMappingModal = false;
-          this.submitting = false;
-          this.loadGlMappings();
-        },
-        error: err => {
-          const msg = err.error?.message || 'Failed to update GL mapping';
-          this.toast.error(msg);
-          this.submitting = false;
-          this.cdr.markForCheck();
-        },
-      });
-    } else {
-      this.glMappingsService.createMapping(payload).subscribe({
-        next: () => {
-          this.toast.success('GL Mapping created successfully');
-          this.showGlMappingModal = false;
-          this.submitting = false;
-          this.loadGlMappings();
-        },
-        error: err => {
-          const msg = err.error?.message || 'Failed to create GL mapping';
-          this.toast.error(msg);
-          this.submitting = false;
-          this.cdr.markForCheck();
-        },
-      });
-    }
-  }
-
-  deleteGlMapping(mapping: GlMapping): void {
-    this.confirmOpen = true;
-    this.pendingAction = () => {
-      this.glMappingsService.deleteMapping(mapping.id).subscribe({
-        next: () => {
-          this.toast.success('GL Mapping deleted successfully');
-          this.loadGlMappings();
-        },
-        error: () => {
-          this.toast.error('Failed to delete GL mapping');
-        },
-      });
-    };
-    this.cdr.markForCheck();
-  }
-
   hasITDSeeded(programName: string): boolean {
     return this.seededProgramITD.has((programName || '').trim());
   }
@@ -2642,11 +1122,6 @@ export class MastersComponent implements OnInit {
   getTreatyStatus(programName?: string): string {
     if (!programName) return 'Draft';
     return this.treatyWorkbookStatuses.get(programName) || 'Pending';
-  }
-
-  getGLNumberDisplay(mapping: GlMapping): string {
-    if (!mapping.coa) return '-';
-    return `${mapping.coa.account_code} - ${mapping.coa.description}`;
   }
 
   selectedTreatyForUpload: any = null;
@@ -2829,57 +1304,4 @@ export class MastersComponent implements OnInit {
     });
   }
 
-  submitLockPeriod(): void {
-    if (!this.newPeriodToLock) return;
-    this.submitting = true;
-    this.service.lockPeriod(this.newPeriodToLock).subscribe({
-      next: () => {
-        this.toast.success(`Successfully locked period "${this.newPeriodToLock}"`);
-        this.showLockPeriodModal = false;
-        this.newPeriodToLock = '';
-        this.submitting = false;
-        this.loadData();
-      },
-      error: err => {
-        this.toast.error(err.error?.message || 'Failed to lock period');
-        this.submitting = false;
-        this.cdr.markForCheck();
-      },
-    });
-  }
-
-  togglePeriodLock(period: string, lock: boolean): void {
-    const action = lock ? this.service.lockPeriod(period) : this.service.unlockPeriod(period);
-    action.subscribe({
-      next: () => {
-        this.toast.success(`Successfully ${lock ? 'locked' : 'unlocked'} period "${period}"`);
-        this.loadData();
-      },
-      error: err => {
-        this.toast.error(err.error?.message || `Failed to ${lock ? 'lock' : 'unlock'} period`);
-      },
-    });
-  }
-
-  openLockPeriodAdd(): void {
-    this.newPeriodToLock = '';
-    this.showLockPeriodModal = true;
-    this.cdr.markForCheck();
-  }
-
-  onProductLobCobChange(): void {
-    const selectedLob = this.lobOptions.find(l => l.id === this.simpleForm.lob_id);
-    const selectedCob = this.cobOptions.find(c => c.id === this.simpleForm.cob_id);
-
-    const lobCode = selectedLob ? selectedLob.lob_code : '';
-    const cobCode = selectedCob ? selectedCob.cob_code : '';
-
-    if (lobCode && cobCode) {
-      this.simpleForm.code = `${lobCode}-${cobCode}`;
-      this.simpleForm.name = `${selectedLob?.name} - ${selectedCob?.name}`;
-    } else {
-      this.simpleForm.code = '';
-      this.simpleForm.name = '';
-    }
-  }
 }
