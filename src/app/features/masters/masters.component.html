@@ -5,7 +5,7 @@
       <h1 class="page-title">Masters Dashboard</h1>
       <p class="page-subtitle">Configure underwriters, carriers, lines, classes, coverages, and states.</p>
     </div>
-    <!-- Dynamic Header Buttons -->
+    <!-- Dynamic Header Buttons --> 
     <div>
       @if (currentTab === "mgas") {
         <button class="btn-primary" (click)="mgaMasterChild?.openAdd()">Add MGA</button>
@@ -16,19 +16,19 @@
       } @else if (currentTab === "gl-mappings") {
         <button class="btn-primary" (click)="glMappingsChild?.openGlMappingAdd()">Add Mapping</button>
       } @else if (currentTab === "lobs") {
-        <button class="btn-primary" (click)="simpleMasterChild?.openAdd()">Add LOB</button>
+        <button class="btn-primary" (click)="lobMasterChild?.openAdd()">Add LOB</button>
       } @else if (currentTab === "cobs") {
-        <button class="btn-primary" (click)="simpleMasterChild?.openAdd()">Add COB</button>
+        <button class="btn-primary" (click)="cobMasterChild?.openAdd()">Add COB</button>
       } @else if (currentTab === "reinsurers") {
-        <button class="btn-primary" (click)="simpleMasterChild?.openAdd()">Add Reinsurer</button>
+        <button class="btn-primary" (click)="reinsurerMasterChild?.openAdd()">Add Reinsurer</button>
       } @else if (currentTab === "brokers") {
-        <button class="btn-primary" (click)="simpleMasterChild?.openAdd()">Add Broker</button>
+        <button class="btn-primary" (click)="brokerMasterChild?.openAdd()">Add Broker</button>
       } @else if (currentTab === "products") {
-        <button class="btn-primary" (click)="simpleMasterChild?.openAdd()">Add Product</button>
+        <button class="btn-primary" (click)="productMasterChild?.openAdd()">Add Product</button>
       } @else if (currentTab === "document-types") {
-        <button class="btn-primary" (click)="simpleMasterChild?.openAdd()">Add Document Type</button>
+        <button class="btn-primary" (click)="documentTypeMasterChild?.openAdd()">Add Document Type</button>
       } @else if (currentTab === "sequence-prefix-counters") {
-        <button class="btn-primary" (click)="simpleMasterChild?.openAdd()">Add Sequence Counter</button>
+        <button class="btn-primary" (click)="sequenceCounterMasterChild?.openAdd()">Add Sequence Counter</button>
       } @else if (currentTab === "locked-periods") {
         <button class="btn-primary" (click)="lockedPeriodsChild?.openLockPeriodAdd()">Lock Period</button>
       }
@@ -179,19 +179,19 @@
         (notesOpen)="openNotesModal($event.title, $event.text)"
       ></app-risk-company-master>
     } @else if (currentTab === 'lobs') {
-      <app-simple-master [mode]="'lob'" [searchTerm]="searchTerm" [statusFilter]="statusFilter"></app-simple-master>
+      <app-lob-master [searchTerm]="searchTerm" [statusFilter]="statusFilter"></app-lob-master>
     } @else if (currentTab === 'cobs') {
-      <app-simple-master [mode]="'cob'" [searchTerm]="searchTerm" [statusFilter]="statusFilter"></app-simple-master>
+      <app-cob-master [searchTerm]="searchTerm" [statusFilter]="statusFilter"></app-cob-master>
     } @else if (currentTab === 'reinsurers') {
-      <app-simple-master [mode]="'reinsurer'" [searchTerm]="searchTerm" [statusFilter]="statusFilter"></app-simple-master>
+      <app-reinsurer-master [searchTerm]="searchTerm" [statusFilter]="statusFilter"></app-reinsurer-master>
     } @else if (currentTab === 'brokers') {
-      <app-simple-master [mode]="'broker'" [searchTerm]="searchTerm" [statusFilter]="statusFilter"></app-simple-master>
+      <app-broker-master [searchTerm]="searchTerm" [statusFilter]="statusFilter"></app-broker-master>
     } @else if (currentTab === 'products') {
-      <app-simple-master [mode]="'product'" [searchTerm]="searchTerm" [statusFilter]="statusFilter"></app-simple-master>
+      <app-product-master [searchTerm]="searchTerm" [statusFilter]="statusFilter"></app-product-master>
     } @else if (currentTab === 'document-types') {
-      <app-simple-master [mode]="'document-type'" [searchTerm]="searchTerm" [statusFilter]="statusFilter"></app-simple-master>
+      <app-document-type-master [searchTerm]="searchTerm" [statusFilter]="statusFilter"></app-document-type-master>
     } @else if (currentTab === 'sequence-prefix-counters') {
-      <app-simple-master [mode]="'sequence-prefix-counter'" [searchTerm]="searchTerm" [statusFilter]="statusFilter"></app-simple-master>
+      <app-sequence-counter-master [searchTerm]="searchTerm" [statusFilter]="statusFilter"></app-sequence-counter-master>
     } @else if (currentTab === 'mgas') {
       <app-mga-master
         [searchTerm]="searchTerm"

@@ -1,0 +1,147 @@
+@if (loading) {
+  <div class="empty-state">
+    <div class="spinner" style="width: 32px; height: 32px; margin-bottom: 12px"></div>
+    <p>Loading master data...</p>
+  </div>
+} @else if (products.length === 0) {
+  <div class="empty-state">
+    <svg
+      width="40"
+      height="40"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="var(--gray-400)"
+      stroke-width="1.5"
+      style="margin-bottom: 12px; opacity: 0.7"
+    >
+      <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+      <line x1="9" y1="9" x2="15" y2="9" />
+      <line x1="9" y1="13" x2="15" y2="13" />
+      <line x1="9" y1="17" x2="13" y2="17" />
+    </svg>
+    <p>No records found. Try adjusting your filters or create a new entry.</p>
+  </div>
+} @else {
+  <div class="table-wrapper" style="padding-left: 33px; margin-top: 16px">
+    <ag-grid-angular
+      style="display: block; width: 100%"
+      class="ag-theme-alpine"
+      [domLayout]="'autoHeight'"
+      [gridOptions]="gridOptions"
+      [columnDefs]="columnDefs"
+      [rowData]="products"
+    ></ag-grid-angular>
+  </div>
+}
+
+@if (showProductModal) {
+  <div class="modal-overlay" (click)="$event.target === $event.currentTarget && (showProductModal = false)">
+    <div class="modal-box treaty-modal">
+      <div class="panel-header">
+        <h3 class="panel-title">{{ productModalTitle }}</h3>
+        <button class="panel-close" (click)="showProductModal = false" aria-label="Close modal">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <line x1="18" y1="6" x2="6" y2="18" />
+            <line x1="6" y1="6" x2="18" y2="18" />
+          </svg>
+        </button>
+      </div>
+
+      <form (submit)="submitProduct()" class="panel-body" style="max-height: calc(100vh - 200px); overflow-y: auto">
+        <div class="form-row">
+          <div class="form-field">
+            <label class="form-label">Product ID *</label>
+            <input
+              [(ngModel)]="productForm.code"
+              name="code"
+              type="text"
+              required
+              placeholder="e.g. TX"
+              [disabled]="true"
+              class="form-input"
+            />
+          </div>
+          <div class="form-field">
+            <label class="form-label">Product Name *</label>
+            <input
+              [(ngModel)]="productForm.name"
+              name="name"
+              type="text"
+              required
+              placeholder="e.g. Texas"
+              [disabled]="true"
+              class="form-input"
+            />
+          </div>
+        </div>
+
+        <div class="form-row" style="margin-top: 8px">
+          <div class="form-field">
+            <label class="form-label">Line of Business *</label>
+            <app-dropdown-search
+              [items]="lobOptions"
+              [isMultiSelect]="false"
+              bindValue="id"
+              placeholder="Select LOB"
+              [itemLabelFn]="lobLabelFn"
+              [selectedValue]="productForm.lob_id"
+              (selectedValueChange)="productForm.lob_id = $event; onProductLobCobChange()"
+            ></app-dropdown-search>
+          </div>
+          <div class="form-field">
+            <label class="form-label">Class of Business *</label>
+            <app-dropdown-search
+              [items]="cobOptions"
+              [isMultiSelect]="false"
+              bindValue="id"
+              placeholder="Select COB"
+              [itemLabelFn]="cobLabelFn"
+              [selectedValue]="productForm.cob_id"
+              (selectedValueChange)="productForm.cob_id = $event; onProductLobCobChange()"
+            ></app-dropdown-search>
+          </div>
+        </div>
+
+        <div class="form-row" style="margin-top: 8px">
+          <div class="form-field">
+            <label class="form-label">Description</label>
+            <textarea
+              [(ngModel)]="productForm.description"
+              name="description"
+              placeholder="Product description..."
+              class="form-input"
+              style="height: 60px; resize: vertical"
+            ></textarea>
+          </div>
+        </div>
+
+        <div class="form-field" style="margin-top: 12px">
+          <div class="form-checkbox-field">
+            <input [(ngModel)]="productForm.is_active" name="isActive" type="checkbox" id="productIsActive" />
+            <label for="productIsActive" style="cursor: pointer">Active Status</label>
+          </div>
+        </div>
+      </form>
+
+      <div class="panel-footer">
+        <button type="button" class="btn-ghost" (click)="showProductModal = false">Cancel</button>
+        <button type="button" class="btn-primary" [disabled]="submitting" (click)="submitProduct()">
+          @if (submitting) {
+            <span class="spinner btn-spinner" style="width: 14px; height: 14px"></span>
+            <span>Saving...</span>
+          } @else {
+            <span>Save Entry</span>
+          }
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<app-confirm-dialog
+  [open]="confirmOpen"
+  [title]="confirmTitle"
+  [message]="confirmMessage"
+  (confirmed)="onConfirm()"
+  (cancelled)="onCancelConfirm()"
+/>

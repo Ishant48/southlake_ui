@@ -10,11 +10,17 @@ import { environment } from '../../../environments/environment';
 import { MgaMaster } from '../../core/models/master.model';
 import { GlMappingsComponent } from './gl-mappings/gl-mappings.component';
 import { LockedPeriodsComponent } from './locked-periods/locked-periods.component';
-import { SimpleMasterComponent } from './simple-master/simple-master.component';
 import { StateMasterComponent } from './state-master/state-master.component';
 import { RiskCompanyMasterComponent } from './risk-company-master/risk-company-master.component';
 import { MgaMasterComponent } from './mga-master/mga-master.component';
 import { TreatyMasterComponent } from './treaty-master/treaty-master.component';
+import { LobMasterComponent } from './lob-master/lob-master.component';
+import { CobMasterComponent } from './cob-master/cob-master.component';
+import { BrokerMasterComponent } from './broker-master/broker-master.component';
+import { ReinsurerMasterComponent } from './reinsurer-master/reinsurer-master.component';
+import { ProductMasterComponent } from './product-master/product-master.component';
+import { DocumentTypeMasterComponent } from './document-type-master/document-type-master.component';
+import { SequenceCounterMasterComponent } from './sequence-counter-master/sequence-counter-master.component';
 
 type MasterTab =
   | 'treaties'
@@ -40,11 +46,17 @@ type MasterTab =
     ConfirmDialogComponent,
     GlMappingsComponent,
     LockedPeriodsComponent,
-    SimpleMasterComponent,
     StateMasterComponent,
     RiskCompanyMasterComponent,
     MgaMasterComponent,
     TreatyMasterComponent,
+    LobMasterComponent,
+    CobMasterComponent,
+    BrokerMasterComponent,
+    ReinsurerMasterComponent,
+    ProductMasterComponent,
+    DocumentTypeMasterComponent,
+    SequenceCounterMasterComponent,
   ],
   templateUrl: './masters.component.html',
   styleUrl: './masters.component.scss',
@@ -58,11 +70,17 @@ export class MastersComponent implements OnInit {
 
   @ViewChild(GlMappingsComponent) glMappingsChild?: GlMappingsComponent;
   @ViewChild(LockedPeriodsComponent) lockedPeriodsChild?: LockedPeriodsComponent;
-  @ViewChild(SimpleMasterComponent) simpleMasterChild?: SimpleMasterComponent;
   @ViewChild(StateMasterComponent) stateMasterChild?: StateMasterComponent;
   @ViewChild(RiskCompanyMasterComponent) riskCompanyMasterChild?: RiskCompanyMasterComponent;
   @ViewChild(MgaMasterComponent) mgaMasterChild?: MgaMasterComponent;
   @ViewChild(TreatyMasterComponent) treatyMasterChild?: TreatyMasterComponent;
+  @ViewChild(LobMasterComponent) lobMasterChild?: LobMasterComponent;
+  @ViewChild(CobMasterComponent) cobMasterChild?: CobMasterComponent;
+  @ViewChild(BrokerMasterComponent) brokerMasterChild?: BrokerMasterComponent;
+  @ViewChild(ReinsurerMasterComponent) reinsurerMasterChild?: ReinsurerMasterComponent;
+  @ViewChild(ProductMasterComponent) productMasterChild?: ProductMasterComponent;
+  @ViewChild(DocumentTypeMasterComponent) documentTypeMasterChild?: DocumentTypeMasterComponent;
+  @ViewChild(SequenceCounterMasterComponent) sequenceCounterMasterChild?: SequenceCounterMasterComponent;
 
   currentTab: MasterTab = 'treaties';
   searchTerm = '';
@@ -137,19 +155,6 @@ export class MastersComponent implements OnInit {
     });
   }
 
-  get currentSimpleMode(): 'lob' | 'cob' | 'reinsurer' | 'broker' | 'product' | 'document-type' | 'sequence-prefix-counter' {
-    const map: Record<string, 'lob' | 'cob' | 'reinsurer' | 'broker' | 'product' | 'document-type' | 'sequence-prefix-counter'> = {
-      'lobs': 'lob',
-      'cobs': 'cob',
-      'reinsurers': 'reinsurer',
-      'brokers': 'broker',
-      'products': 'product',
-      'document-types': 'document-type',
-      'sequence-prefix-counters': 'sequence-prefix-counter',
-    };
-    return map[this.currentTab] ?? 'lob';
-  }
-
   loadData(): void {
     switch (this.currentTab) {
       case 'treaties':
@@ -159,16 +164,16 @@ export class MastersComponent implements OnInit {
         this.mgaMasterChild?.load(this.searchTerm, this.statusFilter);
         break;
       case 'lobs':
-        this.simpleMasterChild?.load('lob', this.searchTerm, this.statusFilter);
+        this.lobMasterChild?.load(this.searchTerm, this.statusFilter);
         break;
       case 'cobs':
-        this.simpleMasterChild?.load('cob', this.searchTerm, this.statusFilter);
+        this.cobMasterChild?.load(this.searchTerm, this.statusFilter);
         break;
       case 'states':
         this.stateMasterChild?.load(this.searchTerm, this.statusFilter);
         break;
       case 'reinsurers':
-        this.simpleMasterChild?.load('reinsurer', this.searchTerm, this.statusFilter);
+        this.reinsurerMasterChild?.load(this.searchTerm, this.statusFilter);
         break;
       case 'risk-companies':
         this.riskCompanyMasterChild?.load(this.searchTerm, this.statusFilter);
@@ -177,19 +182,19 @@ export class MastersComponent implements OnInit {
         this.glMappingsChild?.load(this.searchTerm);
         break;
       case 'brokers':
-        this.simpleMasterChild?.load('broker', this.searchTerm, this.statusFilter);
+        this.brokerMasterChild?.load(this.searchTerm, this.statusFilter);
         break;
       case 'products':
-        this.simpleMasterChild?.load('product', this.searchTerm, this.statusFilter);
+        this.productMasterChild?.load(this.searchTerm, this.statusFilter);
         break;
       case 'locked-periods':
         this.lockedPeriodsChild?.load(this.searchTerm);
         break;
       case 'document-types':
-        this.simpleMasterChild?.load('document-type', this.searchTerm, this.statusFilter);
+        this.documentTypeMasterChild?.load(this.searchTerm, this.statusFilter);
         break;
       case 'sequence-prefix-counters':
-        this.simpleMasterChild?.load('sequence-prefix-counter', this.searchTerm, this.statusFilter);
+        this.sequenceCounterMasterChild?.load(this.searchTerm, this.statusFilter);
         break;
     }
   }
@@ -216,28 +221,28 @@ export class MastersComponent implements OnInit {
         this.riskCompanyMasterChild?.exportToExcel();
         return;
       case 'lobs':
-        this.simpleMasterChild?.exportToExcel();
+        this.lobMasterChild?.exportToExcel();
         return;
       case 'cobs':
-        this.simpleMasterChild?.exportToExcel();
+        this.cobMasterChild?.exportToExcel();
         return;
       case 'reinsurers':
-        this.simpleMasterChild?.exportToExcel();
+        this.reinsurerMasterChild?.exportToExcel();
         return;
       case 'brokers':
-        this.simpleMasterChild?.exportToExcel();
+        this.brokerMasterChild?.exportToExcel();
         return;
       case 'products':
-        this.simpleMasterChild?.exportToExcel();
+        this.productMasterChild?.exportToExcel();
         return;
       case 'gl-mappings':
         this.glMappingsChild?.exportToExcel();
         return;
       case 'document-types':
-        this.simpleMasterChild?.exportToExcel();
+        this.documentTypeMasterChild?.exportToExcel();
         return;
       case 'sequence-prefix-counters':
-        this.simpleMasterChild?.exportToExcel();
+        this.sequenceCounterMasterChild?.exportToExcel();
         return;
     }
   }

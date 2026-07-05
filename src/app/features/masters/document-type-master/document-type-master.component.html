@@ -1,0 +1,106 @@
+@if (loading) {
+  <div class="empty-state">
+    <div class="spinner" style="width: 32px; height: 32px; margin-bottom: 12px"></div>
+    <p>Loading master data...</p>
+  </div>
+} @else if (documentTypes.length === 0) {
+  <div class="empty-state">
+    <svg
+      width="40"
+      height="40"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="var(--gray-400)"
+      stroke-width="1.5"
+      style="margin-bottom: 12px; opacity: 0.7"
+    >
+      <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+      <line x1="9" y1="9" x2="15" y2="9" />
+      <line x1="9" y1="13" x2="15" y2="13" />
+      <line x1="9" y1="17" x2="13" y2="17" />
+    </svg>
+    <p>No records found. Try adjusting your filters or create a new entry.</p>
+  </div>
+} @else {
+  <div class="table-wrapper" style="padding-left: 33px; margin-top: 16px">
+    <ag-grid-angular
+      style="display: block; width: 100%"
+      class="ag-theme-alpine"
+      [domLayout]="'autoHeight'"
+      [gridOptions]="gridOptions"
+      [columnDefs]="columnDefs"
+      [rowData]="documentTypes"
+    ></ag-grid-angular>
+  </div>
+}
+
+@if (showDocumentTypeModal) {
+  <div class="modal-overlay" (click)="$event.target === $event.currentTarget && (showDocumentTypeModal = false)">
+    <div class="modal-box coa-modal">
+      <div class="panel-header">
+        <h3 class="panel-title">{{ documentTypeModalTitle }}</h3>
+        <button class="panel-close" (click)="showDocumentTypeModal = false" aria-label="Close modal">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <line x1="18" y1="6" x2="6" y2="18" />
+            <line x1="6" y1="6" x2="18" y2="18" />
+          </svg>
+        </button>
+      </div>
+
+      <form (submit)="submitDocumentType()" class="panel-body" style="max-height: calc(100vh - 200px); overflow-y: auto">
+        <div class="form-row">
+          <div class="form-field">
+            <label class="form-label">Code ID *</label>
+            <input
+              [(ngModel)]="documentTypeForm.code"
+              name="code"
+              type="text"
+              required
+              placeholder="e.g. TX"
+              [disabled]="isEditMode"
+              class="form-input"
+            />
+          </div>
+          <div class="form-field">
+            <label class="form-label">Name *</label>
+            <input
+              [(ngModel)]="documentTypeForm.name"
+              name="name"
+              type="text"
+              required
+              placeholder="e.g. Texas"
+              class="form-input"
+            />
+          </div>
+        </div>
+
+        <div class="form-field" style="margin-top: 12px">
+          <div class="form-checkbox-field">
+            <input [(ngModel)]="documentTypeForm.is_active" name="isActive" type="checkbox" id="documentTypeIsActive" />
+            <label for="documentTypeIsActive" style="cursor: pointer">Active Status</label>
+          </div>
+        </div>
+      </form>
+
+      <div class="panel-footer">
+        <button type="button" class="btn-ghost" (click)="showDocumentTypeModal = false">Cancel</button>
+        <button type="button" class="btn-primary" [disabled]="submitting" (click)="submitDocumentType()">
+          @if (submitting) {
+            <span class="spinner btn-spinner" style="width: 14px; height: 14px"></span>
+            <span>Saving...</span>
+          } @else {
+            <span>Save Entry</span>
+          }
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<app-confirm-dialog
+  [open]="confirmOpen"
+  [title]="confirmTitle"
+  [message]="confirmMessage"
+  (confirmed)="onConfirm()"
+  (cancelled)="onCancelConfirm()"
+/>
