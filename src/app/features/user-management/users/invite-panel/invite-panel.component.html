@@ -1,5 +1,12 @@
 @if (open) {
-  <div class="panel-overlay" (click)="closePanel()"></div>
+  <div
+    class="panel-overlay"
+    (click)="closePanel()"
+    tabindex="0"
+    role="button"
+    (keydown.enter)="closePanel()"
+    (keydown.space)="closePanel(); $event.preventDefault()"
+  ></div>
 }
 <div class="slide-panel" [class.open]="open">
   <div class="panel-header">
@@ -15,8 +22,9 @@
   <div class="panel-body">
     <form [formGroup]="form" (ngSubmit)="onSubmit()" novalidate>
       <div class="form-field">
-        <label class="form-label">Email Address *</label>
+        <label class="form-label" for="invite-email-input">Email Address *</label>
         <input
+          id="invite-email-input"
           type="email"
           class="form-input"
           formControlName="email"
@@ -29,8 +37,9 @@
       </div>
 
       <div class="form-field">
-        <label class="form-label">Full Name *</label>
+        <label class="form-label" for="invite-name-input">Full Name *</label>
         <input
+          id="invite-name-input"
           type="text"
           class="form-input"
           formControlName="name"
@@ -43,8 +52,13 @@
       </div>
 
       <div class="form-field">
-        <label class="form-label">Role *</label>
-        <select class="form-input" formControlName="role_id" [class.input-error]="isInvalid('role_id')">
+        <label class="form-label" for="invite-role-select">Role *</label>
+        <select
+          id="invite-role-select"
+          class="form-input"
+          formControlName="role_id"
+          [class.input-error]="isInvalid('role_id')"
+        >
           <option value="">Select a role</option>
           @for (role of roles; track role.id) {
             <option [value]="role.id">{{ role.label }}</option>
@@ -56,8 +70,13 @@
       </div>
 
       <div class="form-field">
-        <label class="form-label">User Type *</label>
-        <select class="form-input" formControlName="user_type" [class.input-error]="isInvalid('user_type')">
+        <label class="form-label" for="invite-user-type-select">User Type *</label>
+        <select
+          id="invite-user-type-select"
+          class="form-input"
+          formControlName="user_type"
+          [class.input-error]="isInvalid('user_type')"
+        >
           <option value="">Select user type</option>
           <option value="staff">Staff</option>
           <option value="mga_user">MGA User</option>
@@ -70,13 +89,25 @@
       </div>
 
       <div class="form-field">
-        <label class="form-label">Department</label>
-        <input type="text" class="form-input" formControlName="department" placeholder="e.g. Underwriting" />
+        <label class="form-label" for="invite-department-input">Department</label>
+        <input
+          id="invite-department-input"
+          type="text"
+          class="form-input"
+          formControlName="department"
+          placeholder="e.g. Underwriting"
+        />
       </div>
 
       <div class="form-field">
-        <label class="form-label">Title</label>
-        <input type="text" class="form-input" formControlName="title" placeholder="e.g. Senior Analyst" />
+        <label class="form-label" for="invite-title-input">Title</label>
+        <input
+          id="invite-title-input"
+          type="text"
+          class="form-input"
+          formControlName="title"
+          placeholder="e.g. Senior Analyst"
+        />
       </div>
 
       @if (errorMsg) {

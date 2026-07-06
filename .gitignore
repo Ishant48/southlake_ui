@@ -59,3 +59,12 @@ desktop.ini
 *.tgz
 .cache
 .parcel-cache
+/.angular/cache
+.sass-cache/
+/connect.lock
+/coverage
+/test-results
+/libpeerconnection.log
+testem.log
+/typings
+__screenshots__/

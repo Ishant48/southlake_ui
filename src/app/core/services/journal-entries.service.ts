@@ -4,6 +4,18 @@ import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { JournalEntryBatch, JournalEntry } from '../models/journal-entry.model';
 
+export interface JournalEntryLinePayload {
+  description: string;
+  coa_id: string;
+  sub?: string | null;
+  debit?: number;
+  credit?: number;
+  date: string;
+  dp?: string | null;
+  policy?: string | null;
+  memo?: string | null;
+}
+
 @Injectable({ providedIn: 'root' })
 export class JournalEntriesService {
   private http = inject(HttpClient);
@@ -46,7 +58,7 @@ export class JournalEntriesService {
 
   postEntries(
     batchId: string,
-    payload: { je_number: number; lines: any[] },
+    payload: { je_number: number; lines: JournalEntryLinePayload[] },
   ): Observable<JournalEntry[]> {
     return this.http.post<JournalEntry[]>(`${this.base}/${batchId}/entries`, payload);
   }

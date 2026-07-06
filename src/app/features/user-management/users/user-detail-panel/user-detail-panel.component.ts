@@ -19,6 +19,15 @@ import { UserStatusBadgeComponent } from '../user-status-badge/user-status-badge
 
 import { Role } from '../../../../core/models/role.model';
 
+interface UpdateUserProfilePayload {
+  status: 'active' | 'inactive' | 'pending';
+  name?: string;
+  role_id?: string;
+  department?: string | null;
+  title?: string | null;
+  initials?: string | null;
+}
+
 @Component({
   selector: 'app-user-detail-panel',
   standalone: true,
@@ -126,9 +135,9 @@ export class UserDetailPanelComponent implements OnChanges {
     if (changes['user'] && this.user) {
       this.editStatus = this.user.status;
       this.editName = this.user.name;
-      this.editRoleId = this.user.role?.id || '';
-      this.editDepartment = this.user.department || '';
-      this.editTitle = this.user.title || '';
+      this.editRoleId = this.user.role?.id ?? '';
+      this.editDepartment = this.user.department ?? '';
+      this.editTitle = this.user.title ?? '';
       this.activeTab = 'profile';
       this.profileError = '';
     }
@@ -189,7 +198,7 @@ export class UserDetailPanelComponent implements OnChanges {
     this.savingProfile = true;
     this.profileError = '';
 
-    const payload: any = {
+    const payload: UpdateUserProfilePayload = {
       status: this.editStatus,
     };
 
@@ -214,7 +223,7 @@ export class UserDetailPanelComponent implements OnChanges {
       payload.initials = initials || null;
     }
 
-    this.usersService.updateUser(this.user.id, payload).subscribe({
+    this.usersService.updateUser(this.user.id, payload as Partial<User>).subscribe({
       next: updated => {
         this.savingProfile = false;
         this.toast.success('User updated successfully');

@@ -85,8 +85,9 @@
 
           <form (ngSubmit)="onAcceptInviteSubmit()" [formGroup]="inviteForm" novalidate>
             <div class="auth-form-group">
-              <label class="auth-label">Email Address</label>
+              <label class="auth-label" for="invite-email">Email Address</label>
               <input
+                id="invite-email"
                 type="text"
                 class="auth-input"
                 [value]="inviteEmail"

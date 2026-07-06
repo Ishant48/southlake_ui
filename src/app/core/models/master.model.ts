@@ -222,6 +222,21 @@ export interface DocumentType {
   updatedAt?: string | null;
 }
 
+// Brokers, Products and Locked Periods are managed through a shared generic
+// masters UI whose field set varies per master type; the common known fields
+// are typed explicitly and the index signature covers the remaining
+// type-specific fields (e.g. broker_code, product_id, period).
+export interface SimpleMasterRecord {
+  id?: string;
+  code?: string;
+  name?: string;
+  is_active?: boolean;
+  notes?: string | null;
+  created_at?: string;
+  updated_at?: string | null;
+  [key: string]: unknown;
+}
+
 export interface SequencePrefixCounter {
   id?: string;
   code: string;

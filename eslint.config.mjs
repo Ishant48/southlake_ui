@@ -3,10 +3,14 @@ import js from '@eslint/js';
 import tseslint from 'typescript-eslint';
 import angular from 'angular-eslint';
 import prettierRecommended from 'eslint-plugin-prettier/recommended';
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
+
+const tsconfigRootDir = dirname(fileURLToPath(import.meta.url));
 
 export default tseslint.config(
   {
-    ignores: ['dist/**', 'node_modules/**', 'coverage/**', '.angular/**'],
+    ignores: ['dist/**', 'node_modules/**', 'coverage/**', '.angular/**', 'test-results/**'],
   },
 
   // ── TypeScript source files ────────────────────────────────────
@@ -17,6 +21,12 @@ export default tseslint.config(
       ...tseslint.configs.recommended,
       ...angular.configs.tsRecommended,
     ],
+    languageOptions: {
+      parserOptions: {
+        project: ['./tsconfig.app.json', './tsconfig.spec.json'],
+        tsconfigRootDir,
+      },
+    },
     processor: angular.processInlineTemplates,
     rules: {
       // Angular selector conventions
@@ -32,6 +42,10 @@ export default tseslint.config(
       '@angular-eslint/prefer-standalone': 'error',
       '@angular-eslint/no-output-on-prefix': 'error',
       '@angular-eslint/no-input-rename': 'error',
+      // This project drops the "Component"/"Service"/"Directive" filename+class suffix
+      // (matches `ng generate` defaults from Angular 20+ and the enterprise reference structure)
+      '@angular-eslint/component-class-suffix': 'off',
+      '@angular-eslint/directive-class-suffix': 'off',
       // TypeScript
       '@typescript-eslint/no-explicit-any': 'warn',
       '@typescript-eslint/no-unused-vars': [

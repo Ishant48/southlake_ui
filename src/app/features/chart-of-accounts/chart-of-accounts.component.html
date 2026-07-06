@@ -144,7 +144,15 @@
 
   <!-- ADD / EDIT ACCOUNT MODAL -->
   @if (showModal) {
-    <div class="modal-overlay" (click)="closeModal()">
+    <div
+      class="modal-overlay"
+      role="button"
+      tabindex="0"
+      (click)="closeModal()"
+      (keydown.enter)="closeModal()"
+      (keydown.space)="closeModal(); $event.preventDefault()"
+    >
+      <!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events, @angular-eslint/template/interactive-supports-focus -- stops overlay click bubbling only, not a user-facing control -->
       <div class="modal-box coa-modal" (click)="$event.stopPropagation()">
         <div class="panel-header">
           <h3 class="panel-title">{{ modalTitle }}</h3>
@@ -159,8 +167,9 @@
         <form (submit)="submitAccount()" class="panel-body">
           <div class="form-row">
             <div class="form-field">
-              <label class="form-label">Parent COA *</label>
+              <label class="form-label" for="coa-parent-id">Parent COA *</label>
               <select
+                id="coa-parent-id"
                 [(ngModel)]="accountForm.parent_id"
                 name="parentId"
                 (ngModelChange)="onParentChange($event)"
@@ -175,8 +184,9 @@
               </select>
             </div>
             <div class="form-field">
-              <label class="form-label">Sub COA ID (Account Code) *</label>
+              <label class="form-label" for="coa-account-code">Sub COA ID (Account Code) *</label>
               <input
+                id="coa-account-code"
                 [(ngModel)]="accountForm.account_code"
                 name="accountCode"
                 (ngModelChange)="onCodeChange($event)"
@@ -191,8 +201,9 @@
 
           <div class="form-row">
             <div class="form-field">
-              <label class="form-label">Sub COA Name *</label>
+              <label class="form-label" for="coa-description">Sub COA Name *</label>
               <input
+                id="coa-description"
                 [(ngModel)]="accountForm.description"
                 name="description"
                 type="text"
@@ -203,8 +214,9 @@
               />
             </div>
             <div class="form-field">
-              <label class="form-label">Sub COA Key (Slug)</label>
+              <label class="form-label" for="coa-key">Sub COA Key (Slug)</label>
               <input
+                id="coa-key"
                 [(ngModel)]="accountForm.key"
                 name="key"
                 placeholder="e.g. CURRENT_ASSETS"
@@ -216,8 +228,9 @@
 
           <div class="form-row">
             <div class="form-field">
-              <label class="form-label">Next Available Number</label>
+              <label class="form-label" for="coa-next-number">Next Available Number</label>
               <input
+                id="coa-next-number"
                 [(ngModel)]="accountForm.next_number"
                 name="nextNumber"
                 type="number"
@@ -227,8 +240,9 @@
               />
             </div>
             <div class="form-field">
-              <label class="form-label">Normal Balance</label>
+              <label class="form-label" for="coa-normal-balance">Normal Balance</label>
               <input
+                id="coa-normal-balance"
                 [value]="accountForm.normal_balance || '-' | titlecase"
                 type="text"
                 class="form-input"
@@ -240,7 +254,7 @@
 
           <div class="form-row">
             <div class="form-field">
-              <label class="form-label">Account Type</label>
+              <div class="form-label">Account Type</div>
               <div style="display: flex; gap: 16px; margin-top: 8px">
                 <div class="form-checkbox-field">
                   <input
@@ -269,7 +283,7 @@
               class="form-field"
               style="display: flex; flex-direction: column; justify-content: flex-end; padding-bottom: 4px"
             >
-              <label class="form-label" style="margin-bottom: 6px">Active Status</label>
+              <div class="form-label" style="margin-bottom: 6px">Active Status</div>
               <label class="switch">
                 <input
                   [(ngModel)]="accountForm.is_active"
@@ -285,8 +299,9 @@
 
           @if (isEarningAccountVisible) {
             <div class="form-field" style="margin-bottom: 16px">
-              <label class="form-label">Earned Account *</label>
+              <label class="form-label" for="coa-earning-account">Earned Account *</label>
               <input
+                id="coa-earning-account"
                 [(ngModel)]="earningAccountCode"
                 name="earningAccountCode"
                 type="number"
@@ -299,8 +314,9 @@
           }
 
           <div class="form-field">
-            <label class="form-label">Sub COA Notes</label>
+            <label class="form-label" for="coa-notes">Sub COA Notes</label>
             <textarea
+              id="coa-notes"
               [(ngModel)]="accountForm.notes"
               name="notes"
               rows="4"
@@ -332,7 +348,15 @@
 
   <!-- NOTES DISPLAY MODAL -->
   @if (showNotesModal) {
-    <div class="modal-overlay" (click)="closeNotesModal()">
+    <div
+      class="modal-overlay"
+      role="button"
+      tabindex="0"
+      (click)="closeNotesModal()"
+      (keydown.enter)="closeNotesModal()"
+      (keydown.space)="closeNotesModal(); $event.preventDefault()"
+    >
+      <!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events, @angular-eslint/template/interactive-supports-focus -- stops overlay click bubbling only, not a user-facing control -->
       <div class="modal-box coa-modal notes-modal" (click)="$event.stopPropagation()">
         <div class="panel-header">
           <h3 class="panel-title">{{ notesModalTitle }}</h3>
@@ -357,7 +381,15 @@
 
   <!-- DOCUMENT MANAGEMENT MODAL -->
   @if (showDocModal) {
-    <div class="modal-overlay" (click)="closeDocModal()">
+    <div
+      class="modal-overlay"
+      role="button"
+      tabindex="0"
+      (click)="closeDocModal()"
+      (keydown.enter)="closeDocModal()"
+      (keydown.space)="closeDocModal(); $event.preventDefault()"
+    >
+      <!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events, @angular-eslint/template/interactive-supports-focus -- stops overlay click bubbling only, not a user-facing control -->
       <div class="modal-box coa-modal doc-modal" (click)="$event.stopPropagation()">
         <div class="panel-header">
           <div>

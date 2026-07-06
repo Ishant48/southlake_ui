@@ -1,0 +1,212 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<testsuites name="vitest tests" tests="62" failures="0" errors="0" time="7.1623877">
+    <testsuite name="src/app/app.component.spec.ts" timestamp="2026-07-06T19:13:33.331Z" hostname="Ishant-PC" tests="1" failures="0" errors="0" skipped="0" time="0.0646225">
+        <testcase classname="src/app/app.component.spec.ts" name="AppComponent &gt; should create" time="0.0625982">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/app/layout/header/header.component.spec.ts" timestamp="2026-07-06T19:13:33.332Z" hostname="Ishant-PC" tests="1" failures="0" errors="0" skipped="0" time="0.3730895">
+        <testcase classname="src/app/layout/header/header.component.spec.ts" name="HeaderComponent &gt; should create" time="0.3707278">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/app/layout/main-layout/main-layout.component.spec.ts" timestamp="2026-07-06T19:13:33.332Z" hostname="Ishant-PC" tests="1" failures="0" errors="0" skipped="0" time="0.4513027">
+        <testcase classname="src/app/layout/main-layout/main-layout.component.spec.ts" name="MainLayoutComponent &gt; should create" time="0.4487371">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/app/features/dashboard/dashboard.component.spec.ts" timestamp="2026-07-06T19:13:33.333Z" hostname="Ishant-PC" tests="1" failures="0" errors="0" skipped="0" time="0.0884814">
+        <testcase classname="src/app/features/dashboard/dashboard.component.spec.ts" name="DashboardComponent &gt; should create" time="0.08643">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/app/layout/sidebar/sidebar.component.spec.ts" timestamp="2026-07-06T19:13:33.333Z" hostname="Ishant-PC" tests="1" failures="0" errors="0" skipped="0" time="0.4428734">
+        <testcase classname="src/app/layout/sidebar/sidebar.component.spec.ts" name="SidebarComponent &gt; should create" time="0.4406095">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/app/features/test-balance/test-balance.component.spec.ts" timestamp="2026-07-06T19:13:33.333Z" hostname="Ishant-PC" tests="6" failures="0" errors="0" skipped="0" time="0.5098114">
+        <testcase classname="src/app/features/test-balance/test-balance.component.spec.ts" name="TestBalanceComponent &gt; should create" time="0.3675564">
+        </testcase>
+        <testcase classname="src/app/features/test-balance/test-balance.component.spec.ts" name="TestBalanceComponent &gt; loads the test-balance tab data on init" time="0.0256206">
+        </testcase>
+        <testcase classname="src/app/features/test-balance/test-balance.component.spec.ts" name="TestBalanceComponent &gt; switching to the balance-sheet tab loads that report" time="0.0328626">
+        </testcase>
+        <testcase classname="src/app/features/test-balance/test-balance.component.spec.ts" name="TestBalanceComponent &gt; switching to the pl tab loads that report" time="0.0169069">
+        </testcase>
+        <testcase classname="src/app/features/test-balance/test-balance.component.spec.ts" name="TestBalanceComponent &gt; formatCurrency formats negative values with a leading minus sign" time="0.0451741">
+        </testcase>
+        <testcase classname="src/app/features/test-balance/test-balance.component.spec.ts" name="TestBalanceComponent &gt; getDifferenceSum sums matching row differences across accounts" time="0.0190148">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/app/shared/components/confirm-dialog/confirm-dialog.component.spec.ts" timestamp="2026-07-06T19:13:33.334Z" hostname="Ishant-PC" tests="1" failures="0" errors="0" skipped="0" time="0.1497675">
+        <testcase classname="src/app/shared/components/confirm-dialog/confirm-dialog.component.spec.ts" name="ConfirmDialogComponent &gt; should create" time="0.1473563">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/app/shared/components/loading-spinner/loading-spinner.component.spec.ts" timestamp="2026-07-06T19:13:33.335Z" hostname="Ishant-PC" tests="1" failures="0" errors="0" skipped="0" time="0.097586">
+        <testcase classname="src/app/shared/components/loading-spinner/loading-spinner.component.spec.ts" name="LoadingSpinnerComponent &gt; should create" time="0.0952298">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/app/shared/components/toast/toast.component.spec.ts" timestamp="2026-07-06T19:13:33.335Z" hostname="Ishant-PC" tests="1" failures="0" errors="0" skipped="0" time="0.2519904">
+        <testcase classname="src/app/shared/components/toast/toast.component.spec.ts" name="ToastComponent &gt; should create" time="0.2490617">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/app/features/auth/login/login.component.spec.ts" timestamp="2026-07-06T19:13:33.336Z" hostname="Ishant-PC" tests="1" failures="0" errors="0" skipped="0" time="0.4163779">
+        <testcase classname="src/app/features/auth/login/login.component.spec.ts" name="LoginComponent &gt; should create" time="0.4137447">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/app/features/auth/otp/otp.component.spec.ts" timestamp="2026-07-06T19:13:33.336Z" hostname="Ishant-PC" tests="1" failures="0" errors="0" skipped="0" time="0.4229521">
+        <testcase classname="src/app/features/auth/otp/otp.component.spec.ts" name="OtpComponent &gt; should create" time="0.4209703">
+            <system-err>
+RuntimeError: NG04002: Cannot match any routes. URL Segment: &apos;auth/login&apos;
+    at Recognizer.noMatchError (file:///C:/Users/User/Desktop/Southlake/southlake_ui/node_modules/@angular/router/fesm2022/_router-chunk.mjs:2951:12)
+    at Recognizer.match (file:///C:/Users/User/Desktop/Southlake/southlake_ui/node_modules/@angular/router/fesm2022/_router-chunk.mjs:2985:20)
+    at processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at Recognizer.recognize (file:///C:/Users/User/Desktop/Southlake/southlake_ui/node_modules/@angular/router/fesm2022/_router-chunk.mjs:2958:9) {
+  code: 4002
+}
+
+            </system-err>
+        </testcase>
+    </testsuite>
+    <testsuite name="src/app/features/auth/session-conflict/session-conflict.component.spec.ts" timestamp="2026-07-06T19:13:33.336Z" hostname="Ishant-PC" tests="1" failures="0" errors="0" skipped="0" time="0.0865151">
+        <testcase classname="src/app/features/auth/session-conflict/session-conflict.component.spec.ts" name="SessionConflictComponent &gt; should create" time="0.0848733">
+            <system-err>
+RuntimeError: NG04002: Cannot match any routes. URL Segment: &apos;auth/login&apos;
+    at Recognizer.noMatchError (file:///C:/Users/User/Desktop/Southlake/southlake_ui/node_modules/@angular/router/fesm2022/_router-chunk.mjs:2951:12)
+    at Recognizer.match (file:///C:/Users/User/Desktop/Southlake/southlake_ui/node_modules/@angular/router/fesm2022/_router-chunk.mjs:2985:20)
+    at processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at Recognizer.recognize (file:///C:/Users/User/Desktop/Southlake/southlake_ui/node_modules/@angular/router/fesm2022/_router-chunk.mjs:2958:9) {
+  code: 4002
+}
+
+            </system-err>
+        </testcase>
+    </testsuite>
+    <testsuite name="src/app/features/chart-of-accounts/services/chart-of-accounts-api.spec.ts" timestamp="2026-07-06T19:13:33.337Z" hostname="Ishant-PC" tests="7" failures="0" errors="0" skipped="0" time="0.0621597">
+        <testcase classname="src/app/features/chart-of-accounts/services/chart-of-accounts-api.spec.ts" name="ChartOfAccountsApi &gt; gets accounts with optional search/isActive params" time="0.0323809">
+        </testcase>
+        <testcase classname="src/app/features/chart-of-accounts/services/chart-of-accounts-api.spec.ts" name="ChartOfAccountsApi &gt; gets a single account by id" time="0.0052186">
+        </testcase>
+        <testcase classname="src/app/features/chart-of-accounts/services/chart-of-accounts-api.spec.ts" name="ChartOfAccountsApi &gt; creates an account" time="0.0060408">
+        </testcase>
+        <testcase classname="src/app/features/chart-of-accounts/services/chart-of-accounts-api.spec.ts" name="ChartOfAccountsApi &gt; updates an account" time="0.0040419">
+        </testcase>
+        <testcase classname="src/app/features/chart-of-accounts/services/chart-of-accounts-api.spec.ts" name="ChartOfAccountsApi &gt; deletes an account" time="0.0039603">
+        </testcase>
+        <testcase classname="src/app/features/chart-of-accounts/services/chart-of-accounts-api.spec.ts" name="ChartOfAccountsApi &gt; uploads a document as form data" time="0.0047717">
+        </testcase>
+        <testcase classname="src/app/features/chart-of-accounts/services/chart-of-accounts-api.spec.ts" name="ChartOfAccountsApi &gt; deletes a document" time="0.003354">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/app/features/test-balance/services/test-balance-api.spec.ts" timestamp="2026-07-06T19:13:33.338Z" hostname="Ishant-PC" tests="3" failures="0" errors="0" skipped="0" time="0.0448631">
+        <testcase classname="src/app/features/test-balance/services/test-balance-api.spec.ts" name="TestBalanceApi &gt; requests test balance with month/year query params" time="0.0329774">
+        </testcase>
+        <testcase classname="src/app/features/test-balance/services/test-balance-api.spec.ts" name="TestBalanceApi &gt; requests balance sheet for a period" time="0.0054186">
+        </testcase>
+        <testcase classname="src/app/features/test-balance/services/test-balance-api.spec.ts" name="TestBalanceApi &gt; requests P&amp;L statement for a period" time="0.0039224">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/app/features/test-balance/services/test-balance-state.spec.ts" timestamp="2026-07-06T19:13:33.339Z" hostname="Ishant-PC" tests="4" failures="0" errors="0" skipped="0" time="0.0297875">
+        <testcase classname="src/app/features/test-balance/services/test-balance-state.spec.ts" name="TestBalanceState &gt; loads test balance data and updates data$/loading$" time="0.0190569">
+        </testcase>
+        <testcase classname="src/app/features/test-balance/services/test-balance-state.spec.ts" name="TestBalanceState &gt; sets error$ and clears loading$ when the request fails" time="0.003735">
+        </testcase>
+        <testcase classname="src/app/features/test-balance/services/test-balance-state.spec.ts" name="TestBalanceState &gt; loads balance sheet data" time="0.0028423">
+        </testcase>
+        <testcase classname="src/app/features/test-balance/services/test-balance-state.spec.ts" name="TestBalanceState &gt; loads P&amp;L statement data" time="0.0023853">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/app/features/user-management/activity-logs/activity-logs.component.spec.ts" timestamp="2026-07-06T19:13:33.340Z" hostname="Ishant-PC" tests="1" failures="0" errors="0" skipped="0" time="0.3485489">
+        <testcase classname="src/app/features/user-management/activity-logs/activity-logs.component.spec.ts" name="ActivityLogsComponent &gt; should create" time="0.3461335">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/app/features/user-management/roles/roles.component.spec.ts" timestamp="2026-07-06T19:13:33.340Z" hostname="Ishant-PC" tests="1" failures="0" errors="0" skipped="0" time="0.3646036">
+        <testcase classname="src/app/features/user-management/roles/roles.component.spec.ts" name="RolesComponent &gt; should create" time="0.3619476">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/app/features/user-management/users/users.component.spec.ts" timestamp="2026-07-06T19:13:33.341Z" hostname="Ishant-PC" tests="1" failures="0" errors="0" skipped="0" time="0.536806">
+        <testcase classname="src/app/features/user-management/users/users.component.spec.ts" name="UsersComponent &gt; should create" time="0.5345173">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/app/shared/components/grid-renderers/action-buttons-cell/action-buttons-cell.spec.ts" timestamp="2026-07-06T19:13:33.341Z" hostname="Ishant-PC" tests="6" failures="0" errors="0" skipped="0" time="0.2273938">
+        <testcase classname="src/app/shared/components/grid-renderers/action-buttons-cell/action-buttons-cell.spec.ts" name="ActionButtonsCell &gt; should create" time="0.1662412">
+        </testcase>
+        <testcase classname="src/app/shared/components/grid-renderers/action-buttons-cell/action-buttons-cell.spec.ts" name="ActionButtonsCell &gt; uses the provided static buttons array" time="0.010139">
+        </testcase>
+        <testcase classname="src/app/shared/components/grid-renderers/action-buttons-cell/action-buttons-cell.spec.ts" name="ActionButtonsCell &gt; resolves a buttons factory function against row data" time="0.0098665">
+        </testcase>
+        <testcase classname="src/app/shared/components/grid-renderers/action-buttons-cell/action-buttons-cell.spec.ts" name="ActionButtonsCell &gt; falls back to a default edit button when none are provided" time="0.0101171">
+        </testcase>
+        <testcase classname="src/app/shared/components/grid-renderers/action-buttons-cell/action-buttons-cell.spec.ts" name="ActionButtonsCell &gt; invokes the onClick callback with the action and row data" time="0.0159849">
+        </testcase>
+        <testcase classname="src/app/shared/components/grid-renderers/action-buttons-cell/action-buttons-cell.spec.ts" name="ActionButtonsCell &gt; identifies icon-only actions" time="0.012423">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/app/shared/components/grid-renderers/avatar-cell/avatar-cell.spec.ts" timestamp="2026-07-06T19:13:33.342Z" hostname="Ishant-PC" tests="4" failures="0" errors="0" skipped="0" time="0.1877094">
+        <testcase classname="src/app/shared/components/grid-renderers/avatar-cell/avatar-cell.spec.ts" name="AvatarCell &gt; should create" time="0.1428986">
+        </testcase>
+        <testcase classname="src/app/shared/components/grid-renderers/avatar-cell/avatar-cell.spec.ts" name="AvatarCell &gt; reads a user object nested under data.user" time="0.0140935">
+        </testcase>
+        <testcase classname="src/app/shared/components/grid-renderers/avatar-cell/avatar-cell.spec.ts" name="AvatarCell &gt; falls back to a plain string value when no user object is present" time="0.0088893">
+        </testcase>
+        <testcase classname="src/app/shared/components/grid-renderers/avatar-cell/avatar-cell.spec.ts" name="AvatarCell &gt; defaults to &quot;Unknown User&quot; when the user has no name" time="0.0193889">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/app/shared/components/grid-renderers/status-badge-cell/status-badge-cell.spec.ts" timestamp="2026-07-06T19:13:33.343Z" hostname="Ishant-PC" tests="7" failures="0" errors="0" skipped="0" time="0.1339114">
+        <testcase classname="src/app/shared/components/grid-renderers/status-badge-cell/status-badge-cell.spec.ts" name="StatusBadgeCell &gt; should create" time="0.0958229">
+        </testcase>
+        <testcase classname="src/app/shared/components/grid-renderers/status-badge-cell/status-badge-cell.spec.ts" name="StatusBadgeCell &gt; maps value &quot;active&quot; to badgeClass &quot;active&quot; and text &quot;Active&quot;" time="0.0112249">
+        </testcase>
+        <testcase classname="src/app/shared/components/grid-renderers/status-badge-cell/status-badge-cell.spec.ts" name="StatusBadgeCell &gt; maps value &quot;true&quot; to badgeClass &quot;active&quot; and text &quot;Active&quot;" time="0.0060837">
+        </testcase>
+        <testcase classname="src/app/shared/components/grid-renderers/status-badge-cell/status-badge-cell.spec.ts" name="StatusBadgeCell &gt; maps value &quot;verified&quot; to badgeClass &quot;verified&quot; and text &quot;Verified&quot;" time="0.0052416">
+        </testcase>
+        <testcase classname="src/app/shared/components/grid-renderers/status-badge-cell/status-badge-cell.spec.ts" name="StatusBadgeCell &gt; maps value &quot;pending&quot; to badgeClass &quot;pending&quot; and text &quot;Pending&quot;" time="0.0049484">
+        </testcase>
+        <testcase classname="src/app/shared/components/grid-renderers/status-badge-cell/status-badge-cell.spec.ts" name="StatusBadgeCell &gt; maps value &quot;unverified&quot; to badgeClass &quot;pending&quot; and text &quot;Unverified&quot;" time="0.0040249">
+        </testcase>
+        <testcase classname="src/app/shared/components/grid-renderers/status-badge-cell/status-badge-cell.spec.ts" name="StatusBadgeCell &gt; maps value &quot;something-else&quot; to badgeClass &quot;inactive&quot; and text &quot;Inactive&quot;" time="0.0042832">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/app/features/chart-of-accounts/components/coa-grid-cell-renderer/coa-grid-cell-renderer.spec.ts" timestamp="2026-07-06T19:13:33.344Z" hostname="Ishant-PC" tests="6" failures="0" errors="0" skipped="0" time="0.2798833">
+        <testcase classname="src/app/features/chart-of-accounts/components/coa-grid-cell-renderer/coa-grid-cell-renderer.spec.ts" name="CoaGridCellRenderer &gt; should create" time="0.1326791">
+        </testcase>
+        <testcase classname="src/app/features/chart-of-accounts/components/coa-grid-cell-renderer/coa-grid-cell-renderer.spec.ts" name="CoaGridCellRenderer &gt; renders the badge variant based on is_root" time="0.0119707">
+        </testcase>
+        <testcase classname="src/app/features/chart-of-accounts/components/coa-grid-cell-renderer/coa-grid-cell-renderer.spec.ts" name="CoaGridCellRenderer &gt; renders the tree-name variant fields" time="0.0081189">
+        </testcase>
+        <testcase classname="src/app/features/chart-of-accounts/components/coa-grid-cell-renderer/coa-grid-cell-renderer.spec.ts" name="CoaGridCellRenderer &gt; renders the balance-badge variant field" time="0.0870482">
+        </testcase>
+        <testcase classname="src/app/features/chart-of-accounts/components/coa-grid-cell-renderer/coa-grid-cell-renderer.spec.ts" name="CoaGridCellRenderer &gt; refresh re-reads row data and reports success" time="0.0249263">
+        </testcase>
+        <testcase classname="src/app/features/chart-of-accounts/components/coa-grid-cell-renderer/coa-grid-cell-renderer.spec.ts" name="CoaGridCellRenderer &gt; actions variant delegates to the grid context parent handlers" time="0.012615">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/app/features/user-management/roles/role-permissions-modal/role-permissions-modal.component.spec.ts" timestamp="2026-07-06T19:13:33.345Z" hostname="Ishant-PC" tests="1" failures="0" errors="0" skipped="0" time="0.2654407">
+        <testcase classname="src/app/features/user-management/roles/role-permissions-modal/role-permissions-modal.component.spec.ts" name="RolePermissionsModalComponent &gt; should create" time="0.2628847">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/app/features/user-management/users/user-detail-panel/user-detail-panel.component.spec.ts" timestamp="2026-07-06T19:13:33.346Z" hostname="Ishant-PC" tests="1" failures="0" errors="0" skipped="0" time="0.2243595">
+        <testcase classname="src/app/features/user-management/users/user-detail-panel/user-detail-panel.component.spec.ts" name="UserDetailPanelComponent &gt; should create" time="0.2220572">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/app/features/user-management/users/invite-panel/invite-panel.component.spec.ts" timestamp="2026-07-06T19:13:33.346Z" hostname="Ishant-PC" tests="1" failures="0" errors="0" skipped="0" time="0.2713866">
+        <testcase classname="src/app/features/user-management/users/invite-panel/invite-panel.component.spec.ts" name="InvitePanelComponent &gt; should create" time="0.2687658">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/app/features/user-management/users/users-table/users-table.component.spec.ts" timestamp="2026-07-06T19:13:33.346Z" hostname="Ishant-PC" tests="1" failures="0" errors="0" skipped="0" time="0.7509589">
+        <testcase classname="src/app/features/user-management/users/users-table/users-table.component.spec.ts" name="UsersTableComponent &gt; should create" time="0.7487881">
+            <system-err>
+AG Grid: error #200 Visit https://www.ag-grid.com/angular-data-grid/errors/200?_version_=36.0.0&amp;gridId=1&amp;gridScoped=false&amp;rowModelType=clientSide&amp;isUmd=false&amp;usesAgGridProvider=false&amp;moduleName=Pagination&amp;reasonOrId=pagination 
+  Alternatively register the ValidationModule to see the full message in the console.
+AG Grid: error #200 Visit https://www.ag-grid.com/angular-data-grid/errors/200?_version_=36.0.0&amp;gridId=1&amp;gridScoped=false&amp;rowModelType=clientSide&amp;isUmd=false&amp;usesAgGridProvider=false&amp;moduleName=RowStyle&amp;reasonOrId=rowClass 
+  Alternatively register the ValidationModule to see the full message in the console.
+AG Grid: error #200 Visit https://www.ag-grid.com/angular-data-grid/errors/200?_version_=36.0.0&amp;gridId=1&amp;gridScoped=false&amp;rowModelType=clientSide&amp;isUmd=false&amp;usesAgGridProvider=false&amp;moduleName=Locale&amp;reasonOrId=localeText 
+  Alternatively register the ValidationModule to see the full message in the console.
+AG Grid: error #200 Visit https://www.ag-grid.com/angular-data-grid/errors/200?_version_=36.0.0&amp;gridId=1&amp;gridScoped=false&amp;rowModelType=clientSide&amp;isUmd=false&amp;usesAgGridProvider=false&amp;moduleName=RowAutoHeight&amp;reasonOrId=autoHeight 
+  Alternatively register the ValidationModule to see the full message in the console.
+
+            </system-err>
+        </testcase>
+    </testsuite>
+    <testsuite name="src/app/features/user-management/users/user-status-badge/user-status-badge.component.spec.ts" timestamp="2026-07-06T19:13:33.347Z" hostname="Ishant-PC" tests="1" failures="0" errors="0" skipped="0" time="0.0792054">
+        <testcase classname="src/app/features/user-management/users/user-status-badge/user-status-badge.component.spec.ts" name="UserStatusBadgeComponent &gt; should create" time="0.0770379">
+        </testcase>
+    </testsuite>
+</testsuites>

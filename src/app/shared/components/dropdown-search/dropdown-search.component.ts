@@ -19,24 +19,26 @@ import { FormsModule } from '@angular/forms';
   templateUrl: './dropdown-search.component.html',
   styleUrl: './dropdown-search.component.scss',
 })
-export class DropdownSearchComponent implements OnInit, OnChanges {
-  @Input() items: any[] = [];
+export class DropdownSearchComponent<T extends object = Record<string, unknown>>
+  implements OnInit, OnChanges
+{
+  @Input() items: T[] = [];
   @Input() isMultiSelect: boolean = false;
   @Input() bindValue: string = 'id';
   @Input() placeholder: string = 'Select option';
-  @Input() itemLabelFn: (item: any) => string = item => item.name || '';
+  @Input() itemLabelFn: (item: T) => string = item => this.readField(item, 'name') ?? '';
   @Input() disabled: boolean = false;
 
   // Two-way bindings
-  @Input() selectedValue: any = null; // For single select
-  @Output() selectedValueChange = new EventEmitter<any>();
+  @Input() selectedValue: unknown = null; // For single select
+  @Output() selectedValueChange = new EventEmitter<unknown>();
 
   @Input() selectedValues: { [key: string]: boolean } = {}; // For multi select
   @Output() selectedValuesChange = new EventEmitter<{ [key: string]: boolean }>();
 
   isOpen = false;
   searchText = '';
-  filteredItems: any[] = [];
+  filteredItems: T[] = [];
 
   constructor(private elementRef: ElementRef) {}
 
@@ -84,7 +86,7 @@ export class DropdownSearchComponent implements OnInit, OnChanges {
       }
       // Find selected items
       const selectedLabels = this.items
-        .filter(item => this.selectedValues[item[this.bindValue]])
+        .filter(item => this.selectedValues[this.readValue(item) as string])
         .map(item => this.itemLabelFn(item));
 
       if (selectedLabels.length <= 2) {
@@ -99,38 +101,38 @@ export class DropdownSearchComponent implements OnInit, OnChanges {
       ) {
         return this.placeholder;
       }
-      const matched = this.items.find(item => item[this.bindValue] == this.selectedValue);
+      const matched = this.items.find(item => this.readValue(item) === this.selectedValue);
       return matched ? this.itemLabelFn(matched) : this.placeholder;
     }
   }
 
-  selectSingle(item: any) {
-    this.selectedValue = item[this.bindValue];
+  selectSingle(item: T) {
+    this.selectedValue = this.readValue(item);
     this.selectedValueChange.emit(this.selectedValue);
     this.isOpen = false;
   }
 
-  toggleMulti(item: any) {
-    const val = item[this.bindValue];
+  toggleMulti(item: T) {
+    const val = this.readValue(item) as string;
     const newSelected = { ...this.selectedValues };
     newSelected[val] = !newSelected[val];
     this.selectedValues = newSelected;
     this.selectedValuesChange.emit(this.selectedValues);
   }
 
-  isSelected(item: any): boolean {
-    const val = item[this.bindValue];
+  isSelected(item: T): boolean {
+    const val = this.readValue(item) as string;
     if (this.isMultiSelect) {
       return !!this.selectedValues[val];
     } else {
-      return this.selectedValue == val;
+      return this.selectedValue === val;
     }
   }
 
   selectAll() {
     const newSelected = { ...this.selectedValues };
     this.filteredItems.forEach(item => {
-      newSelected[item[this.bindValue]] = true;
+      newSelected[this.readValue(item) as string] = true;
     });
     this.selectedValues = newSelected;
     this.selectedValuesChange.emit(this.selectedValues);
@@ -139,7 +141,7 @@ export class DropdownSearchComponent implements OnInit, OnChanges {
   deselectAll() {
     const newSelected = { ...this.selectedValues };
     this.filteredItems.forEach(item => {
-      newSelected[item[this.bindValue]] = false;
+      newSelected[this.readValue(item) as string] = false;
     });
     this.selectedValues = newSelected;
     this.selectedValuesChange.emit(this.selectedValues);
@@ -150,5 +152,13 @@ export class DropdownSearchComponent implements OnInit, OnChanges {
     if (!this.elementRef.nativeElement.contains(event.target)) {
       this.isOpen = false;
     }
+  }
+
+  private readValue(item: T): unknown {
+    return this.readField(item, this.bindValue);
+  }
+
+  private readField(item: T, key: string): string | undefined {
+    return (item as Record<string, unknown>)[key] as string | undefined;
   }
 }

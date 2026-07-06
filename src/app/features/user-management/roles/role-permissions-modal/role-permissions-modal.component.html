@@ -1,6 +1,19 @@
 @if (open) {
-  <div class="modal-overlay" (click)="closeModal()">
-    <div class="modal-box" (click)="$event.stopPropagation()" role="dialog">
+  <div
+    class="modal-overlay"
+    (click)="closeModal()"
+    tabindex="0"
+    role="button"
+    (keydown.enter)="closeModal()"
+    (keydown.space)="closeModal(); $event.preventDefault()"
+  >
+    <div
+      class="modal-box"
+      (click)="$event.stopPropagation()"
+      (keydown.enter)="$event.stopPropagation()"
+      tabindex="0"
+      role="dialog"
+    >
       <div class="modal-header">
         <h3 class="modal-title">{{ role ? "Edit Role: " + role.name : "Create Role" }}</h3>
         <button class="modal-close" (click)="closeModal()" aria-label="Close">
@@ -15,8 +28,9 @@
         <form [formGroup]="form" novalidate>
           <div class="form-row">
             <div class="form-field">
-              <label class="form-label">Role Name *</label>
+              <label class="form-label" for="role-name-input">Role Name *</label>
               <input
+                id="role-name-input"
                 type="text"
                 class="form-input"
                 formControlName="name"
@@ -28,8 +42,9 @@
               }
             </div>
             <div class="form-field">
-              <label class="form-label">Display Label *</label>
+              <label class="form-label" for="role-label-input">Display Label *</label>
               <input
+                id="role-label-input"
                 type="text"
                 class="form-input"
                 formControlName="label"
@@ -43,7 +58,7 @@
           </div>
 
           <div class="form-field">
-            <label class="form-label">Color</label>
+            <div class="form-label">Color</div>
             <div class="color-swatches">
               @for (color of swatches; track color) {
                 <button
@@ -64,8 +79,9 @@
           </div>
 
           <div class="form-field">
-            <label class="form-label">Description</label>
+            <label class="form-label" for="role-description-input">Description</label>
             <textarea
+              id="role-description-input"
               class="form-input form-textarea"
               formControlName="description"
               placeholder="Describe this role's responsibilities..."
@@ -79,7 +95,14 @@
           @for (group of groupedPermissions; track group.moduleName) {
             <div class="perm-module-group">
               <div class="perm-module-title" [class.collapsed-border]="!isGroupExpanded(group.moduleName)">
-                <div class="perm-module-header-left" (click)="toggleGroup(group.moduleName)">
+                <div
+                  class="perm-module-header-left"
+                  (click)="toggleGroup(group.moduleName)"
+                  tabindex="0"
+                  role="button"
+                  (keydown.enter)="toggleGroup(group.moduleName)"
+                  (keydown.space)="toggleGroup(group.moduleName); $event.preventDefault()"
+                >
                   <svg
                     class="perm-chevron-icon"
                     [class.collapsed]="!isGroupExpanded(group.moduleName)"

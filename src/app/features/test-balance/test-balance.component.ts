@@ -1,11 +1,13 @@
-import { Component, inject, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { TestBalanceState } from './services/test-balance-state';
 import {
-  TestBalanceService,
+  BalanceSheetResponse,
+  PLStatementResponse,
   TestBalanceResponse,
-  TestBalanceAccount,
-} from '../../core/services/test-balance.service';
+} from './models/test-balance.model';
 
 @Component({
   selector: 'app-test-balance',
@@ -15,15 +17,14 @@ import {
   styleUrl: './test-balance.component.scss',
 })
 export class TestBalanceComponent implements OnInit {
-  private balanceService = inject(TestBalanceService);
-  private cdr = inject(ChangeDetectorRef);
+  private state = inject(TestBalanceState);
 
   month = 'June';
   year = 2026;
   activeTab: 'test-balance' | 'balance-sheet' | 'pl' = 'test-balance';
   data: TestBalanceResponse | null = null;
-  balanceSheetData: any = null;
-  plData: any = null;
+  balanceSheetData: BalanceSheetResponse | null = null;
+  plData: PLStatementResponse | null = null;
   isLoading = false;
 
   months = [
@@ -42,6 +43,15 @@ export class TestBalanceComponent implements OnInit {
   ];
   years = [2024, 2025, 2026];
 
+  constructor() {
+    this.state.data$.pipe(takeUntilDestroyed()).subscribe(data => (this.data = data));
+    this.state.balanceSheet$
+      .pipe(takeUntilDestroyed())
+      .subscribe(data => (this.balanceSheetData = data));
+    this.state.pl$.pipe(takeUntilDestroyed()).subscribe(data => (this.plData = data));
+    this.state.loading$.pipe(takeUntilDestroyed()).subscribe(loading => (this.isLoading = loading));
+  }
+
   ngOnInit(): void {
     this.loadData();
   }
@@ -52,49 +62,14 @@ export class TestBalanceComponent implements OnInit {
   }
 
   loadData(): void {
-    this.isLoading = true;
-    this.cdr.markForCheck();
     const period = `${this.month} ${this.year}`;
 
     if (this.activeTab === 'test-balance') {
-      this.balanceService.getTestBalance(this.month, this.year).subscribe({
-        next: res => {
-          this.data = res;
-          this.isLoading = false;
-          this.cdr.markForCheck();
-        },
-        error: err => {
-          console.error('Error loading test balance:', err);
-          this.isLoading = false;
-          this.cdr.markForCheck();
-        },
-      });
+      this.state.loadTestBalance(this.month, this.year);
     } else if (this.activeTab === 'balance-sheet') {
-      this.balanceService.getBalanceSheet(period).subscribe({
-        next: res => {
-          this.balanceSheetData = res;
-          this.isLoading = false;
-          this.cdr.markForCheck();
-        },
-        error: err => {
-          console.error('Error loading balance sheet:', err);
-          this.isLoading = false;
-          this.cdr.markForCheck();
-        },
-      });
+      this.state.loadBalanceSheet(period);
     } else if (this.activeTab === 'pl') {
-      this.balanceService.getPLStatement(period).subscribe({
-        next: res => {
-          this.plData = res;
-          this.isLoading = false;
-          this.cdr.markForCheck();
-        },
-        error: err => {
-          console.error('Error loading P&L statement:', err);
-          this.isLoading = false;
-          this.cdr.markForCheck();
-        },
-      });
+      this.state.loadPLStatement(period);
     }
   }
 

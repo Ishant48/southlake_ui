@@ -15,6 +15,7 @@ import {
   Treaty,
   DocumentType,
   SequencePrefixCounter,
+  SimpleMasterRecord,
 } from '../models/master.model';
 
 @Injectable({ providedIn: 'root' })
@@ -50,7 +51,11 @@ export class MastersService {
   deleteState(id: string): Observable<void> {
     return this.http.delete<void>(`${this.base}/states/${id}`);
   }
-  uploadStateDocument(stateId: string, file: File, documentType: string): Observable<StateDocument> {
+  uploadStateDocument(
+    stateId: string,
+    file: File,
+    documentType: string,
+  ): Observable<StateDocument> {
     const formData = new FormData();
     formData.append('file', file);
     formData.append('document_type', documentType);
@@ -130,7 +135,11 @@ export class MastersService {
   deleteRiskCompany(id: string): Observable<void> {
     return this.http.delete<void>(`${this.base}/risk-companies/${id}`);
   }
-  uploadRiskCompanyDocument(riskCompanyId: string, file: File, documentType: string): Observable<RiskCompanyDocument> {
+  uploadRiskCompanyDocument(
+    riskCompanyId: string,
+    file: File,
+    documentType: string,
+  ): Observable<RiskCompanyDocument> {
     const formData = new FormData();
     formData.append('file', file);
     formData.append('document_type', documentType);
@@ -191,13 +200,19 @@ export class MastersService {
     return this.http.get<Treaty>(`${this.base}/treaties/${id}`);
   }
   createTreaty(
-    payload: Partial<Treaty> & { state_ids?: string[]; lobs?: any[] },
+    payload: Partial<Treaty> & {
+      state_ids?: string[];
+      lobs?: { lob_id: string; cob_ids: string[] }[];
+    },
   ): Observable<Treaty> {
     return this.http.post<Treaty>(`${this.base}/treaties`, payload);
   }
   updateTreaty(
     id: string,
-    payload: Partial<Treaty> & { state_ids?: string[]; lobs?: any[] },
+    payload: Partial<Treaty> & {
+      state_ids?: string[];
+      lobs?: { lob_id: string; cob_ids: string[] }[];
+    },
   ): Observable<Treaty> {
     return this.http.patch<Treaty>(`${`${this.base}/treaties`}/${id}`, payload);
   }
@@ -205,8 +220,8 @@ export class MastersService {
     return this.http.delete<void>(`${this.base}/treaties/${id}`);
   }
 
-  addMgaToTreaties(mgaId: string, treatyIds: string[]): Observable<any> {
-    return this.http.post<any>(`${this.base}/mgas/${mgaId}/add-to-treaties`, {
+  addMgaToTreaties(mgaId: string, treatyIds: string[]): Observable<{ message?: string }> {
+    return this.http.post<{ message?: string }>(`${this.base}/mgas/${mgaId}/add-to-treaties`, {
       treaty_ids: treatyIds,
     });
   }
@@ -214,16 +229,16 @@ export class MastersService {
   // ==========================================
   // BROKER MASTER API
   // ==========================================
-  getBrokers(search?: string, isActive?: boolean): Observable<any[]> {
-    return this.http.get<any[]>(`${this.base}/brokers`, {
+  getBrokers(search?: string, isActive?: boolean): Observable<SimpleMasterRecord[]> {
+    return this.http.get<SimpleMasterRecord[]>(`${this.base}/brokers`, {
       params: this.buildParams(search, isActive),
     });
   }
-  createBroker(payload: any): Observable<any> {
-    return this.http.post<any>(`${this.base}/brokers`, payload);
+  createBroker(payload: SimpleMasterRecord): Observable<SimpleMasterRecord> {
+    return this.http.post<SimpleMasterRecord>(`${this.base}/brokers`, payload);
   }
-  updateBroker(id: string, payload: any): Observable<any> {
-    return this.http.patch<any>(`${this.base}/brokers/${id}`, payload);
+  updateBroker(id: string, payload: SimpleMasterRecord): Observable<SimpleMasterRecord> {
+    return this.http.patch<SimpleMasterRecord>(`${this.base}/brokers/${id}`, payload);
   }
   deleteBroker(id: string): Observable<void> {
     return this.http.delete<void>(`${this.base}/brokers/${id}`);
@@ -232,16 +247,16 @@ export class MastersService {
   // ==========================================
   // PRODUCT MASTER API
   // ==========================================
-  getProducts(search?: string, isActive?: boolean): Observable<any[]> {
-    return this.http.get<any[]>(`${this.base}/products`, {
+  getProducts(search?: string, isActive?: boolean): Observable<SimpleMasterRecord[]> {
+    return this.http.get<SimpleMasterRecord[]>(`${this.base}/products`, {
       params: this.buildParams(search, isActive),
     });
   }
-  createProduct(payload: any): Observable<any> {
-    return this.http.post<any>(`${this.base}/products`, payload);
+  createProduct(payload: SimpleMasterRecord): Observable<SimpleMasterRecord> {
+    return this.http.post<SimpleMasterRecord>(`${this.base}/products`, payload);
   }
-  updateProduct(id: string, payload: any): Observable<any> {
-    return this.http.patch<any>(`${this.base}/products/${id}`, payload);
+  updateProduct(id: string, payload: SimpleMasterRecord): Observable<SimpleMasterRecord> {
+    return this.http.patch<SimpleMasterRecord>(`${this.base}/products/${id}`, payload);
   }
   deleteProduct(id: string): Observable<void> {
     return this.http.delete<void>(`${this.base}/products/${id}`);
@@ -250,16 +265,16 @@ export class MastersService {
   // ==========================================
   // LOCKED PERIODS MASTER API
   // ==========================================
-  getLockedPeriods(search?: string): Observable<any[]> {
+  getLockedPeriods(search?: string): Observable<SimpleMasterRecord[]> {
     let params = new HttpParams();
     if (search) params = params.set('search', search);
-    return this.http.get<any[]>(`${this.base}/locked-periods`, { params });
+    return this.http.get<SimpleMasterRecord[]>(`${this.base}/locked-periods`, { params });
   }
-  lockPeriod(period: string): Observable<any> {
-    return this.http.post<any>(`${this.base}/locked-periods/lock`, { period });
+  lockPeriod(period: string): Observable<SimpleMasterRecord> {
+    return this.http.post<SimpleMasterRecord>(`${this.base}/locked-periods/lock`, { period });
   }
-  unlockPeriod(period: string): Observable<any> {
-    return this.http.post<any>(`${this.base}/locked-periods/unlock`, { period });
+  unlockPeriod(period: string): Observable<SimpleMasterRecord> {
+    return this.http.post<SimpleMasterRecord>(`${this.base}/locked-periods/unlock`, { period });
   }
 
   // ==========================================
@@ -283,16 +298,27 @@ export class MastersService {
   // ==========================================
   // SEQUENCE PREFIX & COUNTERS MASTER API
   // ==========================================
-  getSequencePrefixCounters(search?: string, isActive?: boolean): Observable<SequencePrefixCounter[]> {
+  getSequencePrefixCounters(
+    search?: string,
+    isActive?: boolean,
+  ): Observable<SequencePrefixCounter[]> {
     return this.http.get<SequencePrefixCounter[]>(`${this.base}/sequence-prefix-counters`, {
       params: this.buildParams(search, isActive),
     });
   }
-  createSequencePrefixCounter(payload: Partial<SequencePrefixCounter>): Observable<SequencePrefixCounter> {
+  createSequencePrefixCounter(
+    payload: Partial<SequencePrefixCounter>,
+  ): Observable<SequencePrefixCounter> {
     return this.http.post<SequencePrefixCounter>(`${this.base}/sequence-prefix-counters`, payload);
   }
-  updateSequencePrefixCounter(id: string, payload: Partial<SequencePrefixCounter>): Observable<SequencePrefixCounter> {
-    return this.http.patch<SequencePrefixCounter>(`${this.base}/sequence-prefix-counters/${id}`, payload);
+  updateSequencePrefixCounter(
+    id: string,
+    payload: Partial<SequencePrefixCounter>,
+  ): Observable<SequencePrefixCounter> {
+    return this.http.patch<SequencePrefixCounter>(
+      `${this.base}/sequence-prefix-counters/${id}`,
+      payload,
+    );
   }
   deleteSequencePrefixCounter(id: string): Observable<void> {
     return this.http.delete<void>(`${this.base}/sequence-prefix-counters/${id}`);

@@ -49,7 +49,7 @@ export class SidebarComponent implements OnInit {
           ? 'Administrator'
           : roleObj;
     }
-    const roleName = roleObj?.name || 'User';
+    const roleName = roleObj?.name ?? 'User';
     return roleName === 'superadmin'
       ? 'Super Administrator'
       : roleName === 'admin'
@@ -74,11 +74,10 @@ export class SidebarComponent implements OnInit {
     this.checkScreenSize();
     this.checkActiveRoute(this.router.url);
 
-    this.router.events
-      .pipe(filter(event => event instanceof NavigationEnd))
-      .subscribe((event: any) => {
-        this.checkActiveRoute(event.urlAfterRedirects || event.url);
-      });
+    this.router.events.pipe(filter(event => event instanceof NavigationEnd)).subscribe(event => {
+      const navEvent = event as NavigationEnd;
+      this.checkActiveRoute(navEvent.urlAfterRedirects || navEvent.url);
+    });
   }
 
   private checkActiveRoute(url: string): void {

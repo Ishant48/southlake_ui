@@ -272,14 +272,14 @@ export class UsersComponent implements OnInit {
     const rows = this.users.map(u => [
       u.name || '',
       u.email,
-      u.role?.label || '-',
+      u.role?.label ?? '-',
       u.status || '-',
     ]);
 
     this.downloadCSV(headers, rows, 'users.csv');
   }
 
-  private downloadCSV(headers: string[], rows: any[][], filename: string): void {
+  private downloadCSV(headers: string[], rows: (string | number)[][], filename: string): void {
     const csvContent = [
       headers.map(h => `"${h.replace(/"/g, '""')}"`).join(','),
       ...rows.map(row =>

@@ -4,10 +4,13 @@ import { CommonModule } from '@angular/common';
 import { Observable } from 'rxjs';
 import { FormsModule } from '@angular/forms';
 import { AgGridAngular } from 'ag-grid-angular';
-import { ColDef, GridOptions } from 'ag-grid-community';
+import { ColDef, GridOptions, ICellRendererParams } from 'ag-grid-community';
 import { AgGridConfigService } from '../../core/services/ag-grid-config.service';
-import { ActionButtonsCellRenderer } from '../../shared/components/grid-renderers/action-buttons-cell.component';
-import { StatusBadgeCellRenderer } from '../../shared/components/grid-renderers/status-badge-cell.component';
+import {
+  ActionButtonConfig,
+  ActionButtonsCell,
+} from '../../shared/components/grid-renderers/action-buttons-cell/action-buttons-cell';
+import { StatusBadgeCell } from '../../shared/components/grid-renderers/status-badge-cell/status-badge-cell';
 import { MastersService } from '../../core/services/masters.service';
 import { ToastService } from '../../shared/components/toast/toast.service';
 import { ConfirmDialogComponent } from '../../shared/components/confirm-dialog/confirm-dialog.component';
@@ -15,9 +18,12 @@ import { DropdownSearchComponent } from '../../shared/components/dropdown-search
 import { environment } from '../../../environments/environment';
 import {
   StateMaster,
+  StateDocument,
   MgaMaster,
+  MgaDocument,
   ReinsurerCompany,
   RiskCompany,
+  RiskCompanyDocument,
   LineOfBusiness,
   CobMaster,
   Treaty,
@@ -27,7 +33,81 @@ import {
   TreatyReinsurer,
   DocumentType,
   SequencePrefixCounter,
+  SimpleMasterRecord,
 } from '../../core/models/master.model';
+
+type DocumentableMaster =
+  | (MgaMaster & { documents: MgaDocument[] })
+  | (StateMaster & { documents: StateDocument[] })
+  | (RiskCompany & { documents: RiskCompanyDocument[] });
+
+type MasterDocument = MgaDocument | StateDocument | RiskCompanyDocument;
+
+type HttpErrorLike = { error?: { message?: string } };
+
+interface ItdExhibit {
+  uep: number;
+  loss_reserves: number;
+  loss_ibnr: number;
+  lae_reserves_dcc: number;
+  lae_ibnr_dcc: number;
+  lae_reserves_aoe: number;
+  lae_ibnr_aoe: number;
+  ulae_ibnr: number;
+}
+
+interface ItdRates {
+  qs: number;
+  cf: number;
+  comm: number;
+  ulae: number;
+  boards_charge: number;
+  loss_ratio_cap: number;
+  loss_pick: number;
+  lae_dcc: number;
+  lae_aoe: number;
+}
+
+interface ItdForm {
+  program: string;
+  month_key: string;
+  month_label: string;
+  rates: ItdRates;
+  exhibits: Record<string, ItdExhibit>;
+}
+
+interface ItdStateOption {
+  code: string;
+  label: string;
+}
+
+interface LockedPeriod {
+  period: string;
+  isLocked: boolean;
+  user?: { name?: string };
+  lockedAt?: string;
+}
+
+type SimpleEditableItem =
+  | LineOfBusiness
+  | CobMaster
+  | ReinsurerCompany
+  | SimpleMasterRecord
+  | DocumentType
+  | SequencePrefixCounter;
+
+type MasterListItem =
+  | Treaty
+  | MgaMaster
+  | LineOfBusiness
+  | CobMaster
+  | StateMaster
+  | ReinsurerCompany
+  | RiskCompany
+  | GlMapping
+  | SimpleMasterRecord
+  | DocumentType
+  | SequencePrefixCounter;
 import { GlMappingsService } from '../../core/services/gl-mappings.service';
 import { ChartOfAccountsService } from '../../core/services/chart-of-accounts.service';
 import { GlMapping } from '../../core/models/gl-mapping.model';
@@ -64,15 +144,17 @@ type MasterTab =
 })
 export class MastersComponent implements OnInit {
   // Label formatters for searchable dropdowns
-  mgaLabelFn = (item: any) => (item ? `${item.name} (${item.mga_code})` : '');
-  riskCompanyLabelFn = (item: any) => (item ? `${item.name} (${item.risk_company_id})` : '');
-  reinsurerLabelFn = (item: any) => (item ? `${item.name} (${item.reinsurer_company_id})` : '');
-  stateLabelFn = (item: any) => (item ? `${item.state_code} - ${item.name}` : '');
-  stateAbbrLabelFn = (item: any) => (item ? `${item.state_abbr} - ${item.name}` : '');
-  lobLabelFn = (item: any) => (item ? `${item.name} (${item.lob_code})` : '');
-  cobLabelFn = (item: any) => (item ? `${item.name} (${item.cob_code})` : '');
-  coaLabelFn = (item: any) => (item ? `${item.account_code} - ${item.description}` : '');
-  nameLabelFn = (item: any) => (item ? item.name : '');
+  mgaLabelFn = (item: MgaMaster) => (item ? `${item.name} (${item.mga_code})` : '');
+  riskCompanyLabelFn = (item: RiskCompany) =>
+    item ? `${item.name} (${item.risk_company_id})` : '';
+  reinsurerLabelFn = (item: ReinsurerCompany) =>
+    item ? `${item.name} (${item.reinsurer_company_id})` : '';
+  stateLabelFn = (item: StateMaster) => (item ? `${item.state_code} - ${item.name}` : '');
+  stateAbbrLabelFn = (item: StateMaster) => (item ? `${item.state_abbr} - ${item.name}` : '');
+  lobLabelFn = (item: LineOfBusiness) => (item ? `${item.name} (${item.lob_code})` : '');
+  cobLabelFn = (item: CobMaster) => (item ? `${item.name} (${item.cob_code})` : '');
+  coaLabelFn = (item: ChartOfAccount) => (item ? `${item.account_code} - ${item.description}` : '');
+  nameLabelFn = (item: { id: string; name: string }) => (item ? item.name : '');
 
   simpleFormTypeOptions = [
     { id: 'Property', name: 'Property' },
@@ -129,9 +211,9 @@ export class MastersComponent implements OnInit {
   states: StateMaster[] = [];
   reinsurers: ReinsurerCompany[] = [];
   riskCompanies: RiskCompany[] = [];
-  brokers: any[] = [];
-  products: any[] = [];
-  lockedPeriods: any[] = [];
+  brokers: SimpleMasterRecord[] = [];
+  products: SimpleMasterRecord[] = [];
+  lockedPeriods: SimpleMasterRecord[] = [];
   documentTypes: DocumentType[] = [];
   sequencePrefixCounters: SequencePrefixCounter[] = [];
 
@@ -142,7 +224,14 @@ export class MastersComponent implements OnInit {
   // Simple Modals (LOB, COB, Reinsurer, Broker, Product)
   showSimpleModal = false;
   simpleModalTitle = '';
-  simpleMode: 'lob' | 'cob' | 'reinsurer' | 'broker' | 'product' | 'document-type' | 'sequence-prefix-counter' = 'lob';
+  simpleMode:
+    | 'lob'
+    | 'cob'
+    | 'reinsurer'
+    | 'broker'
+    | 'product'
+    | 'document-type'
+    | 'sequence-prefix-counter' = 'lob';
   isEditMode = false;
   submitting = false;
 
@@ -277,10 +366,10 @@ export class MastersComponent implements OnInit {
   // Generic Documents Drawer
   showDocModal = false;
   documentMode: 'mga' | 'state' | 'risk-company' = 'mga';
-  selectedItem: any = null;
-  documentsList: any[] = [];
+  selectedItem: MgaMaster | StateMaster | RiskCompany | null = null;
+  documentsList: MasterDocument[] = [];
   uploadingDoc = false;
-  documentTypesOptions: any[] = [];
+  documentTypesOptions: DocumentType[] = [];
   selectedDocType = '';
 
   // Notes View Modal
@@ -290,8 +379,8 @@ export class MastersComponent implements OnInit {
 
   // ITD Modal Control
   showItdModal = false;
-  selectedTreatyForItd: any = null;
-  itdForm: any = {
+  selectedTreatyForItd: Treaty | null = null;
+  itdForm: ItdForm = {
     program: '',
     month_key: '2025-12',
     month_label: 'December 2025',
@@ -309,7 +398,7 @@ export class MastersComponent implements OnInit {
     exhibits: {},
   };
   itdSelectedStateCode = 'TOTAL';
-  itdStatesList: any[] = [{ code: 'TOTAL', label: 'TOTAL' }];
+  itdStatesList: ItdStateOption[] = [{ code: 'TOTAL', label: 'TOTAL' }];
   itdSelectedMonth = '12';
   itdSelectedYear = '2025';
   monthsList = [
@@ -387,8 +476,8 @@ export class MastersComponent implements OnInit {
   stateOptions: StateMaster[] = [];
   lobOptions: LineOfBusiness[] = [];
   cobOptions: CobMaster[] = [];
-  brokerOptions: any[] = [];
-  brokerLabelFn = (item: any) => item.name || '';
+  brokerOptions: SimpleMasterRecord[] = [];
+  brokerLabelFn = (item: SimpleMasterRecord) => item.name ?? '';
   showLockPeriodModal = false;
   newPeriodToLock = '';
 
@@ -471,14 +560,14 @@ export class MastersComponent implements OnInit {
             this.itdWorkbookIds.clear();
             this.treatyWorkbookStatuses.clear();
             wbs.forEach(wb => {
-              if (wb.source === 'ITD') {
+              if (wb.source === 'ITD' && wb.program) {
                 this.seededProgramITD.add(wb.program);
                 this.itdWorkbookIds.set(wb.program, wb.id);
               }
-              const progName = (wb.program || '').trim();
+              const progName = (wb.program ?? '').trim();
               const existing = this.treatyWorkbookStatuses.get(progName);
               if (existing !== 'Approved') {
-                this.treatyWorkbookStatuses.set(progName, wb.status || 'Pending');
+                this.treatyWorkbookStatuses.set(progName, (wb.status as string) || 'Pending');
               }
             });
             this.service.getTreaties(search, active).subscribe({
@@ -676,13 +765,13 @@ export class MastersComponent implements OnInit {
   }
 
   // Pagination client-side helpers
-  get paginatedItems(): any[] {
+  get paginatedItems(): MasterListItem[] {
     const list = this.currentList;
     const start = (this.currentPage - 1) * this.pageSize;
     return list.slice(start, start + this.pageSize);
   }
 
-  get currentList(): any[] {
+  get currentList(): MasterListItem[] {
     switch (this.currentTab) {
       case 'treaties': {
         let list = this.treaties;
@@ -690,7 +779,7 @@ export class MastersComponent implements OnInit {
           list = list.filter(
             t =>
               t.mga_id === this.mgaFilter ||
-              (t.treaty_mgas && t.treaty_mgas.some(tm => tm.mga_id === this.mgaFilter)),
+              t.treaty_mgas?.some(tm => tm.mga_id === this.mgaFilter),
           );
         }
         return list;
@@ -747,7 +836,7 @@ export class MastersComponent implements OnInit {
       flex: 1,
       minWidth: 100,
       maxWidth: 120,
-      cellRenderer: StatusBadgeCellRenderer,
+      cellRenderer: StatusBadgeCell,
     };
 
     switch (this.currentTab) {
@@ -781,10 +870,10 @@ export class MastersComponent implements OnInit {
           },
           {
             headerName: 'ACTIONS',
-            cellRenderer: ActionButtonsCellRenderer,
+            cellRenderer: ActionButtonsCell,
             cellRendererParams: {
-              buttons: (data: any) => {
-                const btns = [];
+              buttons: (data: Treaty) => {
+                const btns: ActionButtonConfig[] = [];
                 if (this.hasITDSeeded(data.name)) {
                   btns.push({ label: 'Upload Excel', action: 'uploadExcel' });
                 }
@@ -794,7 +883,7 @@ export class MastersComponent implements OnInit {
                 btns.push({ label: 'Delete', action: 'delete', danger: true });
                 return btns;
               },
-              onClick: (action: string, data: any) => {
+              onClick: (action: string, data: Treaty) => {
                 if (action === 'uploadExcel') this.triggerTreatyMonthlyUpload(data);
                 if (action === 'uploadItd') this.triggerTreatyITDUpload(data);
                 if (action === 'manualItd') this.openAddItdModal(data);
@@ -818,14 +907,14 @@ export class MastersComponent implements OnInit {
           {
             headerName: 'TAX PAYABLE IN-HOUSE',
             field: 'tax_payable_inhouse',
-            cellRenderer: StatusBadgeCellRenderer,
+            cellRenderer: StatusBadgeCell,
             flex: 1.5,
             minWidth: 150,
           },
           statusCol,
           {
             headerName: 'ACTIONS',
-            cellRenderer: ActionButtonsCellRenderer,
+            cellRenderer: ActionButtonsCell,
             cellRendererParams: {
               buttons: [
                 { label: 'Add Treaties', action: 'addTreaty' },
@@ -833,7 +922,7 @@ export class MastersComponent implements OnInit {
                 { label: 'Edit', action: 'edit' },
                 { label: 'Delete', action: 'delete', danger: true },
               ],
-              onClick: (action: string, data: any) => {
+              onClick: (action: string, data: MgaMaster) => {
                 if (action === 'addTreaty') this.openTreatyAdd(data.id);
                 if (action === 'doc') this.openDocModal('mga', data);
                 if (action === 'edit') this.openMgaEdit(data);
@@ -854,7 +943,7 @@ export class MastersComponent implements OnInit {
           { headerName: 'STATE NAME', field: 'name', flex: 3, minWidth: 200 },
           {
             headerName: 'ACTIONS',
-            cellRenderer: ActionButtonsCellRenderer,
+            cellRenderer: ActionButtonsCell,
             cellRendererParams: {
               buttons: [
                 { label: 'Document', action: 'doc' },
@@ -862,7 +951,7 @@ export class MastersComponent implements OnInit {
                 { label: 'Edit', action: 'edit' },
                 { label: 'Delete', action: 'delete', danger: true },
               ],
-              onClick: (action: string, data: any) => {
+              onClick: (action: string, data: StateMaster) => {
                 if (action === 'doc') this.openDocModal('state', data);
                 if (action === 'notes')
                   this.openNotesModal('State Notes: ' + data.name, data.notes);
@@ -892,14 +981,14 @@ export class MastersComponent implements OnInit {
           {
             headerName: 'ADMITTED',
             field: 'is_admitted',
-            cellRenderer: StatusBadgeCellRenderer,
+            cellRenderer: StatusBadgeCell,
             flex: 1,
             minWidth: 100,
           },
           { headerName: 'STATE', field: 'state', flex: 1, minWidth: 80 },
           {
             headerName: 'ACTIONS',
-            cellRenderer: ActionButtonsCellRenderer,
+            cellRenderer: ActionButtonsCell,
             cellRendererParams: {
               buttons: [
                 { label: 'Document', action: 'doc' },
@@ -908,7 +997,7 @@ export class MastersComponent implements OnInit {
                 { label: 'Edit', action: 'edit' },
                 { label: 'Delete', action: 'delete', danger: true },
               ],
-              onClick: (action: string, data: any) => {
+              onClick: (action: string, data: RiskCompany) => {
                 if (action === 'doc') this.openDocModal('risk-company', data);
                 if (action === 'notes')
                   this.openNotesModal('Risk Company Notes: ' + data.name, data.notes);
@@ -935,20 +1024,20 @@ export class MastersComponent implements OnInit {
           {
             headerName: 'TYPE',
             field: 'type',
-            cellRenderer: (p: any) =>
+            cellRenderer: (p: ICellRendererParams<GlMapping, string>) =>
               `<span class="type-badge ${p.value?.toLowerCase()}">${p.value}</span>`,
             flex: 1,
             minWidth: 100,
           },
           {
             headerName: 'ACTIONS',
-            cellRenderer: ActionButtonsCellRenderer,
+            cellRenderer: ActionButtonsCell,
             cellRendererParams: {
               buttons: [
                 { label: 'Edit', action: 'edit' },
                 { label: 'Delete', action: 'delete', danger: true },
               ],
-              onClick: (action: string, data: any) => {
+              onClick: (action: string, data: GlMapping) => {
                 if (action === 'edit') this.openGlMappingEdit(data);
                 if (action === 'delete') this.deleteGlMapping(data);
               },
@@ -966,11 +1055,11 @@ export class MastersComponent implements OnInit {
           {
             headerName: 'LOB NAME',
             valueGetter: p => p.data.name,
-            cellRenderer: (p: any) => {
-              const desc = p.data.description
+            cellRenderer: (p: ICellRendererParams<LineOfBusiness>) => {
+              const desc = p.data?.description
                 ? `<div style="font-size: 11px; color: var(--gray-500); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 220px;" title="${p.data.description}">${p.data.description}</div>`
                 : '';
-              return `<div style="line-height:1.2; margin-top:10px;"><div style="font-weight: 500;">${p.data.name}</div>${desc}</div>`;
+              return `<div style="line-height:1.2; margin-top:10px;"><div style="font-weight: 500;">${p.data?.name}</div>${desc}</div>`;
             },
             flex: 3,
             minWidth: 200,
@@ -978,7 +1067,7 @@ export class MastersComponent implements OnInit {
           {
             headerName: 'TAXABLE',
             field: 'taxable',
-            cellRenderer: StatusBadgeCellRenderer,
+            cellRenderer: StatusBadgeCell,
             flex: 1,
             minWidth: 100,
           },
@@ -986,20 +1075,20 @@ export class MastersComponent implements OnInit {
           {
             headerName: 'FULLY EARNED',
             field: 'fully_earned',
-            cellRenderer: StatusBadgeCellRenderer,
+            cellRenderer: StatusBadgeCell,
             flex: 1,
             minWidth: 120,
           },
           statusCol,
           {
             headerName: 'ACTIONS',
-            cellRenderer: ActionButtonsCellRenderer,
+            cellRenderer: ActionButtonsCell,
             cellRendererParams: {
               buttons: [
                 { label: 'Edit', action: 'edit' },
                 { label: 'Delete', action: 'delete', danger: true },
               ],
-              onClick: (action: string, data: any) => {
+              onClick: (action: string, data: LineOfBusiness) => {
                 if (action === 'edit') this.openSimpleEdit('lob', data);
                 if (action === 'delete') this.deleteSimple('lob', data);
               },
@@ -1017,11 +1106,11 @@ export class MastersComponent implements OnInit {
           {
             headerName: 'CLASS NAME',
             valueGetter: p => p.data.name,
-            cellRenderer: (p: any) => {
-              const desc = p.data.description
+            cellRenderer: (p: ICellRendererParams<CobMaster>) => {
+              const desc = p.data?.description
                 ? `<div style="font-size: 11px; color: var(--gray-500); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 220px;" title="${p.data.description}">${p.data.description}</div>`
                 : '';
-              return `<div style="line-height:1.2; margin-top:10px;"><div style="font-weight: 500;">${p.data.name}</div>${desc}</div>`;
+              return `<div style="line-height:1.2; margin-top:10px;"><div style="font-weight: 500;">${p.data?.name}</div>${desc}</div>`;
             },
             flex: 3,
             minWidth: 200,
@@ -1030,7 +1119,7 @@ export class MastersComponent implements OnInit {
           {
             headerName: 'TAXABLE',
             field: 'taxable',
-            cellRenderer: StatusBadgeCellRenderer,
+            cellRenderer: StatusBadgeCell,
             flex: 1,
             minWidth: 100,
           },
@@ -1038,20 +1127,20 @@ export class MastersComponent implements OnInit {
           {
             headerName: 'FULLY EARNED',
             field: 'fully_earned',
-            cellRenderer: StatusBadgeCellRenderer,
+            cellRenderer: StatusBadgeCell,
             flex: 1,
             minWidth: 120,
           },
           statusCol,
           {
             headerName: 'ACTIONS',
-            cellRenderer: ActionButtonsCellRenderer,
+            cellRenderer: ActionButtonsCell,
             cellRendererParams: {
               buttons: [
                 { label: 'Edit', action: 'edit' },
                 { label: 'Delete', action: 'delete', danger: true },
               ],
-              onClick: (action: string, data: any) => {
+              onClick: (action: string, data: CobMaster) => {
                 if (action === 'edit') this.openSimpleEdit('cob', data);
                 if (action === 'delete') this.deleteSimple('cob', data);
               },
@@ -1076,13 +1165,13 @@ export class MastersComponent implements OnInit {
           statusCol,
           {
             headerName: 'ACTIONS',
-            cellRenderer: ActionButtonsCellRenderer,
+            cellRenderer: ActionButtonsCell,
             cellRendererParams: {
               buttons: [
                 { label: 'Edit', action: 'edit' },
                 { label: 'Delete', action: 'delete', danger: true },
               ],
-              onClick: (action: string, data: any) => {
+              onClick: (action: string, data: ReinsurerCompany) => {
                 if (action === 'edit') this.openSimpleEdit('reinsurer', data);
                 if (action === 'delete') this.deleteSimple('reinsurer', data);
               },
@@ -1104,13 +1193,13 @@ export class MastersComponent implements OnInit {
           statusCol,
           {
             headerName: 'ACTIONS',
-            cellRenderer: ActionButtonsCellRenderer,
+            cellRenderer: ActionButtonsCell,
             cellRendererParams: {
               buttons: [
                 { label: 'Edit', action: 'edit' },
                 { label: 'Delete', action: 'delete', danger: true },
               ],
-              onClick: (action: string, data: any) => {
+              onClick: (action: string, data: SimpleMasterRecord) => {
                 if (action === 'edit') this.openSimpleEdit('broker', data);
                 if (action === 'delete') this.deleteSimple('broker', data);
               },
@@ -1126,19 +1215,31 @@ export class MastersComponent implements OnInit {
         return [
           { headerName: 'PRODUCT ID', field: 'productId', flex: 1.5, minWidth: 120 },
           { headerName: 'NAME', field: 'name', flex: 2, minWidth: 150 },
-          { headerName: 'LOB', valueGetter: p => p.data.lob?.name || '-', flex: 1.5, minWidth: 120 },
-          { headerName: 'COB', valueGetter: p => p.data.cob?.name || '-', flex: 1.5, minWidth: 120 },
+          {
+            headerName: 'LOB',
+            // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- an empty string should also fall back to the placeholder/default shown here
+            valueGetter: p => p.data.lob?.name || '-',
+            flex: 1.5,
+            minWidth: 120,
+          },
+          {
+            headerName: 'COB',
+            // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- an empty string should also fall back to the placeholder/default shown here
+            valueGetter: p => p.data.cob?.name || '-',
+            flex: 1.5,
+            minWidth: 120,
+          },
           { headerName: 'DESCRIPTION', field: 'description', flex: 2.5, minWidth: 180 },
           statusCol,
           {
             headerName: 'ACTIONS',
-            cellRenderer: ActionButtonsCellRenderer,
+            cellRenderer: ActionButtonsCell,
             cellRendererParams: {
               buttons: [
                 { label: 'Edit', action: 'edit' },
                 { label: 'Delete', action: 'delete', danger: true },
               ],
-              onClick: (action: string, data: any) => {
+              onClick: (action: string, data: SimpleMasterRecord) => {
                 if (action === 'edit') this.openSimpleEdit('product', data);
                 if (action === 'delete') this.deleteSimple('product', data);
               },
@@ -1155,32 +1256,38 @@ export class MastersComponent implements OnInit {
           { headerName: 'PERIOD', field: 'period', flex: 1.5, minWidth: 120 },
           {
             headerName: 'STATUS',
-            valueGetter: p => p.data.isLocked ? 'Locked' : 'Open',
-            cellRenderer: (p: any) => {
+            valueGetter: p => (p.data.isLocked ? 'Locked' : 'Open'),
+            cellRenderer: (p: ICellRendererParams<LockedPeriod, string>) => {
               const color = p.value === 'Locked' ? '#e05470' : '#19a347';
               return `<span style="font-weight: 700; color: ${color};">${p.value}</span>`;
             },
             flex: 1,
             minWidth: 100,
           },
-          { headerName: 'LOCKED BY', valueGetter: p => p.data.user?.name || '-', flex: 1.5, minWidth: 120 },
+          {
+            headerName: 'LOCKED BY',
+            // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- an empty string should also fall back to the placeholder/default shown here
+            valueGetter: p => p.data.user?.name || '-',
+            flex: 1.5,
+            minWidth: 120,
+          },
           {
             headerName: 'LOCKED AT',
-            valueGetter: p => p.data.lockedAt ? new Date(p.data.lockedAt).toLocaleString() : '-',
+            valueGetter: p => (p.data.lockedAt ? new Date(p.data.lockedAt).toLocaleString() : '-'),
             flex: 2,
             minWidth: 150,
           },
           {
             headerName: 'ACTIONS',
-            cellRenderer: ActionButtonsCellRenderer,
+            cellRenderer: ActionButtonsCell,
             cellRendererParams: {
-              buttons: (data: any) => [
+              buttons: (data: LockedPeriod) => [
                 {
                   label: data.isLocked ? 'Unlock' : 'Lock',
                   action: data.isLocked ? 'unlock' : 'lock',
                 },
               ],
-              onClick: (action: string, data: any) => {
+              onClick: (action: string, data: LockedPeriod) => {
                 if (action === 'lock') this.togglePeriodLock(data.period, true);
                 if (action === 'unlock') this.togglePeriodLock(data.period, false);
               },
@@ -1200,13 +1307,13 @@ export class MastersComponent implements OnInit {
           statusCol,
           {
             headerName: 'ACTIONS',
-            cellRenderer: ActionButtonsCellRenderer,
+            cellRenderer: ActionButtonsCell,
             cellRendererParams: {
               buttons: [
                 { label: 'Edit', action: 'edit' },
                 { label: 'Delete', action: 'delete', danger: true },
               ],
-              onClick: (action: string, data: any) => {
+              onClick: (action: string, data: DocumentType) => {
                 if (action === 'edit') this.openSimpleEdit('document-type', data);
                 if (action === 'delete') this.deleteSimple('document-type', data);
               },
@@ -1223,29 +1330,31 @@ export class MastersComponent implements OnInit {
           { headerName: 'CODE', field: 'code', flex: 1.5, minWidth: 120 },
           { headerName: 'NAME', field: 'name', flex: 2, minWidth: 150 },
           { headerName: 'PREFIX', field: 'prefix', flex: 1, minWidth: 100 },
-          { 
-            headerName: 'NEXT VALUE', 
-            valueGetter: p => p.data.next_value !== undefined ? p.data.next_value : p.data.nextValue, 
-            flex: 1, 
-            minWidth: 100 
+          {
+            headerName: 'NEXT VALUE',
+            valueGetter: p =>
+              p.data.next_value !== undefined ? p.data.next_value : p.data.nextValue,
+            flex: 1,
+            minWidth: 100,
           },
-          { 
-            headerName: 'PADDING WIDTH', 
-            valueGetter: p => p.data.padding_width !== undefined ? p.data.padding_width : p.data.paddingWidth, 
-            flex: 1, 
-            minWidth: 100 
+          {
+            headerName: 'PADDING WIDTH',
+            valueGetter: p =>
+              p.data.padding_width !== undefined ? p.data.padding_width : p.data.paddingWidth,
+            flex: 1,
+            minWidth: 100,
           },
           { headerName: 'DESCRIPTION', field: 'description', flex: 2.5, minWidth: 180 },
           statusCol,
           {
             headerName: 'ACTIONS',
-            cellRenderer: ActionButtonsCellRenderer,
+            cellRenderer: ActionButtonsCell,
             cellRendererParams: {
               buttons: [
                 { label: 'Edit', action: 'edit' },
                 { label: 'Delete', action: 'delete', danger: true },
               ],
-              onClick: (action: string, data: any) => {
+              onClick: (action: string, data: SequencePrefixCounter) => {
                 if (action === 'edit') this.openSimpleEdit('sequence-prefix-counter', data);
                 if (action === 'delete') this.deleteSimple('sequence-prefix-counter', data);
               },
@@ -1290,28 +1399,42 @@ export class MastersComponent implements OnInit {
     this.showSimpleModal = true;
   }
 
-  openSimpleEdit(mode: typeof this.simpleMode, item: any): void {
+  openSimpleEdit(mode: typeof this.simpleMode, item: SimpleEditableItem): void {
     this.simpleMode = mode;
     this.isEditMode = true;
     this.simpleModalTitle = `Edit ${this.getMasterLabel(mode)}`;
+    const rec = item as unknown as Record<string, unknown>;
     this.simpleForm = {
-      id: item.id,
-      code: item.lob_code || item.cob_code || item.reinsurer_company_id || item.broker_code || item.product_id || item.code || '',
-      name: item.name,
-      is_active: item.is_active,
-      description: item.description || '',
-      type: item.type || '',
-      taxable: item.taxable || false,
-      priority: item.priority || 1,
-      fully_earned: item.fully_earned || false,
-      contact_name: item.contact_name || item.contactName || '',
-      contact_email: item.contact_email || item.contactEmail || '',
-      contact_phone: item.contact_phone || item.contactPhone || '',
-      lob_id: item.lob_id || item.lobId || '',
-      cob_id: item.cob_id || item.cobId || '',
-      prefix: item.prefix || '',
-      next_value: item.next_value !== undefined ? item.next_value : (item.nextValue || 1),
-      padding_width: item.padding_width !== undefined ? item.padding_width : (item.paddingWidth || 4),
+      id: rec['id'] as string,
+      code:
+        (rec['lob_code'] as string) ||
+        (rec['cob_code'] as string) ||
+        (rec['reinsurer_company_id'] as string) ||
+        (rec['broker_code'] as string) ||
+        (rec['product_id'] as string) ||
+        (rec['code'] as string) ||
+        '',
+      name: rec['name'] as string,
+      is_active: rec['is_active'] as boolean,
+      description: (rec['description'] as string) || '',
+      type: (rec['type'] as string) || '',
+      taxable: (rec['taxable'] as boolean) || false,
+      priority: (rec['priority'] as number) || 1,
+      fully_earned: (rec['fully_earned'] as boolean) || false,
+      contact_name: (rec['contact_name'] as string) || (rec['contactName'] as string) || '',
+      contact_email: (rec['contact_email'] as string) || (rec['contactEmail'] as string) || '',
+      contact_phone: (rec['contact_phone'] as string) || (rec['contactPhone'] as string) || '',
+      lob_id: (rec['lob_id'] as string) || (rec['lobId'] as string) || '',
+      cob_id: (rec['cob_id'] as string) || (rec['cobId'] as string) || '',
+      prefix: (rec['prefix'] as string) || '',
+      next_value:
+        rec['next_value'] !== undefined
+          ? (rec['next_value'] as number)
+          : (rec['nextValue'] as number) || 1,
+      padding_width:
+        rec['padding_width'] !== undefined
+          ? (rec['padding_width'] as number)
+          : (rec['paddingWidth'] as number) || 4,
     };
     this.showSimpleModal = true;
   }
@@ -1324,81 +1447,93 @@ export class MastersComponent implements OnInit {
     this.submitting = true;
 
     const codeKey = this.getCodeKey(this.simpleMode);
-    const payload: any = {
+    const payload: Record<string, unknown> = {
       [codeKey]: this.simpleForm.code,
       name: this.simpleForm.name,
       is_active: this.simpleForm.is_active,
     };
 
     if (this.simpleMode === 'lob' || this.simpleMode === 'cob') {
-      payload.description = this.simpleForm.description || null;
-      payload.type = this.simpleMode === 'cob' ? this.simpleForm.type || null : null;
-      payload.taxable = this.simpleForm.taxable || false;
-      payload.priority = Number(this.simpleForm.priority || 1);
-      payload.fully_earned = this.simpleForm.fully_earned || false;
+      payload['description'] = this.simpleForm.description || null;
+      payload['type'] = this.simpleMode === 'cob' ? this.simpleForm.type || null : null;
+      payload['taxable'] = this.simpleForm.taxable || false;
+      payload['priority'] = Number(this.simpleForm.priority || 1);
+      payload['fully_earned'] = this.simpleForm.fully_earned || false;
     } else if (this.simpleMode === 'broker') {
-      payload.contact_name = this.simpleForm.contact_name || null;
-      payload.contact_email = this.simpleForm.contact_email || null;
-      payload.contact_phone = this.simpleForm.contact_phone || null;
+      // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- '' should be sent as null, not an empty string
+      payload['contact_name'] = this.simpleForm.contact_name || null;
+      // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- '' should be sent as null, not an empty string
+      payload['contact_email'] = this.simpleForm.contact_email || null;
+      // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- '' should be sent as null, not an empty string
+      payload['contact_phone'] = this.simpleForm.contact_phone || null;
     } else if (this.simpleMode === 'product') {
-      payload.description = this.simpleForm.description || null;
-      payload.lob_id = this.simpleForm.lob_id || null;
-      payload.cob_id = this.simpleForm.cob_id || null;
+      payload['description'] = this.simpleForm.description || null;
+      // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- '' should be sent as null, not an empty string
+      payload['lob_id'] = this.simpleForm.lob_id || null;
+      // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- '' should be sent as null, not an empty string
+      payload['cob_id'] = this.simpleForm.cob_id || null;
     } else if (this.simpleMode === 'sequence-prefix-counter') {
-      payload.description = this.simpleForm.description || null;
-      payload.prefix = this.simpleForm.prefix || null;
-      payload.next_value = Number(this.simpleForm.next_value ?? 1);
-      payload.padding_width = Number(this.simpleForm.padding_width ?? 4);
+      payload['description'] = this.simpleForm.description || null;
+      // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- '' should be sent as null, not an empty string
+      payload['prefix'] = this.simpleForm.prefix || null;
+      payload['next_value'] = Number(this.simpleForm.next_value ?? 1);
+      payload['padding_width'] = Number(this.simpleForm.padding_width ?? 4);
     }
 
-    let request!: Observable<any>;
+    let request!: Observable<unknown>;
     if (this.isEditMode) {
-      const id = this.simpleForm.id!;
+      if (!this.simpleForm.id) return;
+      const id = this.simpleForm.id;
       switch (this.simpleMode) {
         case 'lob':
-          request = this.service.updateLob(id, payload);
+          request = this.service.updateLob(id, payload as Partial<LineOfBusiness>);
           break;
         case 'cob':
-          request = this.service.updateCob(id, payload);
+          request = this.service.updateCob(id, payload as Partial<CobMaster>);
           break;
         case 'reinsurer':
-          request = this.service.updateReinsurer(id, payload);
+          request = this.service.updateReinsurer(id, payload as Partial<ReinsurerCompany>);
           break;
         case 'broker':
-          request = this.service.updateBroker(id, payload);
+          request = this.service.updateBroker(id, payload as SimpleMasterRecord);
           break;
         case 'product':
-          request = this.service.updateProduct(id, payload);
+          request = this.service.updateProduct(id, payload as SimpleMasterRecord);
           break;
         case 'document-type':
-          request = this.service.updateDocumentType(id, payload);
+          request = this.service.updateDocumentType(id, payload as Partial<DocumentType>);
           break;
         case 'sequence-prefix-counter':
-          request = this.service.updateSequencePrefixCounter(id, payload);
+          request = this.service.updateSequencePrefixCounter(
+            id,
+            payload as Partial<SequencePrefixCounter>,
+          );
           break;
       }
     } else {
       switch (this.simpleMode) {
         case 'lob':
-          request = this.service.createLob(payload);
+          request = this.service.createLob(payload as Partial<LineOfBusiness>);
           break;
         case 'cob':
-          request = this.service.createCob(payload);
+          request = this.service.createCob(payload as Partial<CobMaster>);
           break;
         case 'reinsurer':
-          request = this.service.createReinsurer(payload);
+          request = this.service.createReinsurer(payload as Partial<ReinsurerCompany>);
           break;
         case 'broker':
-          request = this.service.createBroker(payload);
+          request = this.service.createBroker(payload as SimpleMasterRecord);
           break;
         case 'product':
-          request = this.service.createProduct(payload);
+          request = this.service.createProduct(payload as SimpleMasterRecord);
           break;
         case 'document-type':
-          request = this.service.createDocumentType(payload);
+          request = this.service.createDocumentType(payload as Partial<DocumentType>);
           break;
         case 'sequence-prefix-counter':
-          request = this.service.createSequencePrefixCounter(payload);
+          request = this.service.createSequencePrefixCounter(
+            payload as Partial<SequencePrefixCounter>,
+          );
           break;
       }
     }
@@ -1410,7 +1545,8 @@ export class MastersComponent implements OnInit {
         this.submitting = false;
         this.loadData();
       },
-      error: (err: any) => {
+      error: (err: HttpErrorLike) => {
+        // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- '' should also fall back to the default message
         this.toast.error(err.error?.message || 'Failed to save master data');
         this.submitting = false;
         this.cdr.markForCheck();
@@ -1418,32 +1554,34 @@ export class MastersComponent implements OnInit {
     });
   }
 
-  deleteSimple(mode: typeof this.simpleMode, item: any): void {
+  deleteSimple(mode: typeof this.simpleMode, item: SimpleEditableItem): void {
     this.confirmTitle = `Delete ${this.getMasterLabel(mode)}`;
     this.confirmMessage = `Are you sure you want to delete "${item.name}"? This action cannot be undone.`;
     this.pendingAction = () => {
-      let request!: Observable<any>;
+      if (!item.id) return;
+      const id = item.id;
+      let request!: Observable<unknown>;
       switch (mode) {
         case 'lob':
-          request = this.service.deleteLob(item.id);
+          request = this.service.deleteLob(id);
           break;
         case 'cob':
-          request = this.service.deleteCob(item.id);
+          request = this.service.deleteCob(id);
           break;
         case 'reinsurer':
-          request = this.service.deleteReinsurer(item.id);
+          request = this.service.deleteReinsurer(id);
           break;
         case 'broker':
-          request = this.service.deleteBroker(item.id);
+          request = this.service.deleteBroker(id);
           break;
         case 'product':
-          request = this.service.deleteProduct(item.id);
+          request = this.service.deleteProduct(id);
           break;
         case 'document-type':
-          request = this.service.deleteDocumentType(item.id);
+          request = this.service.deleteDocumentType(id);
           break;
         case 'sequence-prefix-counter':
-          request = this.service.deleteSequencePrefixCounter(item.id);
+          request = this.service.deleteSequencePrefixCounter(id);
           break;
       }
       request.subscribe({
@@ -1451,7 +1589,8 @@ export class MastersComponent implements OnInit {
           this.toast.success(`${this.getMasterLabel(mode)} deleted`);
           this.loadData();
         },
-        error: (err: any) => {
+        error: (err: HttpErrorLike) => {
+          // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- '' should also fall back to the default message
           this.toast.error(err.error?.message || 'Failed to delete item');
         },
       });
@@ -1495,16 +1634,16 @@ export class MastersComponent implements OnInit {
       mga_code: mga.mga_code,
       name: mga.name,
       tax_payable_inhouse: mga.tax_payable_inhouse,
-      ledger_amount: mga.ledger_amount || 0,
+      ledger_amount: mga.ledger_amount ?? 0,
       is_active: mga.is_active,
       company_id: mga.company_id ? Number(mga.company_id) : null,
-      id_name: mga.id_name || '',
-      address: mga.address || '',
-      zip: mga.zip || '',
-      city: mga.city || '',
-      state: mga.state || '',
-      phone: mga.phone || '',
-      open_item: mga.open_item || false,
+      id_name: mga.id_name ?? '',
+      address: mga.address ?? '',
+      zip: mga.zip ?? '',
+      city: mga.city ?? '',
+      state: mga.state ?? '',
+      phone: mga.phone ?? '',
+      open_item: mga.open_item ?? false,
       op_start_date: mga.op_start_date ? mga.op_start_date.substring(0, 10) : '',
       other_names: mga.other_names ? JSON.parse(JSON.stringify(mga.other_names)) : [],
     };
@@ -1544,14 +1683,16 @@ export class MastersComponent implements OnInit {
     };
 
     if (this.isEditMode) {
-      this.service.updateMga(this.mgaForm.id!, payload).subscribe({
+      if (!this.mgaForm.id) return;
+      this.service.updateMga(this.mgaForm.id, payload).subscribe({
         next: () => {
           this.toast.success('MGA updated successfully');
           this.showMgaModal = false;
           this.submitting = false;
           this.loadData();
         },
-        error: (err: any) => {
+        error: (err: HttpErrorLike) => {
+          // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- '' should also fall back to the default message
           this.toast.error(err.error?.message || 'Failed to update MGA');
           this.submitting = false;
           this.cdr.markForCheck();
@@ -1565,7 +1706,8 @@ export class MastersComponent implements OnInit {
           this.submitting = false;
           this.loadData();
         },
-        error: (err: any) => {
+        error: (err: HttpErrorLike) => {
+          // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- '' should also fall back to the default message
           this.toast.error(err.error?.message || 'Failed to create MGA');
           this.submitting = false;
           this.cdr.markForCheck();
@@ -1583,7 +1725,8 @@ export class MastersComponent implements OnInit {
           this.toast.success('MGA deleted successfully');
           this.loadData();
         },
-        error: (err: any) => {
+        error: (err: HttpErrorLike) => {
+          // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- '' should also fall back to the default message
           this.toast.error(err.error?.message || 'Failed to delete MGA');
         },
       });
@@ -1594,14 +1737,17 @@ export class MastersComponent implements OnInit {
   // ==========================================
   // GENERIC DOCUMENTS DRAWER ACTIONS
   // ==========================================
-  openDocModal(mode: 'mga' | 'state' | 'risk-company', item: any): void {
+  openDocModal(
+    mode: 'mga' | 'state' | 'risk-company',
+    item: MgaMaster | StateMaster | RiskCompany,
+  ): void {
     this.documentMode = mode;
     this.selectedItem = item;
     this.documentsList = [];
     this.selectedDocType = '';
     this.documentTypesOptions = [];
     this.showDocModal = true;
-    
+
     this.service.getDocumentTypes(undefined, true).subscribe(res => {
       this.documentTypesOptions = res;
       this.cdr.markForCheck();
@@ -1613,7 +1759,7 @@ export class MastersComponent implements OnInit {
   loadDocuments(): void {
     if (!this.selectedItem) return;
     const id = this.selectedItem.id;
-    let request: Observable<any>;
+    let request: Observable<DocumentableMaster>;
     if (this.documentMode === 'mga') {
       request = this.service.getMga(id);
     } else if (this.documentMode === 'state') {
@@ -1633,24 +1779,29 @@ export class MastersComponent implements OnInit {
     });
   }
 
-  onFileSelected(event: any): void {
-    const file: File = event.target.files[0];
+  onFileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
     if (!file || !this.selectedItem) return;
 
     if (!this.selectedDocType) {
       this.toast.error('Please select a Document Type first');
-      event.target.value = '';
+      input.value = '';
       return;
     }
 
     this.uploadingDoc = true;
-    let request: Observable<any>;
+    let request: Observable<MasterDocument>;
     if (this.documentMode === 'mga') {
       request = this.service.uploadMgaDocument(this.selectedItem.id, file, this.selectedDocType);
     } else if (this.documentMode === 'state') {
       request = this.service.uploadStateDocument(this.selectedItem.id, file, this.selectedDocType);
     } else {
-      request = this.service.uploadRiskCompanyDocument(this.selectedItem.id, file, this.selectedDocType);
+      request = this.service.uploadRiskCompanyDocument(
+        this.selectedItem.id,
+        file,
+        this.selectedDocType,
+      );
     }
 
     request.subscribe({
@@ -1658,18 +1809,18 @@ export class MastersComponent implements OnInit {
         this.toast.success('Document uploaded successfully');
         this.loadDocuments();
         this.uploadingDoc = false;
-        event.target.value = '';
+        input.value = '';
         this.cdr.markForCheck();
       },
-      error: (err: any) => {
-        this.toast.error(err.error?.message || 'Failed to upload document');
+      error: (err: HttpErrorLike) => {
+        this.toast.error(err.error?.message ?? 'Failed to upload document');
         this.uploadingDoc = false;
         this.cdr.markForCheck();
       },
     });
   }
 
-  downloadDoc(doc: any): void {
+  downloadDoc(doc: MasterDocument): void {
     let endpoint = '';
     if (this.documentMode === 'mga') {
       endpoint = 'mgas';
@@ -1684,11 +1835,11 @@ export class MastersComponent implements OnInit {
     );
   }
 
-  deleteDoc(doc: any): void {
+  deleteDoc(doc: MasterDocument): void {
     this.confirmTitle = 'Delete Document';
     this.confirmMessage = `Are you sure you want to delete attachment "${doc.file_name}"?`;
     this.pendingAction = () => {
-      let request: Observable<any>;
+      let request: Observable<void>;
       if (this.documentMode === 'mga') {
         request = this.service.deleteMgaDocument(doc.id);
       } else if (this.documentMode === 'state') {
@@ -1702,8 +1853,8 @@ export class MastersComponent implements OnInit {
           this.toast.success('Document deleted successfully');
           this.loadDocuments();
         },
-        error: (err: any) => {
-          this.toast.error(err.error?.message || 'Failed to delete document');
+        error: (err: HttpErrorLike) => {
+          this.toast.error(err.error?.message ?? 'Failed to delete document');
         },
       });
     };
@@ -1728,7 +1879,7 @@ export class MastersComponent implements OnInit {
       state_code: state.state_code,
       state_abbr: state.state_abbr,
       name: state.name,
-      notes: state.notes || '',
+      notes: state.notes ?? '',
       is_active: state.is_active,
     };
     this.showStateModal = true;
@@ -1749,12 +1900,10 @@ export class MastersComponent implements OnInit {
       is_active: this.stateForm.is_active,
     };
 
-    let request: Observable<any>;
-    if (this.isEditMode) {
-      request = this.service.updateState(this.stateForm.id!, payload);
-    } else {
-      request = this.service.createState(payload);
-    }
+    if (this.isEditMode && !this.stateForm.id) return;
+    const request: Observable<StateMaster> = this.isEditMode
+      ? this.service.updateState(this.stateForm.id as string, payload)
+      : this.service.createState(payload);
 
     request.subscribe({
       next: () => {
@@ -1763,7 +1912,8 @@ export class MastersComponent implements OnInit {
         this.submitting = false;
         this.loadData();
       },
-      error: (err: any) => {
+      error: (err: HttpErrorLike) => {
+        // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- '' should also fall back to the default message
         this.toast.error(err.error?.message || 'Failed to save state');
         this.submitting = false;
         this.cdr.markForCheck();
@@ -1780,7 +1930,8 @@ export class MastersComponent implements OnInit {
           this.toast.success('State deleted successfully');
           this.loadData();
         },
-        error: (err: any) => {
+        error: (err: HttpErrorLike) => {
+          // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- '' should also fall back to the default message
           this.toast.error(err.error?.message || 'Failed to delete state');
         },
       });
@@ -1818,15 +1969,15 @@ export class MastersComponent implements OnInit {
       id: rc.id,
       risk_company_id: rc.risk_company_id,
       company_id: rc.company_id,
-      id_name: rc.id_name || '',
+      id_name: rc.id_name ?? '',
       name: rc.name,
-      phone: rc.phone || '',
+      phone: rc.phone ?? '',
       is_admitted: rc.is_admitted,
-      state: rc.state || '',
-      address: rc.address || '',
-      zip: rc.zip || '',
-      city: rc.city || '',
-      notes: rc.notes || '',
+      state: rc.state ?? '',
+      address: rc.address ?? '',
+      zip: rc.zip ?? '',
+      city: rc.city ?? '',
+      notes: rc.notes ?? '',
       is_active: rc.is_active,
     };
     this.showRiskCompanyModal = true;
@@ -1859,12 +2010,10 @@ export class MastersComponent implements OnInit {
       is_active: this.riskCompanyForm.is_active,
     };
 
-    let request: Observable<any>;
-    if (this.isEditMode) {
-      request = this.service.updateRiskCompany(this.riskCompanyForm.id!, payload);
-    } else {
-      request = this.service.createRiskCompany(payload);
-    }
+    if (this.isEditMode && !this.riskCompanyForm.id) return;
+    const request: Observable<RiskCompany> = this.isEditMode
+      ? this.service.updateRiskCompany(this.riskCompanyForm.id as string, payload)
+      : this.service.createRiskCompany(payload);
 
     request.subscribe({
       next: () => {
@@ -1873,7 +2022,8 @@ export class MastersComponent implements OnInit {
         this.submitting = false;
         this.loadData();
       },
-      error: (err: any) => {
+      error: (err: HttpErrorLike) => {
+        // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- '' should also fall back to the default message
         this.toast.error(err.error?.message || 'Failed to save risk company');
         this.submitting = false;
         this.cdr.markForCheck();
@@ -1890,7 +2040,8 @@ export class MastersComponent implements OnInit {
           this.toast.success('Risk Company deleted successfully');
           this.loadData();
         },
-        error: (err: any) => {
+        error: (err: HttpErrorLike) => {
+          // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- '' should also fall back to the default message
           this.toast.error(err.error?.message || 'Failed to delete risk company');
         },
       });
@@ -1907,6 +2058,7 @@ export class MastersComponent implements OnInit {
   // ==========================================
   openNotesModal(title: string, text: string | null | undefined): void {
     this.notesModalTitle = title;
+    // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- '' should also show the default "no notes" text
     this.notesModalText = text || 'No notes available.';
     this.showNotesModal = true;
   }
@@ -1953,7 +2105,7 @@ export class MastersComponent implements OnInit {
     this.treatyForm = {
       treaty_code: '',
       name: '',
-      mga_id: mgaId || '',
+      mga_id: mgaId ?? '',
       reinsurer_id: null,
       risk_company_id: null,
       effective_date: '',
@@ -1993,13 +2145,13 @@ export class MastersComponent implements OnInit {
     this.treatyModalTitle = `Edit Treaty: ${treaty.treaty_code}`;
     this.loadTreatyOptions();
 
-    let carriers: any[] = [];
+    let carriers: TreatyCarrier[] = [];
     if (treaty.treaty_carriers && treaty.treaty_carriers.length > 0) {
       carriers = [
         {
           risk_company_id: treaty.treaty_carriers[0].risk_company_id,
           retention_pct: treaty.treaty_carriers[0].retention_pct,
-        }
+        },
       ];
     } else if (treaty.risk_company_id) {
       carriers = [
@@ -2013,11 +2165,11 @@ export class MastersComponent implements OnInit {
         {
           risk_company_id: '',
           retention_pct: 100,
-        }
+        },
       ];
     }
 
-    let reinsurers: any[] = [];
+    let reinsurers: TreatyReinsurer[] = [];
     if (treaty.treaty_reinsurers && treaty.treaty_reinsurers.length > 0) {
       reinsurers = treaty.treaty_reinsurers.map(tr => ({
         reinsurer_id: tr.reinsurer_id,
@@ -2132,7 +2284,9 @@ export class MastersComponent implements OnInit {
       ...this.treatyForm,
       mga_id: mga_ids[0],
       mga_ids,
+      // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- '' should be sent as null, not an empty string
       effective_date: this.treatyForm.effective_date || null,
+      // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- '' should be sent as null, not an empty string
       expiration_date: this.treatyForm.expiration_date || null,
       state_ids,
       lobs,
@@ -2140,12 +2294,10 @@ export class MastersComponent implements OnInit {
       reinsurers,
     };
 
-    let request;
-    if (this.isEditMode) {
-      request = this.service.updateTreaty(this.treatyForm.id!, payload);
-    } else {
-      request = this.service.createTreaty(payload);
-    }
+    if (this.isEditMode && !this.treatyForm.id) return;
+    const request = this.isEditMode
+      ? this.service.updateTreaty(this.treatyForm.id as string, payload)
+      : this.service.createTreaty(payload);
 
     request.subscribe({
       next: () => {
@@ -2154,7 +2306,8 @@ export class MastersComponent implements OnInit {
         this.submitting = false;
         this.loadData();
       },
-      error: (err: any) => {
+      error: (err: HttpErrorLike) => {
+        // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- '' should also fall back to the default message
         this.toast.error(err.error?.message || 'Failed to save treaty');
         this.submitting = false;
         this.cdr.markForCheck();
@@ -2207,7 +2360,8 @@ export class MastersComponent implements OnInit {
           this.toast.success('Treaty deleted successfully');
           this.loadData();
         },
-        error: (err: any) => {
+        error: (err: HttpErrorLike) => {
+          // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- an empty error message should also fall back to the default
           this.toast.error(err.error?.message || 'Failed to delete treaty');
         },
       });
@@ -2222,14 +2376,18 @@ export class MastersComponent implements OnInit {
         .filter(Boolean)
         .join(', ');
     }
+    // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- an empty string should also fall back to the placeholder/default shown here
     return treaty.mga?.name || '-';
   }
 
   getCarriersListDisplay(treaty: Treaty): string {
     if (treaty.treaty_carriers && treaty.treaty_carriers.length > 0) {
-      return treaty.treaty_carriers
-        .map(tc => `${tc.risk_company?.name || 'Unknown'} (${tc.retention_pct}%)`)
-        .join(', ');
+      return (
+        treaty.treaty_carriers
+          // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- an empty string should also fall back to the placeholder/default shown here
+          .map(tc => `${tc.risk_company?.name || 'Unknown'} (${tc.retention_pct}%)`)
+          .join(', ')
+      );
     }
     if (treaty.risk_company) {
       return `${treaty.risk_company.name} (${treaty.carrier_retention_pct ?? 100}%)`;
@@ -2323,7 +2481,7 @@ export class MastersComponent implements OnInit {
 
   exportToExcel(): void {
     let headers: string[] = [];
-    let rows: any[][] = [];
+    let rows: (string | number | null | undefined)[][] = [];
     let filename = '';
 
     switch (this.currentTab) {
@@ -2333,6 +2491,7 @@ export class MastersComponent implements OnInit {
           t.treaty_code,
           t.name,
           this.getMgasListDisplay(t),
+          // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- an empty string should also fall back to the placeholder/default shown here
           t.risk_company?.name || '-',
           this.getStatesListDisplay(t.treaty_states),
           this.getLobsListDisplay(t.treaty_lobs),
@@ -2379,13 +2538,19 @@ export class MastersComponent implements OnInit {
         ];
         rows = this.riskCompanies.map(r => [
           r.company_id,
+          // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- an empty string should also fall back to the placeholder/default shown here
           r.id_name || '-',
           r.name,
+          // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- an empty string should also fall back to the placeholder/default shown here
           r.phone || '-',
           r.is_admitted ? 'Yes' : 'No',
+          // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- an empty string should also fall back to the placeholder/default shown here
           r.state || '-',
+          // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- an empty string should also fall back to the placeholder/default shown here
           r.address || '-',
+          // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- an empty string should also fall back to the placeholder/default shown here
           r.zip || '-',
+          // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- an empty string should also fall back to the placeholder/default shown here
           r.city || '-',
           r.is_active ? 'Active' : 'Inactive',
         ]);
@@ -2409,6 +2574,7 @@ export class MastersComponent implements OnInit {
           l.priority,
           l.fully_earned ? 'Yes' : 'No',
           l.is_active ? 'Active' : 'Inactive',
+          // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- an empty string should also fall back to the placeholder/default shown here
           l.description || '-',
         ]);
         filename = 'lobs.csv';
@@ -2428,11 +2594,13 @@ export class MastersComponent implements OnInit {
         rows = this.cobs.map(c => [
           c.cob_code,
           c.name,
+          // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- an empty string should also fall back to the placeholder/default shown here
           c.type || '-',
           c.taxable ? 'Yes' : 'No',
           c.priority,
           c.fully_earned ? 'Yes' : 'No',
           c.is_active ? 'Active' : 'Inactive',
+          // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- an empty string should also fall back to the placeholder/default shown here
           c.description || '-',
         ]);
         filename = 'cobs.csv';
@@ -2459,6 +2627,7 @@ export class MastersComponent implements OnInit {
         rows = this.documentTypes.map(d => [
           d.code,
           d.name,
+          // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- an empty string should also fall back to the placeholder/default shown here
           d.description || '-',
           d.isActive ? 'Active' : 'Inactive',
         ]);
@@ -2466,13 +2635,25 @@ export class MastersComponent implements OnInit {
         break;
 
       case 'sequence-prefix-counters':
-        headers = ['Code', 'Name', 'Prefix', 'Next Value', 'Padding Width', 'Description', 'Status'];
+        headers = [
+          'Code',
+          'Name',
+          'Prefix',
+          'Next Value',
+          'Padding Width',
+          'Description',
+          'Status',
+        ];
         rows = this.sequencePrefixCounters.map(s => [
           s.code,
           s.name,
+          // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- an empty string should also fall back to the placeholder/default shown here
           s.prefix || '-',
-          s.next_value !== undefined ? s.next_value : (s.nextValue || 1),
-          s.padding_width !== undefined ? s.padding_width : (s.paddingWidth || 4),
+          // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- an empty string should also fall back to the placeholder/default shown here
+          s.next_value !== undefined ? s.next_value : s.nextValue || 1,
+          // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- an empty string should also fall back to the placeholder/default shown here
+          s.padding_width !== undefined ? s.padding_width : s.paddingWidth || 4,
+          // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- an empty string should also fall back to the placeholder/default shown here
           s.description || '-',
           s.isActive ? 'Active' : 'Inactive',
         ]);
@@ -2483,7 +2664,11 @@ export class MastersComponent implements OnInit {
     this.downloadCSV(headers, rows, filename);
   }
 
-  private downloadCSV(headers: string[], rows: any[][], filename: string): void {
+  private downloadCSV(
+    headers: string[],
+    rows: (string | number | null | undefined)[][],
+    filename: string,
+  ): void {
     const csvContent = [
       headers.map(h => `"${h.replace(/"/g, '""')}"`).join(','),
       ...rows.map(row =>
@@ -2517,8 +2702,8 @@ export class MastersComponent implements OnInit {
           const term = this.searchTerm.toLowerCase();
           this.glMappings = data.filter(m => {
             const typeMatch = m.type.toLowerCase().includes(term);
-            const code = m.coa?.account_code?.toString() || '';
-            const desc = m.coa?.description?.toLowerCase() || '';
+            const code = m.coa?.account_code?.toString() ?? '';
+            const desc = m.coa?.description?.toLowerCase() ?? '';
             return typeMatch || code.includes(term) || desc.includes(term);
           });
         } else {
@@ -2595,6 +2780,7 @@ export class MastersComponent implements OnInit {
           this.loadGlMappings();
         },
         error: err => {
+          // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- an empty string should also fall back to the placeholder/default shown here
           const msg = err.error?.message || 'Failed to update GL mapping';
           this.toast.error(msg);
           this.submitting = false;
@@ -2610,6 +2796,7 @@ export class MastersComponent implements OnInit {
           this.loadGlMappings();
         },
         error: err => {
+          // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- an empty string should also fall back to the placeholder/default shown here
           const msg = err.error?.message || 'Failed to create GL mapping';
           this.toast.error(msg);
           this.submitting = false;
@@ -2641,6 +2828,7 @@ export class MastersComponent implements OnInit {
 
   getTreatyStatus(programName?: string): string {
     if (!programName) return 'Draft';
+    // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- an empty string should also fall back to the placeholder/default shown here
     return this.treatyWorkbookStatuses.get(programName) || 'Pending';
   }
 
@@ -2649,25 +2837,26 @@ export class MastersComponent implements OnInit {
     return `${mapping.coa.account_code} - ${mapping.coa.description}`;
   }
 
-  selectedTreatyForUpload: any = null;
+  selectedTreatyForUpload: Treaty | null = null;
 
-  triggerTreatyMonthlyUpload(treaty: any): void {
+  triggerTreatyMonthlyUpload(treaty: Treaty): void {
     this.selectedTreatyForUpload = treaty;
     if (this.monthlyExcelInput?.nativeElement) {
       this.monthlyExcelInput.nativeElement.click();
     }
   }
 
-  triggerTreatyITDUpload(treaty: any): void {
+  triggerTreatyITDUpload(treaty: Treaty): void {
     this.selectedTreatyForUpload = treaty;
     if (this.itdExcelInput?.nativeElement) {
       this.itdExcelInput.nativeElement.click();
     }
   }
 
-  onTreatyMonthlyUpload(event: any): void {
-    if (event.target.files && event.target.files.length > 0 && this.selectedTreatyForUpload) {
-      const file = event.target.files[0];
+  onTreatyMonthlyUpload(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files.length > 0 && this.selectedTreatyForUpload) {
+      const file = input.files[0];
       const programName = this.selectedTreatyForUpload.name;
       this.toast.info(`Uploading monthly exhibit for treaty: ${programName}...`);
 
@@ -2675,22 +2864,23 @@ export class MastersComponent implements OnInit {
         next: () => {
           this.toast.success(`Successfully uploaded monthly exhibit for ${programName}.`);
           this.selectedTreatyForUpload = null;
-          event.target.value = '';
+          input.value = '';
           this.loadData();
         },
         error: err => {
-          const msg = err.error?.message || 'Failed to upload monthly exhibit';
+          const msg = err.error?.message ?? 'Failed to upload monthly exhibit';
           this.toast.error(msg);
           this.selectedTreatyForUpload = null;
-          event.target.value = '';
+          input.value = '';
         },
       });
     }
   }
 
-  onTreatyITDUpload(event: any): void {
-    if (event.target.files && event.target.files.length > 0 && this.selectedTreatyForUpload) {
-      const file = event.target.files[0];
+  onTreatyITDUpload(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files.length > 0 && this.selectedTreatyForUpload) {
+      const file = input.files[0];
       const programName = this.selectedTreatyForUpload.name;
       this.toast.info(`Uploading and seeding ITD baseline for treaty: ${programName}...`);
 
@@ -2700,19 +2890,19 @@ export class MastersComponent implements OnInit {
             `ITD baseline reserves uploaded and seeded for ${programName} successfully.`,
           );
           this.selectedTreatyForUpload = null;
-          event.target.value = '';
+          input.value = '';
           this.loadData();
         },
         error: err => {
-          const msg = err.error?.message || 'Failed to seed ITD baseline';
+          const msg = err.error?.message ?? 'Failed to seed ITD baseline';
           this.toast.error(msg);
           this.selectedTreatyForUpload = null;
-          event.target.value = '';
+          input.value = '';
         },
       });
     }
   }
-  openAddItdModal(treaty: any): void {
+  openAddItdModal(treaty: Treaty): void {
     this.selectedTreatyForItd = treaty;
     this.itdForm.program = treaty.name;
     this.itdSelectedMonth = '12';
@@ -2720,19 +2910,19 @@ export class MastersComponent implements OnInit {
     this.itdForm.month_key = '2025-12';
     this.itdForm.month_label = 'December 2025';
 
-    const states = (treaty.treaty_states || [])
-      .map((s: any) => {
-        const code = s.state?.state_code || s.state_code;
-        const abbr = s.state?.state_abbr || s.state_code;
+    const states: ItdStateOption[] = (treaty.treaty_states ?? [])
+      .map((s: TreatyState) => {
+        const code = s.state?.state_code ?? '';
+        const abbr = s.state?.state_abbr ?? String(code);
         return { code: String(code), label: String(abbr) };
       })
-      .filter((s: any) => s.code);
+      .filter((s: ItdStateOption) => s.code);
 
     this.itdStatesList = [
       { code: 'TOTAL', label: 'TOTAL' },
       ...states
-        .filter((s: any) => s.code !== 'TOTAL')
-        .sort((a: any, b: any) => a.label.localeCompare(b.label)),
+        .filter((s: ItdStateOption) => s.code !== 'TOTAL')
+        .sort((a: ItdStateOption, b: ItdStateOption) => a.label.localeCompare(b.label)),
     ];
     this.itdSelectedStateCode = 'TOTAL';
 
@@ -2754,15 +2944,15 @@ export class MastersComponent implements OnInit {
     if (wbId) {
       this.reinsuranceService.getWorkbook(wbId).subscribe({
         next: wbDetail => {
-          const exhibits = wbDetail.stateExhibits || wbDetail.state_exhibits || [];
+          const exhibits = wbDetail.stateExhibits ?? wbDetail.state_exhibits ?? [];
 
-          const getVal = (val: any) => {
-            if (Array.isArray(val)) return Number(val[val.length - 1] || 0);
-            return Number(val || 0);
+          const getVal = (val: unknown): number => {
+            if (Array.isArray(val)) return Number(val[val.length - 1] ?? 0);
+            return Number(val ?? 0);
           };
 
           for (const se of exhibits) {
-            const stateCode = String(se.stateCode || se.state_code);
+            const stateCode = String(se.stateCode ?? se.state_code);
             if (stateCode && this.itdForm.exhibits[stateCode]) {
               this.itdForm.exhibits[stateCode] = {
                 uep: getVal(se.uep),
@@ -2798,14 +2988,14 @@ export class MastersComponent implements OnInit {
       const ex = this.itdForm.exhibits[code];
       return {
         state_code: code,
-        uep: Number(ex.uep || 0),
-        loss_reserves: Number(ex.loss_reserves || 0),
-        loss_ibnr: Number(ex.loss_ibnr || 0),
-        lae_reserves_dcc: Number(ex.lae_reserves_dcc || 0),
-        lae_ibnr_dcc: Number(ex.lae_ibnr_dcc || 0),
-        lae_reserves_aoe: Number(ex.lae_reserves_aoe || 0),
-        lae_ibnr_aoe: Number(ex.lae_ibnr_aoe || 0),
-        ulae_ibnr: Number(ex.ulae_ibnr || 0),
+        uep: Number(ex.uep ?? 0),
+        loss_reserves: Number(ex.loss_reserves ?? 0),
+        loss_ibnr: Number(ex.loss_ibnr ?? 0),
+        lae_reserves_dcc: Number(ex.lae_reserves_dcc ?? 0),
+        lae_ibnr_dcc: Number(ex.lae_ibnr_dcc ?? 0),
+        lae_reserves_aoe: Number(ex.lae_reserves_aoe ?? 0),
+        lae_ibnr_aoe: Number(ex.lae_ibnr_aoe ?? 0),
+        ulae_ibnr: Number(ex.ulae_ibnr ?? 0),
       };
     });
 
@@ -2824,6 +3014,7 @@ export class MastersComponent implements OnInit {
         this.loadData();
       },
       error: err => {
+        // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- an empty string should also fall back to the placeholder/default shown here
         this.toast.error(err.error?.message || 'Failed to save manual ITD baseline');
       },
     });
@@ -2841,6 +3032,7 @@ export class MastersComponent implements OnInit {
         this.loadData();
       },
       error: err => {
+        // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- an empty string should also fall back to the placeholder/default shown here
         this.toast.error(err.error?.message || 'Failed to lock period');
         this.submitting = false;
         this.cdr.markForCheck();
@@ -2856,6 +3048,7 @@ export class MastersComponent implements OnInit {
         this.loadData();
       },
       error: err => {
+        // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- an empty string should also fall back to the placeholder/default shown here
         this.toast.error(err.error?.message || `Failed to ${lock ? 'lock' : 'unlock'} period`);
       },
     });

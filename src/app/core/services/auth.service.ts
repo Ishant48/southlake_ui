@@ -8,6 +8,22 @@ import { environment } from '../../../environments/environment';
 const SESSION_TOKEN_KEY = 'sl_session_token';
 const CURRENT_USER_KEY = 'sl_current_user';
 
+interface AuthPermission {
+  action?: string;
+  module_id?: string;
+  [key: string]: unknown;
+}
+
+interface AuthUser {
+  name?: string;
+  email?: string;
+  role?: string | { name?: string };
+  is_super_admin?: boolean;
+  effective_permissions?: string[];
+  permissions?: (string | AuthPermission)[];
+  [key: string]: unknown;
+}
+
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private http = inject(HttpClient);
@@ -31,7 +47,7 @@ export class AuthService {
     });
   }
 
-  storeSession(data: { session_token?: string; user?: any }): void {
+  storeSession(data: { session_token?: string; user?: AuthUser }): void {
     if (data.session_token) {
       localStorage.setItem(SESSION_TOKEN_KEY, data.session_token);
     }
@@ -48,11 +64,11 @@ export class AuthService {
     return localStorage.getItem(SESSION_TOKEN_KEY);
   }
 
-  getCurrentUser(): any {
+  getCurrentUser(): AuthUser | null {
     const raw = localStorage.getItem(CURRENT_USER_KEY);
     if (!raw) return null;
     try {
-      return JSON.parse(raw);
+      return JSON.parse(raw) as AuthUser;
     } catch {
       return null;
     }
@@ -63,10 +79,8 @@ export class AuthService {
     if (!user) return false;
 
     // Super Admin has full access unconditionally
-    if (
-      user.role &&
-      (user.role === 'superadmin' || user.role.name === 'superadmin' || user.is_super_admin)
-    ) {
+    const roleName = typeof user.role === 'string' ? user.role : user.role?.name;
+    if (roleName === 'superadmin' || user.is_super_admin) {
       return true;
     }
 
@@ -79,10 +93,11 @@ export class AuthService {
         return (
           user.permissions.includes(moduleOrPermission) ||
           user.permissions.some(
-            (p: any) => typeof p === 'object' && p.action === moduleOrPermission,
+            (p: string | AuthPermission) =>
+              typeof p === 'object' && p.action === moduleOrPermission,
           ) ||
           user.permissions.some(
-            (p: any) =>
+            (p: string | AuthPermission) =>
               typeof p === 'object' && `${p.module_id}.${p.action}` === moduleOrPermission,
           )
         );
@@ -103,15 +118,18 @@ export class AuthService {
 
     // If permissions is an array of objects
     if (Array.isArray(user.permissions)) {
-      const modulePerm = user.permissions.find((p: any) => p.module_id === moduleOrPermission);
+      const modulePerm = user.permissions.find(
+        (p: string | AuthPermission) => typeof p === 'object' && p.module_id === moduleOrPermission,
+      );
       if (modulePerm && typeof modulePerm === 'object') {
         return !!modulePerm[action];
       }
       // If it's flat permissions object array returned by akhil's service
       return user.permissions.some(
-        (p: any) =>
-          p.action === `${moduleOrPermission}.${action}` ||
-          (p.module_id === moduleOrPermission && p.action === action),
+        (p: string | AuthPermission) =>
+          typeof p === 'object' &&
+          (p.action === `${moduleOrPermission}.${action}` ||
+            (p.module_id === moduleOrPermission && p.action === action)),
       );
     }
 
@@ -144,7 +162,7 @@ export class AuthService {
     });
   }
 
-  fetchCurrentUser(): Observable<any> {
-    return this.http.get<any>(`${environment.apiUrl}/auth/me`);
+  fetchCurrentUser(): Observable<AuthUser> {
+    return this.http.get<AuthUser>(`${environment.apiUrl}/auth/me`);
   }
 }

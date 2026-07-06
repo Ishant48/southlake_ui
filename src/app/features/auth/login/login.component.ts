@@ -11,7 +11,7 @@ import { AuthService } from '../../../core/services/auth.service';
   styleUrl: './login.component.scss',
 })
 export class LoginComponent implements OnInit, OnDestroy {
-  private autofillIntervalId: any;
+  private autofillIntervalId: ReturnType<typeof setInterval> | undefined;
   private fb = inject(FormBuilder);
   private auth = inject(AuthService);
   private router = inject(Router);
@@ -50,13 +50,10 @@ export class LoginComponent implements OnInit, OnDestroy {
   inviteError = '';
 
   ngOnInit(): void {
-    console.log('LoginComponent: ngOnInit called');
     this.route.queryParams.subscribe(params => {
-      console.log('LoginComponent: queryParams emitted:', params);
       const token = params['token'];
       if (token) {
         if (this.inviteToken === token && this.isInviteFlow) {
-          console.log('LoginComponent: Token already processed, ignoring emission');
           return;
         }
         this.inviteToken = token;
@@ -71,13 +68,13 @@ export class LoginComponent implements OnInit, OnDestroy {
       const passwordEl = document.getElementById('password') as HTMLInputElement;
       let changed = false;
 
-      if (emailEl && emailEl.value && this.form.get('email')?.value !== emailEl.value) {
+      if (emailEl?.value && this.form.get('email')?.value !== emailEl.value) {
         this.form.get('email')?.setValue(emailEl.value);
         this.form.get('email')?.markAsDirty();
         this.form.get('email')?.markAsTouched();
         changed = true;
       }
-      if (passwordEl && passwordEl.value && this.form.get('password')?.value !== passwordEl.value) {
+      if (passwordEl?.value && this.form.get('password')?.value !== passwordEl.value) {
         this.form.get('password')?.setValue(passwordEl.value);
         this.form.get('password')?.markAsDirty();
         this.form.get('password')?.markAsTouched();
@@ -91,12 +88,10 @@ export class LoginComponent implements OnInit, OnDestroy {
   }
 
   loadInviteDetails(token: string): void {
-    console.log('LoginComponent: loadInviteDetails called with token:', token);
     this.inviteLoading = true;
     this.inviteError = '';
     this.auth.getInviteDetails(token).subscribe({
       next: details => {
-        console.log('LoginComponent: loadInviteDetails success:', details);
         this.inviteLoading = false;
         this.inviteEmail = details.email;
         this.inviteName = details.name;

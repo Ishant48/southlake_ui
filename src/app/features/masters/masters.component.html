@@ -15,12 +15,51 @@
         <button class="btn-primary" (click)="openRiskCompanyAdd()">Add Risk Company</button>
       } @else if (currentTab === "gl-mappings") {
         <button class="btn-primary" (click)="openGlMappingAdd()">Add Mapping</button>
-      } @else if (currentTab === "lobs" || currentTab === "cobs" || currentTab === "reinsurers" || currentTab === "brokers" || currentTab === "products" || currentTab === "document-types" || currentTab === "sequence-prefix-counters") {
+      } @else if (
+        currentTab === "lobs" ||
+        currentTab === "cobs" ||
+        currentTab === "reinsurers" ||
+        currentTab === "brokers" ||
+        currentTab === "products" ||
+        currentTab === "document-types" ||
+        currentTab === "sequence-prefix-counters"
+      ) {
         <button
           class="btn-primary"
-          (click)="openSimpleAdd(currentTab === 'lobs' ? 'lob' : currentTab === 'cobs' ? 'cob' : currentTab === 'reinsurers' ? 'reinsurer' : currentTab === 'brokers' ? 'broker' : currentTab === 'products' ? 'product' : currentTab === 'document-types' ? 'document-type' : 'sequence-prefix-counter')"
+          (click)="
+            openSimpleAdd(
+              currentTab === 'lobs'
+                ? 'lob'
+                : currentTab === 'cobs'
+                  ? 'cob'
+                  : currentTab === 'reinsurers'
+                    ? 'reinsurer'
+                    : currentTab === 'brokers'
+                      ? 'broker'
+                      : currentTab === 'products'
+                        ? 'product'
+                        : currentTab === 'document-types'
+                          ? 'document-type'
+                          : 'sequence-prefix-counter'
+            )
+          "
         >
-          Add {{ currentTab === "lobs" ? "LOB" : currentTab === "cobs" ? "COB" : currentTab === "reinsurers" ? "Reinsurer" : currentTab === "brokers" ? "Broker" : currentTab === "products" ? "Product" : currentTab === "document-types" ? "Document Type" : "Sequence Counter" }}
+          Add
+          {{
+            currentTab === "lobs"
+              ? "LOB"
+              : currentTab === "cobs"
+                ? "COB"
+                : currentTab === "reinsurers"
+                  ? "Reinsurer"
+                  : currentTab === "brokers"
+                    ? "Broker"
+                    : currentTab === "products"
+                      ? "Product"
+                      : currentTab === "document-types"
+                        ? "Document Type"
+                        : "Sequence Counter"
+          }}
         </button>
       } @else if (currentTab === "locked-periods") {
         <button class="btn-primary" (click)="openLockPeriodAdd()">Lock Period</button>
@@ -43,9 +82,7 @@
     <button class="tab-link" [class.active]="currentTab === 'risk-companies'" (click)="selectTab('risk-companies')">
       Risk Companies
     </button>
-    <button class="tab-link" [class.active]="currentTab === 'brokers'" (click)="selectTab('brokers')">
-      Brokers
-    </button>
+    <button class="tab-link" [class.active]="currentTab === 'brokers'" (click)="selectTab('brokers')">Brokers</button>
     <button class="tab-link" [class.active]="currentTab === 'products'" (click)="selectTab('products')">
       Products
     </button>
@@ -55,7 +92,11 @@
     <button class="tab-link" [class.active]="currentTab === 'document-types'" (click)="selectTab('document-types')">
       Document Types
     </button>
-    <button class="tab-link" [class.active]="currentTab === 'sequence-prefix-counters'" (click)="selectTab('sequence-prefix-counters')">
+    <button
+      class="tab-link"
+      [class.active]="currentTab === 'sequence-prefix-counters'"
+      (click)="selectTab('sequence-prefix-counters')"
+    >
       Sequence Counters
     </button>
     <button class="tab-link" [class.active]="currentTab === 'gl-mappings'" (click)="selectTab('gl-mappings')">
@@ -183,8 +224,13 @@
 
   <!-- SIMPLE MASTER CREATE / EDIT MODAL -->
   @if (showSimpleModal) {
+    <!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events, @angular-eslint/template/interactive-supports-focus -- backdrop click-to-dismiss / stopPropagation guard, not an interactive control; keyboard dismissal is handled via Escape at the dialog level -->
     <div class="modal-overlay" (click)="$event.target === $event.currentTarget && (showSimpleModal = false)">
-      <div class="modal-box {{ simpleMode === 'lob' || simpleMode === 'cob' || simpleMode === 'product' ? 'treaty-modal' : 'coa-modal' }}">
+      <div
+        class="modal-box {{
+          simpleMode === 'lob' || simpleMode === 'cob' || simpleMode === 'product' ? 'treaty-modal' : 'coa-modal'
+        }}"
+      >
         <div class="panel-header">
           <h3 class="panel-title">{{ simpleModalTitle }}</h3>
           <button class="panel-close" (click)="showSimpleModal = false" aria-label="Close modal">
@@ -198,10 +244,23 @@
         <form (submit)="submitSimple()" class="panel-body" style="max-height: calc(100vh - 200px); overflow-y: auto">
           <div class="form-row">
             <div class="form-field">
-              <label class="form-label">
-                {{ simpleMode === "lob" ? "LOB ID *" : simpleMode === "cob" ? "Class ID *" : simpleMode === "broker" ? "Broker Code *" : simpleMode === "product" ? "Product ID *" : simpleMode === "sequence-prefix-counter" ? "Sequence Code *" : "Code ID *" }}
+              <label for="m-code" class="form-label">
+                {{
+                  simpleMode === "lob"
+                    ? "LOB ID *"
+                    : simpleMode === "cob"
+                      ? "Class ID *"
+                      : simpleMode === "broker"
+                        ? "Broker Code *"
+                        : simpleMode === "product"
+                          ? "Product ID *"
+                          : simpleMode === "sequence-prefix-counter"
+                            ? "Sequence Code *"
+                            : "Code ID *"
+                }}
               </label>
               <input
+                id="m-code"
                 [(ngModel)]="simpleForm.code"
                 name="code"
                 type="text"
@@ -212,10 +271,23 @@
               />
             </div>
             <div class="form-field">
-              <label class="form-label">
-                {{ simpleMode === "lob" ? "LOB Name *" : simpleMode === "cob" ? "Class Name *" : simpleMode === "broker" ? "Broker Name *" : simpleMode === "product" ? "Product Name *" : simpleMode === "sequence-prefix-counter" ? "Sequence Name *" : "Name *" }}
+              <label for="m-name" class="form-label">
+                {{
+                  simpleMode === "lob"
+                    ? "LOB Name *"
+                    : simpleMode === "cob"
+                      ? "Class Name *"
+                      : simpleMode === "broker"
+                        ? "Broker Name *"
+                        : simpleMode === "product"
+                          ? "Product Name *"
+                          : simpleMode === "sequence-prefix-counter"
+                            ? "Sequence Name *"
+                            : "Name *"
+                }}
               </label>
               <input
+                id="m-name"
                 [(ngModel)]="simpleForm.name"
                 name="name"
                 type="text"
@@ -230,8 +302,9 @@
           @if (simpleMode === "broker") {
             <div class="form-row" style="margin-top: 8px">
               <div class="form-field">
-                <label class="form-label">Contact Name</label>
+                <label for="m-contact-name" class="form-label">Contact Name</label>
                 <input
+                  id="m-contact-name"
                   [(ngModel)]="simpleForm.contact_name"
                   name="contact_name"
                   type="text"
@@ -240,8 +313,9 @@
                 />
               </div>
               <div class="form-field">
-                <label class="form-label">Contact Phone</label>
+                <label for="m-contact-phone" class="form-label">Contact Phone</label>
                 <input
+                  id="m-contact-phone"
                   [(ngModel)]="simpleForm.contact_phone"
                   name="contact_phone"
                   type="text"
@@ -252,8 +326,9 @@
             </div>
             <div class="form-row" style="margin-top: 8px">
               <div class="form-field">
-                <label class="form-label">Contact Email</label>
+                <label for="m-contact-email" class="form-label">Contact Email</label>
                 <input
+                  id="m-contact-email"
                   [(ngModel)]="simpleForm.contact_email"
                   name="contact_email"
                   type="email"
@@ -267,7 +342,7 @@
           @if (simpleMode === "product") {
             <div class="form-row" style="margin-top: 8px">
               <div class="form-field">
-                <label class="form-label">Line of Business *</label>
+                <span class="form-label">Line of Business *</span>
                 <app-dropdown-search
                   [items]="lobOptions"
                   [isMultiSelect]="false"
@@ -275,11 +350,11 @@
                   placeholder="Select LOB"
                   [itemLabelFn]="lobLabelFn"
                   [selectedValue]="simpleForm.lob_id"
-                  (selectedValueChange)="simpleForm.lob_id = $event; onProductLobCobChange()"
+                  (selectedValueChange)="simpleForm.lob_id = $any($event); onProductLobCobChange()"
                 ></app-dropdown-search>
               </div>
               <div class="form-field">
-                <label class="form-label">Class of Business *</label>
+                <label for="m-description" class="form-label">Class of Business *</label>
                 <app-dropdown-search
                   [items]="cobOptions"
                   [isMultiSelect]="false"
@@ -287,14 +362,15 @@
                   placeholder="Select COB"
                   [itemLabelFn]="cobLabelFn"
                   [selectedValue]="simpleForm.cob_id"
-                  (selectedValueChange)="simpleForm.cob_id = $event; onProductLobCobChange()"
+                  (selectedValueChange)="simpleForm.cob_id = $any($event); onProductLobCobChange()"
                 ></app-dropdown-search>
               </div>
             </div>
             <div class="form-row" style="margin-top: 8px">
               <div class="form-field">
-                <label class="form-label">Description</label>
+                <label for="m-description-2" class="form-label">Description</label>
                 <textarea
+                  id="m-description"
                   [(ngModel)]="simpleForm.description"
                   name="description"
                   placeholder="Product description..."
@@ -309,7 +385,7 @@
             <div class="form-row" style="margin-top: 8px">
               @if (simpleMode === "cob") {
                 <div class="form-field">
-                  <label class="form-label">Class Type</label>
+                  <label for="m-priority" class="form-label">Class Type</label>
                   <app-dropdown-search
                     [items]="simpleFormTypeOptions"
                     [isMultiSelect]="false"
@@ -321,8 +397,9 @@
                 </div>
               }
               <div class="form-field">
-                <label class="form-label">Priority</label>
+                <label for="m-priority-2" class="form-label">Priority</label>
                 <input
+                  id="m-priority"
                   [(ngModel)]="simpleForm.priority"
                   name="priority"
                   type="number"
@@ -334,10 +411,10 @@
 
             <div class="form-row" style="margin-top: 8px">
               <div class="form-field">
-                <label class="form-label">Taxable</label>
+                <label for="m-taxable" class="form-label">Taxable</label>
                 <div class="radio-group">
                   <label>
-                    <input type="radio" [value]="true" [(ngModel)]="simpleForm.taxable" name="taxable" />
+                    <input id="m-taxable" type="radio" [value]="true" [(ngModel)]="simpleForm.taxable" name="taxable" />
                     Yes
                   </label>
                   <label>
@@ -347,10 +424,16 @@
                 </div>
               </div>
               <div class="form-field">
-                <label class="form-label">Fully Earned</label>
+                <label for="m-fullyearned" class="form-label">Fully Earned</label>
                 <div class="radio-group">
                   <label>
-                    <input type="radio" [value]="true" [(ngModel)]="simpleForm.fully_earned" name="fullyEarned" />
+                    <input
+                      id="m-fullyearned"
+                      type="radio"
+                      [value]="true"
+                      [(ngModel)]="simpleForm.fully_earned"
+                      name="fullyEarned"
+                    />
                     Yes
                   </label>
                   <label>
@@ -363,8 +446,9 @@
 
             <div class="form-row" style="margin-top: 8px">
               <div class="form-field">
-                <label class="form-label">Description</label>
+                <label for="m-description-3" class="form-label">Description</label>
                 <textarea
+                  id="m-description-3"
                   [(ngModel)]="simpleForm.description"
                   name="description"
                   placeholder="Description details..."
@@ -378,8 +462,9 @@
           @if (simpleMode === "sequence-prefix-counter") {
             <div class="form-row" style="margin-top: 8px">
               <div class="form-field">
-                <label class="form-label">Prefix</label>
+                <label for="m-prefix" class="form-label">Prefix</label>
                 <input
+                  id="m-prefix"
                   [(ngModel)]="simpleForm.prefix"
                   name="prefix"
                   type="text"
@@ -390,8 +475,9 @@
             </div>
             <div class="form-row" style="margin-top: 8px">
               <div class="form-field">
-                <label class="form-label">Next Value *</label>
+                <label for="m-next-value" class="form-label">Next Value *</label>
                 <input
+                  id="m-next-value"
                   [(ngModel)]="simpleForm.next_value"
                   name="next_value"
                   type="number"
@@ -401,8 +487,9 @@
                 />
               </div>
               <div class="form-field">
-                <label class="form-label">Padding Width *</label>
+                <label for="m-padding-width" class="form-label">Padding Width *</label>
                 <input
+                  id="m-padding-width"
                   [(ngModel)]="simpleForm.padding_width"
                   name="padding_width"
                   type="number"
@@ -414,8 +501,9 @@
             </div>
             <div class="form-row" style="margin-top: 8px">
               <div class="form-field">
-                <label class="form-label">Description</label>
+                <label for="m-description-4" class="form-label">Description</label>
                 <textarea
+                  id="m-description-4"
                   [(ngModel)]="simpleForm.description"
                   name="description"
                   placeholder="Description..."
@@ -451,6 +539,7 @@
 
   <!-- MGA CREATE / EDIT MODAL -->
   @if (showMgaModal) {
+    <!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events, @angular-eslint/template/interactive-supports-focus -- backdrop click-to-dismiss / stopPropagation guard, not an interactive control; keyboard dismissal is handled via Escape at the dialog level -->
     <div class="modal-overlay" (click)="$event.target === $event.currentTarget && (showMgaModal = false)">
       <div class="modal-box treaty-modal">
         <div class="panel-header">
@@ -468,8 +557,9 @@
           <div class="form-section-title" style="margin-top: 0">Names Info</div>
           <div class="form-row">
             <div class="form-field">
-              <label class="form-label">Company ID</label>
+              <label for="m-companyid" class="form-label">Company ID</label>
               <input
+                id="m-companyid"
                 [(ngModel)]="mgaForm.company_id"
                 name="companyId"
                 type="number"
@@ -478,12 +568,20 @@
               />
             </div>
             <div class="form-field">
-              <label class="form-label">ID Name</label>
-              <input [(ngModel)]="mgaForm.id_name" name="idName" type="text" placeholder="ID Name" class="form-input" />
+              <label for="m-idname" class="form-label">ID Name</label>
+              <input
+                id="m-idname"
+                [(ngModel)]="mgaForm.id_name"
+                name="idName"
+                type="text"
+                placeholder="ID Name"
+                class="form-input"
+              />
             </div>
             <div class="form-field">
-              <label class="form-label">Name *</label>
+              <label for="m-mganame" class="form-label">Name *</label>
               <input
+                id="m-mganame"
                 [(ngModel)]="mgaForm.name"
                 name="mgaName"
                 type="text"
@@ -495,8 +593,9 @@
           </div>
           <div class="form-row">
             <div class="form-field">
-              <label class="form-label">MGA Code *</label>
+              <label for="m-mgacode" class="form-label">MGA Code *</label>
               <input
+                id="m-mgacode"
                 [(ngModel)]="mgaForm.mga_code"
                 name="mgaCode"
                 type="text"
@@ -514,7 +613,7 @@
           @for (row of mgaForm.other_names; track $index) {
             <div class="form-row" style="align-items: flex-end; margin-bottom: 12px">
               <div class="form-field">
-                <label class="form-label">State</label>
+                <label for="m-otherdisplayname-index-" class="form-label">State</label>
                 <app-dropdown-search
                   [items]="stateOptions"
                   [isMultiSelect]="false"
@@ -525,8 +624,9 @@
                 ></app-dropdown-search>
               </div>
               <div class="form-field">
-                <label class="form-label">Display Name</label>
+                <label for="m-otherdisplayname-index--2" class="form-label">Display Name</label>
                 <input
+                  id="m-otherdisplayname-index-"
                   [(ngModel)]="row.displayName"
                   name="otherDisplayName_{{ $index }}"
                   type="text"
@@ -554,8 +654,9 @@
           <div class="form-section-title">Addresses & Other</div>
           <div class="form-row">
             <div class="form-field" style="flex: 2">
-              <label class="form-label">Address</label>
+              <label for="m-address" class="form-label">Address</label>
               <input
+                id="m-address"
                 [(ngModel)]="mgaForm.address"
                 name="address"
                 type="text"
@@ -564,18 +665,32 @@
               />
             </div>
             <div class="form-field">
-              <label class="form-label">Zip</label>
-              <input [(ngModel)]="mgaForm.zip" name="zip" type="text" placeholder="12345" class="form-input" />
+              <label for="m-zip" class="form-label">Zip</label>
+              <input
+                id="m-zip"
+                [(ngModel)]="mgaForm.zip"
+                name="zip"
+                type="text"
+                placeholder="12345"
+                class="form-input"
+              />
             </div>
           </div>
 
           <div class="form-row">
             <div class="form-field">
-              <label class="form-label">City</label>
-              <input [(ngModel)]="mgaForm.city" name="city" type="text" placeholder="City" class="form-input" />
+              <label for="m-city" class="form-label">City</label>
+              <input
+                id="m-city"
+                [(ngModel)]="mgaForm.city"
+                name="city"
+                type="text"
+                placeholder="City"
+                class="form-input"
+              />
             </div>
             <div class="form-field">
-              <label class="form-label">State</label>
+              <label for="m-phone" class="form-label">State</label>
               <app-dropdown-search
                 [items]="stateOptions"
                 [isMultiSelect]="false"
@@ -586,17 +701,24 @@
               ></app-dropdown-search>
             </div>
             <div class="form-field">
-              <label class="form-label">Phone</label>
-              <input [(ngModel)]="mgaForm.phone" name="phone" type="text" placeholder="555-0199" class="form-input" />
+              <label for="m-phone-2" class="form-label">Phone</label>
+              <input
+                id="m-phone"
+                [(ngModel)]="mgaForm.phone"
+                name="phone"
+                type="text"
+                placeholder="555-0199"
+                class="form-input"
+              />
             </div>
           </div>
 
           <div class="form-row">
             <div class="form-field">
-              <label class="form-label">Open Item</label>
+              <label for="m-openitem" class="form-label">Open Item</label>
               <div class="radio-group">
                 <label>
-                  <input type="radio" [value]="true" [(ngModel)]="mgaForm.open_item" name="openItem" />
+                  <input id="m-openitem" type="radio" [value]="true" [(ngModel)]="mgaForm.open_item" name="openItem" />
                   Yes
                 </label>
                 <label>
@@ -606,30 +728,64 @@
               </div>
             </div>
             <div class="form-field">
-              <label class="form-label">Op Start Date</label>
-              <input [(ngModel)]="mgaForm.op_start_date" name="opStartDate" type="date" class="form-input" />
+              <label for="m-opstartdate" class="form-label">Op Start Date</label>
+              <input
+                id="m-opstartdate"
+                [(ngModel)]="mgaForm.op_start_date"
+                name="opStartDate"
+                type="date"
+                class="form-input"
+              />
             </div>
           </div>
 
           <div class="form-row">
             <div class="form-field">
-              <label class="form-label">NAICS Code</label>
-              <input [(ngModel)]="mgaForm.naics_code" name="naicsCode" type="text" placeholder="e.g. 524126" class="form-input" />
+              <label for="m-naicscode" class="form-label">NAICS Code</label>
+              <input
+                id="m-naicscode"
+                [(ngModel)]="mgaForm.naics_code"
+                name="naicsCode"
+                type="text"
+                placeholder="e.g. 524126"
+                class="form-input"
+              />
             </div>
             <div class="form-field">
-              <label class="form-label">Contact Name</label>
-              <input [(ngModel)]="mgaForm.contact_name" name="contactName" type="text" placeholder="Contact Name" class="form-input" />
+              <label for="m-contactname" class="form-label">Contact Name</label>
+              <input
+                id="m-contactname"
+                [(ngModel)]="mgaForm.contact_name"
+                name="contactName"
+                type="text"
+                placeholder="Contact Name"
+                class="form-input"
+              />
             </div>
           </div>
 
           <div class="form-row">
             <div class="form-field">
-              <label class="form-label">Contact Email</label>
-              <input [(ngModel)]="mgaForm.contact_email" name="contactEmail" type="email" placeholder="contact@email.com" class="form-input" />
+              <label for="m-contactemail" class="form-label">Contact Email</label>
+              <input
+                id="m-contactemail"
+                [(ngModel)]="mgaForm.contact_email"
+                name="contactEmail"
+                type="email"
+                placeholder="contact@email.com"
+                class="form-input"
+              />
             </div>
             <div class="form-field">
-              <label class="form-label">Contact Phone</label>
-              <input [(ngModel)]="mgaForm.contact_phone" name="contactPhone" type="text" placeholder="Phone Number" class="form-input" />
+              <label for="m-contactphone" class="form-label">Contact Phone</label>
+              <input
+                id="m-contactphone"
+                [(ngModel)]="mgaForm.contact_phone"
+                name="contactPhone"
+                type="text"
+                placeholder="Phone Number"
+                class="form-input"
+              />
             </div>
           </div>
 
@@ -662,6 +818,7 @@
 
   <!-- STATE CREATE / EDIT MODAL -->
   @if (showStateModal) {
+    <!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events, @angular-eslint/template/interactive-supports-focus -- backdrop click-to-dismiss / stopPropagation guard, not an interactive control; keyboard dismissal is handled via Escape at the dialog level -->
     <div class="modal-overlay" (click)="$event.target === $event.currentTarget && (showStateModal = false)">
       <div class="modal-box coa-modal">
         <div class="panel-header">
@@ -677,8 +834,9 @@
         <form (submit)="submitState()" class="panel-body">
           <div class="form-row">
             <div class="form-field">
-              <label class="form-label">State Code (Numeric) *</label>
+              <label for="m-statecode" class="form-label">State Code (Numeric) *</label>
               <input
+                id="m-statecode"
                 [(ngModel)]="stateForm.state_code"
                 name="stateCode"
                 type="number"
@@ -689,8 +847,9 @@
               />
             </div>
             <div class="form-field">
-              <label class="form-label">State Abbr (2 Letters) *</label>
+              <label for="m-stateabbr" class="form-label">State Abbr (2 Letters) *</label>
               <input
+                id="m-stateabbr"
                 [(ngModel)]="stateForm.state_abbr"
                 name="stateAbbr"
                 type="text"
@@ -705,8 +864,9 @@
 
           <div class="form-row" style="margin-top: 8px">
             <div class="form-field">
-              <label class="form-label">State Name *</label>
+              <label for="m-statename" class="form-label">State Name *</label>
               <input
+                id="m-statename"
                 [(ngModel)]="stateForm.name"
                 name="stateName"
                 type="text"
@@ -719,8 +879,9 @@
 
           <div class="form-row" style="margin-top: 8px">
             <div class="form-field" style="flex: 1">
-              <label class="form-label">Notes</label>
+              <label for="m-notes" class="form-label">Notes</label>
               <textarea
+                id="m-notes"
                 [(ngModel)]="stateForm.notes"
                 name="notes"
                 placeholder="Enter notes here..."
@@ -755,6 +916,7 @@
 
   <!-- RISK COMPANY CREATE / EDIT MODAL -->
   @if (showRiskCompanyModal) {
+    <!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events, @angular-eslint/template/interactive-supports-focus -- backdrop click-to-dismiss / stopPropagation guard, not an interactive control; keyboard dismissal is handled via Escape at the dialog level -->
     <div class="modal-overlay" (click)="$event.target === $event.currentTarget && (showRiskCompanyModal = false)">
       <div class="modal-box treaty-modal">
         <div class="panel-header">
@@ -776,8 +938,9 @@
           <div class="form-section-title" style="margin-top: 0">Names Info</div>
           <div class="form-row">
             <div class="form-field">
-              <label class="form-label">Company ID</label>
+              <label for="m-companyid-2" class="form-label">Company ID</label>
               <input
+                id="m-companyid-2"
                 [(ngModel)]="riskCompanyForm.company_id"
                 name="companyId"
                 type="number"
@@ -787,8 +950,9 @@
               />
             </div>
             <div class="form-field">
-              <label class="form-label">ID Name</label>
+              <label for="m-idname-2" class="form-label">ID Name</label>
               <input
+                id="m-idname-2"
                 [(ngModel)]="riskCompanyForm.id_name"
                 name="idName"
                 type="text"
@@ -797,8 +961,9 @@
               />
             </div>
             <div class="form-field">
-              <label class="form-label">Name *</label>
+              <label for="m-name-2" class="form-label">Name *</label>
               <input
+                id="m-name-2"
                 [(ngModel)]="riskCompanyForm.name"
                 name="name"
                 type="text"
@@ -813,8 +978,9 @@
           <div class="form-section-title">Addresses & Other</div>
           <div class="form-row">
             <div class="form-field">
-              <label class="form-label">Address 1</label>
+              <label for="m-address-2" class="form-label">Address 1</label>
               <input
+                id="m-address-2"
                 [(ngModel)]="riskCompanyForm.address"
                 name="address"
                 type="text"
@@ -823,15 +989,29 @@
               />
             </div>
             <div class="form-field">
-              <label class="form-label">Zip</label>
-              <input [(ngModel)]="riskCompanyForm.zip" name="zip" type="text" placeholder="Zip" class="form-input" />
+              <label for="m-zip-2" class="form-label">Zip</label>
+              <input
+                id="m-zip-2"
+                [(ngModel)]="riskCompanyForm.zip"
+                name="zip"
+                type="text"
+                placeholder="Zip"
+                class="form-input"
+              />
             </div>
             <div class="form-field">
-              <label class="form-label">City</label>
-              <input [(ngModel)]="riskCompanyForm.city" name="city" type="text" placeholder="City" class="form-input" />
+              <label for="m-city-2" class="form-label">City</label>
+              <input
+                id="m-city-2"
+                [(ngModel)]="riskCompanyForm.city"
+                name="city"
+                type="text"
+                placeholder="City"
+                class="form-input"
+              />
             </div>
             <div class="form-field">
-              <label class="form-label">State</label>
+              <label for="m-phone-3" class="form-label">State</label>
               <app-dropdown-search
                 [items]="stateOptions"
                 [isMultiSelect]="false"
@@ -845,8 +1025,9 @@
 
           <div class="form-row" style="margin-top: 8px">
             <div class="form-field">
-              <label class="form-label">Phone</label>
+              <label for="m-phone-4" class="form-label">Phone</label>
               <input
+                id="m-phone-3"
                 [(ngModel)]="riskCompanyForm.phone"
                 name="phone"
                 type="text"
@@ -855,10 +1036,16 @@
               />
             </div>
             <div class="form-field">
-              <label class="form-label">Admitted</label>
+              <label for="m-isadmitted" class="form-label">Admitted</label>
               <div class="radio-group">
                 <label>
-                  <input type="radio" [value]="true" [(ngModel)]="riskCompanyForm.is_admitted" name="isAdmitted" />
+                  <input
+                    id="m-isadmitted"
+                    type="radio"
+                    [value]="true"
+                    [(ngModel)]="riskCompanyForm.is_admitted"
+                    name="isAdmitted"
+                  />
                   Yes
                 </label>
                 <label>
@@ -887,6 +1074,7 @@
 
   <!-- NOTES VIEW MODAL -->
   @if (showNotesModal) {
+    <!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events, @angular-eslint/template/interactive-supports-focus -- backdrop click-to-dismiss / stopPropagation guard, not an interactive control; keyboard dismissal is handled via Escape at the dialog level -->
     <div class="modal-overlay" (click)="$event.target === $event.currentTarget && (showNotesModal = false)">
       <div class="modal-box coa-modal">
         <div class="panel-header">
@@ -920,6 +1108,7 @@
 
   <!-- GENERIC DOCUMENT DRAWER -->
   @if (showDocModal) {
+    <!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events, @angular-eslint/template/interactive-supports-focus -- backdrop click-to-dismiss / stopPropagation guard, not an interactive control; keyboard dismissal is handled via Escape at the dialog level -->
     <div class="modal-overlay" (click)="$event.target === $event.currentTarget && (showDocModal = false)">
       <div class="modal-box coa-modal doc-modal">
         <div class="panel-header">
@@ -927,7 +1116,10 @@
             <h3 class="panel-title">Attachment Documents</h3>
             <p class="panel-subtitle" style="font-size: 12px; margin-top: 2px">
               Attachments for:
-              {{ selectedItem?.mga_code || selectedItem?.state_abbr || selectedItem?.risk_company_id }} -
+              {{
+                $any(selectedItem)?.mga_code || $any(selectedItem)?.state_abbr || $any(selectedItem)?.risk_company_id
+              }}
+              -
               {{ selectedItem?.name }}
             </p>
           </div>
@@ -940,13 +1132,30 @@
         </div>
 
         <div class="panel-body">
-          <div class="upload-section" style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px; border-bottom: 1px solid var(--gray-200); padding-bottom: 16px;">
-            <div style="display: flex; flex-direction: column; gap: 6px;">
+          <div
+            class="upload-section"
+            style="
+              display: flex;
+              flex-direction: column;
+              gap: 12px;
+              margin-bottom: 20px;
+              border-bottom: 1px solid var(--gray-200);
+              padding-bottom: 16px;
+            "
+          >
+            <div style="display: flex; flex-direction: column; gap: 6px">
               <span class="upload-label" style="font-weight: 600; color: var(--gray-700)">Document Type</span>
-              <select 
-                [(ngModel)]="selectedDocType" 
-                class="form-control" 
-                style="width: 100%; height: 38px; border: 1px solid var(--gray-300); border-radius: 6px; padding: 0 12px; font-family: 'Instrument Sans', sans-serif;"
+              <select
+                [(ngModel)]="selectedDocType"
+                class="form-control"
+                style="
+                  width: 100%;
+                  height: 38px;
+                  border: 1px solid var(--gray-300);
+                  border-radius: 6px;
+                  padding: 0 12px;
+                  font-family: &quot;Instrument Sans&quot;, sans-serif;
+                "
               >
                 <option value="">-- Select Document Type --</option>
                 @for (dt of documentTypesOptions; track dt.id) {
@@ -954,12 +1163,12 @@
                 }
               </select>
             </div>
-            
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 4px;">
+
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 4px">
               <span class="upload-label" style="font-weight: 600; color: var(--gray-700)">Attach File</span>
-              <label 
-                class="btn-primary upload-btn" 
-                [style.opacity]="selectedDocType ? '1' : '0.5'" 
+              <label
+                class="btn-primary upload-btn"
+                [style.opacity]="selectedDocType ? '1' : '0.5'"
                 [style.cursor]="selectedDocType ? 'pointer' : 'not-allowed'"
               >
                 @if (uploadingDoc) {
@@ -981,16 +1190,16 @@
                   </svg>
                   <span>Upload File</span>
                 }
-                <input 
-                  type="file" 
-                  [disabled]="uploadingDoc || !selectedDocType" 
-                  (change)="onFileSelected($event)" 
-                  style="display: none" 
+                <input
+                  type="file"
+                  [disabled]="uploadingDoc || !selectedDocType"
+                  (change)="onFileSelected($event)"
+                  style="display: none"
                 />
               </label>
             </div>
           </div>
- 
+
           <div class="documents-list">
             @if (documentsList.length === 0) {
               <div class="empty-docs">
@@ -1025,13 +1234,21 @@
                       <polyline points="14 2 14 8 20 8" />
                     </svg>
                     <div class="doc-meta">
-                      <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                      <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap">
                         <span class="doc-name" [title]="doc.file_name">{{ doc.file_name }}</span>
-                        @if (doc.document_type || doc.documentType) {
-                          <span 
-                            style="font-size: 10px; font-weight: 700; background: var(--gray-100); color: var(--gray-600); padding: 2px 6px; border-radius: 4px; border: 1px solid var(--gray-200);"
+                        @if ($any(doc).document_type || $any(doc).documentType) {
+                          <span
+                            style="
+                              font-size: 10px;
+                              font-weight: 700;
+                              background: var(--gray-100);
+                              color: var(--gray-600);
+                              padding: 2px 6px;
+                              border-radius: 4px;
+                              border: 1px solid var(--gray-200);
+                            "
                           >
-                            {{ doc.document_type || doc.documentType }}
+                            {{ $any(doc).document_type || $any(doc).documentType }}
                           </span>
                         }
                       </div>
@@ -1064,6 +1281,7 @@
 
   <!-- TREATY CREATE / EDIT MODAL -->
   @if (showTreatyModal) {
+    <!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events, @angular-eslint/template/interactive-supports-focus -- backdrop click-to-dismiss / stopPropagation guard, not an interactive control; keyboard dismissal is handled via Escape at the dialog level -->
     <div class="modal-overlay" (click)="$event.target === $event.currentTarget && (showTreatyModal = false)">
       <div class="modal-box coa-modal treaty-modal" style="max-width: 800px !important">
         <div class="panel-header">
@@ -1092,8 +1310,9 @@
 
           <div class="form-row">
             <div class="form-field">
-              <label class="form-label">Treaty Code *</label>
+              <label for="m-treatycode" class="form-label">Treaty Code *</label>
               <input
+                id="m-treatycode"
                 [(ngModel)]="treatyForm.treaty_code"
                 name="treatyCode"
                 type="text"
@@ -1104,8 +1323,9 @@
               />
             </div>
             <div class="form-field">
-              <label class="form-label">Treaty Name *</label>
+              <label for="m-treatyname" class="form-label">Treaty Name *</label>
               <input
+                id="m-treatyname"
                 [(ngModel)]="treatyForm.name"
                 name="treatyName"
                 type="text"
@@ -1135,7 +1355,7 @@
           @if (treatyForm.carriers && treatyForm.carriers[0]) {
             <div class="form-row" style="margin-bottom: 8px">
               <div class="form-field" style="flex: 1">
-                <label class="form-label">Carrier Company *</label>
+                <span class="form-label">Carrier Company *</span>
                 <app-dropdown-search
                   [items]="riskCompanyOptions"
                   [isMultiSelect]="false"
@@ -1176,7 +1396,7 @@
             <div class="form-row" style="align-items: flex-end; margin-bottom: 8px">
               <div class="form-field" style="flex: 2">
                 @if (i === 0) {
-                  <label class="form-label">Reinsurer Company</label>
+                  <span class="form-label">Reinsurer Company</span>
                 }
                 <app-dropdown-search
                   [items]="reinsurerOptions"
@@ -1189,7 +1409,7 @@
               </div>
               <div class="form-field" style="flex: 1.5">
                 @if (i === 0) {
-                  <label class="form-label">Specific State (Opt)</label>
+                  <span class="form-label">Specific State (Opt)</span>
                 }
                 <app-dropdown-search
                   [items]="stateOptions"
@@ -1202,7 +1422,7 @@
               </div>
               <div class="form-field" style="flex: 1.5">
                 @if (i === 0) {
-                  <label class="form-label">Broker (Opt)</label>
+                  <label for="m-reinsurer-cession-pct" class="form-label">Broker (Opt)</label>
                 }
                 <app-dropdown-search
                   [items]="brokerOptions"
@@ -1215,9 +1435,10 @@
               </div>
               <div class="form-field" style="flex: 1">
                 @if (i === 0) {
-                  <label class="form-label">Quota Share %</label>
+                  <label for="m-reinsurer-cession-pct-2" class="form-label">Quota Share %</label>
                 }
                 <input
+                  id="m-reinsurer-cession-pct"
                   [(ngModel)]="reinsurer.cession_pct"
                   [name]="'reinsurerCes_' + i"
                   type="number"
@@ -1270,12 +1491,29 @@
 
           <div class="form-row">
             <div class="form-field">
-              <label class="form-label">Effective Date</label>
-              <input [(ngModel)]="treatyForm.effective_date" name="effDate" type="date" class="form-input" />
+              <label for="m-effdate" class="form-label">Effective Date</label>
+              <input
+                id="m-effdate"
+                [(ngModel)]="treatyForm.effective_date"
+                name="effDate"
+                type="date"
+                class="form-input"
+              />
             </div>
             <div class="form-field">
-              <label class="form-label">Expiration Date <span style="color: var(--gray-500); font-weight: normal; font-size: 11px; margin-left: 4px;">(Continuous)</span></label>
-              <input [(ngModel)]="treatyForm.expiration_date" name="expDate" type="date" class="form-input" />
+              <label for="m-expdate" class="form-label">
+                Expiration Date
+                <span style="color: var(--gray-500); font-weight: normal; font-size: 11px; margin-left: 4px">
+                  (Continuous)
+                </span>
+              </label>
+              <input
+                id="m-expdate"
+                [(ngModel)]="treatyForm.expiration_date"
+                name="expDate"
+                type="date"
+                class="form-input"
+              />
             </div>
           </div>
 
@@ -1293,20 +1531,48 @@
           </h4>
           <div class="form-row">
             <div class="form-field">
-              <label class="form-label">Policy Seq Prefix</label>
-              <input [(ngModel)]="treatyForm.policy_seq_prefix" name="policySeqPrefix" type="text" class="form-input" placeholder="e.g. POL" />
+              <label for="m-policyseqprefix" class="form-label">Policy Seq Prefix</label>
+              <input
+                id="m-policyseqprefix"
+                [(ngModel)]="treatyForm.policy_seq_prefix"
+                name="policySeqPrefix"
+                type="text"
+                class="form-input"
+                placeholder="e.g. POL"
+              />
             </div>
             <div class="form-field">
-              <label class="form-label">Policy Seq Start</label>
-              <input [(ngModel)]="treatyForm.policy_seq_start" name="policySeqStart" type="number" class="form-input" placeholder="1" />
+              <label for="m-policyseqstart" class="form-label">Policy Seq Start</label>
+              <input
+                id="m-policyseqstart"
+                [(ngModel)]="treatyForm.policy_seq_start"
+                name="policySeqStart"
+                type="number"
+                class="form-input"
+                placeholder="1"
+              />
             </div>
             <div class="form-field">
-              <label class="form-label">Claim Seq Prefix</label>
-              <input [(ngModel)]="treatyForm.claim_seq_prefix" name="claimSeqPrefix" type="text" class="form-input" placeholder="e.g. CLM" />
+              <label for="m-claimseqprefix" class="form-label">Claim Seq Prefix</label>
+              <input
+                id="m-claimseqprefix"
+                [(ngModel)]="treatyForm.claim_seq_prefix"
+                name="claimSeqPrefix"
+                type="text"
+                class="form-input"
+                placeholder="e.g. CLM"
+              />
             </div>
             <div class="form-field">
-              <label class="form-label">Claim Seq Start</label>
-              <input [(ngModel)]="treatyForm.claim_seq_start" name="claimSeqStart" type="number" class="form-input" placeholder="1" />
+              <label for="m-claimseqstart" class="form-label">Claim Seq Start</label>
+              <input
+                id="m-claimseqstart"
+                [(ngModel)]="treatyForm.claim_seq_start"
+                name="claimSeqStart"
+                type="number"
+                class="form-input"
+                placeholder="1"
+              />
             </div>
           </div>
 
@@ -1325,8 +1591,9 @@
 
           <div class="treaty-form-grid">
             <div class="form-field">
-              <label class="form-label">Quota Share (QS) %</label>
+              <label for="m-qspct" class="form-label">Quota Share (QS) %</label>
               <input
+                id="m-qspct"
                 [(ngModel)]="treatyForm.qs_pct"
                 name="qsPct"
                 type="number"
@@ -1336,8 +1603,9 @@
               />
             </div>
             <div class="form-field">
-              <label class="form-label">CF %</label>
+              <label for="m-cfpct" class="form-label">CF %</label>
               <input
+                id="m-cfpct"
                 [(ngModel)]="treatyForm.cf_pct"
                 name="cfPct"
                 type="number"
@@ -1347,8 +1615,9 @@
               />
             </div>
             <div class="form-field">
-              <label class="form-label">Commission %</label>
+              <label for="m-commpct" class="form-label">Commission %</label>
               <input
+                id="m-commpct"
                 [(ngModel)]="treatyForm.comm_pct"
                 name="commPct"
                 type="number"
@@ -1358,8 +1627,9 @@
               />
             </div>
             <div class="form-field">
-              <label class="form-label">BB %</label>
+              <label for="m-bbpct" class="form-label">BB %</label>
               <input
+                id="m-bbpct"
                 [(ngModel)]="treatyForm.bb_pct"
                 name="bbPct"
                 type="number"
@@ -1370,16 +1640,17 @@
             </div>
 
             <div class="form-field">
-              <label class="form-label">ULAE Type</label>
-              <select [(ngModel)]="treatyForm.ulae_type" name="ulaeType" class="form-input">
+              <label for="m-ulaetype" class="form-label">ULAE Type</label>
+              <select id="m-ulaetype" [(ngModel)]="treatyForm.ulae_type" name="ulaeType" class="form-input">
                 <option value="percent">Percent</option>
                 <option value="flat_rate">Flat Rate</option>
               </select>
             </div>
-            @if (treatyForm.ulae_type === 'percent') {
+            @if (treatyForm.ulae_type === "percent") {
               <div class="form-field">
-                <label class="form-label">ULAE %</label>
+                <label for="m-ulaepct" class="form-label">ULAE %</label>
                 <input
+                  id="m-ulaepct"
                   [(ngModel)]="treatyForm.ulae_pct"
                   name="ulaePct"
                   type="number"
@@ -1390,16 +1661,17 @@
               </div>
             } @else {
               <div class="form-field">
-                <label class="form-label">ULAE Basis</label>
-                <select [(ngModel)]="treatyForm.ulae_basis" name="ulaeBasis" class="form-input">
+                <label for="m-ulaebasis" class="form-label">ULAE Basis</label>
+                <select id="m-ulaebasis" [(ngModel)]="treatyForm.ulae_basis" name="ulaeBasis" class="form-input">
                   <option value="earned_premium">Earned Premium</option>
                   <option value="unearned_premium">Unearned Premium</option>
                   <option value="flat_amount">Flat Amount</option>
                 </select>
               </div>
               <div class="form-field">
-                <label class="form-label">ULAE Flat Amount</label>
+                <label for="m-ulaeflatamount" class="form-label">ULAE Flat Amount</label>
                 <input
+                  id="m-ulaeflatamount"
                   [(ngModel)]="treatyForm.ulae_flat_amount"
                   name="ulaeFlatAmount"
                   type="number"
@@ -1410,8 +1682,9 @@
               </div>
             }
             <div class="form-field">
-              <label class="form-label">XOL %</label>
+              <label for="m-xolpct" class="form-label">XOL %</label>
               <input
+                id="m-xolpct"
                 [(ngModel)]="treatyForm.xol_pct"
                 name="xolPct"
                 type="number"
@@ -1421,8 +1694,9 @@
               />
             </div>
             <div class="form-field">
-              <label class="form-label">LR Cap %</label>
+              <label for="m-lrcappct" class="form-label">LR Cap %</label>
               <input
+                id="m-lrcappct"
                 [(ngModel)]="treatyForm.lr_cap_pct"
                 name="lrCapPct"
                 type="number"
@@ -1432,8 +1706,9 @@
               />
             </div>
             <div class="form-field">
-              <label class="form-label">Loss Pick %</label>
+              <label for="m-ibnrpct" class="form-label">Loss Pick %</label>
               <input
+                id="m-ibnrpct"
                 [(ngModel)]="treatyForm.ibnr_pct"
                 name="ibnrPct"
                 type="number"
@@ -1444,8 +1719,9 @@
             </div>
 
             <div class="form-field">
-              <label class="form-label">LAE DCC %</label>
+              <label for="m-laedccpct" class="form-label">LAE DCC %</label>
               <input
+                id="m-laedccpct"
                 [(ngModel)]="treatyForm.lae_dcc_pct"
                 name="laeDccPct"
                 type="number"
@@ -1455,8 +1731,9 @@
               />
             </div>
             <div class="form-field">
-              <label class="form-label">LAE AOE %</label>
+              <label for="m-laeaoepct" class="form-label">LAE AOE %</label>
               <input
+                id="m-laeaoepct"
                 [(ngModel)]="treatyForm.lae_aoe_pct"
                 name="laeAoePct"
                 type="number"
@@ -1554,7 +1831,9 @@
 
   <!-- Add ITD Manual Modal -->
   @if (showItdModal) {
+    <!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events, @angular-eslint/template/interactive-supports-focus -- backdrop click-to-dismiss / stopPropagation guard, not an interactive control; keyboard dismissal is handled via Escape at the dialog level -->
     <div class="modal-overlay" (click)="showItdModal = false">
+      <!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events, @angular-eslint/template/interactive-supports-focus -- backdrop click-to-dismiss / stopPropagation guard, not an interactive control; keyboard dismissal is handled via Escape at the dialog level -->
       <div
         class="modal-box"
         (click)="$event.stopPropagation()"
@@ -1569,8 +1848,9 @@
           <!-- Select Month & Year -->
           <div class="form-row" style="margin-bottom: 20px">
             <div class="form-field">
-              <label class="form-label">Select Month</label>
+              <label for="m-itdselectedmonth" class="form-label">Select Month</label>
               <select
+                id="m-itdselectedmonth"
                 class="form-input"
                 [(ngModel)]="itdSelectedMonth"
                 (change)="onItdMonthYearChange()"
@@ -1582,8 +1862,9 @@
               </select>
             </div>
             <div class="form-field">
-              <label class="form-label">Select Year</label>
+              <label for="m-itdselectedyear" class="form-label">Select Year</label>
               <select
+                id="m-itdselectedyear"
                 class="form-input"
                 [(ngModel)]="itdSelectedYear"
                 (change)="onItdMonthYearChange()"
@@ -1599,12 +1880,18 @@
           <!-- Month Key & Month Label -->
           <div class="form-row" style="margin-bottom: 20px">
             <div class="form-field">
-              <label class="form-label">Month Key</label>
-              <input type="text" class="form-input" [(ngModel)]="itdForm.month_key" readonly />
+              <label for="m-itdform-month-key" class="form-label">Month Key</label>
+              <input id="m-itdform-month-key" type="text" class="form-input" [(ngModel)]="itdForm.month_key" readonly />
             </div>
             <div class="form-field">
-              <label class="form-label">Month Label</label>
-              <input type="text" class="form-input" [(ngModel)]="itdForm.month_label" readonly />
+              <label for="m-itdform-month-label" class="form-label">Month Label</label>
+              <input
+                id="m-itdform-month-label"
+                type="text"
+                class="form-input"
+                [(ngModel)]="itdForm.month_label"
+                readonly
+              />
             </div>
           </div>
 
@@ -1623,10 +1910,15 @@
           </h4>
 
           <div style="display: flex; gap: 12px; margin-bottom: 20px; align-items: center">
-            <label class="form-label" style="margin-bottom: 0; font-weight: 600; font-size: 13.5px; color: var(--navy)">
+            <label
+              for="m-itdselectedstatecode"
+              class="form-label"
+              style="margin-bottom: 0; font-weight: 600; font-size: 13.5px; color: var(--navy)"
+            >
               Select State to Edit:
             </label>
             <select
+              id="m-itdselectedstatecode"
               class="form-input"
               [(ngModel)]="itdSelectedStateCode"
               style="max-width: 150px; height: 38px; padding: 4px 8px"
@@ -1641,16 +1933,33 @@
           @if (itdForm.exhibits[itdSelectedStateCode]) {
             <div class="form-row">
               <div class="form-field">
-                <label class="form-label">Unearned Premium Reserve</label>
-                <input type="number" class="form-input" [(ngModel)]="itdForm.exhibits[itdSelectedStateCode].uep" />
-              </div>
-              <div class="form-field">
-                <label class="form-label">Loss Reserves</label>
-                <input type="number" class="form-input" [(ngModel)]="itdForm.exhibits[itdSelectedStateCode].loss_reserves" />
-              </div>
-              <div class="form-field">
-                <label class="form-label">Loss IBNR Reserves</label>
+                <label for="m-itdform-exhibits-itdselectedstatecode-uep" class="form-label">
+                  Unearned Premium Reserve
+                </label>
                 <input
+                  id="m-itdform-exhibits-itdselectedstatecode-uep"
+                  type="number"
+                  class="form-input"
+                  [(ngModel)]="itdForm.exhibits[itdSelectedStateCode].uep"
+                />
+              </div>
+              <div class="form-field">
+                <label for="m-itdform-exhibits-itdselectedstatecode-loss-reserves" class="form-label">
+                  Loss Reserves
+                </label>
+                <input
+                  id="m-itdform-exhibits-itdselectedstatecode-loss-reserves"
+                  type="number"
+                  class="form-input"
+                  [(ngModel)]="itdForm.exhibits[itdSelectedStateCode].loss_reserves"
+                />
+              </div>
+              <div class="form-field">
+                <label for="m-itdform-exhibits-itdselectedstatecode-loss-ibnr" class="form-label">
+                  Loss IBNR Reserves
+                </label>
+                <input
+                  id="m-itdform-exhibits-itdselectedstatecode-loss-ibnr"
                   type="number"
                   class="form-input"
                   [(ngModel)]="itdForm.exhibits[itdSelectedStateCode].loss_ibnr"
@@ -1659,16 +1968,22 @@
             </div>
             <div class="form-row">
               <div class="form-field">
-                <label class="form-label">LAE Reserves - DCC</label>
+                <label for="m-itdform-exhibits-itdselectedstatecode-lae-reserves-dcc" class="form-label">
+                  LAE Reserves - DCC
+                </label>
                 <input
+                  id="m-itdform-exhibits-itdselectedstatecode-lae-reserves-dcc"
                   type="number"
                   class="form-input"
                   [(ngModel)]="itdForm.exhibits[itdSelectedStateCode].lae_reserves_dcc"
                 />
               </div>
               <div class="form-field">
-                <label class="form-label">LAE Reserves - AOE</label>
+                <label for="m-itdform-exhibits-itdselectedstatecode-lae-reserves-aoe" class="form-label">
+                  LAE Reserves - AOE
+                </label>
                 <input
+                  id="m-itdform-exhibits-itdselectedstatecode-lae-reserves-aoe"
                   type="number"
                   class="form-input"
                   [(ngModel)]="itdForm.exhibits[itdSelectedStateCode].lae_reserves_aoe"
@@ -1677,24 +1992,33 @@
             </div>
             <div class="form-row" style="margin-bottom: 20px">
               <div class="form-field">
-                <label class="form-label">LAE IBNR Reserves - DCC</label>
+                <label for="m-itdform-exhibits-itdselectedstatecode-lae-ibnr-dcc" class="form-label">
+                  LAE IBNR Reserves - DCC
+                </label>
                 <input
+                  id="m-itdform-exhibits-itdselectedstatecode-lae-ibnr-dcc"
                   type="number"
                   class="form-input"
                   [(ngModel)]="itdForm.exhibits[itdSelectedStateCode].lae_ibnr_dcc"
                 />
               </div>
               <div class="form-field">
-                <label class="form-label">LAE IBNR Reserves - AOE</label>
+                <label for="m-itdform-exhibits-itdselectedstatecode-lae-ibnr-aoe" class="form-label">
+                  LAE IBNR Reserves - AOE
+                </label>
                 <input
+                  id="m-itdform-exhibits-itdselectedstatecode-lae-ibnr-aoe"
                   type="number"
                   class="form-input"
                   [(ngModel)]="itdForm.exhibits[itdSelectedStateCode].lae_ibnr_aoe"
                 />
               </div>
               <div class="form-field">
-                <label class="form-label">ULAE IBNR Reserves</label>
+                <label for="m-itdform-exhibits-itdselectedstatecode-ulae-ibnr" class="form-label">
+                  ULAE IBNR Reserves
+                </label>
                 <input
+                  id="m-itdform-exhibits-itdselectedstatecode-ulae-ibnr"
                   type="number"
                   class="form-input"
                   [(ngModel)]="itdForm.exhibits[itdSelectedStateCode].ulae_ibnr"
@@ -1716,6 +2040,7 @@
 
   <!-- GL Mapping Modal -->
   @if (showGlMappingModal) {
+    <!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events, @angular-eslint/template/interactive-supports-focus -- backdrop click-to-dismiss / stopPropagation guard, not an interactive control; keyboard dismissal is handled via Escape at the dialog level -->
     <div class="modal-overlay" (click)="$event.target === $event.currentTarget && (showGlMappingModal = false)">
       <div class="modal-box" style="max-width: 480px">
         <div class="panel-header">
@@ -1730,7 +2055,7 @@
 
         <form (submit)="submitGlMapping()" class="panel-body">
           <div class="form-field" style="margin-bottom: 16px">
-            <label class="form-label">Chart of Account *</label>
+            <span class="form-label">Chart of Account *</span>
             <app-dropdown-search
               [items]="coaOptions"
               [isMultiSelect]="false"
@@ -1745,7 +2070,7 @@
           </div>
 
           <div class="form-field" style="margin-bottom: 8px">
-            <label class="form-label">Mapping Type *</label>
+            <span class="form-label">Mapping Type *</span>
             <app-dropdown-search
               [items]="glMappingTypeOptionsList"
               [isMultiSelect]="false"
@@ -1777,6 +2102,7 @@
 
   <!-- Lock Period Modal -->
   @if (showLockPeriodModal) {
+    <!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events, @angular-eslint/template/interactive-supports-focus -- backdrop click-to-dismiss / stopPropagation guard, not an interactive control; keyboard dismissal is handled via Escape at the dialog level -->
     <div class="modal-overlay" (click)="$event.target === $event.currentTarget && (showLockPeriodModal = false)">
       <div class="modal-box" style="max-width: 400px">
         <div class="panel-header">
@@ -1791,8 +2117,9 @@
 
         <form (submit)="submitLockPeriod()" class="panel-body">
           <div class="form-field" style="margin-bottom: 16px">
-            <label class="form-label">Period Name *</label>
+            <label for="m-newperiodtolock" class="form-label">Period Name *</label>
             <input
+              id="m-newperiodtolock"
               [(ngModel)]="newPeriodToLock"
               name="newPeriodToLock"
               type="text"

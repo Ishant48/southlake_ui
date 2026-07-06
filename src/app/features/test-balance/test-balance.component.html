@@ -7,20 +7,18 @@
   </div>
 
   <!-- Tab Bar -->
-  <div class="tab-bar" style="margin-bottom: 12px;">
+  <div class="tab-bar" style="margin-bottom: 12px">
     <button class="tab-link" [class.active]="activeTab === 'test-balance'" (click)="selectTab('test-balance')">
       Test Balance
     </button>
     <button class="tab-link" [class.active]="activeTab === 'balance-sheet'" (click)="selectTab('balance-sheet')">
       Balance Sheet
     </button>
-    <button class="tab-link" [class.active]="activeTab === 'pl'" (click)="selectTab('pl')">
-      Profit & Loss (P&L)
-    </button>
+    <button class="tab-link" [class.active]="activeTab === 'pl'" (click)="selectTab('pl')">Profit & Loss (P&L)</button>
   </div>
 
   <div class="content-card metadata-card">
-    <div class="metadata-grid" style="align-items: center;">
+    <div class="metadata-grid" style="align-items: center">
       <!-- Month & Year Selectors Column -->
       <div class="meta-col">
         <span class="meta-label">Reporting Month</span>
@@ -38,45 +36,58 @@
 
       <div class="meta-col">
         <span class="meta-label">Statement Status</span>
-        <span class="active-badge" style="background: var(--teal-50); color: var(--teal-700); font-weight: 600;">Month Active</span>
+        <span class="active-badge" style="background: var(--teal-50); color: var(--teal-700); font-weight: 600">
+          Month Active
+        </span>
       </div>
     </div>
   </div>
 
   <!-- Loading State -->
-  <div class="spinner-container" *ngIf="isLoading" style="display: flex; justify-content: center; align-items: center; padding: 24px;">
+  <div
+    class="spinner-container"
+    *ngIf="isLoading"
+    style="display: flex; justify-content: center; align-items: center; padding: 24px"
+  >
     <div class="spinner"></div>
   </div>
 
   <!-- 1. TEST BALANCE VIEW -->
   <ng-container *ngIf="!isLoading && activeTab === 'test-balance' && data">
-    <div class="content-card" style="margin-top: 12px; padding: 16px;">
-      <div class="metadata-grid" style="border-bottom: 1px solid var(--gray-200); padding-bottom: 10px; margin-bottom: 10px;">
-        <div class="meta-col" style="flex: 2;">
-          <span class="meta-label" style="font-weight: 600; color: var(--gray-700);">Monitored Ledger Accounts</span>
+    <div class="content-card" style="margin-top: 12px; padding: 16px">
+      <div
+        class="metadata-grid"
+        style="border-bottom: 1px solid var(--gray-200); padding-bottom: 10px; margin-bottom: 10px"
+      >
+        <div class="meta-col" style="flex: 2">
+          <span class="meta-label" style="font-weight: 600; color: var(--gray-700)">Monitored Ledger Accounts</span>
           <div class="meta-value account-list">
-            <div class="account-item" *ngFor="let acc of data.accounts" style="font-size: 13px; color: var(--navy); margin-top: 2px;">
+            <div
+              class="account-item"
+              *ngFor="let acc of data.accounts"
+              style="font-size: 13px; color: var(--navy); margin-top: 2px"
+            >
               {{ acc.name }}
             </div>
           </div>
         </div>
 
-        <div class="meta-col" style="flex: 1;">
-          <span class="meta-label" style="font-weight: 600; color: var(--gray-700);">Status Net Differences</span>
-          <div class="meta-value status-summaries" style="font-size: 13px;">
-            <div class="status-row" style="display: flex; justify-content: space-between; margin-top: 2px;">
+        <div class="meta-col" style="flex: 1">
+          <span class="meta-label" style="font-weight: 600; color: var(--gray-700)">Status Net Differences</span>
+          <div class="meta-value status-summaries" style="font-size: 13px">
+            <div class="status-row" style="display: flex; justify-content: space-between; margin-top: 2px">
               <span class="bold-text">IN:</span>
               <span>{{ formatCurrency(getDifferenceSum("IN")) }}</span>
             </div>
-            <div class="status-row" style="display: flex; justify-content: space-between; margin-top: 2px;">
+            <div class="status-row" style="display: flex; justify-content: space-between; margin-top: 2px">
               <span class="bold-text">CR:</span>
               <span>{{ formatCurrency(getDifferenceSum("CR")) }}</span>
             </div>
-            <div class="status-row" style="display: flex; justify-content: space-between; margin-top: 2px;">
+            <div class="status-row" style="display: flex; justify-content: space-between; margin-top: 2px">
               <span class="bold-text">CK:</span>
               <span>{{ formatCurrency(getDifferenceSum("CK")) }}</span>
             </div>
-            <div class="status-row" style="display: flex; justify-content: space-between; margin-top: 2px;">
+            <div class="status-row" style="display: flex; justify-content: space-between; margin-top: 2px">
               <span class="bold-text">JE:</span>
               <span>{{ formatCurrency(getDifferenceSum("JE")) }}</span>
             </div>
@@ -84,40 +95,68 @@
         </div>
       </div>
 
-      <h2 class="details-title" style="margin-top: 12px; font-size: 15px; color: var(--navy); font-weight: 700;">Account Details</h2>
-      <div class="details-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 12px; margin-top: 10px;">
-        <div class="balance-card" *ngFor="let acc of data.accounts" style="background: #fff; border: 1px solid var(--gray-200); border-radius: 8px; padding: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
-          <div class="card-header-code" style="font-weight: 700; color: var(--navy); border-bottom: 1px solid var(--gray-100); padding-bottom: 6px; margin-bottom: 8px;">
-            {{ acc.code }} - {{ acc.name.split(' - ')[0] }}
+      <h2 class="details-title" style="margin-top: 12px; font-size: 15px; color: var(--navy); font-weight: 700">
+        Account Details
+      </h2>
+      <div
+        class="details-grid"
+        style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 12px; margin-top: 10px"
+      >
+        <div
+          class="balance-card"
+          *ngFor="let acc of data.accounts"
+          style="
+            background: #fff;
+            border: 1px solid var(--gray-200);
+            border-radius: 8px;
+            padding: 12px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+          "
+        >
+          <div
+            class="card-header-code"
+            style="
+              font-weight: 700;
+              color: var(--navy);
+              border-bottom: 1px solid var(--gray-100);
+              padding-bottom: 6px;
+              margin-bottom: 8px;
+            "
+          >
+            {{ acc.code }} - {{ acc.name.split(" - ")[0] }}
           </div>
 
-          <table class="balance-table" style="width: 100%; border-collapse: collapse; font-size: 12px;">
+          <table class="balance-table" style="width: 100%; border-collapse: collapse; font-size: 12px">
             <thead>
-              <tr style="border-bottom: 1px solid var(--gray-200); text-align: right; color: var(--gray-500);">
-                <th style="text-align: left; padding: 4px 0;">Type</th>
+              <tr style="border-bottom: 1px solid var(--gray-200); text-align: right; color: var(--gray-500)">
+                <th style="text-align: left; padding: 4px 0">Type</th>
                 <th>P Bal</th>
                 <th>C Bal</th>
                 <th>Diff</th>
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let row of acc.rows" style="border-bottom: 1px solid var(--gray-100); text-align: right;">
-                <td style="text-align: left; font-weight: 600; padding: 6px 0;">{{ row.type }}</td>
+              <tr *ngFor="let row of acc.rows" style="border-bottom: 1px solid var(--gray-100); text-align: right">
+                <td style="text-align: left; font-weight: 600; padding: 6px 0">{{ row.type }}</td>
                 <td>{{ formatCurrency(row.p_balance) }}</td>
                 <td>{{ formatCurrency(row.c_balance) }}</td>
-                <td [style.color]="row.difference !== 0 ? 'var(--danger-color)' : 'inherit'">{{ formatCurrency(row.difference) }}</td>
+                <td [style.color]="row.difference !== 0 ? 'var(--danger-color)' : 'inherit'">
+                  {{ formatCurrency(row.difference) }}
+                </td>
               </tr>
-              <tr style="border-top: 2.5px solid var(--gray-300); font-weight: bold; text-align: right;">
-                <td style="text-align: left; padding: 6px 0;">BG Balance</td>
+              <tr style="border-top: 2.5px solid var(--gray-300); font-weight: bold; text-align: right">
+                <td style="text-align: left; padding: 6px 0">BG Balance</td>
                 <td colspan="3">{{ formatCurrency(acc.bg_balance) }}</td>
               </tr>
-              <tr style="font-weight: bold; text-align: right; color: var(--primary-color);">
-                <td style="text-align: left; padding: 6px 0;">Current Bal</td>
+              <tr style="font-weight: bold; text-align: right; color: var(--primary-color)">
+                <td style="text-align: left; padding: 6px 0">Current Bal</td>
                 <td colspan="3">{{ formatCurrency(acc.current_balance) }}</td>
               </tr>
-              <tr *ngIf="acc.status" style="font-size: 11px;">
-                <td style="text-align: left; padding: 4px 0; font-weight: 600; color: var(--gray-500);">Status</td>
-                <td colspan="3" style="text-align: right; font-weight: bold; color: var(--teal-700);">{{ acc.status }}</td>
+              <tr *ngIf="acc.status" style="font-size: 11px">
+                <td style="text-align: left; padding: 4px 0; font-weight: 600; color: var(--gray-500)">Status</td>
+                <td colspan="3" style="text-align: right; font-weight: bold; color: var(--teal-700)">
+                  {{ acc.status }}
+                </td>
               </tr>
             </tbody>
           </table>
@@ -128,41 +167,99 @@
 
   <!-- 2. BALANCE SHEET VIEW -->
   <ng-container *ngIf="!isLoading && activeTab === 'balance-sheet' && balanceSheetData">
-    <div class="content-card" style="margin-top: 12px; padding: 16px; background: #fff;">
-      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--navy); padding-bottom: 8px; margin-bottom: 12px;">
-        <h2 style="margin: 0; color: var(--navy); font-weight: 700; font-size: 18px;">Balance Sheet</h2>
-        <span style="font-size: 13px; font-weight: 600; color: var(--gray-600);">As of {{ month }} {{ year }}</span>
+    <div class="content-card" style="margin-top: 12px; padding: 16px; background: #fff">
+      <div
+        style="
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          border-bottom: 2px solid var(--navy);
+          padding-bottom: 8px;
+          margin-bottom: 12px;
+        "
+      >
+        <h2 style="margin: 0; color: var(--navy); font-weight: 700; font-size: 18px">Balance Sheet</h2>
+        <span style="font-size: 13px; font-weight: 600; color: var(--gray-600)">As of {{ month }} {{ year }}</span>
       </div>
 
       <!-- Balance Check Indicator -->
-      <div style="margin-bottom: 12px; padding: 8px 12px; border-radius: 6px; display: flex; align-items: center; gap: 10px; font-size: 14px; font-weight: 600;"
-           [style.background]="abs(balanceSheetData.totalAssets - (balanceSheetData.totalLiabilities + balanceSheetData.totalEquity)) < 0.01 ? 'var(--teal-50)' : 'var(--danger-light)'"
-           [style.color]="abs(balanceSheetData.totalAssets - (balanceSheetData.totalLiabilities + balanceSheetData.totalEquity)) < 0.01 ? 'var(--teal-700)' : 'var(--danger-color)'">
-        <span *ngIf="abs(balanceSheetData.totalAssets - (balanceSheetData.totalLiabilities + balanceSheetData.totalEquity)) < 0.01">
+      <div
+        style="
+          margin-bottom: 12px;
+          padding: 8px 12px;
+          border-radius: 6px;
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          font-size: 14px;
+          font-weight: 600;
+        "
+        [style.background]="
+          abs(balanceSheetData.totalAssets - (balanceSheetData.totalLiabilities + balanceSheetData.totalEquity)) < 0.01
+            ? 'var(--teal-50)'
+            : 'var(--danger-light)'
+        "
+        [style.color]="
+          abs(balanceSheetData.totalAssets - (balanceSheetData.totalLiabilities + balanceSheetData.totalEquity)) < 0.01
+            ? 'var(--teal-700)'
+            : 'var(--danger-color)'
+        "
+      >
+        <span
+          *ngIf="
+            abs(balanceSheetData.totalAssets - (balanceSheetData.totalLiabilities + balanceSheetData.totalEquity)) <
+            0.01
+          "
+        >
           ✓ Balanced: Assets equal Liabilities + Equity
         </span>
-        <span *ngIf="abs(balanceSheetData.totalAssets - (balanceSheetData.totalLiabilities + balanceSheetData.totalEquity)) >= 0.01">
-          ⚠ Out of Balance: Assets do not equal Liabilities + Equity (Diff: {{ formatCurrency(balanceSheetData.totalAssets - (balanceSheetData.totalLiabilities + balanceSheetData.totalEquity)) }})
+        <span
+          *ngIf="
+            abs(balanceSheetData.totalAssets - (balanceSheetData.totalLiabilities + balanceSheetData.totalEquity)) >=
+            0.01
+          "
+        >
+          ⚠ Out of Balance: Assets do not equal Liabilities + Equity (Diff:
+          {{
+            formatCurrency(
+              balanceSheetData.totalAssets - (balanceSheetData.totalLiabilities + balanceSheetData.totalEquity)
+            )
+          }})
         </span>
       </div>
 
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px">
         <!-- Left Side: Assets -->
         <div>
-          <h3 style="color: var(--primary-color); font-weight: 700; border-bottom: 1.5px solid var(--gray-300); padding-bottom: 6px; margin-bottom: 10px; font-size: 14px;">ASSETS</h3>
-          <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
+          <h3
+            style="
+              color: var(--primary-color);
+              font-weight: 700;
+              border-bottom: 1.5px solid var(--gray-300);
+              padding-bottom: 6px;
+              margin-bottom: 10px;
+              font-size: 14px;
+            "
+          >
+            ASSETS
+          </h3>
+          <table style="width: 100%; border-collapse: collapse; font-size: 13px">
             <tbody>
-              <tr *ngFor="let item of balanceSheetData.assets" style="border-bottom: 1px solid var(--gray-100);">
-                <td style="padding: 8px 0; color: var(--gray-500); width: 80px;">{{ item.accountCode }}</td>
-                <td style="padding: 8px 0; font-weight: 500;">{{ item.description }}</td>
-                <td style="padding: 8px 0; text-align: right; font-weight: 600;">{{ formatCurrency(item.balance) }}</td>
+              <tr *ngFor="let item of balanceSheetData.assets" style="border-bottom: 1px solid var(--gray-100)">
+                <td style="padding: 8px 0; color: var(--gray-500); width: 80px">{{ item.accountCode }}</td>
+                <td style="padding: 8px 0; font-weight: 500">{{ item.description }}</td>
+                <td style="padding: 8px 0; text-align: right; font-weight: 600">{{ formatCurrency(item.balance) }}</td>
               </tr>
               <tr *ngIf="balanceSheetData.assets.length === 0">
-                <td colspan="3" style="padding: 15px 0; text-align: center; color: var(--gray-400); font-style: italic;">No asset accounts found.</td>
+                <td colspan="3" style="padding: 15px 0; text-align: center; color: var(--gray-400); font-style: italic">
+                  No asset accounts found.
+                </td>
               </tr>
-              <tr style="border-top: 2px solid var(--gray-300); font-weight: bold; font-size: 14px; color: var(--navy);">
-                <td colspan="2" style="padding: 12px 0;">TOTAL ASSETS</td>
-                <td style="padding: 12px 0; text-align: right; text-decoration: underline double;">{{ formatCurrency(balanceSheetData.totalAssets) }}</td>
+              <tr style="border-top: 2px solid var(--gray-300); font-weight: bold; font-size: 14px; color: var(--navy)">
+                <td colspan="2" style="padding: 12px 0">TOTAL ASSETS</td>
+                <td style="padding: 12px 0; text-align: right; text-decoration: underline double">
+                  {{ formatCurrency(balanceSheetData.totalAssets) }}
+                </td>
               </tr>
             </tbody>
           </table>
@@ -171,40 +268,76 @@
         <!-- Right Side: Liabilities & Equity -->
         <div>
           <!-- Liabilities Section -->
-          <h3 style="color: var(--primary-color); font-weight: 700; border-bottom: 1.5px solid var(--gray-300); padding-bottom: 6px; margin-bottom: 10px; font-size: 14px;">LIABILITIES</h3>
-          <table style="width: 100%; border-collapse: collapse; font-size: 13px; margin-bottom: 25px;">
+          <h3
+            style="
+              color: var(--primary-color);
+              font-weight: 700;
+              border-bottom: 1.5px solid var(--gray-300);
+              padding-bottom: 6px;
+              margin-bottom: 10px;
+              font-size: 14px;
+            "
+          >
+            LIABILITIES
+          </h3>
+          <table style="width: 100%; border-collapse: collapse; font-size: 13px; margin-bottom: 25px">
             <tbody>
-              <tr *ngFor="let item of balanceSheetData.liabilities" style="border-bottom: 1px solid var(--gray-100);">
-                <td style="padding: 8px 0; color: var(--gray-500); width: 80px;">{{ item.accountCode }}</td>
-                <td style="padding: 8px 0; font-weight: 500;">{{ item.description }}</td>
-                <td style="padding: 8px 0; text-align: right; font-weight: 600;">{{ formatCurrency(item.balance) }}</td>
+              <tr *ngFor="let item of balanceSheetData.liabilities" style="border-bottom: 1px solid var(--gray-100)">
+                <td style="padding: 8px 0; color: var(--gray-500); width: 80px">{{ item.accountCode }}</td>
+                <td style="padding: 8px 0; font-weight: 500">{{ item.description }}</td>
+                <td style="padding: 8px 0; text-align: right; font-weight: 600">{{ formatCurrency(item.balance) }}</td>
               </tr>
               <tr *ngIf="balanceSheetData.liabilities.length === 0">
-                <td colspan="3" style="padding: 15px 0; text-align: center; color: var(--gray-400); font-style: italic;">No liability accounts found.</td>
+                <td colspan="3" style="padding: 15px 0; text-align: center; color: var(--gray-400); font-style: italic">
+                  No liability accounts found.
+                </td>
               </tr>
-              <tr style="border-top: 2px solid var(--gray-300); font-weight: bold; font-size: 14px; color: var(--navy);">
-                <td colspan="2" style="padding: 12px 0;">TOTAL LIABILITIES</td>
-                <td style="padding: 12px 0; text-align: right;">{{ formatCurrency(balanceSheetData.totalLiabilities) }}</td>
+              <tr style="border-top: 2px solid var(--gray-300); font-weight: bold; font-size: 14px; color: var(--navy)">
+                <td colspan="2" style="padding: 12px 0">TOTAL LIABILITIES</td>
+                <td style="padding: 12px 0; text-align: right">
+                  {{ formatCurrency(balanceSheetData.totalLiabilities) }}
+                </td>
               </tr>
             </tbody>
           </table>
 
           <!-- Equity Section -->
-          <h3 style="color: var(--primary-color); font-weight: 700; border-bottom: 1.5px solid var(--gray-300); padding-bottom: 6px; margin-bottom: 10px; font-size: 14px;">EQUITY</h3>
-          <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
+          <h3
+            style="
+              color: var(--primary-color);
+              font-weight: 700;
+              border-bottom: 1.5px solid var(--gray-300);
+              padding-bottom: 6px;
+              margin-bottom: 10px;
+              font-size: 14px;
+            "
+          >
+            EQUITY
+          </h3>
+          <table style="width: 100%; border-collapse: collapse; font-size: 13px">
             <tbody>
-              <tr *ngFor="let item of balanceSheetData.equity" style="border-bottom: 1px solid var(--gray-100);">
-                <td style="padding: 8px 0; color: var(--gray-500); width: 80px;">{{ item.accountCode }}</td>
-                <td style="padding: 8px 0; font-weight: 500;">{{ item.description }}</td>
-                <td style="padding: 8px 0; text-align: right; font-weight: 600;">{{ formatCurrency(item.balance) }}</td>
+              <tr *ngFor="let item of balanceSheetData.equity" style="border-bottom: 1px solid var(--gray-100)">
+                <td style="padding: 8px 0; color: var(--gray-500); width: 80px">{{ item.accountCode }}</td>
+                <td style="padding: 8px 0; font-weight: 500">{{ item.description }}</td>
+                <td style="padding: 8px 0; text-align: right; font-weight: 600">{{ formatCurrency(item.balance) }}</td>
               </tr>
-              <tr style="border-top: 2px solid var(--gray-300); font-weight: bold; font-size: 14px; color: var(--navy);">
-                <td colspan="2" style="padding: 12px 0;">TOTAL EQUITY</td>
-                <td style="padding: 12px 0; text-align: right;">{{ formatCurrency(balanceSheetData.totalEquity) }}</td>
+              <tr style="border-top: 2px solid var(--gray-300); font-weight: bold; font-size: 14px; color: var(--navy)">
+                <td colspan="2" style="padding: 12px 0">TOTAL EQUITY</td>
+                <td style="padding: 12px 0; text-align: right">{{ formatCurrency(balanceSheetData.totalEquity) }}</td>
               </tr>
-              <tr style="border-top: 2px solid var(--navy); font-weight: bold; font-size: 14px; color: var(--primary-color); background: var(--gray-50);">
-                <td colspan="2" style="padding: 12px 6px;">TOTAL LIABILITIES &amp; EQUITY</td>
-                <td style="padding: 12px 6px; text-align: right; text-decoration: underline double;">{{ formatCurrency(balanceSheetData.totalLiabilities + balanceSheetData.totalEquity) }}</td>
+              <tr
+                style="
+                  border-top: 2px solid var(--navy);
+                  font-weight: bold;
+                  font-size: 14px;
+                  color: var(--primary-color);
+                  background: var(--gray-50);
+                "
+              >
+                <td colspan="2" style="padding: 12px 6px">TOTAL LIABILITIES &amp; EQUITY</td>
+                <td style="padding: 12px 6px; text-align: right; text-decoration: underline double">
+                  {{ formatCurrency(balanceSheetData.totalLiabilities + balanceSheetData.totalEquity) }}
+                </td>
               </tr>
             </tbody>
           </table>
@@ -215,54 +348,100 @@
 
   <!-- 3. PROFIT & LOSS VIEW -->
   <ng-container *ngIf="!isLoading && activeTab === 'pl' && plData">
-    <div class="content-card" style="margin-top: 12px; padding: 16px; background: #fff; max-width: 700px; margin-left: auto; margin-right: auto;">
-      <div style="text-align: center; border-bottom: 2px solid var(--navy); padding-bottom: 10px; margin-bottom: 16px;">
-        <h2 style="margin: 0; color: var(--navy); font-weight: 700; font-size: 20px;">Profit &amp; Loss (P&amp;L) Statement</h2>
-        <p style="margin: 5px 0 0 0; font-size: 13px; color: var(--gray-500);">For the period ending {{ month }} {{ year }}</p>
+    <div
+      class="content-card"
+      style="margin-top: 12px; padding: 16px; background: #fff; max-width: 700px; margin-left: auto; margin-right: auto"
+    >
+      <div style="text-align: center; border-bottom: 2px solid var(--navy); padding-bottom: 10px; margin-bottom: 16px">
+        <h2 style="margin: 0; color: var(--navy); font-weight: 700; font-size: 20px">
+          Profit &amp; Loss (P&amp;L) Statement
+        </h2>
+        <p style="margin: 5px 0 0 0; font-size: 13px; color: var(--gray-500)">
+          For the period ending {{ month }} {{ year }}
+        </p>
       </div>
 
       <!-- Revenues Section -->
-      <h3 style="color: var(--primary-color); font-weight: 700; border-bottom: 1.5px solid var(--gray-300); padding-bottom: 6px; margin-bottom: 12px; font-size: 14px;">REVENUES</h3>
-      <table style="width: 100%; border-collapse: collapse; font-size: 13px; margin-bottom: 20px;">
+      <h3
+        style="
+          color: var(--primary-color);
+          font-weight: 700;
+          border-bottom: 1.5px solid var(--gray-300);
+          padding-bottom: 6px;
+          margin-bottom: 12px;
+          font-size: 14px;
+        "
+      >
+        REVENUES
+      </h3>
+      <table style="width: 100%; border-collapse: collapse; font-size: 13px; margin-bottom: 20px">
         <tbody>
-          <tr *ngFor="let item of plData.revenues" style="border-bottom: 1px solid var(--gray-100);">
-            <td style="padding: 8px 0; color: var(--gray-500); width: 80px;">{{ item.accountCode }}</td>
-            <td style="padding: 8px 0; font-weight: 500;">{{ item.description }}</td>
-            <td style="padding: 8px 0; text-align: right; font-weight: 600;">{{ formatCurrency(item.balance) }}</td>
+          <tr *ngFor="let item of plData.revenues" style="border-bottom: 1px solid var(--gray-100)">
+            <td style="padding: 8px 0; color: var(--gray-500); width: 80px">{{ item.accountCode }}</td>
+            <td style="padding: 8px 0; font-weight: 500">{{ item.description }}</td>
+            <td style="padding: 8px 0; text-align: right; font-weight: 600">{{ formatCurrency(item.balance) }}</td>
           </tr>
           <tr *ngIf="plData.revenues.length === 0">
-            <td colspan="3" style="padding: 15px 0; text-align: center; color: var(--gray-400); font-style: italic;">No revenue transactions found for this period.</td>
+            <td colspan="3" style="padding: 15px 0; text-align: center; color: var(--gray-400); font-style: italic">
+              No revenue transactions found for this period.
+            </td>
           </tr>
-          <tr style="border-top: 2px solid var(--gray-300); font-weight: bold; font-size: 13px; color: var(--navy);">
-            <td colspan="2" style="padding: 10px 0;">Total Revenue</td>
-            <td style="padding: 10px 0; text-align: right;">{{ formatCurrency(plData.totalRevenue) }}</td>
+          <tr style="border-top: 2px solid var(--gray-300); font-weight: bold; font-size: 13px; color: var(--navy)">
+            <td colspan="2" style="padding: 10px 0">Total Revenue</td>
+            <td style="padding: 10px 0; text-align: right">{{ formatCurrency(plData.totalRevenue) }}</td>
           </tr>
         </tbody>
       </table>
 
       <!-- Expenses Section -->
-      <h3 style="color: var(--primary-color); font-weight: 700; border-bottom: 1.5px solid var(--gray-300); padding-bottom: 6px; margin-bottom: 12px; font-size: 14px;">EXPENSES</h3>
-      <table style="width: 100%; border-collapse: collapse; font-size: 13px; margin-bottom: 30px;">
+      <h3
+        style="
+          color: var(--primary-color);
+          font-weight: 700;
+          border-bottom: 1.5px solid var(--gray-300);
+          padding-bottom: 6px;
+          margin-bottom: 12px;
+          font-size: 14px;
+        "
+      >
+        EXPENSES
+      </h3>
+      <table style="width: 100%; border-collapse: collapse; font-size: 13px; margin-bottom: 30px">
         <tbody>
-          <tr *ngFor="let item of plData.expenses" style="border-bottom: 1px solid var(--gray-100);">
-            <td style="padding: 8px 0; color: var(--gray-500); width: 80px;">{{ item.accountCode }}</td>
-            <td style="padding: 8px 0; font-weight: 500;">{{ item.description }}</td>
-            <td style="padding: 8px 0; text-align: right; font-weight: 600;">{{ formatCurrency(item.balance) }}</td>
+          <tr *ngFor="let item of plData.expenses" style="border-bottom: 1px solid var(--gray-100)">
+            <td style="padding: 8px 0; color: var(--gray-500); width: 80px">{{ item.accountCode }}</td>
+            <td style="padding: 8px 0; font-weight: 500">{{ item.description }}</td>
+            <td style="padding: 8px 0; text-align: right; font-weight: 600">{{ formatCurrency(item.balance) }}</td>
           </tr>
           <tr *ngIf="plData.expenses.length === 0">
-            <td colspan="3" style="padding: 15px 0; text-align: center; color: var(--gray-400); font-style: italic;">No expense transactions found for this period.</td>
+            <td colspan="3" style="padding: 15px 0; text-align: center; color: var(--gray-400); font-style: italic">
+              No expense transactions found for this period.
+            </td>
           </tr>
-          <tr style="border-top: 2px solid var(--gray-300); font-weight: bold; font-size: 13px; color: var(--navy);">
-            <td colspan="2" style="padding: 10px 0;">Total Expenses</td>
-            <td style="padding: 10px 0; text-align: right;">{{ formatCurrency(plData.totalExpense) }}</td>
+          <tr style="border-top: 2px solid var(--gray-300); font-weight: bold; font-size: 13px; color: var(--navy)">
+            <td colspan="2" style="padding: 10px 0">Total Expenses</td>
+            <td style="padding: 10px 0; text-align: right">{{ formatCurrency(plData.totalExpense) }}</td>
           </tr>
         </tbody>
       </table>
 
       <!-- Net Income Summary -->
-      <div style="border-top: 3px double var(--navy); border-bottom: 3px double var(--navy); padding: 15px 10px; background: var(--gray-50); display: flex; justify-content: space-between; align-items: center;">
-        <span style="font-weight: 700; font-size: 15px; color: var(--navy);">NET INCOME</span>
-        <span style="font-weight: 800; font-size: 16px;" [style.color]="plData.netIncome >= 0 ? 'var(--teal-700)' : 'var(--danger-color)'">
+      <div
+        style="
+          border-top: 3px double var(--navy);
+          border-bottom: 3px double var(--navy);
+          padding: 15px 10px;
+          background: var(--gray-50);
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+        "
+      >
+        <span style="font-weight: 700; font-size: 15px; color: var(--navy)">NET INCOME</span>
+        <span
+          style="font-weight: 800; font-size: 16px"
+          [style.color]="plData.netIncome >= 0 ? 'var(--teal-700)' : 'var(--danger-color)'"
+        >
           {{ formatCurrency(plData.netIncome) }}
         </span>
       </div>

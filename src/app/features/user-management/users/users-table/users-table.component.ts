@@ -1,12 +1,16 @@
 import { Component, Input, Output, EventEmitter, inject, OnInit } from '@angular/core';
 import { User } from '../../../../core/models/user.model';
+import { Role } from '../../../../core/models/role.model';
 import { AuthService } from '../../../../core/services/auth.service';
 import { AgGridAngular } from 'ag-grid-angular';
-import { GridOptions, ColDef } from 'ag-grid-community';
+import { GridOptions, ColDef, ICellRendererParams, SelectionChangedEvent } from 'ag-grid-community';
 import { AgGridConfigService } from '../../../../core/services/ag-grid-config.service';
-import { AvatarCellRenderer } from '../../../../shared/components/grid-renderers/avatar-cell.component';
-import { StatusBadgeCellRenderer } from '../../../../shared/components/grid-renderers/status-badge-cell.component';
-import { ActionButtonsCellRenderer } from '../../../../shared/components/grid-renderers/action-buttons-cell.component';
+import { AvatarCell } from '../../../../shared/components/grid-renderers/avatar-cell/avatar-cell';
+import { StatusBadgeCell } from '../../../../shared/components/grid-renderers/status-badge-cell/status-badge-cell';
+import {
+  ActionButtonsCell,
+  ActionButtonConfig,
+} from '../../../../shared/components/grid-renderers/action-buttons-cell/action-buttons-cell';
 
 @Component({
   selector: 'app-users-table',
@@ -29,7 +33,7 @@ export class UsersTableComponent implements OnInit {
   @Output() selectionChanged = new EventEmitter<string[]>();
 
   gridOptions!: GridOptions;
-  columnDefs: ColDef[] = [];
+  columnDefs: ColDef<User>[] = [];
   skeletonRows = [1, 2, 3, 4, 5];
 
   ngOnInit(): void {
@@ -61,7 +65,7 @@ export class UsersTableComponent implements OnInit {
       {
         headerName: 'USER',
         field: 'name',
-        cellRenderer: AvatarCellRenderer,
+        cellRenderer: AvatarCell,
         minWidth: 250,
         flex: 2,
         valueGetter: params => params.data,
@@ -69,7 +73,7 @@ export class UsersTableComponent implements OnInit {
       {
         headerName: 'ROLE',
         field: 'role',
-        cellRenderer: (params: any) => {
+        cellRenderer: (params: ICellRendererParams<User, Role>) => {
           const role = params.value;
           if (role) {
             const hex = role.color;
@@ -90,6 +94,7 @@ export class UsersTableComponent implements OnInit {
       {
         headerName: 'DEPARTMENT',
         field: 'department',
+        // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- '' is a valid falsy value that should also render as '-'
         valueFormatter: params => params.value || '-',
         flex: 1,
         minWidth: 150,
@@ -97,6 +102,7 @@ export class UsersTableComponent implements OnInit {
       {
         headerName: 'TITLE',
         field: 'title',
+        // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- '' is a valid falsy value that should also render as '-'
         valueFormatter: params => params.value || '-',
         flex: 1,
         minWidth: 150,
@@ -104,7 +110,7 @@ export class UsersTableComponent implements OnInit {
       {
         headerName: 'STATUS',
         field: 'status',
-        cellRenderer: StatusBadgeCellRenderer,
+        cellRenderer: StatusBadgeCell,
         width: 120,
       },
       {
@@ -121,10 +127,10 @@ export class UsersTableComponent implements OnInit {
         minWidth: 200,
         maxWidth: 200,
         sortable: false,
-        cellRenderer: ActionButtonsCellRenderer,
+        cellRenderer: ActionButtonsCell,
         cellRendererParams: {
           buttons: (data: User) => {
-            const btns: any[] = [{ label: 'View', action: 'view' }];
+            const btns: ActionButtonConfig[] = [{ label: 'View', action: 'view' }];
             if (this.hasPermission('user.edit')) {
               btns.push({ label: 'Edit', action: 'edit' });
               if (data.status !== 'inactive') {
@@ -143,9 +149,9 @@ export class UsersTableComponent implements OnInit {
     );
   }
 
-  onSelectionChanged(event: any): void {
+  onSelectionChanged(event: SelectionChangedEvent<User>): void {
     const selectedNodes = event.api.getSelectedNodes();
-    const selectedIds = selectedNodes.map((node: any) => node.data.id);
+    const selectedIds = selectedNodes.map(node => node.data?.id).filter((id): id is string => !!id);
     this.selectionChanged.emit(selectedIds);
   }
 

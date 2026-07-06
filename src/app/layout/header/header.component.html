@@ -23,7 +23,14 @@
     </div>
   </div>
   <div class="header-right">
-    <div class="user-menu" (click)="toggleDropdown()">
+    <div
+      class="user-menu"
+      (click)="toggleDropdown()"
+      tabindex="0"
+      role="button"
+      (keydown.enter)="toggleDropdown()"
+      (keydown.space)="toggleDropdown(); $event.preventDefault()"
+    >
       <div class="user-avatar" [style.background]="avatarColor">
         {{ initials }}
       </div>

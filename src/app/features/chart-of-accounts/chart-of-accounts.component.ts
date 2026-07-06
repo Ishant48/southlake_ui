@@ -1,8 +1,9 @@
 import { Component, inject, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ChartOfAccountsService } from '../../core/services/chart-of-accounts.service';
+import { ChartOfAccountsApi } from './services/chart-of-accounts-api';
 import { ChartOfAccount, ChartOfAccountDocument } from '../../core/models/chart-of-account.model';
+import { TreeAccount } from './models/chart-of-account.model';
 import { ToastService } from '../../shared/components/toast/toast.service';
 import { ConfirmDialogComponent } from '../../shared/components/confirm-dialog/confirm-dialog.component';
 import { environment } from '../../../environments/environment';
@@ -11,10 +12,7 @@ import { AgGridAngular } from 'ag-grid-angular';
 import { ColDef, GridOptions, GridReadyEvent } from 'ag-grid-community';
 import { AgGridConfigService } from '../../core/services/ag-grid-config.service';
 
-import { CoaBadgeRendererComponent } from './grid-renderers/coa-badge-renderer.component';
-import { CoaTreeNameRendererComponent } from './grid-renderers/coa-tree-name-renderer.component';
-import { BalanceBadgeRendererComponent } from './grid-renderers/balance-badge-renderer.component';
-import { CoaActionsRendererComponent } from './grid-renderers/coa-actions-renderer.component';
+import { CoaGridCellRenderer } from './components/coa-grid-cell-renderer/coa-grid-cell-renderer';
 
 @Component({
   selector: 'app-chart-of-accounts',
@@ -24,15 +22,15 @@ import { CoaActionsRendererComponent } from './grid-renderers/coa-actions-render
   styleUrl: './chart-of-accounts.component.scss',
 })
 export class ChartOfAccountsComponent implements OnInit {
-  private service = inject(ChartOfAccountsService);
+  private service = inject(ChartOfAccountsApi);
   private toast = inject(ToastService);
   private agGridConfig = inject(AgGridConfigService);
   private cdr = inject(ChangeDetectorRef);
 
   flatAccounts: ChartOfAccount[] = [];
-  rootParents: ChartOfAccount[] = []; // Predefined 5 roots
-  subCoas: any[] = []; // List of COAs (roots and subs) displayed in table
-  filteredSubCoas: any[] = []; // Filtered list passed to AG Grid
+  rootParents: TreeAccount[] = []; // Predefined 5 roots
+  subCoas: TreeAccount[] = []; // List of COAs (roots and subs) displayed in table
+  filteredSubCoas: TreeAccount[] = []; // Filtered list passed to AG Grid
   loading = false;
   searchTerm: string = '';
   Math = Math; // To use Math.ceil in template if needed
@@ -43,7 +41,8 @@ export class ChartOfAccountsComponent implements OnInit {
     {
       headerName: 'COA TYPE',
       field: 'is_root',
-      cellRenderer: CoaBadgeRendererComponent,
+      cellRenderer: CoaGridCellRenderer,
+      cellRendererParams: { variant: 'badge' },
       flex: 12,
       minWidth: 100,
     },
@@ -57,7 +56,8 @@ export class ChartOfAccountsComponent implements OnInit {
     {
       headerName: 'NAME',
       field: 'description',
-      cellRenderer: CoaTreeNameRendererComponent,
+      cellRenderer: CoaGridCellRenderer,
+      cellRendererParams: { variant: 'tree-name' },
       flex: 40,
       minWidth: 350,
     },
@@ -70,7 +70,7 @@ export class ChartOfAccountsComponent implements OnInit {
     },
     {
       headerName: 'NEXT NUMBER',
-      valueGetter: params => (params.data?.is_root ? params.data?.next_number || '-' : '-'),
+      valueGetter: params => (params.data?.is_root ? (params.data?.next_number ?? '-') : '-'),
       cellStyle: { fontFamily: 'monospace' },
       flex: 12,
       minWidth: 100,
@@ -78,13 +78,15 @@ export class ChartOfAccountsComponent implements OnInit {
     {
       headerName: 'NORMAL BAL...',
       field: 'normal_balance',
-      cellRenderer: BalanceBadgeRendererComponent,
+      cellRenderer: CoaGridCellRenderer,
+      cellRendererParams: { variant: 'balance-badge' },
       flex: 14,
       minWidth: 100,
     },
     {
       headerName: 'ACTIONS',
-      cellRenderer: CoaActionsRendererComponent,
+      cellRenderer: CoaGridCellRenderer,
+      cellRendererParams: { variant: 'actions' },
       sortable: false,
       minWidth: 230,
       maxWidth: 240,
@@ -165,7 +167,7 @@ export class ChartOfAccountsComponent implements OnInit {
           this.cdr.markForCheck();
         },
         error: err => {
-          this.toast.error(err.error?.message || 'Failed to load chart of accounts');
+          this.toast.error(err.error?.message ?? 'Failed to load chart of accounts');
           this.loading = false;
           this.cdr.markForCheck();
         },
@@ -181,7 +183,7 @@ export class ChartOfAccountsComponent implements OnInit {
 
   applyFilter() {}
 
-  buildTreeList(accounts: ChartOfAccount[]): any[] {
+  buildTreeList(accounts: ChartOfAccount[]): TreeAccount[] {
     const rootCodes = [110000, 210000, 310000, 410000, 510000];
     const roots = accounts.filter(a => rootCodes.includes(Number(a.account_code)));
 
@@ -199,7 +201,7 @@ export class ChartOfAccountsComponent implements OnInit {
       return orderA - orderB;
     });
 
-    const result: any[] = [];
+    const result: TreeAccount[] = [];
 
     const traverse = (node: ChartOfAccount, depth: number) => {
       const isRoot = node.is_parent;
@@ -246,20 +248,21 @@ export class ChartOfAccountsComponent implements OnInit {
     return parent ? String(parent.account_code) : '-';
   }
 
-  getParentCoaDisplay(root: ChartOfAccount): string {
-    const depth = (root as any).treeDepth || 0;
+  getParentCoaDisplay(root: TreeAccount): string {
+    const depth = root.treeDepth ?? 0;
     const indent = '\u00A0\u00A0\u00A0\u00A0'.repeat(depth);
     const code = Number(root.account_code);
-    return `${indent}${code} - ${root.description || ''}`;
+    return `${indent}${code} - ${root.description ?? ''}`;
   }
 
-  isDescendantOf(coa: any, targetParentId: string): boolean {
-    let current = coa;
+  isDescendantOf(coa: TreeAccount, targetParentId: string): boolean {
+    let current: ChartOfAccount | undefined = coa;
     while (current) {
       if (current.parent_id === targetParentId || current.id === targetParentId) {
         return true;
       }
-      current = this.flatAccounts.find(p => p.id === current.parent_id);
+      const parentId: string | null | undefined = current.parent_id;
+      current = this.flatAccounts.find(p => p.id === parentId);
     }
     return false;
   }
@@ -301,7 +304,7 @@ export class ChartOfAccountsComponent implements OnInit {
   // Notes Modal methods
   openNotesModal(coa: ChartOfAccount): void {
     this.notesModalTitle = `Account Notes: ${coa.account_code} - ${coa.description}`;
-    this.notesModalContent = coa.notes || '';
+    this.notesModalContent = coa.notes ?? '';
     this.showNotesModal = true;
   }
 
@@ -329,7 +332,12 @@ export class ChartOfAccountsComponent implements OnInit {
       // Prefill earningAccountCode with 310000 if parent is Revenue (410000) or Expense (510000) or their children
       let currentParent = parent;
       let parentCodeStr = String(currentParent.account_code);
-      while (currentParent && !parentCodeStr.startsWith('41') && !parentCodeStr.startsWith('51') && currentParent.parent_id) {
+      while (
+        currentParent &&
+        !parentCodeStr.startsWith('41') &&
+        !parentCodeStr.startsWith('51') &&
+        currentParent.parent_id
+      ) {
         const nextParent = this.rootParents.find(p => p.id === currentParent.parent_id);
         if (!nextParent || nextParent.id === currentParent.id) break;
         currentParent = nextParent;
@@ -357,7 +365,12 @@ export class ChartOfAccountsComponent implements OnInit {
 
     let currentParent = parent;
     let parentCodeStr = String(currentParent.account_code);
-    while (currentParent && !parentCodeStr.startsWith('41') && !parentCodeStr.startsWith('51') && currentParent.parent_id) {
+    while (
+      currentParent &&
+      !parentCodeStr.startsWith('41') &&
+      !parentCodeStr.startsWith('51') &&
+      currentParent.parent_id
+    ) {
       const nextParent = this.rootParents.find(p => p.id === currentParent.parent_id);
       if (!nextParent || nextParent.id === currentParent.id) break;
       currentParent = nextParent;
@@ -465,6 +478,7 @@ export class ChartOfAccountsComponent implements OnInit {
 
     this.submitting = true;
     const body = { ...this.accountForm };
+    // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- empty string must also normalize to null
     if (!body.key) body.key = null;
 
     if (this.isEditMode) {
@@ -478,7 +492,7 @@ export class ChartOfAccountsComponent implements OnInit {
           this.cdr.markForCheck();
         },
         error: err => {
-          this.toast.error(err.error?.message || 'Failed to update account');
+          this.toast.error(err.error?.message ?? 'Failed to update account');
           this.submitting = false;
           this.cdr.markForCheck();
         },
@@ -493,7 +507,7 @@ export class ChartOfAccountsComponent implements OnInit {
           this.cdr.markForCheck();
         },
         error: err => {
-          this.toast.error(err.error?.message || 'Failed to create account');
+          this.toast.error(err.error?.message ?? 'Failed to create account');
           this.submitting = false;
           this.cdr.markForCheck();
         },
@@ -512,7 +526,7 @@ export class ChartOfAccountsComponent implements OnInit {
           this.cdr.markForCheck();
         },
         error: err => {
-          this.toast.error(err.error?.message || 'Failed to delete account');
+          this.toast.error(err.error?.message ?? 'Failed to delete account');
           this.cdr.markForCheck();
         },
       });
@@ -547,21 +561,23 @@ export class ChartOfAccountsComponent implements OnInit {
     this.documents = [];
   }
 
-  onFileSelected(event: any): void {
-    const file: File = event.target.files[0];
+  onFileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
     if (!file || !this.selectedAccount) return;
 
+    const accountId = this.selectedAccount.id;
     this.uploadingDoc = true;
-    this.service.uploadDocument(this.selectedAccount.id, file).subscribe({
+    this.service.uploadDocument(accountId, file).subscribe({
       next: () => {
         this.toast.success('Document uploaded successfully');
-        this.loadDocuments(this.selectedAccount!.id);
+        this.loadDocuments(accountId);
         this.uploadingDoc = false;
-        event.target.value = '';
+        input.value = '';
         this.cdr.markForCheck();
       },
       error: err => {
-        this.toast.error(err.error?.message || 'Failed to upload document');
+        this.toast.error(err.error?.message ?? 'Failed to upload document');
         this.uploadingDoc = false;
         this.cdr.markForCheck();
       },
@@ -588,7 +604,7 @@ export class ChartOfAccountsComponent implements OnInit {
           this.cdr.markForCheck();
         },
         error: err => {
-          this.toast.error(err.error?.message || 'Failed to delete document');
+          this.toast.error(err.error?.message ?? 'Failed to delete document');
           this.cdr.markForCheck();
         },
       });
@@ -611,9 +627,9 @@ export class ChartOfAccountsComponent implements OnInit {
       coa.is_root ? 'Root COA' : 'Sub COA',
       coa.account_code,
       coa.description,
-      coa.notes || '',
+      coa.notes ?? '',
       coa.is_root ? '-' : this.getParentCoaId(coa),
-      coa.is_root ? coa.next_number || '-' : '-',
+      coa.is_root ? (coa.next_number ?? '-') : '-',
       coa.normal_balance ? coa.normal_balance.toUpperCase() : '-',
       coa.is_active ? 'Active' : 'Inactive',
     ]);
@@ -621,7 +637,11 @@ export class ChartOfAccountsComponent implements OnInit {
     this.downloadCSV(headers, rows, 'chart_of_accounts.csv');
   }
 
-  private downloadCSV(headers: string[], rows: any[][], filename: string): void {
+  private downloadCSV(
+    headers: string[],
+    rows: (string | number | null)[][],
+    filename: string,
+  ): void {
     const csvContent = [
       headers.map(h => `"${h.replace(/"/g, '""')}"`).join(','),
       ...rows.map(row =>

@@ -8,9 +8,9 @@ import { ActivityLogsService } from '../../../core/services/activity-logs.servic
 import { PermissionsService } from '../../../core/services/permissions.service';
 import { ToastService } from '../../../shared/components/toast/toast.service';
 import { AgGridAngular } from 'ag-grid-angular';
-import { GridOptions, ColDef } from 'ag-grid-community';
+import { GridOptions, ColDef, ICellRendererParams } from 'ag-grid-community';
 import { AgGridConfigService } from '../../../core/services/ag-grid-config.service';
-import { AvatarCellRenderer } from '../../../shared/components/grid-renderers/avatar-cell.component';
+import { AvatarCell } from '../../../shared/components/grid-renderers/avatar-cell/avatar-cell';
 
 const ACTION_COLORS: Record<string, { bg: string; text: string }> = {
   login: { bg: 'var(--blue-bg)', text: 'var(--blue)' },
@@ -87,7 +87,7 @@ export class ActivityLogsComponent implements OnInit {
       {
         headerName: 'USER',
         field: 'user',
-        cellRenderer: AvatarCellRenderer,
+        cellRenderer: AvatarCell,
         minWidth: 250,
         flex: 2,
         valueGetter: params => {
@@ -98,8 +98,8 @@ export class ActivityLogsComponent implements OnInit {
       {
         headerName: 'ACTION',
         field: 'action',
-        cellRenderer: (params: any) => {
-          const action = params.value;
+        cellRenderer: (params: ICellRendererParams<ActivityLog, string>) => {
+          const action = params.value ?? '';
           const style = this.getActionStyle(action);
           return `<span class="action-badge" style="background: ${style.bg}; color: ${style.text}; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 500; display: inline-block;">${action}</span>`;
         },
@@ -116,6 +116,7 @@ export class ActivityLogsComponent implements OnInit {
       {
         headerName: 'ENTITY',
         field: 'entityType',
+        // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- '' is a valid falsy value that should also render as '-'
         valueFormatter: params => params.value || '-',
         flex: 1,
         minWidth: 150,
@@ -123,6 +124,7 @@ export class ActivityLogsComponent implements OnInit {
       {
         headerName: 'DESCRIPTION',
         field: 'description',
+        // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- '' is a valid falsy value that should also render as '-'
         valueFormatter: params => params.value || '-',
         flex: 2,
         minWidth: 200,
@@ -130,6 +132,7 @@ export class ActivityLogsComponent implements OnInit {
       {
         headerName: 'IP ADDRESS',
         field: 'ipAddress',
+        // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- '' is a valid falsy value that should also render as '-'
         valueFormatter: params => params.value || '-',
         cellClass: 'text-mono',
         flex: 1,
@@ -163,10 +166,15 @@ export class ActivityLogsComponent implements OnInit {
     this.logsService
       .getLogs({
         ...this.filter,
+        // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- '' should also be treated as "not set"
         search: this.filter.search || undefined,
+        // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- '' should also be treated as "not set"
         action: this.filter.action || undefined,
+        // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- '' should also be treated as "not set"
         module_id: this.filter.module_id || undefined,
+        // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- '' should also be treated as "not set"
         date_from: this.filter.date_from || undefined,
+        // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- '' should also be treated as "not set"
         date_to: this.filter.date_to || undefined,
       })
       .subscribe({
@@ -202,10 +210,15 @@ export class ActivityLogsComponent implements OnInit {
   exportLogs(): void {
     this.logsService
       .exportLogs({
+        // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- '' should also be treated as "not set"
         search: this.filter.search || undefined,
+        // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- '' should also be treated as "not set"
         action: this.filter.action || undefined,
+        // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- '' should also be treated as "not set"
         module_id: this.filter.module_id || undefined,
+        // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- '' should also be treated as "not set"
         date_from: this.filter.date_from || undefined,
+        // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- '' should also be treated as "not set"
         date_to: this.filter.date_to || undefined,
       })
       .subscribe({

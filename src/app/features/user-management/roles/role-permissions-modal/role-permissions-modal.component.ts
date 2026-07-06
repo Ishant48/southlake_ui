@@ -10,7 +10,6 @@ import {
 } from '@angular/core';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import { forkJoin } from 'rxjs';
 import { RoleDetail, CreateRolePayload } from '../../../../core/models/role.model';
 import { Permission } from '../../../../core/models/permission.model';
 import { RolesService } from '../../../../core/services/roles.service';
@@ -66,7 +65,7 @@ export class RolePermissionsModalComponent implements OnChanges {
     return Object.entries(groups)
       .map(([prefix, perms]) => ({
         moduleName:
-          MODULE_NAMES[prefix] ||
+          MODULE_NAMES[prefix] ??
           prefix.charAt(0).toUpperCase() + prefix.slice(1).replace(/_/g, ' '),
         permissions: perms,
       }))

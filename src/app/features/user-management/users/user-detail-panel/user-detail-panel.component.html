@@ -1,5 +1,12 @@
 @if (open) {
-  <div class="panel-overlay" (click)="closePanel()"></div>
+  <div
+    class="panel-overlay"
+    (click)="closePanel()"
+    tabindex="0"
+    role="button"
+    (keydown.enter)="closePanel()"
+    (keydown.space)="closePanel(); $event.preventDefault()"
+  ></div>
 }
 <div class="slide-panel detail-panel" [class.open]="open">
   @if (user) {
@@ -124,7 +131,14 @@
             @for (group of groupedPermissions; track group.moduleName) {
               <div class="perm-module-group">
                 <div class="perm-module-title" [class.collapsed-border]="!isGroupExpanded(group.moduleName)">
-                  <div class="perm-module-header-left" (click)="toggleGroup(group.moduleName)">
+                  <div
+                    class="perm-module-header-left"
+                    (click)="toggleGroup(group.moduleName)"
+                    tabindex="0"
+                    role="button"
+                    (keydown.enter)="toggleGroup(group.moduleName)"
+                    (keydown.space)="toggleGroup(group.moduleName); $event.preventDefault()"
+                  >
                     <svg
                       class="perm-chevron-icon"
                       [class.collapsed]="!isGroupExpanded(group.moduleName)"

@@ -10,11 +10,25 @@ import { ConfirmDialogComponent } from '../../shared/components/confirm-dialog/c
 import { DropdownSearchComponent } from '../../shared/components/dropdown-search/dropdown-search.component';
 import { JournalEntryBatch, JournalEntry } from '../../core/models/journal-entry.model';
 import { ChartOfAccount } from '../../core/models/chart-of-account.model';
-import { ActionButtonsCellRenderer } from '../../shared/components/grid-renderers/action-buttons-cell.component';
+import { ActionButtonsCell } from '../../shared/components/grid-renderers/action-buttons-cell/action-buttons-cell';
 import { ReinsuranceService } from '../../core/services/reinsurance.service';
 import { AgGridAngular } from 'ag-grid-angular';
-import { ColDef, GridOptions } from 'ag-grid-community';
+import { ColDef, GridOptions, ICellRendererParams } from 'ag-grid-community';
 import { AgGridConfigService } from '../../core/services/ag-grid-config.service';
+
+interface JournalEntryFormRow {
+  rowId: string;
+  je_number: number;
+  description: string;
+  coa_id: string;
+  sub: string;
+  debit: number | string | null;
+  credit: number | string | null;
+  date: string;
+  dp: string;
+  policy: string;
+  memo: string;
+}
 
 @Component({
   selector: 'app-journal-entries',
@@ -46,12 +60,14 @@ export class JournalEntriesComponent implements OnInit {
     {
       headerName: 'BATCH',
       field: 'batch_number',
-      cellRenderer: (params: any) => {
+      cellRenderer: (params: ICellRendererParams<JournalEntryBatch, string>) => {
         const el = document.createElement('strong');
         el.className = 'text-link';
-        el.innerText = params.value;
+        el.innerText = params.value ?? '';
         el.style.cursor = 'pointer';
-        el.onclick = () => this.viewBatchDetails(params.data);
+        el.onclick = () => {
+          if (params.data) this.viewBatchDetails(params.data);
+        };
         return el;
       },
       flex: 1,
@@ -67,15 +83,15 @@ export class JournalEntriesComponent implements OnInit {
     { headerName: 'COUNT', field: 'count', flex: 1, minWidth: 120 },
     {
       headerName: 'ACTIONS',
-      cellRenderer: ActionButtonsCellRenderer,
+      cellRenderer: ActionButtonsCell,
       cellRendererParams: {
-        buttons: (data: any) => [
+        buttons: (_data: JournalEntryBatch) => [
           { label: 'Edit', action: 'edit' },
           { label: 'Journal Entry', action: 'je' },
           { label: 'Print Register', action: 'print' },
           { label: 'Delete', action: 'delete', danger: true },
         ],
-        onClick: (action: string, data: any) => {
+        onClick: (action: string, data: JournalEntryBatch) => {
           if (action === 'edit' || action === 'je') this.viewBatchDetails(data);
           if (action === 'delete') {
             // Because deleteBatch expects a mouse event to stop propagation, we simulate or bypass it
@@ -109,6 +125,7 @@ export class JournalEntriesComponent implements OnInit {
     {
       headerName: 'SUB',
       field: 'sub',
+      // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- empty string should also display as '-'
       valueFormatter: p => p.value || '-',
       flex: 1,
       minWidth: 120,
@@ -128,20 +145,28 @@ export class JournalEntriesComponent implements OnInit {
       minWidth: 120,
     },
     { headerName: 'DATE', field: 'date', flex: 1, minWidth: 120 },
-    { headerName: 'DP', field: 'dp', valueFormatter: p => p.value || '-', flex: 1, minWidth: 100 },
+    {
+      headerName: 'DP',
+      field: 'dp',
+      // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- empty string should also display as '-'
+      valueFormatter: p => p.value || '-',
+      flex: 1,
+      minWidth: 100,
+    },
     {
       headerName: 'POLICY',
       field: 'policy',
+      // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- empty string should also display as '-'
       valueFormatter: p => p.value || '-',
       flex: 1,
       minWidth: 120,
     },
     {
       headerName: 'ACTIONS',
-      cellRenderer: ActionButtonsCellRenderer,
+      cellRenderer: ActionButtonsCell,
       cellRendererParams: {
         buttons: () => [{ label: 'Edit', action: 'edit' }],
-        onClick: (action: string, data: any) => {
+        onClick: (action: string, data: JournalEntry) => {
           if (action === 'edit') this.editJournalEntry(data);
         },
       },
@@ -185,7 +210,7 @@ export class JournalEntriesComponent implements OnInit {
 
   // Form view data
   nextJeNumber = 1;
-  formEntries: any[] = [];
+  formEntries: JournalEntryFormRow[] = [];
   rowCounter = 0;
   coaOptions: ChartOfAccount[] = [];
   subOptions: string[] = ['705', 'MGA-100', 'MGA-200', 'AA'];
@@ -195,8 +220,8 @@ export class JournalEntriesComponent implements OnInit {
     { id: 'MGA-200', name: 'MGA-200' },
     { id: 'AA', name: 'AA' },
   ];
-  coaLabelFn = (item: any) => (item ? `${item.account_code} - ${item.description}` : '');
-  subLabelFn = (item: any) => (item ? item.name : '');
+  coaLabelFn = (item: ChartOfAccount) => (item ? `${item.account_code} - ${item.description}` : '');
+  subLabelFn = (item: { id: string; name: string }) => (item ? item.name : '');
   submittingEntries = false;
 
   // Confirm dialog control
@@ -263,7 +288,7 @@ export class JournalEntriesComponent implements OnInit {
               this.agentsList = res.map(m => m.name);
               // Prefer 'Futuristic Underwriters LLC' or default to first
               const pref = this.agentsList.find(n => n.toLowerCase().includes('futuristic'));
-              this.selectedAgent = pref || this.agentsList[0];
+              this.selectedAgent = pref ?? this.agentsList[0];
               // Use MGA codes as subledger codes
               this.subOptions = ['705', ...res.map(m => m.mga_code)];
               this.subOptionsList = this.subOptions.map(s => ({ id: s, name: s }));
@@ -283,7 +308,7 @@ export class JournalEntriesComponent implements OnInit {
             if (res.length > 0) {
               this.agentsList = res.map(m => m.name);
               const pref = this.agentsList.find(n => n.toLowerCase().includes('futuristic'));
-              this.selectedAgent = pref || this.agentsList[0];
+              this.selectedAgent = pref ?? this.agentsList[0];
               this.subOptions = ['705', ...res.map(m => m.mga_code)];
               this.subOptionsList = this.subOptions.map(s => ({ id: s, name: s }));
             }
@@ -321,14 +346,14 @@ export class JournalEntriesComponent implements OnInit {
       .subscribe({
         next: res => {
           const uniqueStates = Array.from(
-            new Set(res.map(b => this.getStateFromBatch(b.batch_number)).filter(Boolean))
+            new Set(res.map(b => this.getStateFromBatch(b.batch_number)).filter(Boolean)),
           );
           this.statesOptions = uniqueStates.sort();
 
           let filtered = res;
           if (this.selectedState !== 'all') {
             filtered = filtered.filter(
-              b => this.getStateFromBatch(b.batch_number) === this.selectedState
+              b => this.getStateFromBatch(b.batch_number) === this.selectedState,
             );
           }
 
@@ -390,6 +415,7 @@ export class JournalEntriesComponent implements OnInit {
           this.loadBatches();
         },
         error: err => {
+          // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- '' should also fall back to the default message
           const msg = err.error?.message || 'Failed to create batch';
           this.toast.error(msg);
           this.submittingBatch = false;
@@ -431,22 +457,24 @@ export class JournalEntriesComponent implements OnInit {
       const term = this.entriesSearchTerm.toLowerCase();
       this.filteredEntries = this.allEntries.filter(e => {
         return (
-          (e.je_number?.toString().toLowerCase().includes(term)) ||
-          (e.description?.toLowerCase().includes(term)) ||
-          (e.coa?.account_code?.toString().toLowerCase().includes(term)) ||
-          (e.sub?.toLowerCase().includes(term)) ||
-          (e.policy?.toLowerCase().includes(term))
+          e.je_number?.toString().toLowerCase().includes(term) ||
+          e.description?.toLowerCase().includes(term) ||
+          // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- this is a boolean OR across search fields, not a default value
+          e.coa?.account_code?.toString().toLowerCase().includes(term) ||
+          // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- this is a boolean OR across search fields, not a default value
+          e.sub?.toLowerCase().includes(term) ||
+          e.policy?.toLowerCase().includes(term)
         );
       });
     }
   }
 
   get batchTotalDebits(): number {
-    return this.entries.reduce((sum, item) => sum + Number(item.debit || 0), 0);
+    return this.entries.reduce((sum, item) => sum + Number(item.debit ?? 0), 0);
   }
 
   get batchTotalCredits(): number {
-    return this.entries.reduce((sum, item) => sum + Number(item.credit || 0), 0);
+    return this.entries.reduce((sum, item) => sum + Number(item.credit ?? 0), 0);
   }
 
   get batchDifference(): number {
@@ -463,7 +491,7 @@ export class JournalEntriesComponent implements OnInit {
   // ==========================================
   // ADD JOURNAL ENTRY FORM ACTIONS
   // ==========================================
-  createBlankRow(values: Partial<any> = {}): any {
+  createBlankRow(values: Partial<JournalEntryFormRow> = {}): JournalEntryFormRow {
     const todayStr = new Date().toISOString().split('T')[0];
     this.rowCounter++;
     return {
@@ -513,13 +541,15 @@ export class JournalEntriesComponent implements OnInit {
         je_number: e.je_number,
         description: e.description,
         coa_id: e.coa_id,
-        sub: e.sub || '',
+        sub: e.sub ?? '',
+        // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- 0 is a valid debit meaning "not entered" here
         debit: e.debit || null,
+        // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- 0 is a valid credit meaning "not entered" here
         credit: e.credit || null,
         date: e.date,
-        dp: e.dp || '',
-        policy: e.policy || '',
-        memo: e.memo || '',
+        dp: e.dp ?? '',
+        policy: e.policy ?? '',
+        memo: e.memo ?? '',
       }),
     );
 
@@ -569,11 +599,11 @@ export class JournalEntriesComponent implements OnInit {
   }
 
   get formTotalDebits(): number {
-    return this.formEntries.reduce((sum, r) => sum + Number(r.debit || 0), 0);
+    return this.formEntries.reduce((sum, r) => sum + Number(r.debit ?? 0), 0);
   }
 
   get formTotalCredits(): number {
-    return this.formEntries.reduce((sum, r) => sum + Number(r.credit || 0), 0);
+    return this.formEntries.reduce((sum, r) => sum + Number(r.credit ?? 0), 0);
   }
 
   get formDifference(): number {
@@ -600,8 +630,8 @@ export class JournalEntriesComponent implements OnInit {
         this.toast.error(`Row ${i + 1}: G/L Number is required`);
         return;
       }
-      const deb = Number(row.debit || 0);
-      const cred = Number(row.credit || 0);
+      const deb = Number(row.debit ?? 0);
+      const cred = Number(row.credit ?? 0);
       if (deb === 0 && cred === 0) {
         this.toast.error(`Row ${i + 1}: Either Debit or Credit must be filled`);
         return;
@@ -630,12 +660,16 @@ export class JournalEntriesComponent implements OnInit {
       lines: this.formEntries.map(r => ({
         description: r.description.trim(),
         coa_id: r.coa_id,
+
         sub: r.sub || null,
         debit: r.debit !== null && r.debit !== '' ? Number(r.debit) : undefined,
         credit: r.credit !== null && r.credit !== '' ? Number(r.credit) : undefined,
         date: r.date,
+
         dp: r.dp || null,
+
         policy: r.policy || null,
+
         memo: r.memo || null,
       })),
     };
@@ -658,6 +692,7 @@ export class JournalEntriesComponent implements OnInit {
         }
       },
       error: err => {
+        // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- '' should also fall back to the default message
         const msg = err.error?.message || 'Failed to post entries';
         this.toast.error(msg);
         this.submittingEntries = false;
