@@ -1,0 +1,44 @@
+<div class="filters-card">
+  <div class="filters-grid">
+    <div class="filter-group search-group">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+      <input type="text" class="filter-input pl-32" placeholder="Search logs..." [(ngModel)]="filter.search" (ngModelChange)="onFilterChange()">
+    </div>
+
+    <div class="filter-group">
+      <select class="filter-input" [(ngModel)]="filter.action" (ngModelChange)="onFilterChange()">
+        <option value="">All Actions</option>
+        <option value="login">Login</option>
+        <option value="logout">Logout</option>
+        <option value="create">Create</option>
+        <option value="update">Update</option>
+        <option value="delete">Delete</option>
+        <option value="approve">Approve</option>
+        <option value="export">Export</option>
+      </select>
+    </div>
+
+    <div class="filter-group">
+      <select class="filter-input" [(ngModel)]="filter.module_id" (ngModelChange)="onFilterChange()">
+        <option value="">All Modules</option>
+        @for (mod of modules; track mod.id) {
+          <option [value]="mod.id">{{ mod.label }}</option>
+        }
+      </select>
+    </div>
+
+    <div class="filter-group date-group">
+      <input type="date" class="filter-input" [(ngModel)]="filter.date_from" (ngModelChange)="onFilterChange()" title="From Date">
+      <span class="date-separator">to</span>
+      <input type="date" class="filter-input" [(ngModel)]="filter.date_to" (ngModelChange)="onFilterChange()" title="To Date">
+    </div>
+
+    <div class="filter-actions">
+      <button class="btn-reset" (click)="resetFilters()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path></svg>
+        Reset
+      </button>
+      <button class="btn-apply" (click)="onFilterChange()">Apply Filters</button>
+    </div>
+  </div>
+</div>

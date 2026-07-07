@@ -1,48 +1,7 @@
 <div class="um-page">
-  <div class="page-header">
-    <div>
-      <h1 class="page-title">Activity Logs</h1>
-      <p class="page-subtitle">Track all user actions across the platform.</p>
-    </div>
-    @if (hasPermission("activity_log.export")) {
-      <button
-        class="btn-action-outline"
-        (click)="exportLogs()"
-        style="
-          height: 38px;
-          padding: 0 14px;
-          display: inline-flex;
-          align-items: center;
-          gap: 6px;
-          justify-content: center;
-        "
-      >
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path
-            d="M5 3.5 A1.5 1.5 0 0 1 6.5 2 H14 L19 7 V20.5 A1.5 1.5 0 0 1 17.5 22 H6.5 A1.5 1.5 0 0 1 5 20.5 V3.5 Z"
-            fill="#e2e6e9"
-          />
-          <path d="M14 2 V5.5 A1.5 1.5 0 0 0 15.5 7 H19 Z" fill="#c3c8cc" />
-          <path d="M8 7 H12 M8 9.75 H15 M8 12.5 H14" stroke="#19a347" stroke-width="1.5" stroke-linecap="round" />
-          <path d="M2 14 V12.5 C2 11 3 10 4.5 10 H5 V14 Z" fill="#0d7028" />
-          <rect x="2" y="14" width="20" height="8" rx="1.5" fill="#19a347" />
-          <text
-            x="12"
-            y="20.2"
-            font-family="Arial, sans-serif"
-            font-weight="900"
-            font-size="6.2"
-            fill="#ffffff"
-            text-anchor="middle"
-            letter-spacing="0.2"
-          >
-            CSV
-          </text>
-        </svg>
-        <span>Export</span>
-      </button>
-    }
-  </div>
+  <app-activity-header 
+    (export)="exportLogs()">
+  </app-activity-header>
 
   <div class="tab-bar">
     <a class="tab-link" routerLink="/user-management/users" routerLinkActive="active">Users</a>
@@ -50,70 +9,15 @@
     <a class="tab-link" routerLink="/user-management/activity-logs" routerLinkActive="active">Activity Logs</a>
   </div>
 
-  <div class="content-card">
-    <div class="filters-bar">
-      <div class="search-wrap">
-        <input
-          class="search-input"
-          type="text"
-          placeholder="Search logs..."
-          [(ngModel)]="filter.search"
-          (ngModelChange)="onFilterChange()"
-          style="padding-left: 12px; padding-right: 34px"
-        />
-        <svg
-          class="search-icon"
-          style="
-            position: absolute;
-            right: 10px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: var(--gray-400);
-            pointer-events: none;
-          "
-          width="15"
-          height="15"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-        >
-          <circle cx="11" cy="11" r="8" />
-          <line x1="21" y1="21" x2="16.65" y2="16.65" />
-        </svg>
-      </div>
-      <select class="filter-select" [(ngModel)]="filter.action" (ngModelChange)="onFilterChange()">
-        <option value="">All Actions</option>
-        <option value="login">Login</option>
-        <option value="logout">Logout</option>
-        <option value="create">Create</option>
-        <option value="update">Update</option>
-        <option value="delete">Delete</option>
-        <option value="approve">Approve</option>
-        <option value="export">Export</option>
-      </select>
-      <select class="filter-select" [(ngModel)]="filter.module_id" (ngModelChange)="onFilterChange()">
-        <option value="">All Modules</option>
-        @for (mod of modules; track mod.id) {
-          <option [value]="mod.id">{{ mod.label }}</option>
-        }
-      </select>
-      <input
-        class="filter-date"
-        type="date"
-        [(ngModel)]="filter.date_from"
-        (ngModelChange)="onFilterChange()"
-        placeholder="From"
-      />
-      <input
-        class="filter-date"
-        type="date"
-        [(ngModel)]="filter.date_to"
-        (ngModelChange)="onFilterChange()"
-        placeholder="To"
-      />
-    </div>
+  <app-activity-summary-cards></app-activity-summary-cards>
 
+  <app-activity-filters 
+    [filter]="filter" 
+    [modules]="modules" 
+    (filterChange)="onFilterChange()">
+  </app-activity-filters>
+
+  <div class="content-card">
     <div class="table-wrapper">
       @if (loading) {
         <table class="data-table">
@@ -125,34 +29,40 @@
               <th>Entity</th>
               <th>Description</th>
               <th>IP Address</th>
+              <th>Device / Browser</th>
+              <th>Location</th>
               <th>Date / Time</th>
+              <th>Status</th>
             </tr>
           </thead>
           <tbody>
             @for (i of skeletonRows; track i) {
               <tr class="skeleton-row">
                 <td>
-                  <div class="user-cell">
-                    <div class="skel skel-avatar"></div>
+                  <div class="user-cell" style="display: flex; gap: 12px; align-items: center;">
+                    <div class="skel skel-avatar" style="width: 32px; height: 32px; border-radius: 50%;"></div>
                     <div class="user-cell-text">
-                      <div class="skel skel-line"></div>
-                      <div class="skel skel-line-sm"></div>
+                      <div class="skel skel-line" style="width: 120px;"></div>
+                      <div class="skel skel-line-sm" style="width: 80px; margin-top: 4px;"></div>
                     </div>
                   </div>
                 </td>
-                <td><div class="skel skel-badge"></div></td>
-                <td><div class="skel skel-line-sm"></div></td>
-                <td><div class="skel skel-line-sm"></div></td>
-                <td><div class="skel skel-line"></div></td>
-                <td><div class="skel skel-line-sm"></div></td>
-                <td><div class="skel skel-line-sm"></div></td>
+                <td><div class="skel skel-badge" style="width: 60px;"></div></td>
+                <td><div class="skel skel-line-sm" style="width: 100px;"></div></td>
+                <td><div class="skel skel-line-sm" style="width: 100px;"></div></td>
+                <td><div class="skel skel-line" style="width: 150px;"></div></td>
+                <td><div class="skel skel-line-sm" style="width: 100px;"></div></td>
+                <td><div class="skel skel-line-sm" style="width: 120px;"></div></td>
+                <td><div class="skel skel-line-sm" style="width: 90px;"></div></td>
+                <td><div class="skel skel-line-sm" style="width: 110px;"></div></td>
+                <td><div class="skel skel-badge" style="width: 70px;"></div></td>
               </tr>
             }
           </tbody>
         </table>
       } @else {
         <ag-grid-angular
-          class="ag-theme-alpine"
+          class="ag-theme-alpine custom-grid"
           style="display: block; width: 100%"
           [domLayout]="'autoHeight'"
           [rowData]="logs"
@@ -180,4 +90,12 @@
       </div>
     }
   </div>
+
+  @if (selectedLog) {
+    <app-activity-drawer
+      [log]="selectedLog"
+      [isOpen]="drawerOpen"
+      (closeDrawer)="closeDrawer()">
+    </app-activity-drawer>
+  }
 </div>
