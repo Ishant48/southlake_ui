@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ChartOfAccountsApi } from './services/chart-of-accounts-api';
 import { ChartOfAccount, ChartOfAccountDocument } from '../../core/models/chart-of-account.model';
+import { ActiveStatusFilter } from '../../core/models/active-status-filter.model';
 import { TreeAccount } from './models/chart-of-account.model';
 import { ToastService } from '../../shared/components/toast/toast.service';
 import { ConfirmDialogComponent } from '../../shared/components/confirm-dialog/confirm-dialog.component';
@@ -108,7 +109,7 @@ export class ChartOfAccountsComponent implements OnInit {
   ];
 
   // Modals state
-  statusFilter: 'all' | 'active' | 'inactive' = 'all';
+  statusFilter: ActiveStatusFilter = ActiveStatusFilter.All;
   typeFilter: string = 'all';
   earningAccountCode: number | null = null;
 
@@ -158,7 +159,9 @@ export class ChartOfAccountsComponent implements OnInit {
     this.service
       .getAccounts(
         this.searchTerm || undefined,
-        this.statusFilter === 'all' ? undefined : this.statusFilter === 'active',
+        this.statusFilter === ActiveStatusFilter.All
+          ? undefined
+          : this.statusFilter === ActiveStatusFilter.Active,
       )
       .subscribe({
         next: accounts => {
@@ -288,7 +291,7 @@ export class ChartOfAccountsComponent implements OnInit {
     this.loadAccounts();
   }
 
-  onStatusFilter(status: 'all' | 'active' | 'inactive'): void {
+  onStatusFilter(status: ActiveStatusFilter): void {
     this.statusFilter = status;
     this.loadAccounts();
   }

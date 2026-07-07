@@ -1,4 +1,5 @@
 import { Component, Input } from '@angular/core';
+import { UserStatus } from '../../models/user.model';
 
 @Component({
   selector: 'app-user-status-badge',
@@ -8,5 +9,7 @@ import { Component, Input } from '@angular/core';
   styleUrl: './user-status-badge.component.scss',
 })
 export class UserStatusBadgeComponent {
-  @Input() status: 'active' | 'inactive' | 'pending' = 'active';
+  protected readonly UserStatus = UserStatus;
+
+  @Input() status: UserStatus = UserStatus.Active;
 }

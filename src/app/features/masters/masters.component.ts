@@ -73,6 +73,7 @@ import {
 import { ItdExhibit, ItdForm, ItdStateOption } from './models/itd.model';
 import { LockedPeriod } from './models/locked-period.model';
 import { HttpErrorLike } from '../../core/models/http-error.model';
+import { ActiveStatusFilter } from '../../core/models/active-status-filter.model';
 import { GlMappingsApi } from './services/gl-mappings-api';
 import { ChartOfAccountsApi } from '../chart-of-accounts/services/chart-of-accounts-api';
 import { GlMapping, GlMappingType } from './models/gl-mapping.model';
@@ -164,7 +165,7 @@ export class MastersComponent implements OnInit {
   };
   loading = false;
   searchTerm = '';
-  statusFilter: 'all' | 'active' | 'inactive' = 'all';
+  statusFilter: ActiveStatusFilter = ActiveStatusFilter.All;
   mgaFilter: string = 'all';
   seededProgramITD = new Set<string>();
   itdWorkbookIds = new Map<string, number>();
@@ -462,7 +463,7 @@ export class MastersComponent implements OnInit {
         this.currentTab = MasterTab.Treaties;
       }
       this.searchTerm = '';
-      this.statusFilter = 'all';
+      this.statusFilter = ActiveStatusFilter.All;
       this.mgaFilter = 'all';
       this.currentPage = 1;
       this.loadData();
@@ -478,8 +479,8 @@ export class MastersComponent implements OnInit {
   }
 
   get activeFilterStatus(): boolean | undefined {
-    if (this.statusFilter === 'active') return true;
-    if (this.statusFilter === 'inactive') return false;
+    if (this.statusFilter === ActiveStatusFilter.Active) return true;
+    if (this.statusFilter === ActiveStatusFilter.Inactive) return false;
     return undefined;
   }
 

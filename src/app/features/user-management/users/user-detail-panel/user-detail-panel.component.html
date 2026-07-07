@@ -35,19 +35,25 @@
     </div>
 
     <div class="panel-tabs">
-      <button class="tab-btn" [class.active]="activeTab === 'profile'" (click)="activeTab = 'profile'">Profile</button>
+      <button
+        class="tab-btn"
+        [class.active]="activeTab === UserDetailTab.Profile"
+        (click)="activeTab = UserDetailTab.Profile"
+      >
+        Profile
+      </button>
       @if (hasPermission("permission.assign")) {
-        <button class="tab-btn" [class.active]="activeTab === 'permissions'" (click)="loadPermissionsTab()">
+        <button class="tab-btn" [class.active]="activeTab === UserDetailTab.Permissions" (click)="loadPermissionsTab()">
           Permissions
         </button>
       }
     </div>
 
     <div class="panel-body">
-      @if (activeTab === "profile") {
+      @if (activeTab === UserDetailTab.Profile) {
         <div class="profile-tab">
           <div class="info-grid">
-            @if (mode === "edit") {
+            @if (mode === PanelMode.Edit) {
               <div class="info-row">
                 <span class="info-label">Full Name *</span>
                 <input type="text" class="form-input" [(ngModel)]="editName" required />
@@ -109,10 +115,10 @@
               <app-user-status-badge [status]="editStatus" />
               <button
                 class="toggle-btn"
-                [class.active]="editStatus === 'active'"
-                (click)="editStatus = editStatus === 'active' ? 'inactive' : 'active'"
+                [class.active]="editStatus === UserStatus.Active"
+                (click)="editStatus = editStatus === UserStatus.Active ? UserStatus.Inactive : UserStatus.Active"
               >
-                {{ editStatus === "active" ? "Deactivate" : "Activate" }}
+                {{ editStatus === UserStatus.Active ? "Deactivate" : "Activate" }}
               </button>
             </div>
           </div>
@@ -123,7 +129,7 @@
         </div>
       }
 
-      @if (activeTab === "permissions") {
+      @if (activeTab === UserDetailTab.Permissions) {
         <div class="permissions-tab">
           @if (permsLoading) {
             <div class="loading-row">Loading permissions...</div>
@@ -186,7 +192,7 @@
 
     <div class="panel-footer">
       <button class="btn-ghost" (click)="closePanel()">Cancel</button>
-      @if (activeTab === "profile") {
+      @if (activeTab === UserDetailTab.Profile) {
         <button class="btn-primary" [disabled]="savingProfile" (click)="saveProfile()">
           @if (savingProfile) {
             Saving...
@@ -195,7 +201,7 @@
           }
         </button>
       }
-      @if (activeTab === "permissions") {
+      @if (activeTab === UserDetailTab.Permissions) {
         <button class="btn-primary" [disabled]="savingPerms || permsLoading" (click)="savePermissions()">
           @if (savingPerms) {
             Saving...
