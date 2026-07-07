@@ -13,11 +13,25 @@ import { ColDef, GridOptions, GridReadyEvent } from 'ag-grid-community';
 import { AgGridConfigService } from '../../core/services/ag-grid-config.service';
 
 import { CoaGridCellRenderer } from './components/coa-grid-cell-renderer/coa-grid-cell-renderer';
+import {
+  AccountFormModal,
+  AccountFormSaveEvent,
+} from './components/account-form-modal/account-form-modal';
+import { DocumentsModal } from './components/documents-modal/documents-modal';
+import { NotesModal } from '../../shared/components/notes-modal/notes-modal';
 
 @Component({
   selector: 'app-chart-of-accounts',
   standalone: true,
-  imports: [CommonModule, FormsModule, ConfirmDialogComponent, AgGridAngular],
+  imports: [
+    CommonModule,
+    FormsModule,
+    ConfirmDialogComponent,
+    AgGridAngular,
+    AccountFormModal,
+    DocumentsModal,
+    NotesModal,
+  ],
   templateUrl: './chart-of-accounts.component.html',
   styleUrl: './chart-of-accounts.component.scss',
 })
@@ -248,13 +262,6 @@ export class ChartOfAccountsComponent implements OnInit {
     return parent ? String(parent.account_code) : '-';
   }
 
-  getParentCoaDisplay(root: TreeAccount): string {
-    const depth = root.treeDepth ?? 0;
-    const indent = '\u00A0\u00A0\u00A0\u00A0'.repeat(depth);
-    const code = Number(root.account_code);
-    return `${indent}${code} - ${root.description ?? ''}`;
-  }
-
   isDescendantOf(coa: TreeAccount, targetParentId: string): boolean {
     let current: ChartOfAccount | undefined = coa;
     while (current) {
@@ -314,53 +321,9 @@ export class ChartOfAccountsComponent implements OnInit {
     this.notesModalContent = '';
   }
 
-  // Form event handlers
-  onParentChange(parentId: string): void {
+  private isEarningAccountApplicable(parentId: string | null | undefined): boolean {
+    if (!parentId) return false;
     const parent = this.rootParents.find(p => p.id === parentId);
-    if (parent) {
-      this.accountForm.normal_balance = parent.normal_balance;
-
-      const parentCode = Number(parent.account_code);
-      // Suggest next code space
-      if (parent.next_number && Number(parent.next_number) > parentCode) {
-        this.accountForm.account_code = Number(parent.next_number);
-      } else {
-        this.accountForm.account_code = parentCode + 1;
-      }
-      this.onCodeChange(this.accountForm.account_code);
-
-      // Prefill earningAccountCode with 310000 if parent is Revenue (410000) or Expense (510000) or their children
-      let currentParent = parent;
-      let parentCodeStr = String(currentParent.account_code);
-      while (
-        currentParent &&
-        !parentCodeStr.startsWith('41') &&
-        !parentCodeStr.startsWith('51') &&
-        currentParent.parent_id
-      ) {
-        const nextParent = this.rootParents.find(p => p.id === currentParent.parent_id);
-        if (!nextParent || nextParent.id === currentParent.id) break;
-        currentParent = nextParent;
-        parentCodeStr = String(currentParent.account_code);
-      }
-
-      if (parentCodeStr.startsWith('41') || parentCodeStr.startsWith('51')) {
-        this.earningAccountCode = 310000;
-      } else {
-        this.earningAccountCode = null;
-      }
-    }
-  }
-
-  onCodeChange(code?: number): void {
-    if (!this.isEditMode && code) {
-      this.accountForm.next_number = code + 1;
-    }
-  }
-
-  get isEarningAccountVisible(): boolean {
-    if (!this.accountForm.parent_id) return false;
-    const parent = this.rootParents.find(p => p.id === this.accountForm.parent_id);
     if (!parent) return false;
 
     let currentParent = parent;
@@ -378,10 +341,6 @@ export class ChartOfAccountsComponent implements OnInit {
     }
 
     return parentCodeStr.startsWith('41') || parentCodeStr.startsWith('51');
-  }
-
-  setAccountType(isParent: boolean): void {
-    this.accountForm.is_parent = isParent;
   }
 
   openAddModal(): void {
@@ -445,7 +404,10 @@ export class ChartOfAccountsComponent implements OnInit {
     this.earningAccountCode = null;
   }
 
-  submitAccount(): void {
+  submitAccount(event: AccountFormSaveEvent): void {
+    this.accountForm = event.form;
+    this.earningAccountCode = event.earningAccountCode;
+
     if (this.isViewMode) return;
     if (
       !this.accountForm.account_code ||
@@ -457,7 +419,7 @@ export class ChartOfAccountsComponent implements OnInit {
     }
 
     // Resolve earning_account_id from earningAccountCode if visible
-    if (this.isEarningAccountVisible) {
+    if (this.isEarningAccountApplicable(this.accountForm.parent_id)) {
       if (this.earningAccountCode) {
         const found = this.flatAccounts.find(
           a => Number(a.account_code) === Number(this.earningAccountCode),

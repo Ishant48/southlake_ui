@@ -6,7 +6,7 @@ import { FormsModule } from '@angular/forms';
 import { ColDef, GridOptions, ICellRendererParams } from 'ag-grid-community';
 import { AgGridConfigService } from '../../core/services/ag-grid-config.service';
 import { MastersGrid } from './components/masters-grid/masters-grid';
-import { NotesModal } from './components/notes-modal/notes-modal';
+import { NotesModal } from '../../shared/components/notes-modal/notes-modal';
 import { DocumentDrawer, DrawerDocument } from './components/document-drawer/document-drawer';
 import { StateFormModal, StateFormValue } from './components/state-form-modal/state-form-modal';
 import {
