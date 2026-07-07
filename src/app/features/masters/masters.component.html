@@ -5,6 +5,32 @@
       <h1 class="page-title">Masters Dashboard</h1>
       <p class="page-subtitle">Configure underwriters, carriers, lines, classes, coverages, and states.</p>
     </div>
+    <!-- Dynamic Header Buttons -->
+    <div>
+      @if (currentTab === MasterTab.Mgas) {
+        <button class="btn-primary" (click)="mgasTab?.openMgaAdd()">Add MGA</button>
+      } @else if (currentTab === MasterTab.States) {
+        <button class="btn-primary" (click)="statesTab?.openStateAdd()">Add State</button>
+      } @else if (currentTab === MasterTab.RiskCompanies) {
+        <button class="btn-primary" (click)="riskCompaniesTab?.openRiskCompanyAdd()">Add Risk Company</button>
+      } @else if (currentTab === MasterTab.GlMappings) {
+        <button class="btn-primary" (click)="glMappingsTab?.openGlMappingAdd()">Add Mapping</button>
+      } @else if (
+        currentTab === MasterTab.Lobs ||
+        currentTab === MasterTab.Cobs ||
+        currentTab === MasterTab.Reinsurers ||
+        currentTab === MasterTab.Brokers ||
+        currentTab === MasterTab.Products ||
+        currentTab === MasterTab.DocumentTypes ||
+        currentTab === MasterTab.SequencePrefixCounters
+      ) {
+        <button class="btn-primary" (click)="simpleMasterTab?.openSimpleAdd()">
+          Add {{ simpleMasterTab?.addLabel }}
+        </button>
+      } @else if (currentTab === MasterTab.LockedPeriods) {
+        <button class="btn-primary" (click)="lockedPeriodsTab?.openLockPeriodAdd()">Lock Period</button>
+      }
+    </div>
   </div>
 
   <!-- Tab Bar -->

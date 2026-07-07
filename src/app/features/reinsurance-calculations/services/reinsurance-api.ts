@@ -9,7 +9,7 @@ import { Workbook, WorkbookPayload } from '../models/reinsurance.model';
 })
 export class ReinsuranceApi {
   private http = inject(HttpClient);
-  private apiUrl = `${environment.apiUrl}/api`;
+  private apiUrl = environment.apiUrl;
 
   getWorkbooks(): Observable<Workbook[]> {
     return this.http.get<Workbook[]>(`${this.apiUrl}/workbooks`);

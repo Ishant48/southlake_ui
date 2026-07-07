@@ -1,4 +1,4 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { TreatiesTab } from './components/treaties-tab/treaties-tab';
@@ -35,6 +35,13 @@ export class MastersComponent implements OnInit {
   private router = inject(Router);
 
   currentTab: MasterTab = MasterTab.Treaties;
+
+  @ViewChild(MgasTab) mgasTab?: MgasTab;
+  @ViewChild(StatesTab) statesTab?: StatesTab;
+  @ViewChild(RiskCompaniesTab) riskCompaniesTab?: RiskCompaniesTab;
+  @ViewChild(GlMappingsTab) glMappingsTab?: GlMappingsTab;
+  @ViewChild(LockedPeriodsTab) lockedPeriodsTab?: LockedPeriodsTab;
+  @ViewChild(SimpleMasterTab) simpleMasterTab?: SimpleMasterTab;
 
   ngOnInit(): void {
     this.route.queryParams.subscribe(params => {

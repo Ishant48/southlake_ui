@@ -29,7 +29,7 @@ describe('TreatiesTab', () => {
     component.ngOnInit();
 
     httpMock.expectOne(r => r.url === `${environment.apiUrl}/masters/mgas`).flush([]);
-    httpMock.expectOne(r => r.url === `${environment.apiUrl}/api/workbooks`).flush([]);
+    httpMock.expectOne(r => r.url === `${environment.apiUrl}/workbooks`).flush([]);
     httpMock.expectOne(r => r.url === `${environment.apiUrl}/masters/treaties`).flush([]);
 
     expect(component).toBeTruthy();

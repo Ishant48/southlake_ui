@@ -8,7 +8,7 @@ describe('TreatiesState', () => {
   let state: TreatiesState;
   let httpMock: HttpTestingController;
   const treatiesBase = `${environment.apiUrl}/masters/treaties`;
-  const workbooksBase = `${environment.apiUrl}/api/workbooks`;
+  const workbooksBase = `${environment.apiUrl}/workbooks`;
 
   beforeEach(() => {
     TestBed.configureTestingModule({
