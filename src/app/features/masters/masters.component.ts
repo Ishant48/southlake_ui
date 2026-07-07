@@ -35,8 +35,8 @@ import { LobsApi } from './services/lobs-api';
 import { CobsApi } from './services/cobs-api';
 import { TreatiesApi } from './services/treaties-api';
 import { BrokersApi } from './services/brokers-api';
-import { LockedPeriodsApi } from './services/locked-periods-api';
 import { DocumentTypesApi } from './services/document-types-api';
+import { LockedPeriodsState } from './services/locked-periods-state';
 import { SimpleMastersState } from './services/simple-masters-state';
 import { ToastService } from '../../shared/components/toast/toast.service';
 import { ConfirmDialogComponent } from '../../shared/components/confirm-dialog/confirm-dialog.component';
@@ -54,7 +54,6 @@ import {
   TreatyCarrier,
   TreatyReinsurer,
   DocumentType,
-  SequencePrefixCounter,
   SimpleMasterRecord,
 } from './models/master.model';
 import {
@@ -144,9 +143,9 @@ export class MastersComponent implements OnInit {
   private cobsApi = inject(CobsApi);
   private treatiesApi = inject(TreatiesApi);
   private brokersApi = inject(BrokersApi);
-  private lockedPeriodsApi = inject(LockedPeriodsApi);
   private documentTypesApi = inject(DocumentTypesApi);
   simpleMastersState = inject(SimpleMastersState);
+  lockedPeriodsState = inject(LockedPeriodsState);
   private reinsuranceService = inject(ReinsuranceApi);
   private toast = inject(ToastService);
   private cdr = inject(ChangeDetectorRef);
@@ -180,8 +179,6 @@ export class MastersComponent implements OnInit {
   mgas: MgaMaster[] = [];
   states: StateMaster[] = [];
   riskCompanies: RiskCompany[] = [];
-  lockedPeriods: SimpleMasterRecord[] = [];
-  sequencePrefixCounters: SequencePrefixCounter[] = [];
 
   // Pagination
   pageSize = 25;
@@ -595,9 +592,8 @@ export class MastersComponent implements OnInit {
         this.loadSimpleTab(SimpleMode.Product, search, active, 'Products');
         break;
       case MasterTab.LockedPeriods:
-        this.lockedPeriodsApi.getLockedPeriods(search).subscribe({
-          next: res => {
-            this.lockedPeriods = res;
+        this.lockedPeriodsState.load(search).subscribe({
+          next: () => {
             this.loading = false;
             this.cdr.markForCheck();
           },
@@ -685,7 +681,7 @@ export class MastersComponent implements OnInit {
       case MasterTab.Products:
         return this.simpleMastersState.products;
       case MasterTab.LockedPeriods:
-        return this.lockedPeriods;
+        return this.lockedPeriodsState.lockedPeriods;
       case MasterTab.DocumentTypes:
         return this.simpleMastersState.documentTypes;
       case MasterTab.SequencePrefixCounters:
@@ -1971,7 +1967,7 @@ export class MastersComponent implements OnInit {
     this.newPeriodToLock = period;
     if (!this.newPeriodToLock) return;
     this.submitting = true;
-    this.lockedPeriodsApi.lockPeriod(this.newPeriodToLock).subscribe({
+    this.lockedPeriodsState.lock(this.newPeriodToLock).subscribe({
       next: () => {
         this.toast.success(`Successfully locked period "${this.newPeriodToLock}"`);
         this.showLockPeriodModal = false;
@@ -1990,8 +1986,8 @@ export class MastersComponent implements OnInit {
 
   togglePeriodLock(period: string, lock: boolean): void {
     const action = lock
-      ? this.lockedPeriodsApi.lockPeriod(period)
-      : this.lockedPeriodsApi.unlockPeriod(period);
+      ? this.lockedPeriodsState.lock(period)
+      : this.lockedPeriodsState.unlock(period);
     action.subscribe({
       next: () => {
         this.toast.success(`Successfully ${lock ? 'locked' : 'unlocked'} period "${period}"`);
