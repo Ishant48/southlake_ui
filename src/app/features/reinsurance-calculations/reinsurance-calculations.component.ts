@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { ReinsuranceApi } from './services/reinsurance-api';
 import { ToastService } from '../../shared/components/toast/toast.service';
-import { MastersApi } from '../masters/services/masters-api';
+import { TreatiesApi } from '../masters/services/treaties-api';
 import { ConfirmDialogComponent } from '../../shared/components/confirm-dialog/confirm-dialog.component';
 import { Workbook } from './models/reinsurance.model';
 import { TreatyState } from '../masters/models/master.model';
@@ -53,7 +53,7 @@ export class ReinsuranceCalculationsComponent implements OnInit {
   private toast = inject(ToastService);
   private cdr = inject(ChangeDetectorRef);
   private router = inject(Router);
-  private mastersService = inject(MastersApi);
+  private treatiesApi = inject(TreatiesApi);
 
   workbooks: Workbook[] = [];
   selectedWorkbookId: number | null = null;
@@ -146,7 +146,7 @@ export class ReinsuranceCalculationsComponent implements OnInit {
         };
 
         // Load treaties to filter states
-        this.mastersService.getTreaties().subscribe({
+        this.treatiesApi.getTreaties().subscribe({
           next: treaties => {
             const matchingTreaty = treaties.find(
               t => t.name?.trim().toLowerCase() === res.program?.trim().toLowerCase(),

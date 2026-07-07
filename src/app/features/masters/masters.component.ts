@@ -27,7 +27,18 @@ import {
   ActionButtonsCell,
 } from '../../shared/components/grid-renderers/action-buttons-cell/action-buttons-cell';
 import { StatusBadgeCell } from '../../shared/components/grid-renderers/status-badge-cell/status-badge-cell';
-import { MastersApi } from './services/masters-api';
+import { StatesApi } from './services/states-api';
+import { MgasApi } from './services/mgas-api';
+import { ReinsurersApi } from './services/reinsurers-api';
+import { RiskCompaniesApi } from './services/risk-companies-api';
+import { LobsApi } from './services/lobs-api';
+import { CobsApi } from './services/cobs-api';
+import { TreatiesApi } from './services/treaties-api';
+import { BrokersApi } from './services/brokers-api';
+import { ProductsApi } from './services/products-api';
+import { LockedPeriodsApi } from './services/locked-periods-api';
+import { DocumentTypesApi } from './services/document-types-api';
+import { SequencePrefixCountersApi } from './services/sequence-prefix-counters-api';
 import { ToastService } from '../../shared/components/toast/toast.service';
 import { ConfirmDialogComponent } from '../../shared/components/confirm-dialog/confirm-dialog.component';
 import { environment } from '../../../environments/environment';
@@ -113,7 +124,18 @@ export class MastersComponent implements OnInit {
     { id: 'MGA', name: 'MGA' },
     { id: 'BRK', name: 'BRK' },
   ];
-  private service = inject(MastersApi);
+  private statesApi = inject(StatesApi);
+  private mgasApi = inject(MgasApi);
+  private reinsurersApi = inject(ReinsurersApi);
+  private riskCompaniesApi = inject(RiskCompaniesApi);
+  private lobsApi = inject(LobsApi);
+  private cobsApi = inject(CobsApi);
+  private treatiesApi = inject(TreatiesApi);
+  private brokersApi = inject(BrokersApi);
+  private productsApi = inject(ProductsApi);
+  private lockedPeriodsApi = inject(LockedPeriodsApi);
+  private documentTypesApi = inject(DocumentTypesApi);
+  private sequencePrefixCountersApi = inject(SequencePrefixCountersApi);
   private reinsuranceService = inject(ReinsuranceApi);
   private toast = inject(ToastService);
   private cdr = inject(ChangeDetectorRef);
@@ -432,7 +454,7 @@ export class MastersComponent implements OnInit {
 
   ngOnInit(): void {
     // Preload MGA options for the filter dropdown
-    this.service.getMgas(undefined, true).subscribe(res => {
+    this.mgasApi.getMgas(undefined, true).subscribe(res => {
       this.mgaOptions = res;
       this.cdr.markForCheck();
     });
@@ -506,7 +528,7 @@ export class MastersComponent implements OnInit {
                 this.treatyWorkbookStatuses.set(progName, (wb.status as string) || 'Pending');
               }
             });
-            this.service.getTreaties(search, active).subscribe({
+            this.treatiesApi.getTreaties(search, active).subscribe({
               next: res => {
                 this.treaties = res;
                 this.loading = false;
@@ -520,7 +542,7 @@ export class MastersComponent implements OnInit {
             });
           },
           error: () => {
-            this.service.getTreaties(search, active).subscribe({
+            this.treatiesApi.getTreaties(search, active).subscribe({
               next: res => {
                 this.treaties = res;
                 this.loading = false;
@@ -536,7 +558,7 @@ export class MastersComponent implements OnInit {
         });
         break;
       case 'mgas':
-        this.service.getMgas(search, active).subscribe({
+        this.mgasApi.getMgas(search, active).subscribe({
           next: res => {
             this.mgas = res;
             this.loading = false;
@@ -550,7 +572,7 @@ export class MastersComponent implements OnInit {
         });
         break;
       case 'lobs':
-        this.service.getLobs(search, active).subscribe({
+        this.lobsApi.getLobs(search, active).subscribe({
           next: res => {
             this.lobs = res;
             this.loading = false;
@@ -564,7 +586,7 @@ export class MastersComponent implements OnInit {
         });
         break;
       case 'cobs':
-        this.service.getCobs(search, active).subscribe({
+        this.cobsApi.getCobs(search, active).subscribe({
           next: res => {
             this.cobs = res;
             this.loading = false;
@@ -578,7 +600,7 @@ export class MastersComponent implements OnInit {
         });
         break;
       case 'states':
-        this.service.getStates(search, active).subscribe({
+        this.statesApi.getStates(search, active).subscribe({
           next: res => {
             this.states = res;
             this.loading = false;
@@ -592,7 +614,7 @@ export class MastersComponent implements OnInit {
         });
         break;
       case 'reinsurers':
-        this.service.getReinsurers(search, active).subscribe({
+        this.reinsurersApi.getReinsurers(search, active).subscribe({
           next: res => {
             this.reinsurers = res;
             this.loading = false;
@@ -606,7 +628,7 @@ export class MastersComponent implements OnInit {
         });
         break;
       case 'risk-companies':
-        this.service.getRiskCompanies(search, active).subscribe({
+        this.riskCompaniesApi.getRiskCompanies(search, active).subscribe({
           next: res => {
             this.riskCompanies = res;
             this.loading = false;
@@ -623,7 +645,7 @@ export class MastersComponent implements OnInit {
         this.loadGlMappings();
         break;
       case 'brokers':
-        this.service.getBrokers(search, active).subscribe({
+        this.brokersApi.getBrokers(search, active).subscribe({
           next: res => {
             this.brokers = res;
             this.loading = false;
@@ -637,7 +659,7 @@ export class MastersComponent implements OnInit {
         });
         break;
       case 'products':
-        this.service.getProducts(search, active).subscribe({
+        this.productsApi.getProducts(search, active).subscribe({
           next: res => {
             this.products = res;
             this.loading = false;
@@ -651,7 +673,7 @@ export class MastersComponent implements OnInit {
         });
         break;
       case 'locked-periods':
-        this.service.getLockedPeriods(search).subscribe({
+        this.lockedPeriodsApi.getLockedPeriods(search).subscribe({
           next: res => {
             this.lockedPeriods = res;
             this.loading = false;
@@ -665,7 +687,7 @@ export class MastersComponent implements OnInit {
         });
         break;
       case 'document-types':
-        this.service.getDocumentTypes(search, active).subscribe({
+        this.documentTypesApi.getDocumentTypes(search, active).subscribe({
           next: res => {
             this.documentTypes = res;
             this.loading = false;
@@ -679,7 +701,7 @@ export class MastersComponent implements OnInit {
         });
         break;
       case 'sequence-prefix-counters':
-        this.service.getSequencePrefixCounters(search, active).subscribe({
+        this.sequencePrefixCountersApi.getSequencePrefixCounters(search, active).subscribe({
           next: res => {
             this.sequencePrefixCounters = res;
             this.loading = false;
@@ -1423,25 +1445,25 @@ export class MastersComponent implements OnInit {
       const id = this.simpleForm.id;
       switch (this.simpleMode) {
         case 'lob':
-          request = this.service.updateLob(id, payload as Partial<LineOfBusiness>);
+          request = this.lobsApi.updateLob(id, payload as Partial<LineOfBusiness>);
           break;
         case 'cob':
-          request = this.service.updateCob(id, payload as Partial<CobMaster>);
+          request = this.cobsApi.updateCob(id, payload as Partial<CobMaster>);
           break;
         case 'reinsurer':
-          request = this.service.updateReinsurer(id, payload as Partial<ReinsurerCompany>);
+          request = this.reinsurersApi.updateReinsurer(id, payload as Partial<ReinsurerCompany>);
           break;
         case 'broker':
-          request = this.service.updateBroker(id, payload as SimpleMasterRecord);
+          request = this.brokersApi.updateBroker(id, payload as SimpleMasterRecord);
           break;
         case 'product':
-          request = this.service.updateProduct(id, payload as SimpleMasterRecord);
+          request = this.productsApi.updateProduct(id, payload as SimpleMasterRecord);
           break;
         case 'document-type':
-          request = this.service.updateDocumentType(id, payload as Partial<DocumentType>);
+          request = this.documentTypesApi.updateDocumentType(id, payload as Partial<DocumentType>);
           break;
         case 'sequence-prefix-counter':
-          request = this.service.updateSequencePrefixCounter(
+          request = this.sequencePrefixCountersApi.updateSequencePrefixCounter(
             id,
             payload as Partial<SequencePrefixCounter>,
           );
@@ -1450,25 +1472,25 @@ export class MastersComponent implements OnInit {
     } else {
       switch (this.simpleMode) {
         case 'lob':
-          request = this.service.createLob(payload as Partial<LineOfBusiness>);
+          request = this.lobsApi.createLob(payload as Partial<LineOfBusiness>);
           break;
         case 'cob':
-          request = this.service.createCob(payload as Partial<CobMaster>);
+          request = this.cobsApi.createCob(payload as Partial<CobMaster>);
           break;
         case 'reinsurer':
-          request = this.service.createReinsurer(payload as Partial<ReinsurerCompany>);
+          request = this.reinsurersApi.createReinsurer(payload as Partial<ReinsurerCompany>);
           break;
         case 'broker':
-          request = this.service.createBroker(payload as SimpleMasterRecord);
+          request = this.brokersApi.createBroker(payload as SimpleMasterRecord);
           break;
         case 'product':
-          request = this.service.createProduct(payload as SimpleMasterRecord);
+          request = this.productsApi.createProduct(payload as SimpleMasterRecord);
           break;
         case 'document-type':
-          request = this.service.createDocumentType(payload as Partial<DocumentType>);
+          request = this.documentTypesApi.createDocumentType(payload as Partial<DocumentType>);
           break;
         case 'sequence-prefix-counter':
-          request = this.service.createSequencePrefixCounter(
+          request = this.sequencePrefixCountersApi.createSequencePrefixCounter(
             payload as Partial<SequencePrefixCounter>,
           );
           break;
@@ -1500,25 +1522,25 @@ export class MastersComponent implements OnInit {
       let request!: Observable<unknown>;
       switch (mode) {
         case 'lob':
-          request = this.service.deleteLob(id);
+          request = this.lobsApi.deleteLob(id);
           break;
         case 'cob':
-          request = this.service.deleteCob(id);
+          request = this.cobsApi.deleteCob(id);
           break;
         case 'reinsurer':
-          request = this.service.deleteReinsurer(id);
+          request = this.reinsurersApi.deleteReinsurer(id);
           break;
         case 'broker':
-          request = this.service.deleteBroker(id);
+          request = this.brokersApi.deleteBroker(id);
           break;
         case 'product':
-          request = this.service.deleteProduct(id);
+          request = this.productsApi.deleteProduct(id);
           break;
         case 'document-type':
-          request = this.service.deleteDocumentType(id);
+          request = this.documentTypesApi.deleteDocumentType(id);
           break;
         case 'sequence-prefix-counter':
-          request = this.service.deleteSequencePrefixCounter(id);
+          request = this.sequencePrefixCountersApi.deleteSequencePrefixCounter(id);
           break;
       }
       request.subscribe({
@@ -1607,7 +1629,7 @@ export class MastersComponent implements OnInit {
 
     if (this.isEditMode) {
       if (!this.mgaForm.id) return;
-      this.service.updateMga(this.mgaForm.id, payload).subscribe({
+      this.mgasApi.updateMga(this.mgaForm.id, payload).subscribe({
         next: () => {
           this.toast.success('MGA updated successfully');
           this.showMgaModal = false;
@@ -1622,7 +1644,7 @@ export class MastersComponent implements OnInit {
         },
       });
     } else {
-      this.service.createMga(payload).subscribe({
+      this.mgasApi.createMga(payload).subscribe({
         next: () => {
           this.toast.success('MGA created successfully');
           this.showMgaModal = false;
@@ -1643,7 +1665,7 @@ export class MastersComponent implements OnInit {
     this.confirmTitle = 'Delete MGA';
     this.confirmMessage = `Are you sure you want to delete MGA "${mga.name}"? This action cannot be undone.`;
     this.pendingAction = () => {
-      this.service.deleteMga(mga.id).subscribe({
+      this.mgasApi.deleteMga(mga.id).subscribe({
         next: () => {
           this.toast.success('MGA deleted successfully');
           this.loadData();
@@ -1678,7 +1700,7 @@ export class MastersComponent implements OnInit {
     this.documentTypesOptions = [];
     this.showDocModal = true;
 
-    this.service.getDocumentTypes(undefined, true).subscribe(res => {
+    this.documentTypesApi.getDocumentTypes(undefined, true).subscribe(res => {
       this.documentTypesOptions = res;
       this.cdr.markForCheck();
     });
@@ -1691,11 +1713,11 @@ export class MastersComponent implements OnInit {
     const id = this.selectedItem.id;
     let request: Observable<DocumentableMaster>;
     if (this.documentMode === 'mga') {
-      request = this.service.getMga(id);
+      request = this.mgasApi.getMga(id);
     } else if (this.documentMode === 'state') {
-      request = this.service.getState(id);
+      request = this.statesApi.getState(id);
     } else {
-      request = this.service.getRiskCompany(id);
+      request = this.riskCompaniesApi.getRiskCompany(id);
     }
 
     request.subscribe({
@@ -1716,11 +1738,15 @@ export class MastersComponent implements OnInit {
     this.uploadingDoc = true;
     let request: Observable<MasterDocument>;
     if (this.documentMode === 'mga') {
-      request = this.service.uploadMgaDocument(this.selectedItem.id, file, documentType);
+      request = this.mgasApi.uploadMgaDocument(this.selectedItem.id, file, documentType);
     } else if (this.documentMode === 'state') {
-      request = this.service.uploadStateDocument(this.selectedItem.id, file, documentType);
+      request = this.statesApi.uploadStateDocument(this.selectedItem.id, file, documentType);
     } else {
-      request = this.service.uploadRiskCompanyDocument(this.selectedItem.id, file, documentType);
+      request = this.riskCompaniesApi.uploadRiskCompanyDocument(
+        this.selectedItem.id,
+        file,
+        documentType,
+      );
     }
 
     request.subscribe({
@@ -1759,11 +1785,11 @@ export class MastersComponent implements OnInit {
     this.pendingAction = () => {
       let request: Observable<void>;
       if (this.documentMode === 'mga') {
-        request = this.service.deleteMgaDocument(doc.id);
+        request = this.mgasApi.deleteMgaDocument(doc.id);
       } else if (this.documentMode === 'state') {
-        request = this.service.deleteStateDocument(doc.id);
+        request = this.statesApi.deleteStateDocument(doc.id);
       } else {
-        request = this.service.deleteRiskCompanyDocument(doc.id);
+        request = this.riskCompaniesApi.deleteRiskCompanyDocument(doc.id);
       }
 
       request.subscribe({
@@ -1821,8 +1847,8 @@ export class MastersComponent implements OnInit {
 
     if (this.isEditMode && !this.stateForm.id) return;
     const request: Observable<StateMaster> = this.isEditMode
-      ? this.service.updateState(this.stateForm.id as string, payload)
-      : this.service.createState(payload);
+      ? this.statesApi.updateState(this.stateForm.id as string, payload)
+      : this.statesApi.createState(payload);
 
     request.subscribe({
       next: () => {
@@ -1844,7 +1870,7 @@ export class MastersComponent implements OnInit {
     this.confirmTitle = 'Delete State';
     this.confirmMessage = `Are you sure you want to delete state "${state.name}"? This action cannot be undone.`;
     this.pendingAction = () => {
-      this.service.deleteState(state.id).subscribe({
+      this.statesApi.deleteState(state.id).subscribe({
         next: () => {
           this.toast.success('State deleted successfully');
           this.loadData();
@@ -1932,8 +1958,8 @@ export class MastersComponent implements OnInit {
 
     if (this.isEditMode && !this.riskCompanyForm.id) return;
     const request: Observable<RiskCompany> = this.isEditMode
-      ? this.service.updateRiskCompany(this.riskCompanyForm.id as string, payload)
-      : this.service.createRiskCompany(payload);
+      ? this.riskCompaniesApi.updateRiskCompany(this.riskCompanyForm.id as string, payload)
+      : this.riskCompaniesApi.createRiskCompany(payload);
 
     request.subscribe({
       next: () => {
@@ -1955,7 +1981,7 @@ export class MastersComponent implements OnInit {
     this.confirmTitle = 'Delete Risk Company';
     this.confirmMessage = `Are you sure you want to delete risk company "${rc.name}"? This action cannot be undone.`;
     this.pendingAction = () => {
-      this.service.deleteRiskCompany(rc.id).subscribe({
+      this.riskCompaniesApi.deleteRiskCompany(rc.id).subscribe({
         next: () => {
           this.toast.success('Risk Company deleted successfully');
           this.loadData();
@@ -1987,31 +2013,31 @@ export class MastersComponent implements OnInit {
   // TREATY MASTER ACTIONS
   // ==========================================
   loadTreatyOptions(): void {
-    this.service.getMgas(undefined, true).subscribe(res => {
+    this.mgasApi.getMgas(undefined, true).subscribe(res => {
       this.mgaOptions = res;
       this.cdr.markForCheck();
     });
-    this.service.getReinsurers(undefined, true).subscribe(res => {
+    this.reinsurersApi.getReinsurers(undefined, true).subscribe(res => {
       this.reinsurerOptions = res;
       this.cdr.markForCheck();
     });
-    this.service.getRiskCompanies(undefined, true).subscribe(res => {
+    this.riskCompaniesApi.getRiskCompanies(undefined, true).subscribe(res => {
       this.riskCompanyOptions = res;
       this.cdr.markForCheck();
     });
-    this.service.getLobs(undefined, true).subscribe(res => {
+    this.lobsApi.getLobs(undefined, true).subscribe(res => {
       this.lobOptions = res;
       this.cdr.markForCheck();
     });
-    this.service.getCobs(undefined, true).subscribe(res => {
+    this.cobsApi.getCobs(undefined, true).subscribe(res => {
       this.cobOptions = res;
       this.cdr.markForCheck();
     });
-    this.service.getStates(undefined, true).subscribe(res => {
+    this.statesApi.getStates(undefined, true).subscribe(res => {
       this.stateOptions = res;
       this.cdr.markForCheck();
     });
-    this.service.getBrokers(undefined, true).subscribe(res => {
+    this.brokersApi.getBrokers(undefined, true).subscribe(res => {
       this.brokerOptions = res;
       this.cdr.markForCheck();
     });
@@ -2221,8 +2247,8 @@ export class MastersComponent implements OnInit {
 
     if (this.isEditMode && !this.treatyForm.id) return;
     const request = this.isEditMode
-      ? this.service.updateTreaty(this.treatyForm.id as string, payload)
-      : this.service.createTreaty(payload);
+      ? this.treatiesApi.updateTreaty(this.treatyForm.id as string, payload)
+      : this.treatiesApi.createTreaty(payload);
 
     request.subscribe({
       next: () => {
@@ -2244,7 +2270,7 @@ export class MastersComponent implements OnInit {
     this.confirmTitle = 'Delete Treaty';
     this.confirmMessage = `Are you sure you want to delete treaty "${treaty.treaty_code}"? This action cannot be undone.`;
     this.pendingAction = () => {
-      this.service.deleteTreaty(treaty.id).subscribe({
+      this.treatiesApi.deleteTreaty(treaty.id).subscribe({
         next: () => {
           this.toast.success('Treaty deleted successfully');
           this.loadData();
@@ -2922,7 +2948,7 @@ export class MastersComponent implements OnInit {
     this.newPeriodToLock = period;
     if (!this.newPeriodToLock) return;
     this.submitting = true;
-    this.service.lockPeriod(this.newPeriodToLock).subscribe({
+    this.lockedPeriodsApi.lockPeriod(this.newPeriodToLock).subscribe({
       next: () => {
         this.toast.success(`Successfully locked period "${this.newPeriodToLock}"`);
         this.showLockPeriodModal = false;
@@ -2940,7 +2966,9 @@ export class MastersComponent implements OnInit {
   }
 
   togglePeriodLock(period: string, lock: boolean): void {
-    const action = lock ? this.service.lockPeriod(period) : this.service.unlockPeriod(period);
+    const action = lock
+      ? this.lockedPeriodsApi.lockPeriod(period)
+      : this.lockedPeriodsApi.unlockPeriod(period);
     action.subscribe({
       next: () => {
         this.toast.success(`Successfully ${lock ? 'locked' : 'unlocked'} period "${period}"`);

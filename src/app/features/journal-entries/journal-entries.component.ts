@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { JournalEntriesApi } from './services/journal-entries-api';
 import { ChartOfAccountsApi } from '../chart-of-accounts/services/chart-of-accounts-api';
-import { MastersApi } from '../masters/services/masters-api';
+import { MgasApi } from '../masters/services/mgas-api';
 import { ToastService } from '../../shared/components/toast/toast.service';
 import { ConfirmDialogComponent } from '../../shared/components/confirm-dialog/confirm-dialog.component';
 import { JournalEntry, JournalEntryBatch, JournalEntryFormRow } from './models/journal-entry.model';
@@ -33,7 +33,7 @@ import { AddBatchModal } from './components/add-batch-modal/add-batch-modal';
 export class JournalEntriesComponent implements OnInit {
   private service = inject(JournalEntriesApi);
   private coaService = inject(ChartOfAccountsApi);
-  private mastersService = inject(MastersApi);
+  private mgasApi = inject(MgasApi);
   private toast = inject(ToastService);
   private cdr = inject(ChangeDetectorRef);
   private route = inject(ActivatedRoute);
@@ -267,7 +267,7 @@ export class JournalEntriesComponent implements OnInit {
         }
 
         // 2. Fetch active MGAs
-        this.mastersService.getMgas('', true).subscribe({
+        this.mgasApi.getMgas('', true).subscribe({
           next: res => {
             if (res.length > 0) {
               this.agentsList = res.map(m => m.name);
@@ -288,7 +288,7 @@ export class JournalEntriesComponent implements OnInit {
       },
       error: () => {
         // Fallback to static loading
-        this.mastersService.getMgas('', true).subscribe({
+        this.mgasApi.getMgas('', true).subscribe({
           next: res => {
             if (res.length > 0) {
               this.agentsList = res.map(m => m.name);
