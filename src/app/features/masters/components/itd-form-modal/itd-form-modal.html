@@ -1,0 +1,179 @@
+@if (open) {
+  <!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events, @angular-eslint/template/interactive-supports-focus -- backdrop click-to-dismiss / stopPropagation guard, not an interactive control; keyboard dismissal is handled via Escape at the dialog level -->
+  <div class="modal-overlay" (click)="close()">
+    <!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events, @angular-eslint/template/interactive-supports-focus -- backdrop click-to-dismiss / stopPropagation guard, not an interactive control; keyboard dismissal is handled via Escape at the dialog level -->
+    <div class="modal-box itd-modal" (click)="$event.stopPropagation()">
+      <div class="panel-header itd-header">
+        <h2>{{ isEditMode ? "Edit" : "Add" }} ITD Baseline for {{ formValue.program }}</h2>
+        <button class="btn-close" (click)="close()">×</button>
+      </div>
+
+      <div class="panel-body itd-body">
+        <!-- Select Month & Year -->
+        <div class="form-row itd-row-spaced">
+          <div class="form-field">
+            <label for="m-itdselectedmonth" class="form-label">Select Month</label>
+            <select
+              id="m-itdselectedmonth"
+              class="form-input itd-select"
+              [(ngModel)]="selectedMonth"
+              (change)="onMonthYearChange()"
+            >
+              @for (m of monthsList; track m.value) {
+                <option [value]="m.value">{{ m.label }}</option>
+              }
+            </select>
+          </div>
+          <div class="form-field">
+            <label for="m-itdselectedyear" class="form-label">Select Year</label>
+            <select
+              id="m-itdselectedyear"
+              class="form-input itd-select"
+              [(ngModel)]="selectedYear"
+              (change)="onMonthYearChange()"
+            >
+              @for (y of yearsList; track y) {
+                <option [value]="y">{{ y }}</option>
+              }
+            </select>
+          </div>
+        </div>
+
+        <!-- Month Key & Month Label -->
+        <div class="form-row itd-row-spaced">
+          <div class="form-field">
+            <label for="m-itdform-month-key" class="form-label">Month Key</label>
+            <input id="m-itdform-month-key" type="text" class="form-input" [(ngModel)]="formValue.month_key" readonly />
+          </div>
+          <div class="form-field">
+            <label for="m-itdform-month-label" class="form-label">Month Label</label>
+            <input
+              id="m-itdform-month-label"
+              type="text"
+              class="form-input"
+              [(ngModel)]="formValue.month_label"
+              readonly
+            />
+          </div>
+        </div>
+
+        <!-- State Exhibits section -->
+        <h4 class="itd-section-title">Reporting States Data Baseline</h4>
+
+        <div class="itd-state-picker">
+          <label for="m-itdselectedstatecode" class="form-label itd-state-picker-label">Select State to Edit:</label>
+          <select id="m-itdselectedstatecode" class="form-input itd-state-select" [(ngModel)]="selectedStateCode">
+            @for (st of itdStatesList; track st.code) {
+              <option [value]="st.code">{{ st.label }}</option>
+            }
+          </select>
+        </div>
+
+        <!-- Fields editor for the selected state -->
+        @if (formValue.exhibits[selectedStateCode]) {
+          <div class="form-row">
+            <div class="form-field">
+              <label for="m-itdform-exhibits-itdselectedstatecode-uep" class="form-label">
+                Unearned Premium Reserve
+              </label>
+              <input
+                id="m-itdform-exhibits-itdselectedstatecode-uep"
+                type="number"
+                class="form-input"
+                [(ngModel)]="formValue.exhibits[selectedStateCode].uep"
+              />
+            </div>
+            <div class="form-field">
+              <label for="m-itdform-exhibits-itdselectedstatecode-loss-reserves" class="form-label">
+                Loss Reserves
+              </label>
+              <input
+                id="m-itdform-exhibits-itdselectedstatecode-loss-reserves"
+                type="number"
+                class="form-input"
+                [(ngModel)]="formValue.exhibits[selectedStateCode].loss_reserves"
+              />
+            </div>
+            <div class="form-field">
+              <label for="m-itdform-exhibits-itdselectedstatecode-loss-ibnr" class="form-label">
+                Loss IBNR Reserves
+              </label>
+              <input
+                id="m-itdform-exhibits-itdselectedstatecode-loss-ibnr"
+                type="number"
+                class="form-input"
+                [(ngModel)]="formValue.exhibits[selectedStateCode].loss_ibnr"
+              />
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-field">
+              <label for="m-itdform-exhibits-itdselectedstatecode-lae-reserves-dcc" class="form-label">
+                LAE Reserves - DCC
+              </label>
+              <input
+                id="m-itdform-exhibits-itdselectedstatecode-lae-reserves-dcc"
+                type="number"
+                class="form-input"
+                [(ngModel)]="formValue.exhibits[selectedStateCode].lae_reserves_dcc"
+              />
+            </div>
+            <div class="form-field">
+              <label for="m-itdform-exhibits-itdselectedstatecode-lae-reserves-aoe" class="form-label">
+                LAE Reserves - AOE
+              </label>
+              <input
+                id="m-itdform-exhibits-itdselectedstatecode-lae-reserves-aoe"
+                type="number"
+                class="form-input"
+                [(ngModel)]="formValue.exhibits[selectedStateCode].lae_reserves_aoe"
+              />
+            </div>
+          </div>
+          <div class="form-row itd-row-spaced">
+            <div class="form-field">
+              <label for="m-itdform-exhibits-itdselectedstatecode-lae-ibnr-dcc" class="form-label">
+                LAE IBNR Reserves - DCC
+              </label>
+              <input
+                id="m-itdform-exhibits-itdselectedstatecode-lae-ibnr-dcc"
+                type="number"
+                class="form-input"
+                [(ngModel)]="formValue.exhibits[selectedStateCode].lae_ibnr_dcc"
+              />
+            </div>
+            <div class="form-field">
+              <label for="m-itdform-exhibits-itdselectedstatecode-lae-ibnr-aoe" class="form-label">
+                LAE IBNR Reserves - AOE
+              </label>
+              <input
+                id="m-itdform-exhibits-itdselectedstatecode-lae-ibnr-aoe"
+                type="number"
+                class="form-input"
+                [(ngModel)]="formValue.exhibits[selectedStateCode].lae_ibnr_aoe"
+              />
+            </div>
+            <div class="form-field">
+              <label for="m-itdform-exhibits-itdselectedstatecode-ulae-ibnr" class="form-label">
+                ULAE IBNR Reserves
+              </label>
+              <input
+                id="m-itdform-exhibits-itdselectedstatecode-ulae-ibnr"
+                type="number"
+                class="form-input"
+                [(ngModel)]="formValue.exhibits[selectedStateCode].ulae_ibnr"
+              />
+            </div>
+          </div>
+        }
+      </div>
+
+      <div class="panel-footer itd-footer">
+        <button type="button" class="btn-ghost" (click)="close()">Cancel</button>
+        <button type="button" class="btn-primary" (click)="submit()">
+          {{ isEditMode ? "Save ITD Baseline" : "Add ITD Baseline" }}
+        </button>
+      </div>
+    </div>
+  </div>
+}

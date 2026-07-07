@@ -18,6 +18,7 @@ import {
   RiskCompanyFormModal,
   RiskCompanyFormValue,
 } from './components/risk-company-form-modal/risk-company-form-modal';
+import { ItdFormModal, ItdFormValue } from './components/itd-form-modal/itd-form-modal';
 import {
   ActionButtonConfig,
   ActionButtonsCell,
@@ -156,6 +157,7 @@ type MasterTab =
     GlMappingFormModal,
     LockPeriodModal,
     RiskCompanyFormModal,
+    ItdFormModal,
   ],
   templateUrl: './masters.component.html',
   styleUrl: './masters.component.scss',
@@ -2997,11 +2999,16 @@ export class MastersComponent implements OnInit {
     }
   }
 
-  saveManualITD(): void {
+  saveManualITD(formValue: ItdFormValue): void {
+    this.itdForm.program = formValue.program;
+    this.itdForm.month_key = formValue.month_key;
+    this.itdForm.month_label = formValue.month_label;
+    this.itdForm.exhibits = formValue.exhibits;
+
     if (!this.selectedTreatyForItd) return;
 
-    const exhibitsArray = Object.keys(this.itdForm.exhibits).map(code => {
-      const ex = this.itdForm.exhibits[code];
+    const exhibitsArray = Object.keys(formValue.exhibits).map(code => {
+      const ex = formValue.exhibits[code];
       return {
         state_code: code,
         uep: Number(ex.uep ?? 0),
@@ -3016,9 +3023,9 @@ export class MastersComponent implements OnInit {
     });
 
     const payload = {
-      program: this.itdForm.program,
-      monthKey: this.itdForm.month_key,
-      monthLabel: this.itdForm.month_label,
+      program: formValue.program,
+      monthKey: formValue.month_key,
+      monthLabel: formValue.month_label,
       exhibits: exhibitsArray,
     };
 
