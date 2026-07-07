@@ -11,7 +11,7 @@ import { StateFormModal } from './components/state-form-modal/state-form-modal';
 import { GlMappingFormModal } from './components/gl-mapping-form-modal/gl-mapping-form-modal';
 import { LockPeriodModal } from './components/lock-period-modal/lock-period-modal';
 import { RiskCompanyFormModal } from './components/risk-company-form-modal/risk-company-form-modal';
-import { ItdFormModal, ItdFormValue } from './components/itd-form-modal/itd-form-modal';
+import { ItdFormModal } from './components/itd-form-modal/itd-form-modal';
 import {
   SimpleFormModal,
   SimpleFormValue,
@@ -21,7 +21,8 @@ import { MgaFormModal } from './components/mga-form-modal/mga-form-modal';
 import { GlMappingFormValue } from './models/gl-mapping-form.model';
 import { RiskCompanyFormValue } from './models/risk-company-form.model';
 import { MgaFormValue } from './models/mga-form.model';
-import { TreatyFormModal, TreatySaveEvent } from './components/treaty-form-modal/treaty-form-modal';
+import { TreatyFormModal } from './components/treaty-form-modal/treaty-form-modal';
+import { TreatySaveEvent } from './models/treaty-form.model';
 import { StatusBadgeCell } from '../../shared/components/grid-renderers/status-badge-cell/status-badge-cell';
 import { StatesApi } from './services/states-api';
 import { MgasApi } from './services/mgas-api';
@@ -60,7 +61,7 @@ import {
   SimpleEditableItem,
   DocumentMode,
 } from './models/master-tab.model';
-import { ItdExhibit, ItdForm, ItdStateOption } from './models/itd.model';
+import { ItdExhibit, ItdForm, ItdStateOption, ItdFormValue } from './models/itd.model';
 import { StateFormValue, createBlankStateForm } from './models/state-form.model';
 import { HttpErrorLike } from '../../core/models/http-error.model';
 import { ActiveStatusFilter } from '../../core/models/active-status-filter.model';

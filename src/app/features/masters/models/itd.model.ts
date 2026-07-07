@@ -33,3 +33,15 @@ export interface ItdStateOption {
   code: string;
   label: string;
 }
+
+export interface ItdMonthOption {
+  value: string;
+  label: string;
+}
+
+export interface ItdFormValue {
+  program: string;
+  month_key: string;
+  month_label: string;
+  exhibits: Record<string, ItdExhibit>;
+}

@@ -1,42 +1,26 @@
-import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges } from '@angular/core';
+import {
+  Component,
+  Input,
+  Output,
+  EventEmitter,
+  OnChanges,
+  SimpleChanges,
+  inject,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
-
-export interface ItdExhibit {
-  uep: number;
-  loss_reserves: number;
-  loss_ibnr: number;
-  lae_reserves_dcc: number;
-  lae_ibnr_dcc: number;
-  lae_reserves_aoe: number;
-  lae_ibnr_aoe: number;
-  ulae_ibnr: number;
-}
-
-export interface ItdFormValue {
-  program: string;
-  month_key: string;
-  month_label: string;
-  exhibits: Record<string, ItdExhibit>;
-}
-
-export interface ItdStateOption {
-  code: string;
-  label: string;
-}
-
-export interface ItdMonthOption {
-  value: string;
-  label: string;
-}
+import { FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { ItdForm, ItdFormModel } from '../../forms/itd-form';
+import { ItdExhibit, ItdFormValue, ItdMonthOption, ItdStateOption } from '../../models/itd.model';
 
 @Component({
   selector: 'app-itd-form-modal',
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule],
   templateUrl: './itd-form-modal.html',
   styleUrl: './itd-form-modal.scss',
 })
 export class ItdFormModal implements OnChanges {
+  private itdForm = inject(ItdForm);
+
   @Input() open = false;
   @Input() isEditMode = false;
   @Input() model: ItdFormValue = { program: '', month_key: '', month_label: '', exhibits: {} };
@@ -49,14 +33,14 @@ export class ItdFormModal implements OnChanges {
   @Output() closed = new EventEmitter<void>();
   @Output() save = new EventEmitter<ItdFormValue>();
 
-  formValue: ItdFormValue = { program: '', month_key: '', month_label: '', exhibits: {} };
+  form: FormGroup<ItdFormModel> = this.itdForm.createForm();
   selectedStateCode = 'TOTAL';
   selectedMonth = '12';
   selectedYear = '2025';
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['model']) {
-      this.formValue = { ...this.model, exhibits: { ...this.model.exhibits } };
+      this.itdForm.patchForm(this.form, this.model);
     }
     if (changes['initialMonth']) {
       this.selectedMonth = this.initialMonth;
@@ -72,8 +56,20 @@ export class ItdFormModal implements OnChanges {
   onMonthYearChange(): void {
     const monthObj = this.monthsList.find(m => m.value === this.selectedMonth);
     const monthLabel = monthObj ? monthObj.label : 'December';
-    this.formValue.month_key = `${this.selectedYear}-${this.selectedMonth}`;
-    this.formValue.month_label = `${monthLabel} ${this.selectedYear}`;
+    this.form.controls.month_key.setValue(`${this.selectedYear}-${this.selectedMonth}`);
+    this.form.controls.month_label.setValue(`${monthLabel} ${this.selectedYear}`);
+  }
+
+  updateExhibitField(stateCode: string, field: keyof ItdExhibit, value: number): void {
+    const exhibits = this.form.controls.exhibits.value;
+    const current = exhibits[stateCode];
+    if (!current) {
+      return;
+    }
+    this.form.controls.exhibits.setValue({
+      ...exhibits,
+      [stateCode]: { ...current, [field]: value },
+    });
   }
 
   close(): void {
@@ -81,6 +77,10 @@ export class ItdFormModal implements OnChanges {
   }
 
   submit(): void {
-    this.save.emit(this.formValue);
+    if (this.form.invalid) {
+      this.form.markAllAsTouched();
+      return;
+    }
+    this.save.emit(this.itdForm.toFormValue(this.form));
   }
 }
