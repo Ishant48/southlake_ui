@@ -819,7 +819,7 @@ export class MastersComponent implements OnInit {
   // ==========================================
   // SIMPLE MASTERS ACTIONS
   // ==========================================
-  openSimpleAdd(mode: typeof this.simpleMode): void {
+  openSimpleAdd(mode: SimpleMode): void {
     this.simpleMode = mode;
     this.isEditMode = false;
     this.simpleModalTitle = `Add New ${this.getMasterLabel(mode)}`;
@@ -844,7 +844,7 @@ export class MastersComponent implements OnInit {
     this.showSimpleModal = true;
   }
 
-  openSimpleEdit(mode: typeof this.simpleMode, item: SimpleEditableItem): void {
+  openSimpleEdit(mode: SimpleMode, item: SimpleEditableItem): void {
     this.simpleMode = mode;
     this.isEditMode = true;
     this.simpleModalTitle = `Edit ${this.getMasterLabel(mode)}`;
@@ -1000,7 +1000,7 @@ export class MastersComponent implements OnInit {
     });
   }
 
-  deleteSimple(mode: typeof this.simpleMode, item: SimpleEditableItem): void {
+  deleteSimple(mode: SimpleMode, item: SimpleEditableItem): void {
     this.confirmTitle = `Delete ${this.getMasterLabel(mode)}`;
     this.confirmMessage = `Are you sure you want to delete "${item.name}"? This action cannot be undone.`;
     this.pendingAction = () => {
