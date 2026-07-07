@@ -1,0 +1,34 @@
+.normal-balance-input {
+  background-color: var(--gray-100);
+}
+
+.account-type-options {
+  display: flex;
+  gap: 16px;
+  margin-top: 8px;
+}
+
+.checkbox-label {
+  cursor: pointer;
+  user-select: none;
+}
+
+.active-status-field {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding-bottom: 4px;
+}
+
+.active-status-label {
+  margin-bottom: 6px;
+}
+
+.earning-account-field {
+  margin-bottom: 16px;
+}
+
+.save-spinner {
+  width: 14px;
+  height: 14px;
+}

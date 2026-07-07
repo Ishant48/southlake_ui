@@ -6,8 +6,22 @@ import { FormsModule } from '@angular/forms';
 import { ColDef, GridOptions, ICellRendererParams } from 'ag-grid-community';
 import { AgGridConfigService } from '../../core/services/ag-grid-config.service';
 import { MastersGrid } from './components/masters-grid/masters-grid';
-import { NotesModal } from './components/notes-modal/notes-modal';
+import { NotesModal } from '../../shared/components/notes-modal/notes-modal';
 import { DocumentDrawer, DrawerDocument } from './components/document-drawer/document-drawer';
+import { StateFormModal, StateFormValue } from './components/state-form-modal/state-form-modal';
+import {
+  GlMappingFormModal,
+  GlMappingFormValue,
+} from './components/gl-mapping-form-modal/gl-mapping-form-modal';
+import { LockPeriodModal } from './components/lock-period-modal/lock-period-modal';
+import {
+  RiskCompanyFormModal,
+  RiskCompanyFormValue,
+} from './components/risk-company-form-modal/risk-company-form-modal';
+import { ItdFormModal, ItdFormValue } from './components/itd-form-modal/itd-form-modal';
+import { SimpleFormModal, SimpleFormValue } from './components/simple-form-modal/simple-form-modal';
+import { MgaFormModal, MgaFormValue } from './components/mga-form-modal/mga-form-modal';
+import { TreatyFormModal, TreatySaveEvent } from './components/treaty-form-modal/treaty-form-modal';
 import {
   ActionButtonConfig,
   ActionButtonsCell,
@@ -16,7 +30,6 @@ import { StatusBadgeCell } from '../../shared/components/grid-renderers/status-b
 import { MastersApi } from './services/masters-api';
 import { ToastService } from '../../shared/components/toast/toast.service';
 import { ConfirmDialogComponent } from '../../shared/components/confirm-dialog/confirm-dialog.component';
-import { DropdownSearchComponent } from '../../shared/components/dropdown-search/dropdown-search.component';
 import { environment } from '../../../environments/environment';
 import {
   StateMaster,
@@ -138,10 +151,17 @@ type MasterTab =
     CommonModule,
     FormsModule,
     ConfirmDialogComponent,
-    DropdownSearchComponent,
     MastersGrid,
     NotesModal,
     DocumentDrawer,
+    StateFormModal,
+    GlMappingFormModal,
+    LockPeriodModal,
+    RiskCompanyFormModal,
+    ItdFormModal,
+    SimpleFormModal,
+    MgaFormModal,
+    TreatyFormModal,
   ],
   templateUrl: './masters.component.html',
   styleUrl: './masters.component.scss',
@@ -432,13 +452,6 @@ export class MastersComponent implements OnInit {
     '2029',
     '2030',
   ];
-
-  onItdMonthYearChange(): void {
-    const monthObj = this.monthsList.find(m => m.value === this.itdSelectedMonth);
-    const monthLabel = monthObj ? monthObj.label : 'December';
-    this.itdForm.month_key = `${this.itdSelectedYear}-${this.itdSelectedMonth}`;
-    this.itdForm.month_label = `${monthLabel} ${this.itdSelectedYear}`;
-  }
 
   // Treaty Modal
   showTreatyModal = false;
@@ -1443,7 +1456,8 @@ export class MastersComponent implements OnInit {
     this.showSimpleModal = true;
   }
 
-  submitSimple(): void {
+  submitSimple(formValue: SimpleFormValue): void {
+    this.simpleForm = formValue;
     if (!this.simpleForm.code || !this.simpleForm.name) {
       this.toast.error('Code and Name are required');
       return;
@@ -1654,22 +1668,8 @@ export class MastersComponent implements OnInit {
     this.showMgaModal = true;
   }
 
-  addOtherNameRow(): void {
-    if (!this.mgaForm.other_names) {
-      this.mgaForm.other_names = [];
-    }
-    this.mgaForm.other_names.push({ state: '', displayName: '' });
-    this.cdr.markForCheck();
-  }
-
-  removeOtherNameRow(index: number): void {
-    if (this.mgaForm.other_names) {
-      this.mgaForm.other_names.splice(index, 1);
-    }
-    this.cdr.markForCheck();
-  }
-
-  submitMga(): void {
+  submitMga(formValue: MgaFormValue): void {
+    this.mgaForm = formValue;
     if (!this.mgaForm.mga_code || !this.mgaForm.name) {
       this.toast.error('MGA Code and Name are required');
       return;
@@ -1884,7 +1884,8 @@ export class MastersComponent implements OnInit {
     this.showStateModal = true;
   }
 
-  submitState(): void {
+  submitState(formValue: StateFormValue): void {
+    this.stateForm = formValue;
     if (this.stateForm.state_code === null || !this.stateForm.state_abbr || !this.stateForm.name) {
       this.toast.error('State Code, State Abbr, and Name are required');
       return;
@@ -1982,7 +1983,8 @@ export class MastersComponent implements OnInit {
     this.showRiskCompanyModal = true;
   }
 
-  submitRiskCompany(): void {
+  submitRiskCompany(formValue: RiskCompanyFormValue): void {
+    this.riskCompanyForm = formValue;
     if (!this.riskCompanyForm.risk_company_id) {
       this.riskCompanyForm.risk_company_id = this.riskCompanyForm.company_id
         ? 'RC-' + this.riskCompanyForm.company_id
@@ -2248,7 +2250,12 @@ export class MastersComponent implements OnInit {
     this.showTreatyModal = true;
   }
 
-  submitTreaty(): void {
+  submitTreaty(event: TreatySaveEvent): void {
+    this.treatyForm = event.form;
+    this.treatySelectedStates = event.selectedStates;
+    this.treatySelectedLobs = event.selectedLobs;
+    this.treatySelectedCobs = event.selectedCobs;
+
     if (!this.treatyForm.treaty_code || !this.treatyForm.name || !this.treatyForm.mga_id) {
       this.toast.error('Treaty Code, Name and MGA Underwriter are required');
       return;
@@ -2312,42 +2319,6 @@ export class MastersComponent implements OnInit {
         this.cdr.markForCheck();
       },
     });
-  }
-
-  addCarrierRow(): void {
-    if (!this.treatyForm.carriers) {
-      this.treatyForm.carriers = [];
-    }
-    this.treatyForm.carriers.push({
-      risk_company_id: '',
-      retention_pct: 100,
-    });
-    this.cdr.markForCheck();
-  }
-
-  removeCarrierRow(index: number): void {
-    if (this.treatyForm.carriers) {
-      this.treatyForm.carriers.splice(index, 1);
-    }
-    this.cdr.markForCheck();
-  }
-
-  addReinsurerRow(): void {
-    if (!this.treatyForm.reinsurers) {
-      this.treatyForm.reinsurers = [];
-    }
-    this.treatyForm.reinsurers.push({
-      reinsurer_id: '',
-      cession_pct: 0,
-    });
-    this.cdr.markForCheck();
-  }
-
-  removeReinsurerRow(index: number): void {
-    if (this.treatyForm.reinsurers) {
-      this.treatyForm.reinsurers.splice(index, 1);
-    }
-    this.cdr.markForCheck();
   }
 
   deleteTreaty(treaty: Treaty): void {
@@ -2756,7 +2727,8 @@ export class MastersComponent implements OnInit {
     this.cdr.markForCheck();
   }
 
-  submitGlMapping(): void {
+  submitGlMapping(formValue: GlMappingFormValue): void {
+    this.glMappingForm = formValue;
     if (!this.glMappingForm.coa_id || !this.glMappingForm.type) {
       this.toast.error('Both Chart of Account and Mapping Type are required');
       return;
@@ -2980,11 +2952,16 @@ export class MastersComponent implements OnInit {
     }
   }
 
-  saveManualITD(): void {
+  saveManualITD(formValue: ItdFormValue): void {
+    this.itdForm.program = formValue.program;
+    this.itdForm.month_key = formValue.month_key;
+    this.itdForm.month_label = formValue.month_label;
+    this.itdForm.exhibits = formValue.exhibits;
+
     if (!this.selectedTreatyForItd) return;
 
-    const exhibitsArray = Object.keys(this.itdForm.exhibits).map(code => {
-      const ex = this.itdForm.exhibits[code];
+    const exhibitsArray = Object.keys(formValue.exhibits).map(code => {
+      const ex = formValue.exhibits[code];
       return {
         state_code: code,
         uep: Number(ex.uep ?? 0),
@@ -2999,9 +2976,9 @@ export class MastersComponent implements OnInit {
     });
 
     const payload = {
-      program: this.itdForm.program,
-      monthKey: this.itdForm.month_key,
-      monthLabel: this.itdForm.month_label,
+      program: formValue.program,
+      monthKey: formValue.month_key,
+      monthLabel: formValue.month_label,
       exhibits: exhibitsArray,
     };
 
@@ -3019,7 +2996,8 @@ export class MastersComponent implements OnInit {
     });
   }
 
-  submitLockPeriod(): void {
+  submitLockPeriod(period: string): void {
+    this.newPeriodToLock = period;
     if (!this.newPeriodToLock) return;
     this.submitting = true;
     this.service.lockPeriod(this.newPeriodToLock).subscribe({
@@ -3057,21 +3035,5 @@ export class MastersComponent implements OnInit {
     this.newPeriodToLock = '';
     this.showLockPeriodModal = true;
     this.cdr.markForCheck();
-  }
-
-  onProductLobCobChange(): void {
-    const selectedLob = this.lobOptions.find(l => l.id === this.simpleForm.lob_id);
-    const selectedCob = this.cobOptions.find(c => c.id === this.simpleForm.cob_id);
-
-    const lobCode = selectedLob ? selectedLob.lob_code : '';
-    const cobCode = selectedCob ? selectedCob.cob_code : '';
-
-    if (lobCode && cobCode) {
-      this.simpleForm.code = `${lobCode}-${cobCode}`;
-      this.simpleForm.name = `${selectedLob?.name} - ${selectedCob?.name}`;
-    } else {
-      this.simpleForm.code = '';
-      this.simpleForm.name = '';
-    }
   }
 }

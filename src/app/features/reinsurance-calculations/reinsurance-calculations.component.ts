@@ -6,92 +6,22 @@ import { ReinsuranceApi } from './services/reinsurance-api';
 import { ToastService } from '../../shared/components/toast/toast.service';
 import { MastersApi } from '../masters/services/masters-api';
 import { ConfirmDialogComponent } from '../../shared/components/confirm-dialog/confirm-dialog.component';
-import { StateExhibit, Workbook } from './models/reinsurance.model';
+import { Workbook } from './models/reinsurance.model';
 import { TreatyState } from '../masters/models/master.model';
 
-interface ReinsuranceParamsForm {
-  pw: number;
-  prev_uep: number;
-  curr_uep: number;
-  prev_loss_reserves: number;
-  loss_ibnr: number;
-  prev_lae_reserves_dcc: number;
-  lae_ibnr_dcc: number;
-  prev_lae_reserves_aoe: number;
-  lae_ibnr_aoe: number;
-  ulae_ibnr: number;
-}
-
-interface ReinsuranceRatesForm {
-  qs?: number;
-  cf?: number;
-  comm?: number;
-  loss_pick?: number;
-  loss_ratio_cap?: number;
-  lae_dcc?: number;
-  lae_aoe?: number;
-  ulae?: number;
-  boards_charge?: number;
-  [key: string]: unknown;
-}
-
-interface ReinsuranceMappingsForm {
-  mga?: string;
-  lob?: string;
-  line_desc_suffix?: string;
-  comp?: string;
-  cc?: string;
-  ext?: string;
-  sub?: string;
-  [key: string]: unknown;
-}
-
-interface GljeRow {
-  desc: string;
-  comp: string;
-  account: string;
-  cc: string;
-  mga: string;
-  lob: string;
-  st: string;
-  ext: string;
-  sub: string;
-  debit: number | null;
-  credit: number | null;
-  isNew?: boolean;
-  lineDesc?: string;
-}
-
-interface CashSettlementRow {
-  label?: string;
-  total?: number | string;
-  reins?: number | string;
-  ssic?: number | string;
-  reinsColor?: string;
-  ssicColor?: string;
-  ssicUnderline?: boolean;
-  isInput?: string;
-  isBold?: boolean;
-  isSubtotal?: boolean;
-}
-
-interface CashSettlement {
-  beg_bal?: number;
-  amt_paid?: number;
-  qsPct?: number;
-  reinsurerName?: string;
-  rows?: CashSettlementRow[];
-  [key: string]: unknown;
-}
-
-interface StatementRow {
-  label?: string;
-  value?: number | string;
-  formula?: string;
-  isHeader?: boolean;
-  isBold?: boolean;
-  borderClass?: string;
-}
+import { SettingsAccordions } from './components/settings-accordions/settings-accordions';
+import {
+  ReinsuranceParamsForm,
+  ReinsuranceRatesForm,
+  ReinsuranceMappingsForm,
+} from './components/settings-accordions/settings-accordions';
+import { StatementTab, StatementRow } from './components/statement-tab/statement-tab';
+import { GljeTab, GljeRow, GljeRowDefaults } from './components/glje-tab/glje-tab';
+import {
+  CashSettlementTab,
+  CashSettlement,
+  CashSettlementSaveEvent,
+} from './components/cash-settlement-tab/cash-settlement-tab';
 
 interface StatementResponse {
   rows?: StatementRow[];
@@ -106,7 +36,15 @@ interface JournalEntryBatch {
 @Component({
   selector: 'app-reinsurance-calculations',
   standalone: true,
-  imports: [CommonModule, FormsModule, ConfirmDialogComponent],
+  imports: [
+    CommonModule,
+    FormsModule,
+    ConfirmDialogComponent,
+    SettingsAccordions,
+    StatementTab,
+    GljeTab,
+    CashSettlementTab,
+  ],
   templateUrl: './reinsurance-calculations.component.html',
   styleUrl: './reinsurance-calculations.component.scss',
 })
@@ -141,11 +79,6 @@ export class ReinsuranceCalculationsComponent implements OnInit {
   ratesForm: ReinsuranceRatesForm = {};
   mappingsForm: ReinsuranceMappingsForm = {};
   paramsForm: Partial<ReinsuranceParamsForm> = {};
-  currentStateExhibitObj: StateExhibit | null = null;
-
-  parametersExpanded = false;
-  ratesExpanded = false;
-  mappingsExpanded = false;
 
   ngOnInit(): void {
     this.loadWorkbooks();
@@ -285,17 +218,6 @@ export class ReinsuranceCalculationsComponent implements OnInit {
     this.loadActiveTabCalculations();
   }
 
-  toggleAccordion(section: 'parameters' | 'rates' | 'mappings'): void {
-    if (section === 'parameters') {
-      this.parametersExpanded = !this.parametersExpanded;
-    } else if (section === 'rates') {
-      this.ratesExpanded = !this.ratesExpanded;
-    } else if (section === 'mappings') {
-      this.mappingsExpanded = !this.mappingsExpanded;
-    }
-    this.cdr.markForCheck();
-  }
-
   setTab(tab: 'statement' | 'glje' | 'cash'): void {
     this.activeTab = tab;
     this.loadActiveTabCalculations();
@@ -310,7 +232,6 @@ export class ReinsuranceCalculationsComponent implements OnInit {
     const exhibits = this.selectedWorkbook?.state_exhibits ?? this.selectedWorkbook?.stateExhibits;
     const curEx = exhibits?.find(e => (e.state_code ?? e.stateCode) === this.selectedState);
     if (curEx) {
-      this.currentStateExhibitObj = curEx;
       this.paramsForm = {
         pw: this.tupleValue(curEx.pw, 1),
         prev_uep: this.tupleValue(curEx.uep, 0),
@@ -378,125 +299,6 @@ export class ReinsuranceCalculationsComponent implements OnInit {
 
   private tupleValue(arr: unknown, index: number): number {
     return Array.isArray(arr) ? Number(arr[index] ?? 0) : 0;
-  }
-
-  private getArr(arr: unknown): number[] {
-    return Array.isArray(arr) ? [...(arr as number[])] : [0, 0, 0];
-  }
-
-  saveParams(): void {
-    if (!this.selectedWorkbookId || !this.selectedState) return;
-    this.loading = true;
-
-    const exhibits = this.selectedWorkbook?.state_exhibits ?? this.selectedWorkbook?.stateExhibits;
-    const curEx: StateExhibit =
-      exhibits?.find(e => (e.state_code ?? e.stateCode) === this.selectedState) ?? {};
-
-    const pw = this.getArr(curEx.pw);
-    pw[1] = Number(this.paramsForm.pw ?? 0);
-    pw[2] = Number(pw[0] ?? 0) + pw[1];
-
-    const uep = this.getArr(curEx.uep);
-    uep[0] = Number(this.paramsForm.prev_uep ?? 0);
-    uep[1] = Number(this.paramsForm.curr_uep ?? 0);
-    uep[2] = uep[0] + uep[1];
-
-    const loss_reserves = this.getArr(curEx.loss_reserves);
-    loss_reserves[0] = Number(this.paramsForm.prev_loss_reserves ?? 0);
-    loss_reserves[1] = Number(loss_reserves[1] ?? 0);
-    loss_reserves[2] = loss_reserves[0] + loss_reserves[1];
-
-    const lu = this.getArr(curEx['lu']);
-    lu[0] = Number(this.paramsForm.prev_loss_reserves ?? 0);
-    lu[1] = Number(lu[1] ?? 0);
-    lu[2] = lu[0] + lu[1];
-
-    const loss_ibnr = this.getArr(curEx.loss_ibnr);
-    loss_ibnr[0] = Number(this.paramsForm.loss_ibnr ?? 0);
-    loss_ibnr[1] = Number(loss_ibnr[1] ?? 0);
-    loss_ibnr[2] = loss_ibnr[0] + loss_ibnr[1];
-
-    const lae_ibnr_dcc = this.getArr(curEx.lae_ibnr_dcc);
-    lae_ibnr_dcc[0] = Number(this.paramsForm.lae_ibnr_dcc ?? 0);
-    lae_ibnr_dcc[1] = Number(lae_ibnr_dcc[1] ?? 0);
-    lae_ibnr_dcc[2] = lae_ibnr_dcc[0] + lae_ibnr_dcc[1];
-
-    const lae_ibnr_aoe = this.getArr(curEx.lae_ibnr_aoe);
-    lae_ibnr_aoe[0] = Number(this.paramsForm.lae_ibnr_aoe ?? 0);
-    lae_ibnr_aoe[1] = Number(lae_ibnr_aoe[1] ?? 0);
-    lae_ibnr_aoe[2] = lae_ibnr_aoe[0] + lae_ibnr_aoe[1];
-
-    const lae_reserves_dcc = this.getArr(curEx.lae_reserves_dcc);
-    lae_reserves_dcc[0] = Number(this.paramsForm.prev_lae_reserves_dcc ?? 0);
-    lae_reserves_dcc[1] = Number(lae_reserves_dcc[1] ?? 0);
-    lae_reserves_dcc[2] = lae_reserves_dcc[0] + lae_reserves_dcc[1];
-
-    const lae_reserves_aoe = this.getArr(curEx.lae_reserves_aoe);
-    lae_reserves_aoe[0] = Number(this.paramsForm.prev_lae_reserves_aoe ?? 0);
-    lae_reserves_aoe[1] = Number(lae_reserves_aoe[1] ?? 0);
-    lae_reserves_aoe[2] = lae_reserves_aoe[0] + lae_reserves_aoe[1];
-
-    const ulae_ibnr = this.getArr(curEx.ulae_ibnr);
-    ulae_ibnr[0] = Number(this.paramsForm.ulae_ibnr ?? 0);
-    ulae_ibnr[1] = Number(ulae_ibnr[1] ?? 0);
-    ulae_ibnr[2] = ulae_ibnr[0] + ulae_ibnr[1];
-
-    const exData = {
-      pw,
-      uep,
-      loss_reserves,
-      lu,
-      loss_ibnr,
-      lae_reserves_dcc,
-      lae_reserves_aoe,
-      lae_ibnr_dcc,
-      lae_ibnr_aoe,
-      ulae_ibnr,
-    };
-
-    this.service.updateExhibit(this.selectedWorkbookId, this.selectedState, exData).subscribe({
-      next: () => {
-        this.toast.success('Required parameters updated successfully');
-        this.onWorkbookChange();
-      },
-      error: () => {
-        this.toast.error('Failed to update parameters');
-        this.loading = false;
-        this.cdr.markForCheck();
-      },
-    });
-  }
-
-  saveRates(): void {
-    if (!this.selectedWorkbookId) return;
-    this.loading = true;
-    this.service.updateRates(this.selectedWorkbookId, this.ratesForm).subscribe({
-      next: () => {
-        this.toast.success('Rates updated successfully');
-        this.onWorkbookChange();
-      },
-      error: () => {
-        this.toast.error('Failed to update rates');
-        this.loading = false;
-        this.cdr.markForCheck();
-      },
-    });
-  }
-
-  saveMappings(): void {
-    if (!this.selectedWorkbookId) return;
-    this.loading = true;
-    this.service.updateMappings(this.selectedWorkbookId, this.mappingsForm).subscribe({
-      next: () => {
-        this.toast.success('Mappings updated successfully');
-        this.onWorkbookChange();
-      },
-      error: () => {
-        this.toast.error('Failed to update mappings');
-        this.loading = false;
-        this.cdr.markForCheck();
-      },
-    });
   }
 
   saveCashParams(): void {
@@ -577,43 +379,28 @@ export class ReinsuranceCalculationsComponent implements OnInit {
     });
   }
 
-  addGLJERow(): void {
-    this.gljeRows.push({
-      desc: '',
+  get gljeRowDefaults(): GljeRowDefaults {
+    return {
       comp: this.selectedWorkbook?.comp ?? '',
-      account: '',
       cc: this.selectedWorkbook?.cc ?? '',
       mga: this.selectedWorkbook?.mga ?? '',
       lob: this.selectedWorkbook?.lob ?? '',
-      st: this.selectedState === 'TOTAL' ? '00' : this.selectedState,
       ext: this.selectedWorkbook?.ext ?? '',
       sub: this.selectedWorkbook?.sub ?? '',
-      debit: null,
-      credit: null,
-      isNew: true,
-    });
+    };
+  }
+
+  onGljeRowsChanged(rows: GljeRow[]): void {
+    this.gljeRows = rows;
     this.isPosted = false;
     this.cdr.markForCheck();
   }
 
-  removeGLJERow(index: number): void {
-    this.gljeRows.splice(index, 1);
-    this.isPosted = false;
-    this.cdr.markForCheck();
-  }
-
-  onRowAmountChange(row: GljeRow, field: 'debit' | 'credit'): void {
-    if (field === 'debit' && (row.debit ?? 0) > 0) {
-      row.credit = 0;
-    } else if (field === 'credit' && (row.credit ?? 0) > 0) {
-      row.debit = 0;
-    }
-    this.isPosted = false;
-  }
-
-  onRowChange(): void {
-    this.isPosted = false;
-    this.cdr.markForCheck();
+  onSaveCashParams(event: CashSettlementSaveEvent): void {
+    if (!this.cashSettlement) return;
+    this.cashSettlement.beg_bal = event.beg_bal;
+    this.cashSettlement.amt_paid = event.amt_paid;
+    this.saveCashParams();
   }
 
   exportGLJECSV(): void {
@@ -641,28 +428,5 @@ export class ReinsuranceCalculationsComponent implements OnInit {
       `GL_JE_Mapping_${this.selectedWorkbook?.program || 'Treaty'}_${this.selectedWorkbook?.month_key || 'Period'}_${this.selectedState}.csv`,
     );
     link.click();
-  }
-
-  formatCurrency(value: number | string | null | undefined): string {
-    if (value === null || value === undefined || value === '') return '-';
-    const num = Number(value);
-    if (isNaN(num)) return '-';
-    const isNegative = num < 0;
-    const formatted = new Intl.NumberFormat('en-US', {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    }).format(Math.abs(num));
-    return isNegative ? `-$${formatted}` : `$${formatted}`;
-  }
-
-  formatAccounting(value: number | string | null | undefined): string {
-    if (value === null || value === undefined || value === '') return '-';
-    const num = Number(value);
-    if (isNaN(num) || Math.abs(num) < 0.001) return '-';
-    const absVal = new Intl.NumberFormat('en-US', {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    }).format(Math.abs(num));
-    return num < 0 ? `(${absVal})` : absVal;
   }
 }

@@ -1,0 +1,440 @@
+@if (open) {
+  <!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events, @angular-eslint/template/interactive-supports-focus -- backdrop click-to-dismiss, not an interactive control; keyboard dismissal is handled via Escape at the dialog level -->
+  <div class="modal-overlay" (click)="$event.target === $event.currentTarget && close()">
+    <div class="modal-box coa-modal treaty-modal treaty-modal-wide">
+      <div class="panel-header">
+        <h3 class="panel-title">{{ title }}</h3>
+        <button class="panel-close" (click)="close()" aria-label="Close modal">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <line x1="18" y1="6" x2="6" y2="18" />
+            <line x1="6" y1="6" x2="18" y2="18" />
+          </svg>
+        </button>
+      </div>
+
+      <form (submit)="submit()" class="panel-body scrollable-body">
+        <h4 class="section-heading no-top-margin">Basic Details</h4>
+
+        <div class="form-row">
+          <div class="form-field">
+            <label for="tr-treatycode" class="form-label">Treaty Code *</label>
+            <input
+              id="tr-treatycode"
+              [(ngModel)]="formValue.treaty_code"
+              name="treatyCode"
+              type="text"
+              required
+              placeholder="e.g. TR-100"
+              [disabled]="isEditMode"
+              class="form-input"
+            />
+          </div>
+          <div class="form-field">
+            <label for="tr-treatyname" class="form-label">Treaty Name *</label>
+            <input
+              id="tr-treatyname"
+              [(ngModel)]="formValue.name"
+              name="treatyName"
+              type="text"
+              required
+              placeholder="e.g. Casualty Quota Share"
+              class="form-input"
+            />
+          </div>
+        </div>
+
+        <h4 class="section-heading">
+          <span>Carrier Company (Risk Company)</span>
+        </h4>
+
+        @if (formValue.carriers && formValue.carriers[0]) {
+          <div class="form-row carrier-row">
+            <div class="form-field flex-1">
+              <span class="form-label">Carrier Company *</span>
+              <app-dropdown-search
+                [items]="riskCompanyOptions"
+                [isMultiSelect]="false"
+                bindValue="id"
+                placeholder="Select Carrier"
+                [itemLabelFn]="riskCompanyLabelFn"
+                [(selectedValue)]="formValue.carriers[0].risk_company_id"
+              ></app-dropdown-search>
+            </div>
+          </div>
+        }
+
+        <h4 class="section-heading section-heading-with-action">
+          <span>Reinsurer Companies & Quota Share %</span>
+          <button type="button" class="btn btn-sm btn-primary add-reinsurer-btn" (click)="addReinsurerRow()">
+            + Add Reinsurer
+          </button>
+        </h4>
+
+        @for (reinsurer of formValue.reinsurers; track $index; let i = $index) {
+          <div class="form-row reinsurer-row">
+            <div class="form-field flex-2">
+              @if (i === 0) {
+                <span class="form-label">Reinsurer Company</span>
+              }
+              <app-dropdown-search
+                [items]="reinsurerOptions"
+                [isMultiSelect]="false"
+                bindValue="id"
+                placeholder="Select Reinsurer"
+                [itemLabelFn]="reinsurerLabelFn"
+                [(selectedValue)]="reinsurer.reinsurer_id"
+              ></app-dropdown-search>
+            </div>
+            <div class="form-field flex-1-5">
+              @if (i === 0) {
+                <span class="form-label">Specific State (Opt)</span>
+              }
+              <app-dropdown-search
+                [items]="stateOptions"
+                [isMultiSelect]="false"
+                bindValue="id"
+                placeholder="All States"
+                [itemLabelFn]="stateLabelFn"
+                [(selectedValue)]="reinsurer.state_id"
+              ></app-dropdown-search>
+            </div>
+            <div class="form-field flex-1-5">
+              @if (i === 0) {
+                <label for="tr-reinsurer-broker-{{ i }}" class="form-label">Broker (Opt)</label>
+              }
+              <app-dropdown-search
+                [items]="brokerOptions"
+                [isMultiSelect]="false"
+                bindValue="id"
+                placeholder="None"
+                [itemLabelFn]="brokerLabelFn"
+                [(selectedValue)]="reinsurer.broker_id"
+              ></app-dropdown-search>
+            </div>
+            <div class="form-field flex-1">
+              @if (i === 0) {
+                <label for="tr-reinsurer-cession-pct-{{ i }}" class="form-label">Quota Share %</label>
+              }
+              <input
+                id="tr-reinsurer-cession-pct-{{ i }}"
+                [(ngModel)]="reinsurer.cession_pct"
+                [name]="'reinsurerCes_' + i"
+                type="number"
+                step="0.01"
+                class="form-input"
+                placeholder="0.00"
+              />
+            </div>
+            <div class="remove-reinsurer-btn-wrap">
+              <button
+                type="button"
+                class="btn btn-danger remove-reinsurer-btn"
+                (click)="removeReinsurerRow(i)"
+                aria-label="Remove reinsurer row"
+              >
+                ✕
+              </button>
+            </div>
+          </div>
+        }
+        @if (!formValue.reinsurers || formValue.reinsurers.length === 0) {
+          <div class="empty-reinsurer-hint">
+            No reinsurers added yet. Click "+ Add Reinsurer" to define a reinsurer quota share split.
+          </div>
+        }
+
+        <h4 class="section-heading">Authorized MGA Underwriter *</h4>
+        <div class="field-block">
+          <app-dropdown-search
+            [items]="mgaOptions"
+            [isMultiSelect]="false"
+            bindValue="id"
+            placeholder="Select MGA Underwriter"
+            [itemLabelFn]="mgaLabelFn"
+            [(selectedValue)]="formValue.mga_id"
+            [disabled]="isEditMode || !!formValue.mga_id"
+          ></app-dropdown-search>
+        </div>
+
+        <div class="form-row">
+          <div class="form-field">
+            <label for="tr-effdate" class="form-label">Effective Date</label>
+            <input
+              id="tr-effdate"
+              [(ngModel)]="formValue.effective_date"
+              name="effDate"
+              type="date"
+              class="form-input"
+            />
+          </div>
+          <div class="form-field">
+            <label for="tr-expdate" class="form-label">
+              Expiration Date
+              <span class="continuous-hint">(Continuous)</span>
+            </label>
+            <input
+              id="tr-expdate"
+              [(ngModel)]="formValue.expiration_date"
+              name="expDate"
+              type="date"
+              class="form-input"
+            />
+          </div>
+        </div>
+
+        <h4 class="section-heading">Sequence Prefix & Counters</h4>
+        <div class="form-row">
+          <div class="form-field">
+            <label for="tr-policyseqprefix" class="form-label">Policy Seq Prefix</label>
+            <input
+              id="tr-policyseqprefix"
+              [(ngModel)]="formValue.policy_seq_prefix"
+              name="policySeqPrefix"
+              type="text"
+              class="form-input"
+              placeholder="e.g. POL"
+            />
+          </div>
+          <div class="form-field">
+            <label for="tr-policyseqstart" class="form-label">Policy Seq Start</label>
+            <input
+              id="tr-policyseqstart"
+              [(ngModel)]="formValue.policy_seq_start"
+              name="policySeqStart"
+              type="number"
+              class="form-input"
+              placeholder="1"
+            />
+          </div>
+          <div class="form-field">
+            <label for="tr-claimseqprefix" class="form-label">Claim Seq Prefix</label>
+            <input
+              id="tr-claimseqprefix"
+              [(ngModel)]="formValue.claim_seq_prefix"
+              name="claimSeqPrefix"
+              type="text"
+              class="form-input"
+              placeholder="e.g. CLM"
+            />
+          </div>
+          <div class="form-field">
+            <label for="tr-claimseqstart" class="form-label">Claim Seq Start</label>
+            <input
+              id="tr-claimseqstart"
+              [(ngModel)]="formValue.claim_seq_start"
+              name="claimSeqStart"
+              type="number"
+              class="form-input"
+              placeholder="1"
+            />
+          </div>
+        </div>
+
+        <h4 class="section-heading">Treaty Terms (Percentages)</h4>
+
+        <div class="treaty-form-grid">
+          <div class="form-field">
+            <label for="tr-qspct" class="form-label">Quota Share (QS) %</label>
+            <input
+              id="tr-qspct"
+              [(ngModel)]="formValue.qs_pct"
+              name="qsPct"
+              type="number"
+              step="0.01"
+              class="form-input"
+              placeholder="0.00"
+            />
+          </div>
+          <div class="form-field">
+            <label for="tr-cfpct" class="form-label">CF %</label>
+            <input
+              id="tr-cfpct"
+              [(ngModel)]="formValue.cf_pct"
+              name="cfPct"
+              type="number"
+              step="0.01"
+              class="form-input"
+              placeholder="0.00"
+            />
+          </div>
+          <div class="form-field">
+            <label for="tr-commpct" class="form-label">Commission %</label>
+            <input
+              id="tr-commpct"
+              [(ngModel)]="formValue.comm_pct"
+              name="commPct"
+              type="number"
+              step="0.01"
+              class="form-input"
+              placeholder="0.00"
+            />
+          </div>
+          <div class="form-field">
+            <label for="tr-bbpct" class="form-label">BB %</label>
+            <input
+              id="tr-bbpct"
+              [(ngModel)]="formValue.bb_pct"
+              name="bbPct"
+              type="number"
+              step="0.01"
+              class="form-input"
+              placeholder="0.00"
+            />
+          </div>
+
+          <div class="form-field">
+            <label for="tr-ulaetype" class="form-label">ULAE Type</label>
+            <select id="tr-ulaetype" [(ngModel)]="formValue.ulae_type" name="ulaeType" class="form-input">
+              <option value="percent">Percent</option>
+              <option value="flat_rate">Flat Rate</option>
+            </select>
+          </div>
+          @if (formValue.ulae_type === "percent") {
+            <div class="form-field">
+              <label for="tr-ulaepct" class="form-label">ULAE %</label>
+              <input
+                id="tr-ulaepct"
+                [(ngModel)]="formValue.ulae_pct"
+                name="ulaePct"
+                type="number"
+                step="0.01"
+                class="form-input"
+                placeholder="0.00"
+              />
+            </div>
+          } @else {
+            <div class="form-field">
+              <label for="tr-ulaebasis" class="form-label">ULAE Basis</label>
+              <select id="tr-ulaebasis" [(ngModel)]="formValue.ulae_basis" name="ulaeBasis" class="form-input">
+                <option value="earned_premium">Earned Premium</option>
+                <option value="unearned_premium">Unearned Premium</option>
+                <option value="flat_amount">Flat Amount</option>
+              </select>
+            </div>
+            <div class="form-field">
+              <label for="tr-ulaeflatamount" class="form-label">ULAE Flat Amount</label>
+              <input
+                id="tr-ulaeflatamount"
+                [(ngModel)]="formValue.ulae_flat_amount"
+                name="ulaeFlatAmount"
+                type="number"
+                step="0.01"
+                class="form-input"
+                placeholder="0.00"
+              />
+            </div>
+          }
+          <div class="form-field">
+            <label for="tr-xolpct" class="form-label">XOL %</label>
+            <input
+              id="tr-xolpct"
+              [(ngModel)]="formValue.xol_pct"
+              name="xolPct"
+              type="number"
+              step="0.01"
+              class="form-input"
+              placeholder="0.00"
+            />
+          </div>
+          <div class="form-field">
+            <label for="tr-lrcappct" class="form-label">LR Cap %</label>
+            <input
+              id="tr-lrcappct"
+              [(ngModel)]="formValue.lr_cap_pct"
+              name="lrCapPct"
+              type="number"
+              step="0.01"
+              class="form-input"
+              placeholder="0.00"
+            />
+          </div>
+          <div class="form-field">
+            <label for="tr-ibnrpct" class="form-label">Loss Pick %</label>
+            <input
+              id="tr-ibnrpct"
+              [(ngModel)]="formValue.ibnr_pct"
+              name="ibnrPct"
+              type="number"
+              step="0.01"
+              class="form-input"
+              placeholder="0.00"
+            />
+          </div>
+
+          <div class="form-field">
+            <label for="tr-laedccpct" class="form-label">LAE DCC %</label>
+            <input
+              id="tr-laedccpct"
+              [(ngModel)]="formValue.lae_dcc_pct"
+              name="laeDccPct"
+              type="number"
+              step="0.01"
+              class="form-input"
+              placeholder="0.00"
+            />
+          </div>
+          <div class="form-field">
+            <label for="tr-laeaoepct" class="form-label">LAE AOE %</label>
+            <input
+              id="tr-laeaoepct"
+              [(ngModel)]="formValue.lae_aoe_pct"
+              name="laeAoePct"
+              type="number"
+              step="0.01"
+              class="form-input"
+              placeholder="0.00"
+            />
+          </div>
+        </div>
+
+        <h4 class="section-heading">Authorized Writing States</h4>
+        <div class="field-block">
+          <app-dropdown-search
+            [items]="stateOptions"
+            [isMultiSelect]="true"
+            bindValue="id"
+            placeholder="Select Writing States"
+            [itemLabelFn]="stateLabelFn"
+            [(selectedValues)]="formSelectedStates"
+          ></app-dropdown-search>
+        </div>
+
+        <h4 class="section-heading">Authorized Lines of Business (LOBs)</h4>
+        <div class="field-block">
+          <app-dropdown-search
+            [items]="lobOptions"
+            [isMultiSelect]="true"
+            bindValue="id"
+            placeholder="Select Lines of Business"
+            [itemLabelFn]="lobLabelFn"
+            [(selectedValues)]="formSelectedLobs"
+          ></app-dropdown-search>
+        </div>
+
+        <h4 class="section-heading">Authorized Classes of Business (COBs)</h4>
+        <div class="field-block">
+          <app-dropdown-search
+            [items]="cobOptions"
+            [isMultiSelect]="true"
+            bindValue="id"
+            placeholder="Select Classes of Business"
+            [itemLabelFn]="cobLabelFn"
+            [(selectedValues)]="formSelectedCobs"
+          ></app-dropdown-search>
+        </div>
+      </form>
+
+      <div class="panel-footer">
+        <button type="button" class="btn-ghost" (click)="close()">Cancel</button>
+        <button type="button" class="btn-primary" [disabled]="submitting" (click)="submit()">
+          @if (submitting) {
+            <span class="spinner btn-spinner save-spinner"></span>
+            <span>Saving...</span>
+          } @else {
+            <span>Save Treaty</span>
+          }
+        </button>
+      </div>
+    </div>
+  </div>
+}

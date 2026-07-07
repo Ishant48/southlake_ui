@@ -1,0 +1,61 @@
+.itd-modal {
+  max-width: 900px;
+  width: 90%;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.itd-header {
+  flex-shrink: 0;
+}
+
+.itd-body {
+  overflow-y: auto;
+  flex-grow: 1;
+  padding: 20px;
+}
+
+.itd-footer {
+  flex-shrink: 0;
+  border-top: 1px solid var(--gray-200);
+  padding: 12px 20px;
+}
+
+.itd-row-spaced {
+  margin-bottom: 20px;
+}
+
+.itd-select {
+  height: 38px;
+  padding: 4px 8px;
+}
+
+.itd-section-title {
+  margin: 24px 0 12px 0;
+  color: var(--navy);
+  font-weight: 700;
+  font-size: 14px;
+  border-bottom: 1.5px solid var(--gray-200);
+  padding-bottom: 6px;
+}
+
+.itd-state-picker {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 20px;
+  align-items: center;
+}
+
+.itd-state-picker-label {
+  margin-bottom: 0;
+  font-weight: 600;
+  font-size: 13.5px;
+  color: var(--navy);
+}
+
+.itd-state-select {
+  max-width: 150px;
+  height: 38px;
+  padding: 4px 8px;
+}

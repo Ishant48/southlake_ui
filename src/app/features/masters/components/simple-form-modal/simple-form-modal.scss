@@ -1,0 +1,26 @@
+.scrollable-body {
+  max-height: calc(100vh - 200px);
+  overflow-y: auto;
+}
+
+.form-row-spaced {
+  margin-top: 8px;
+}
+
+.textarea-field {
+  height: 60px;
+  resize: vertical;
+}
+
+.active-status-field {
+  margin-top: 12px;
+}
+
+.checkbox-label {
+  cursor: pointer;
+}
+
+.save-spinner {
+  width: 14px;
+  height: 14px;
+}

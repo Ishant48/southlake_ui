@@ -1,0 +1,42 @@
+.scrollable-body {
+  max-height: calc(100vh - 200px);
+  overflow-y: auto;
+}
+
+.no-top-margin {
+  margin-top: 0;
+}
+
+.flex-2 {
+  flex: 2;
+}
+
+.other-name-row {
+  align-items: flex-end;
+  margin-bottom: 12px;
+}
+
+.remove-row-btn-wrap {
+  padding-bottom: 2px;
+}
+
+.remove-row-btn {
+  height: 38px;
+}
+
+.add-row-btn-wrap {
+  margin-bottom: 16px;
+}
+
+.active-status-checkbox {
+  margin-top: 28px;
+}
+
+.checkbox-label {
+  cursor: pointer;
+}
+
+.save-spinner {
+  width: 14px;
+  height: 14px;
+}

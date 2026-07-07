@@ -1,0 +1,32 @@
+.doc-subtitle {
+  font-size: 12px;
+  margin-top: 2px;
+}
+
+.upload-label {
+  font-weight: 600;
+  color: var(--gray-700);
+}
+
+.upload-spinner {
+  width: 12px;
+  height: 12px;
+  margin-right: 6px;
+}
+
+.upload-icon {
+  margin-right: 6px;
+}
+
+.hidden-file-input {
+  display: none;
+}
+
+.empty-docs-icon {
+  margin-bottom: 8px;
+}
+
+.doc-action-btn {
+  height: 26px;
+  padding: 0 8px;
+}

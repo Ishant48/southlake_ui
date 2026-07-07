@@ -1,0 +1,44 @@
+@if (open) {
+  <!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events, @angular-eslint/template/interactive-supports-focus -- backdrop click-to-dismiss, not an interactive control; keyboard dismissal is handled via Escape at the dialog level -->
+  <div class="modal-overlay" (click)="$event.target === $event.currentTarget && close()">
+    <div class="modal-box lock-period-modal-box">
+      <div class="panel-header">
+        <h3 class="panel-title">Lock Accounting Period</h3>
+        <button class="panel-close" (click)="close()" aria-label="Close modal">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <line x1="18" y1="6" x2="6" y2="18" />
+            <line x1="6" y1="6" x2="18" y2="18" />
+          </svg>
+        </button>
+      </div>
+
+      <form (submit)="submit()" class="panel-body">
+        <div class="form-field field-spaced">
+          <label for="m-newperiodtolock" class="form-label">Period Name *</label>
+          <input
+            id="m-newperiodtolock"
+            [(ngModel)]="periodValue"
+            name="newPeriodToLock"
+            type="text"
+            required
+            placeholder="e.g. June 2026"
+            class="form-input"
+          />
+          <span class="field-hint">Specify the period label (e.g. Month Year format) to lock journal postings.</span>
+        </div>
+      </form>
+
+      <div class="panel-footer">
+        <button type="button" class="btn-ghost" (click)="close()">Cancel</button>
+        <button type="button" class="btn-primary" [disabled]="submitting" (click)="submit()">
+          @if (submitting) {
+            <span class="spinner btn-spinner save-spinner"></span>
+            <span>Locking...</span>
+          } @else {
+            <span>Lock Period</span>
+          }
+        </button>
+      </div>
+    </div>
+  </div>
+}

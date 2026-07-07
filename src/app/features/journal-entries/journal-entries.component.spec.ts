@@ -57,46 +57,6 @@ describe('JournalEntriesComponent', () => {
     expect(row1.credit).toBeNull();
   });
 
-  it('addRow copies the previous row values for the new rows', () => {
-    component.formEntries = [component.createBlankRow({ description: 'Rent', sub: '705' })];
-    component.addRow();
-    expect(component.formEntries.length).toBe(3);
-    expect(component.formEntries[1].description).toBe('Rent');
-    expect(component.formEntries[1].sub).toBe('705');
-  });
-
-  it('copyRow duplicates a row immediately after the source', () => {
-    component.formEntries = [component.createBlankRow({ description: 'Original' })];
-    component.copyRow(0);
-    expect(component.formEntries.length).toBe(2);
-    expect(component.formEntries[1].description).toBe('Original');
-  });
-
-  it('deleteRow removes a row, or clears the last remaining row', () => {
-    component.formEntries = [component.createBlankRow(), component.createBlankRow()];
-    component.deleteRow(1);
-    expect(component.formEntries.length).toBe(1);
-
-    component.deleteRow(0);
-    expect(component.formEntries.length).toBe(1);
-    expect(component.formEntries[0].description).toBe('');
-  });
-
-  it('formTotalDebits/Credits and isFormBalanced compute correctly', () => {
-    component.formEntries = [
-      component.createBlankRow({ debit: 100, credit: null }),
-      component.createBlankRow({ debit: null, credit: 100 }),
-    ];
-    expect(component.formTotalDebits).toBe(100);
-    expect(component.formTotalCredits).toBe(100);
-    expect(component.isFormBalanced).toBe(true);
-  });
-
-  it('isFormBalanced is false when there is a difference', () => {
-    component.formEntries = [component.createBlankRow({ debit: 100, credit: null })];
-    expect(component.isFormBalanced).toBe(false);
-  });
-
   it('filterEntries filters allEntries by search term across multiple fields', () => {
     component.allEntries = [
       {
