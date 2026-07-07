@@ -20,6 +20,7 @@ import {
 } from './components/risk-company-form-modal/risk-company-form-modal';
 import { ItdFormModal, ItdFormValue } from './components/itd-form-modal/itd-form-modal';
 import { SimpleFormModal, SimpleFormValue } from './components/simple-form-modal/simple-form-modal';
+import { MgaFormModal, MgaFormValue } from './components/mga-form-modal/mga-form-modal';
 import {
   ActionButtonConfig,
   ActionButtonsCell,
@@ -160,6 +161,7 @@ type MasterTab =
     RiskCompanyFormModal,
     ItdFormModal,
     SimpleFormModal,
+    MgaFormModal,
   ],
   templateUrl: './masters.component.html',
   styleUrl: './masters.component.scss',
@@ -1673,22 +1675,8 @@ export class MastersComponent implements OnInit {
     this.showMgaModal = true;
   }
 
-  addOtherNameRow(): void {
-    if (!this.mgaForm.other_names) {
-      this.mgaForm.other_names = [];
-    }
-    this.mgaForm.other_names.push({ state: '', displayName: '' });
-    this.cdr.markForCheck();
-  }
-
-  removeOtherNameRow(index: number): void {
-    if (this.mgaForm.other_names) {
-      this.mgaForm.other_names.splice(index, 1);
-    }
-    this.cdr.markForCheck();
-  }
-
-  submitMga(): void {
+  submitMga(formValue: MgaFormValue): void {
+    this.mgaForm = formValue;
     if (!this.mgaForm.mga_code || !this.mgaForm.name) {
       this.toast.error('MGA Code and Name are required');
       return;
