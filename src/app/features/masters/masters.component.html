@@ -1736,114 +1736,27 @@
   }
 
   <!-- GL Mapping Modal -->
-  @if (showGlMappingModal) {
-    <!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events, @angular-eslint/template/interactive-supports-focus -- backdrop click-to-dismiss / stopPropagation guard, not an interactive control; keyboard dismissal is handled via Escape at the dialog level -->
-    <div class="modal-overlay" (click)="$event.target === $event.currentTarget && (showGlMappingModal = false)">
-      <div class="modal-box" style="max-width: 480px">
-        <div class="panel-header">
-          <h3 class="panel-title">{{ glMappingModalTitle }}</h3>
-          <button class="panel-close" (click)="showGlMappingModal = false" aria-label="Close modal">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-              <line x1="18" y1="6" x2="6" y2="18" />
-              <line x1="6" y1="6" x2="18" y2="18" />
-            </svg>
-          </button>
-        </div>
-
-        <form (submit)="submitGlMapping()" class="panel-body">
-          <div class="form-field" style="margin-bottom: 16px">
-            <span class="form-label">Chart of Account *</span>
-            <app-dropdown-search
-              [items]="coaOptions"
-              [isMultiSelect]="false"
-              bindValue="id"
-              placeholder="Select Account"
-              [itemLabelFn]="coaLabelFn"
-              [(selectedValue)]="glMappingForm.coa_id"
-            ></app-dropdown-search>
-            <span class="field-hint" style="font-size: 11px; color: var(--gray-400); margin-top: 4px; display: block">
-              Only child ledger accounts are available for mapping.
-            </span>
-          </div>
-
-          <div class="form-field" style="margin-bottom: 8px">
-            <span class="form-label">Mapping Type *</span>
-            <app-dropdown-search
-              [items]="glMappingTypeOptionsList"
-              [isMultiSelect]="false"
-              bindValue="id"
-              placeholder="Select Type"
-              [itemLabelFn]="nameLabelFn"
-              [(selectedValue)]="glMappingForm.type"
-            ></app-dropdown-search>
-            <span class="field-hint" style="font-size: 11px; color: var(--gray-400); margin-top: 4px; display: block">
-              Each mapping type (AR, AP, MGA, BRK) can only be mapped to a single account.
-            </span>
-          </div>
-        </form>
-
-        <div class="panel-footer">
-          <button type="button" class="btn-ghost" (click)="showGlMappingModal = false">Cancel</button>
-          <button type="button" class="btn-primary" [disabled]="submitting" (click)="submitGlMapping()">
-            @if (submitting) {
-              <span class="spinner btn-spinner" style="width: 14px; height: 14px"></span>
-              <span>Saving...</span>
-            } @else {
-              <span>Save Mapping</span>
-            }
-          </button>
-        </div>
-      </div>
-    </div>
-  }
+  <app-gl-mapping-form-modal
+    [open]="showGlMappingModal"
+    [title]="glMappingModalTitle"
+    [model]="glMappingForm"
+    [submitting]="submitting"
+    [coaOptions]="coaOptions"
+    [typeOptions]="glMappingTypeOptionsList"
+    [coaLabelFn]="coaLabelFn"
+    [nameLabelFn]="nameLabelFn"
+    (closed)="showGlMappingModal = false"
+    (save)="submitGlMapping($event)"
+  ></app-gl-mapping-form-modal>
 
   <!-- Lock Period Modal -->
-  @if (showLockPeriodModal) {
-    <!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events, @angular-eslint/template/interactive-supports-focus -- backdrop click-to-dismiss / stopPropagation guard, not an interactive control; keyboard dismissal is handled via Escape at the dialog level -->
-    <div class="modal-overlay" (click)="$event.target === $event.currentTarget && (showLockPeriodModal = false)">
-      <div class="modal-box" style="max-width: 400px">
-        <div class="panel-header">
-          <h3 class="panel-title">Lock Accounting Period</h3>
-          <button class="panel-close" (click)="showLockPeriodModal = false" aria-label="Close modal">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-              <line x1="18" y1="6" x2="6" y2="18" />
-              <line x1="6" y1="6" x2="18" y2="18" />
-            </svg>
-          </button>
-        </div>
-
-        <form (submit)="submitLockPeriod()" class="panel-body">
-          <div class="form-field" style="margin-bottom: 16px">
-            <label for="m-newperiodtolock" class="form-label">Period Name *</label>
-            <input
-              id="m-newperiodtolock"
-              [(ngModel)]="newPeriodToLock"
-              name="newPeriodToLock"
-              type="text"
-              required
-              placeholder="e.g. June 2026"
-              class="form-input"
-            />
-            <span class="field-hint" style="font-size: 11px; color: var(--gray-400); margin-top: 4px; display: block">
-              Specify the period label (e.g. Month Year format) to lock journal postings.
-            </span>
-          </div>
-        </form>
-
-        <div class="panel-footer">
-          <button type="button" class="btn-ghost" (click)="showLockPeriodModal = false">Cancel</button>
-          <button type="button" class="btn-primary" [disabled]="submitting" (click)="submitLockPeriod()">
-            @if (submitting) {
-              <span class="spinner btn-spinner" style="width: 14px; height: 14px"></span>
-              <span>Locking...</span>
-            } @else {
-              <span>Lock Period</span>
-            }
-          </button>
-        </div>
-      </div>
-    </div>
-  }
+  <app-lock-period-modal
+    [open]="showLockPeriodModal"
+    [period]="newPeriodToLock"
+    [submitting]="submitting"
+    (closed)="showLockPeriodModal = false"
+    (save)="submitLockPeriod($event)"
+  ></app-lock-period-modal>
 
   <!-- Confirm Dialog component binding -->
   <app-confirm-dialog

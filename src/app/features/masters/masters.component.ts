@@ -10,6 +10,11 @@ import { NotesModal } from './components/notes-modal/notes-modal';
 import { DocumentDrawer, DrawerDocument } from './components/document-drawer/document-drawer';
 import { StateFormModal, StateFormValue } from './components/state-form-modal/state-form-modal';
 import {
+  GlMappingFormModal,
+  GlMappingFormValue,
+} from './components/gl-mapping-form-modal/gl-mapping-form-modal';
+import { LockPeriodModal } from './components/lock-period-modal/lock-period-modal';
+import {
   ActionButtonConfig,
   ActionButtonsCell,
 } from '../../shared/components/grid-renderers/action-buttons-cell/action-buttons-cell';
@@ -144,6 +149,8 @@ type MasterTab =
     NotesModal,
     DocumentDrawer,
     StateFormModal,
+    GlMappingFormModal,
+    LockPeriodModal,
   ],
   templateUrl: './masters.component.html',
   styleUrl: './masters.component.scss',
@@ -2759,7 +2766,8 @@ export class MastersComponent implements OnInit {
     this.cdr.markForCheck();
   }
 
-  submitGlMapping(): void {
+  submitGlMapping(formValue: GlMappingFormValue): void {
+    this.glMappingForm = formValue;
     if (!this.glMappingForm.coa_id || !this.glMappingForm.type) {
       this.toast.error('Both Chart of Account and Mapping Type are required');
       return;
@@ -3022,7 +3030,8 @@ export class MastersComponent implements OnInit {
     });
   }
 
-  submitLockPeriod(): void {
+  submitLockPeriod(period: string): void {
+    this.newPeriodToLock = period;
     if (!this.newPeriodToLock) return;
     this.submitting = true;
     this.service.lockPeriod(this.newPeriodToLock).subscribe({
