@@ -26,7 +26,7 @@ describe('LockPeriodModal', () => {
     expect((fixture.nativeElement as HTMLElement).querySelector('.modal-overlay')).toBeNull();
   });
 
-  it('copies the period input into local periodValue on change', () => {
+  it('patches the form from the period input on change', () => {
     component.period = 'June 2026';
     component.ngOnChanges({
       period: {
@@ -36,17 +36,43 @@ describe('LockPeriodModal', () => {
         isFirstChange: () => true,
       },
     });
-    expect(component.periodValue).toBe('June 2026');
+    expect(component.form.controls.period.value).toBe('June 2026');
   });
 
-  it('emits save with the current period value', () => {
-    component.periodValue = 'July 2026';
+  it('emits save with the current period value when valid', () => {
+    component.period = 'July 2026';
+    component.ngOnChanges({
+      period: {
+        currentValue: 'July 2026',
+        previousValue: '',
+        firstChange: true,
+        isFirstChange: () => true,
+      },
+    });
     const saveSpy = vi.fn();
     component.save.subscribe(saveSpy);
 
     component.submit();
 
     expect(saveSpy).toHaveBeenCalledWith('July 2026');
+  });
+
+  it('does not emit save when the period is empty', () => {
+    component.period = '';
+    component.ngOnChanges({
+      period: {
+        currentValue: '',
+        previousValue: 'July 2026',
+        firstChange: true,
+        isFirstChange: () => true,
+      },
+    });
+    const saveSpy = vi.fn();
+    component.save.subscribe(saveSpy);
+
+    component.submit();
+
+    expect(saveSpy).not.toHaveBeenCalled();
   });
 
   it('emits closed when the close button is clicked', () => {

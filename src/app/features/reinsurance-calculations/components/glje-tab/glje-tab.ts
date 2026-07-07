@@ -27,6 +27,11 @@ export interface GljeRowDefaults {
   sub: string;
 }
 
+export enum GljeAmountField {
+  Debit = 'debit',
+  Credit = 'credit',
+}
+
 @Component({
   selector: 'app-glje-tab',
   imports: [CommonModule, FormsModule],
@@ -34,6 +39,8 @@ export interface GljeRowDefaults {
   styleUrl: './glje-tab.scss',
 })
 export class GljeTab implements OnChanges {
+  protected readonly GljeAmountField = GljeAmountField;
+
   @Input() rows: GljeRow[] = [];
   @Input() rowDefaults: GljeRowDefaults = { comp: '', cc: '', mga: '', lob: '', ext: '', sub: '' };
   @Input() selectedState = '';
@@ -77,10 +84,10 @@ export class GljeTab implements OnChanges {
     this.rowsChanged.emit(this.localRows);
   }
 
-  onRowAmountChange(row: GljeRow, field: 'debit' | 'credit'): void {
-    if (field === 'debit' && (row.debit ?? 0) > 0) {
+  onRowAmountChange(row: GljeRow, field: GljeAmountField): void {
+    if (field === GljeAmountField.Debit && (row.debit ?? 0) > 0) {
       row.credit = 0;
-    } else if (field === 'credit' && (row.credit ?? 0) > 0) {
+    } else if (field === GljeAmountField.Credit && (row.credit ?? 0) > 0) {
       row.debit = 0;
     }
     this.rowsChanged.emit(this.localRows);

@@ -4,11 +4,11 @@
     <!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events, @angular-eslint/template/interactive-supports-focus -- backdrop click-to-dismiss / stopPropagation guard, not an interactive control; keyboard dismissal is handled via Escape at the dialog level -->
     <div class="modal-box itd-modal" (click)="$event.stopPropagation()">
       <div class="panel-header itd-header">
-        <h2>{{ isEditMode ? "Edit" : "Add" }} ITD Baseline for {{ formValue.program }}</h2>
+        <h2>{{ isEditMode ? "Edit" : "Add" }} ITD Baseline for {{ form.controls.program.value }}</h2>
         <button class="btn-close" (click)="close()">×</button>
       </div>
 
-      <div class="panel-body itd-body">
+      <form [formGroup]="form" (ngSubmit)="submit()" class="panel-body itd-body">
         <!-- Select Month & Year -->
         <div class="form-row itd-row-spaced">
           <div class="form-field">
@@ -17,6 +17,7 @@
               id="m-itdselectedmonth"
               class="form-input itd-select"
               [(ngModel)]="selectedMonth"
+              [ngModelOptions]="{ standalone: true }"
               (change)="onMonthYearChange()"
             >
               @for (m of monthsList; track m.value) {
@@ -30,6 +31,7 @@
               id="m-itdselectedyear"
               class="form-input itd-select"
               [(ngModel)]="selectedYear"
+              [ngModelOptions]="{ standalone: true }"
               (change)="onMonthYearChange()"
             >
               @for (y of yearsList; track y) {
@@ -43,17 +45,11 @@
         <div class="form-row itd-row-spaced">
           <div class="form-field">
             <label for="m-itdform-month-key" class="form-label">Month Key</label>
-            <input id="m-itdform-month-key" type="text" class="form-input" [(ngModel)]="formValue.month_key" readonly />
+            <input id="m-itdform-month-key" type="text" class="form-input" formControlName="month_key" readonly />
           </div>
           <div class="form-field">
             <label for="m-itdform-month-label" class="form-label">Month Label</label>
-            <input
-              id="m-itdform-month-label"
-              type="text"
-              class="form-input"
-              [(ngModel)]="formValue.month_label"
-              readonly
-            />
+            <input id="m-itdform-month-label" type="text" class="form-input" formControlName="month_label" readonly />
           </div>
         </div>
 
@@ -62,7 +58,12 @@
 
         <div class="itd-state-picker">
           <label for="m-itdselectedstatecode" class="form-label itd-state-picker-label">Select State to Edit:</label>
-          <select id="m-itdselectedstatecode" class="form-input itd-state-select" [(ngModel)]="selectedStateCode">
+          <select
+            id="m-itdselectedstatecode"
+            class="form-input itd-state-select"
+            [(ngModel)]="selectedStateCode"
+            [ngModelOptions]="{ standalone: true }"
+          >
             @for (st of itdStatesList; track st.code) {
               <option [value]="st.code">{{ st.label }}</option>
             }
@@ -70,7 +71,7 @@
         </div>
 
         <!-- Fields editor for the selected state -->
-        @if (formValue.exhibits[selectedStateCode]) {
+        @if (form.controls.exhibits.value[selectedStateCode]) {
           <div class="form-row">
             <div class="form-field">
               <label for="m-itdform-exhibits-itdselectedstatecode-uep" class="form-label">
@@ -80,7 +81,8 @@
                 id="m-itdform-exhibits-itdselectedstatecode-uep"
                 type="number"
                 class="form-input"
-                [(ngModel)]="formValue.exhibits[selectedStateCode].uep"
+                [value]="form.controls.exhibits.value[selectedStateCode].uep"
+                (input)="updateExhibitField(selectedStateCode, 'uep', $any($event.target).valueAsNumber)"
               />
             </div>
             <div class="form-field">
@@ -91,7 +93,8 @@
                 id="m-itdform-exhibits-itdselectedstatecode-loss-reserves"
                 type="number"
                 class="form-input"
-                [(ngModel)]="formValue.exhibits[selectedStateCode].loss_reserves"
+                [value]="form.controls.exhibits.value[selectedStateCode].loss_reserves"
+                (input)="updateExhibitField(selectedStateCode, 'loss_reserves', $any($event.target).valueAsNumber)"
               />
             </div>
             <div class="form-field">
@@ -102,7 +105,8 @@
                 id="m-itdform-exhibits-itdselectedstatecode-loss-ibnr"
                 type="number"
                 class="form-input"
-                [(ngModel)]="formValue.exhibits[selectedStateCode].loss_ibnr"
+                [value]="form.controls.exhibits.value[selectedStateCode].loss_ibnr"
+                (input)="updateExhibitField(selectedStateCode, 'loss_ibnr', $any($event.target).valueAsNumber)"
               />
             </div>
           </div>
@@ -115,7 +119,8 @@
                 id="m-itdform-exhibits-itdselectedstatecode-lae-reserves-dcc"
                 type="number"
                 class="form-input"
-                [(ngModel)]="formValue.exhibits[selectedStateCode].lae_reserves_dcc"
+                [value]="form.controls.exhibits.value[selectedStateCode].lae_reserves_dcc"
+                (input)="updateExhibitField(selectedStateCode, 'lae_reserves_dcc', $any($event.target).valueAsNumber)"
               />
             </div>
             <div class="form-field">
@@ -126,7 +131,8 @@
                 id="m-itdform-exhibits-itdselectedstatecode-lae-reserves-aoe"
                 type="number"
                 class="form-input"
-                [(ngModel)]="formValue.exhibits[selectedStateCode].lae_reserves_aoe"
+                [value]="form.controls.exhibits.value[selectedStateCode].lae_reserves_aoe"
+                (input)="updateExhibitField(selectedStateCode, 'lae_reserves_aoe', $any($event.target).valueAsNumber)"
               />
             </div>
           </div>
@@ -139,7 +145,8 @@
                 id="m-itdform-exhibits-itdselectedstatecode-lae-ibnr-dcc"
                 type="number"
                 class="form-input"
-                [(ngModel)]="formValue.exhibits[selectedStateCode].lae_ibnr_dcc"
+                [value]="form.controls.exhibits.value[selectedStateCode].lae_ibnr_dcc"
+                (input)="updateExhibitField(selectedStateCode, 'lae_ibnr_dcc', $any($event.target).valueAsNumber)"
               />
             </div>
             <div class="form-field">
@@ -150,7 +157,8 @@
                 id="m-itdform-exhibits-itdselectedstatecode-lae-ibnr-aoe"
                 type="number"
                 class="form-input"
-                [(ngModel)]="formValue.exhibits[selectedStateCode].lae_ibnr_aoe"
+                [value]="form.controls.exhibits.value[selectedStateCode].lae_ibnr_aoe"
+                (input)="updateExhibitField(selectedStateCode, 'lae_ibnr_aoe', $any($event.target).valueAsNumber)"
               />
             </div>
             <div class="form-field">
@@ -161,12 +169,13 @@
                 id="m-itdform-exhibits-itdselectedstatecode-ulae-ibnr"
                 type="number"
                 class="form-input"
-                [(ngModel)]="formValue.exhibits[selectedStateCode].ulae_ibnr"
+                [value]="form.controls.exhibits.value[selectedStateCode].ulae_ibnr"
+                (input)="updateExhibitField(selectedStateCode, 'ulae_ibnr', $any($event.target).valueAsNumber)"
               />
             </div>
           </div>
         }
-      </div>
+      </form>
 
       <div class="panel-footer itd-footer">
         <button type="button" class="btn-ghost" (click)="close()">Cancel</button>

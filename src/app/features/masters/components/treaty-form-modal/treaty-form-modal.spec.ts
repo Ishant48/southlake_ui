@@ -1,6 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { TreatyFormModal, TreatyFormShape, createBlankTreatyForm } from './treaty-form-modal';
+import { TreatyFormModal } from './treaty-form-modal';
+import { TreatyFormShape, createBlankTreatyForm } from '../../models/treaty-form.model';
 
 describe('TreatyFormModal', () => {
   let component: TreatyFormModal;
@@ -11,6 +12,16 @@ describe('TreatyFormModal', () => {
     id: 'treaty-1',
     treaty_code: 'TR-100',
     name: 'Casualty QS',
+    mga_id: 'mga-1',
+    policy_seq_prefix: '',
+    policy_seq_start: null,
+    claim_seq_prefix: '',
+    claim_seq_start: null,
+    ulae_type: '',
+    ulae_basis: '',
+    ulae_flat_amount: 0,
+    lae_dcc_pct: 0,
+    lae_aoe_pct: 0,
     carriers: [{ risk_company_id: 'rc-1', retention_pct: 100 }],
     reinsurers: [{ reinsurer_id: 're-1', cession_pct: 50 }],
   };
@@ -35,7 +46,7 @@ describe('TreatyFormModal', () => {
     expect((fixture.nativeElement as HTMLElement).querySelector('.modal-overlay')).toBeNull();
   });
 
-  it('copies the model and selection maps into local state on change, cloning arrays', () => {
+  it('patches the form and selection maps from inputs on change, cloning arrays', () => {
     const selectedStates = { s1: true };
     component.model = sample;
     component.selectedStates = selectedStates;
@@ -53,28 +64,46 @@ describe('TreatyFormModal', () => {
         isFirstChange: () => true,
       },
     });
-    expect(component.formValue).toEqual(sample);
-    expect(component.formValue.carriers).not.toBe(sample.carriers);
-    expect(component.formValue.reinsurers).not.toBe(sample.reinsurers);
+    expect(component.form.getRawValue()).toEqual(sample);
+    expect(component.form.controls.carriers.value).not.toBe(sample.carriers);
+    expect(component.form.controls.reinsurers.value).not.toBe(sample.reinsurers);
     expect(component.formSelectedStates).toEqual(selectedStates);
     expect(component.formSelectedStates).not.toBe(selectedStates);
   });
 
   it('adds and removes reinsurer rows', () => {
-    component.formValue = { ...createBlankTreatyForm(), reinsurers: [] };
+    component.model = { ...createBlankTreatyForm(), reinsurers: [] };
+    component.ngOnChanges({
+      model: {
+        currentValue: component.model,
+        previousValue: undefined,
+        firstChange: true,
+        isFirstChange: () => true,
+      },
+    });
 
     component.addReinsurerRow();
-    expect(component.formValue.reinsurers).toEqual([{ reinsurer_id: '', cession_pct: 0 }]);
+    expect(component.form.controls.reinsurers.value).toEqual([
+      { reinsurer_id: '', cession_pct: 0 },
+    ]);
 
     component.addReinsurerRow();
-    expect(component.formValue.reinsurers.length).toBe(2);
+    expect(component.form.controls.reinsurers.value.length).toBe(2);
 
     component.removeReinsurerRow(0);
-    expect(component.formValue.reinsurers.length).toBe(1);
+    expect(component.form.controls.reinsurers.value.length).toBe(1);
   });
 
-  it('emits save with the form value and selection maps', () => {
-    component.formValue = { ...sample };
+  it('emits save with the form value and selection maps when valid', () => {
+    component.model = sample;
+    component.ngOnChanges({
+      model: {
+        currentValue: sample,
+        previousValue: undefined,
+        firstChange: true,
+        isFirstChange: () => true,
+      },
+    });
     component.formSelectedStates = { s1: true };
     component.formSelectedLobs = { l1: true };
     component.formSelectedCobs = { c1: true };
@@ -84,11 +113,29 @@ describe('TreatyFormModal', () => {
     component.submit();
 
     expect(saveSpy).toHaveBeenCalledWith({
-      form: component.formValue,
+      form: component.form.getRawValue(),
       selectedStates: { s1: true },
       selectedLobs: { l1: true },
       selectedCobs: { c1: true },
     });
+  });
+
+  it('does not emit save when a required field is missing', () => {
+    component.model = { ...sample, treaty_code: '' };
+    component.ngOnChanges({
+      model: {
+        currentValue: component.model,
+        previousValue: undefined,
+        firstChange: true,
+        isFirstChange: () => true,
+      },
+    });
+    const saveSpy = vi.fn();
+    component.save.subscribe(saveSpy);
+
+    component.submit();
+
+    expect(saveSpy).not.toHaveBeenCalled();
   });
 
   it('emits closed when the close button is clicked', () => {

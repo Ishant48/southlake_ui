@@ -1,11 +1,16 @@
-import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges } from '@angular/core';
+import {
+  Component,
+  Input,
+  Output,
+  EventEmitter,
+  OnChanges,
+  SimpleChanges,
+  inject,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { DropdownSearchComponent } from '../../../../shared/components/dropdown-search/dropdown-search.component';
 import {
-  Treaty,
-  TreatyCarrier,
-  TreatyReinsurer,
   MgaMaster,
   ReinsurerCompany,
   RiskCompany,
@@ -14,57 +19,23 @@ import {
   CobMaster,
   SimpleMasterRecord,
 } from '../../models/master.model';
-
-export type TreatyFormShape = Partial<Treaty> & {
-  state_ids: string[];
-  lobs: { lob_id: string; cob_ids: string[] }[];
-  carriers: TreatyCarrier[];
-  reinsurers: TreatyReinsurer[];
-};
-
-export type TreatySelectionMap = Record<string, boolean>;
-
-export interface TreatySaveEvent {
-  form: TreatyFormShape;
-  selectedStates: TreatySelectionMap;
-  selectedLobs: TreatySelectionMap;
-  selectedCobs: TreatySelectionMap;
-}
-
-export function createBlankTreatyForm(): TreatyFormShape {
-  return {
-    treaty_code: '',
-    name: '',
-    mga_id: '',
-    reinsurer_id: null,
-    risk_company_id: null,
-    effective_date: '',
-    expiration_date: '',
-    qs_pct: 0,
-    cf_pct: 0,
-    comm_pct: 0,
-    bb_pct: 0,
-    ulae_pct: 0,
-    xol_pct: 0,
-    lr_cap_pct: 0,
-    ibnr_pct: 0,
-    carrier_retention_pct: 100,
-    reinsurer_cession_pct: 0,
-    is_active: true,
-    state_ids: [],
-    lobs: [],
-    carriers: [],
-    reinsurers: [],
-  };
-}
+import { TreatyForm, TreatyFormModel } from '../../forms/treaty-form';
+import {
+  TreatyFormShape,
+  TreatySelectionMap,
+  TreatySaveEvent,
+  createBlankTreatyForm,
+} from '../../models/treaty-form.model';
 
 @Component({
   selector: 'app-treaty-form-modal',
-  imports: [CommonModule, FormsModule, DropdownSearchComponent],
+  imports: [CommonModule, ReactiveFormsModule, DropdownSearchComponent],
   templateUrl: './treaty-form-modal.html',
   styleUrl: './treaty-form-modal.scss',
 })
 export class TreatyFormModal implements OnChanges {
+  private treatyForm = inject(TreatyForm);
+
   @Input() open = false;
   @Input() title = '';
   @Input() model: TreatyFormShape = createBlankTreatyForm();
@@ -93,18 +64,14 @@ export class TreatyFormModal implements OnChanges {
   @Output() closed = new EventEmitter<void>();
   @Output() save = new EventEmitter<TreatySaveEvent>();
 
-  formValue: TreatyFormShape = createBlankTreatyForm();
+  form: FormGroup<TreatyFormModel> = this.treatyForm.createForm();
   formSelectedStates: TreatySelectionMap = {};
   formSelectedLobs: TreatySelectionMap = {};
   formSelectedCobs: TreatySelectionMap = {};
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['model']) {
-      this.formValue = {
-        ...this.model,
-        carriers: [...(this.model.carriers ?? [])],
-        reinsurers: [...(this.model.reinsurers ?? [])],
-      };
+      this.treatyForm.patchForm(this.form, this.model);
     }
     if (changes['selectedStates']) {
       this.formSelectedStates = { ...this.selectedStates };
@@ -115,17 +82,63 @@ export class TreatyFormModal implements OnChanges {
     if (changes['selectedCobs']) {
       this.formSelectedCobs = { ...this.selectedCobs };
     }
+    if (changes['isEditMode']) {
+      if (this.isEditMode) {
+        this.form.controls.treaty_code.disable();
+      } else {
+        this.form.controls.treaty_code.enable();
+      }
+    }
+  }
+
+  updateCarrierRiskCompanyId(value: unknown): void {
+    const carriers = this.form.controls.carriers.value;
+    if (!carriers[0]) return;
+    const updated = carriers.map((carrier, i) =>
+      i === 0 ? { ...carrier, risk_company_id: value == null ? '' : String(value) } : carrier,
+    );
+    this.form.controls.carriers.setValue(updated);
+  }
+
+  updateReinsurerReinsurerId(index: number, value: unknown): void {
+    const rows = this.form.controls.reinsurers.value;
+    const updated = rows.map((row, i) =>
+      i === index ? { ...row, reinsurer_id: value == null ? '' : String(value) } : row,
+    );
+    this.form.controls.reinsurers.setValue(updated);
+  }
+
+  updateReinsurerStateId(index: number, value: unknown): void {
+    const rows = this.form.controls.reinsurers.value;
+    const updated = rows.map((row, i) =>
+      i === index ? { ...row, state_id: value == null ? null : String(value) } : row,
+    );
+    this.form.controls.reinsurers.setValue(updated);
+  }
+
+  updateReinsurerBrokerId(index: number, value: unknown): void {
+    const rows = this.form.controls.reinsurers.value;
+    const updated = rows.map((row, i) =>
+      i === index ? { ...row, broker_id: value == null ? null : String(value) } : row,
+    );
+    this.form.controls.reinsurers.setValue(updated);
+  }
+
+  updateReinsurerCessionPct(index: number, event: Event): void {
+    const value = Number((event.target as HTMLInputElement).value);
+    const rows = this.form.controls.reinsurers.value;
+    const updated = rows.map((row, i) => (i === index ? { ...row, cession_pct: value } : row));
+    this.form.controls.reinsurers.setValue(updated);
   }
 
   addReinsurerRow(): void {
-    this.formValue.reinsurers = [
-      ...this.formValue.reinsurers,
-      { reinsurer_id: '', cession_pct: 0 },
-    ];
+    const rows = this.form.controls.reinsurers.value;
+    this.form.controls.reinsurers.setValue([...rows, { reinsurer_id: '', cession_pct: 0 }]);
   }
 
   removeReinsurerRow(index: number): void {
-    this.formValue.reinsurers = this.formValue.reinsurers.filter((_, i) => i !== index);
+    const rows = this.form.controls.reinsurers.value;
+    this.form.controls.reinsurers.setValue(rows.filter((_, i) => i !== index));
   }
 
   close(): void {
@@ -133,8 +146,12 @@ export class TreatyFormModal implements OnChanges {
   }
 
   submit(): void {
+    if (this.form.invalid) {
+      this.form.markAllAsTouched();
+      return;
+    }
     this.save.emit({
-      form: this.formValue,
+      form: this.treatyForm.toFormValue(this.form),
       selectedStates: this.formSelectedStates,
       selectedLobs: this.formSelectedLobs,
       selectedCobs: this.formSelectedCobs,

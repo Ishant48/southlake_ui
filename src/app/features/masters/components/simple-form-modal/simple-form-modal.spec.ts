@@ -1,6 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { SimpleFormModal, SimpleFormValue, createBlankSimpleForm } from './simple-form-modal';
+import { SimpleFormModal } from './simple-form-modal';
+import { SimpleFormValue, SimpleMode, createBlankSimpleForm } from '../../models/simple-form.model';
 import { LineOfBusiness, CobMaster } from '../../models/master.model';
 
 describe('SimpleFormModal', () => {
@@ -34,7 +35,7 @@ describe('SimpleFormModal', () => {
     expect((fixture.nativeElement as HTMLElement).querySelector('.modal-overlay')).toBeNull();
   });
 
-  it('copies the model into local formValue on change', () => {
+  it('patches the form from the model input on change', () => {
     component.model = sample;
     component.ngOnChanges({
       model: {
@@ -44,8 +45,7 @@ describe('SimpleFormModal', () => {
         isFirstChange: () => true,
       },
     });
-    expect(component.formValue).toEqual(sample);
-    expect(component.formValue).not.toBe(sample);
+    expect(component.form.getRawValue()).toEqual(sample);
   });
 
   it('derives product code/name from the selected LOB and COB', () => {
@@ -53,27 +53,43 @@ describe('SimpleFormModal', () => {
     const cob: CobMaster = { id: 'c1', cob_code: 'PHYS', name: 'Physical Damage', is_active: true };
     component.lobOptions = [lob];
     component.cobOptions = [cob];
-    component.formValue = { ...createBlankSimpleForm(), lob_id: 'l1', cob_id: 'c1' };
+    component.model = { ...createBlankSimpleForm(), lob_id: 'l1', cob_id: 'c1' };
+    component.ngOnChanges({
+      model: {
+        currentValue: component.model,
+        previousValue: undefined,
+        firstChange: true,
+        isFirstChange: () => true,
+      },
+    });
 
     component.onProductLobCobChange();
 
-    expect(component.formValue.code).toBe('AUTO-PHYS');
-    expect(component.formValue.name).toBe('Auto - Physical Damage');
+    expect(component.form.controls.code.value).toBe('AUTO-PHYS');
+    expect(component.form.controls.name.value).toBe('Auto - Physical Damage');
   });
 
   it('clears product code/name when LOB or COB is unselected', () => {
     component.lobOptions = [];
     component.cobOptions = [];
-    component.formValue = {
+    component.model = {
       ...createBlankSimpleForm(),
       code: 'AUTO-PHYS',
       name: 'Auto - Physical Damage',
     };
+    component.ngOnChanges({
+      model: {
+        currentValue: component.model,
+        previousValue: undefined,
+        firstChange: true,
+        isFirstChange: () => true,
+      },
+    });
 
     component.onProductLobCobChange();
 
-    expect(component.formValue.code).toBe('');
-    expect(component.formValue.name).toBe('');
+    expect(component.form.controls.code.value).toBe('');
+    expect(component.form.controls.name.value).toBe('');
   });
 
   it('emits save with the current form value', () => {
@@ -92,6 +108,52 @@ describe('SimpleFormModal', () => {
     component.submit();
 
     expect(saveSpy).toHaveBeenCalledWith(sample);
+  });
+
+  it('does not emit save when code or name is missing', () => {
+    component.model = { ...sample, code: '', name: '' };
+    component.ngOnChanges({
+      model: {
+        currentValue: component.model,
+        previousValue: undefined,
+        firstChange: true,
+        isFirstChange: () => true,
+      },
+    });
+    const saveSpy = vi.fn();
+    component.save.subscribe(saveSpy);
+
+    component.submit();
+
+    expect(saveSpy).not.toHaveBeenCalled();
+  });
+
+  it('disables code in edit mode', () => {
+    component.isEditMode = true;
+    component.ngOnChanges({
+      isEditMode: {
+        currentValue: true,
+        previousValue: false,
+        firstChange: true,
+        isFirstChange: () => true,
+      },
+    });
+    expect(component.form.controls.code.disabled).toBe(true);
+    expect(component.form.controls.name.disabled).toBe(false);
+  });
+
+  it('disables both code and name in Product mode', () => {
+    component.mode = SimpleMode.Product;
+    component.ngOnChanges({
+      mode: {
+        currentValue: SimpleMode.Product,
+        previousValue: SimpleMode.Lob,
+        firstChange: true,
+        isFirstChange: () => true,
+      },
+    });
+    expect(component.form.controls.code.disabled).toBe(true);
+    expect(component.form.controls.name.disabled).toBe(true);
   });
 
   it('emits closed when the close button is clicked', () => {

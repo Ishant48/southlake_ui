@@ -4,9 +4,9 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { ReinsuranceApi } from './services/reinsurance-api';
 import { ToastService } from '../../shared/components/toast/toast.service';
-import { MastersApi } from '../masters/services/masters-api';
+import { TreatiesApi } from '../masters/services/treaties-api';
 import { ConfirmDialogComponent } from '../../shared/components/confirm-dialog/confirm-dialog.component';
-import { Workbook } from './models/reinsurance.model';
+import { Workbook, ReinsuranceTab } from './models/reinsurance.model';
 import { TreatyState } from '../masters/models/master.model';
 
 import { SettingsAccordions } from './components/settings-accordions/settings-accordions';
@@ -49,18 +49,20 @@ interface JournalEntryBatch {
   styleUrl: './reinsurance-calculations.component.scss',
 })
 export class ReinsuranceCalculationsComponent implements OnInit {
+  protected readonly ReinsuranceTab = ReinsuranceTab;
+
   private service = inject(ReinsuranceApi);
   private toast = inject(ToastService);
   private cdr = inject(ChangeDetectorRef);
   private router = inject(Router);
-  private mastersService = inject(MastersApi);
+  private treatiesApi = inject(TreatiesApi);
 
   workbooks: Workbook[] = [];
   selectedWorkbookId: number | null = null;
   selectedWorkbook: Workbook | null = null;
   selectedState: string = 'TOTAL';
   states: string[] = ['TOTAL'];
-  activeTab: 'statement' | 'glje' | 'cash' = 'statement';
+  activeTab: ReinsuranceTab = ReinsuranceTab.Statement;
   isPosted = false;
 
   statementRows: StatementRow[] = [];
@@ -146,7 +148,7 @@ export class ReinsuranceCalculationsComponent implements OnInit {
         };
 
         // Load treaties to filter states
-        this.mastersService.getTreaties().subscribe({
+        this.treatiesApi.getTreaties().subscribe({
           next: treaties => {
             const matchingTreaty = treaties.find(
               t => t.name?.trim().toLowerCase() === res.program?.trim().toLowerCase(),
@@ -218,7 +220,7 @@ export class ReinsuranceCalculationsComponent implements OnInit {
     this.loadActiveTabCalculations();
   }
 
-  setTab(tab: 'statement' | 'glje' | 'cash'): void {
+  setTab(tab: ReinsuranceTab): void {
     this.activeTab = tab;
     this.loadActiveTabCalculations();
   }
@@ -246,7 +248,7 @@ export class ReinsuranceCalculationsComponent implements OnInit {
       };
     }
 
-    if (this.activeTab === 'statement') {
+    if (this.activeTab === ReinsuranceTab.Statement) {
       this.service.getReinsuranceStatement(this.selectedWorkbookId, this.selectedState).subscribe({
         next: res => {
           const statement = res as unknown as StatementResponse | StatementRow[];
@@ -265,7 +267,7 @@ export class ReinsuranceCalculationsComponent implements OnInit {
           this.cdr.markForCheck();
         },
       });
-    } else if (this.activeTab === 'glje') {
+    } else if (this.activeTab === ReinsuranceTab.Glje) {
       this.service.getGLJournalEntries(this.selectedWorkbookId, this.selectedState).subscribe({
         next: res => {
           this.gljeRows = res as unknown as GljeRow[];
@@ -277,7 +279,7 @@ export class ReinsuranceCalculationsComponent implements OnInit {
           this.cdr.markForCheck();
         },
       });
-    } else if (this.activeTab === 'cash') {
+    } else if (this.activeTab === ReinsuranceTab.Cash) {
       this.service
         .getCashSettlementCalculations(this.selectedWorkbookId, this.selectedState)
         .subscribe({
@@ -398,8 +400,7 @@ export class ReinsuranceCalculationsComponent implements OnInit {
 
   onSaveCashParams(event: CashSettlementSaveEvent): void {
     if (!this.cashSettlement) return;
-    this.cashSettlement.beg_bal = event.beg_bal;
-    this.cashSettlement.amt_paid = event.amt_paid;
+    this.cashSettlement = { ...this.cashSettlement, ...event };
     this.saveCashParams();
   }
 

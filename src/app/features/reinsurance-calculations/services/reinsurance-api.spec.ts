@@ -7,7 +7,7 @@ import { ReinsuranceApi } from './reinsurance-api';
 describe('ReinsuranceApi', () => {
   let api: ReinsuranceApi;
   let httpMock: HttpTestingController;
-  const base = `${environment.apiUrl}/api`;
+  const base = environment.apiUrl;
 
   beforeEach(() => {
     TestBed.configureTestingModule({

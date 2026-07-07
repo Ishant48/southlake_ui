@@ -2,7 +2,7 @@ import { Component, inject, OnInit, ChangeDetectorRef, HostListener } from '@ang
 import { FormsModule } from '@angular/forms';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { debounceTime, distinctUntilChanged, Subject } from 'rxjs';
-import { User, UserStats, PendingInvite } from '../models/user.model';
+import { User, UserStats, PendingInvite, PanelMode } from '../models/user.model';
 import { Role } from '../models/role.model';
 import { AuthService } from '../../../core/services/auth.service';
 import { UsersApi } from '../services/users-api';
@@ -66,7 +66,7 @@ export class UsersComponent implements OnInit {
   invitePanelOpen = false;
   detailPanelOpen = false;
   selectedUser: User | null = null;
-  detailMode: 'view' | 'edit' = 'view';
+  detailMode: PanelMode = PanelMode.View;
 
   confirmOpen = false;
   confirmTitle = '';
@@ -175,13 +175,13 @@ export class UsersComponent implements OnInit {
 
   onViewUser(user: User): void {
     this.selectedUser = user;
-    this.detailMode = 'view';
+    this.detailMode = PanelMode.View;
     this.detailPanelOpen = true;
   }
 
   onEditUser(user: User): void {
     this.selectedUser = user;
-    this.detailMode = 'edit';
+    this.detailMode = PanelMode.Edit;
     this.detailPanelOpen = true;
   }
 

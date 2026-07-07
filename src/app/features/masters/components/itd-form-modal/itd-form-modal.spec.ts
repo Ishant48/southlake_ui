@@ -1,6 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { ItdFormModal, ItdFormValue, ItdExhibit } from './itd-form-modal';
+import { ItdFormModal } from './itd-form-modal';
+import { ItdExhibit, ItdFormValue } from '../../models/itd.model';
 
 describe('ItdFormModal', () => {
   let component: ItdFormModal;
@@ -44,7 +45,7 @@ describe('ItdFormModal', () => {
     expect((fixture.nativeElement as HTMLElement).querySelector('.modal-overlay')).toBeNull();
   });
 
-  it('copies the model into local formValue on change', () => {
+  it('patches the form from the model input on change', () => {
     component.model = sample;
     component.ngOnChanges({
       model: {
@@ -54,8 +55,8 @@ describe('ItdFormModal', () => {
         isFirstChange: () => true,
       },
     });
-    expect(component.formValue).toEqual(sample);
-    expect(component.formValue).not.toBe(sample);
+    expect(component.form.getRawValue()).toEqual(sample);
+    expect(component.form.controls.exhibits.value).not.toBe(sample.exhibits);
   });
 
   it('recomputes month_key and month_label from the selected month/year', () => {
@@ -63,17 +64,43 @@ describe('ItdFormModal', () => {
       { value: '01', label: 'January' },
       { value: '02', label: 'February' },
     ];
-    component.formValue = { ...sample, exhibits: { ...sample.exhibits } };
+    component.model = sample;
+    component.ngOnChanges({
+      model: {
+        currentValue: sample,
+        previousValue: undefined,
+        firstChange: true,
+        isFirstChange: () => true,
+      },
+    });
     component.selectedMonth = '02';
     component.selectedYear = '2026';
 
     component.onMonthYearChange();
 
-    expect(component.formValue.month_key).toBe('2026-02');
-    expect(component.formValue.month_label).toBe('February 2026');
+    expect(component.form.controls.month_key.value).toBe('2026-02');
+    expect(component.form.controls.month_label.value).toBe('February 2026');
   });
 
-  it('emits save with the current form value', () => {
+  it('updates only the targeted exhibit field for the selected state', () => {
+    component.model = sample;
+    component.ngOnChanges({
+      model: {
+        currentValue: sample,
+        previousValue: undefined,
+        firstChange: true,
+        isFirstChange: () => true,
+      },
+    });
+    component.selectedStateCode = 'TOTAL';
+
+    component.updateExhibitField('TOTAL', 'loss_reserves', 500);
+
+    expect(component.form.controls.exhibits.value['TOTAL'].loss_reserves).toBe(500);
+    expect(component.form.controls.exhibits.value['TOTAL'].uep).toBe(0);
+  });
+
+  it('emits save with the current form value when valid', () => {
     component.model = sample;
     component.ngOnChanges({
       model: {
@@ -88,7 +115,25 @@ describe('ItdFormModal', () => {
 
     component.submit();
 
-    expect(saveSpy).toHaveBeenCalledWith(component.formValue);
+    expect(saveSpy).toHaveBeenCalledWith(sample);
+  });
+
+  it('does not emit save when the form is invalid', () => {
+    component.model = { ...sample, program: '' };
+    component.ngOnChanges({
+      model: {
+        currentValue: component.model,
+        previousValue: undefined,
+        firstChange: true,
+        isFirstChange: () => true,
+      },
+    });
+    const saveSpy = vi.fn();
+    component.save.subscribe(saveSpy);
+
+    component.submit();
+
+    expect(saveSpy).not.toHaveBeenCalled();
   });
 
   it('emits closed when the close button is clicked', () => {

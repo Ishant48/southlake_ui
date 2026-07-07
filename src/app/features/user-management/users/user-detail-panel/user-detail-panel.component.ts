@@ -9,7 +9,7 @@ import {
   ChangeDetectorRef,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { User } from '../../models/user.model';
+import { User, UserStatus, PanelMode, UserDetailTab } from '../../models/user.model';
 import { Permission } from '../../models/permission.model';
 import { AuthService } from '../../../../core/services/auth.service';
 import { UsersApi } from '../../services/users-api';
@@ -20,7 +20,7 @@ import { UserStatusBadgeComponent } from '../user-status-badge/user-status-badge
 import { Role } from '../../models/role.model';
 
 interface UpdateUserProfilePayload {
-  status?: 'active' | 'inactive' | 'pending';
+  status?: UserStatus;
   name?: string;
   role_id?: string;
   department?: string | null;
@@ -36,10 +36,14 @@ interface UpdateUserProfilePayload {
   styleUrl: './user-detail-panel.component.scss',
 })
 export class UserDetailPanelComponent implements OnChanges {
+  protected readonly UserStatus = UserStatus;
+  protected readonly UserDetailTab = UserDetailTab;
+  protected readonly PanelMode = PanelMode;
+
   @Input() user: User | null = null;
   @Input() open = false;
   @Input() roles: Role[] = [];
-  @Input() mode: 'view' | 'edit' = 'view';
+  @Input() mode: PanelMode = PanelMode.View;
   @Output() closed = new EventEmitter<void>();
   @Output() updated = new EventEmitter<User>();
 
@@ -49,8 +53,8 @@ export class UserDetailPanelComponent implements OnChanges {
   private toast = inject(ToastService);
   private cdr = inject(ChangeDetectorRef);
 
-  activeTab: 'profile' | 'permissions' = 'profile';
-  editStatus: 'active' | 'inactive' | 'pending' = 'active';
+  activeTab: UserDetailTab = UserDetailTab.Profile;
+  editStatus: UserStatus = UserStatus.Active;
   editName = '';
   editRoleId = '';
   editDepartment = '';
@@ -138,7 +142,7 @@ export class UserDetailPanelComponent implements OnChanges {
       this.editRoleId = this.user.role?.id ?? '';
       this.editDepartment = this.user.department ?? '';
       this.editTitle = this.user.title ?? '';
-      this.activeTab = 'profile';
+      this.activeTab = UserDetailTab.Profile;
       this.profileError = '';
     }
     if (changes['open'] && !this.open) {
@@ -150,7 +154,7 @@ export class UserDetailPanelComponent implements OnChanges {
   }
 
   loadPermissionsTab(): void {
-    this.activeTab = 'permissions';
+    this.activeTab = UserDetailTab.Permissions;
     this.permsLoading = true;
     this.permissionsService.getPermissions().subscribe({
       next: perms => {
@@ -205,7 +209,11 @@ export class UserDetailPanelComponent implements OnChanges {
       title: this.editTitle !== this.user.title ? this.editTitle : undefined,
     };
 
-    if (this.mode === 'edit') {
+    if (this.mode === PanelMode.Edit) {
+      payload.name = this.editName;
+      payload.role_id = this.editRoleId;
+      payload.department = this.editDepartment || null;
+      payload.title = this.editTitle || null;
       // Generate initials
       let initials = '';
       const parts = this.editName.trim().split(/\s+/);

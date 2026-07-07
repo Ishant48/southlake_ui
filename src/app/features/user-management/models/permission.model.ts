@@ -15,31 +15,37 @@ export const MODULES: Module[] = [
   { id: 'master_data', label: 'Master Data' },
 ];
 
-export const PERMISSION_ACTIONS = [
-  { key: 'view', label: 'View' },
-  { key: 'create', label: 'Create' },
-  { key: 'edit', label: 'Edit' },
-  { key: 'approve', label: 'Approve' },
-  { key: 'export', label: 'Export' },
-  { key: 'post', label: 'Post' },
-  { key: 'file', label: 'File' },
-  { key: 'lock', label: 'Lock' },
-  { key: 'override', label: 'Override' },
-  { key: 'reconcile', label: 'Reconcile' },
-  { key: 'void', label: 'Void' },
-  { key: 'reverse', label: 'Reverse' },
-] as const;
+export enum PermissionActionKey {
+  View = 'view',
+  Create = 'create',
+  Edit = 'edit',
+  Approve = 'approve',
+  Export = 'export',
+  Post = 'post',
+  File = 'file',
+  Lock = 'lock',
+  Override = 'override',
+  Reconcile = 'reconcile',
+  Void = 'void',
+  Reverse = 'reverse',
+}
 
-export type PermissionActionKey =
-  | 'view'
-  | 'create'
-  | 'edit'
-  | 'approve'
-  | 'export'
-  | 'post'
-  | 'file'
-  | 'lock'
-  | 'override'
-  | 'reconcile'
-  | 'void'
-  | 'reverse';
+export const PERMISSION_ACTION_LABELS: Record<PermissionActionKey, string> = {
+  [PermissionActionKey.View]: 'View',
+  [PermissionActionKey.Create]: 'Create',
+  [PermissionActionKey.Edit]: 'Edit',
+  [PermissionActionKey.Approve]: 'Approve',
+  [PermissionActionKey.Export]: 'Export',
+  [PermissionActionKey.Post]: 'Post',
+  [PermissionActionKey.File]: 'File',
+  [PermissionActionKey.Lock]: 'Lock',
+  [PermissionActionKey.Override]: 'Override',
+  [PermissionActionKey.Reconcile]: 'Reconcile',
+  [PermissionActionKey.Void]: 'Void',
+  [PermissionActionKey.Reverse]: 'Reverse',
+};
+
+export const PERMISSION_ACTIONS = Object.entries(PERMISSION_ACTION_LABELS).map(([key, label]) => ({
+  key: key as PermissionActionKey,
+  label,
+}));

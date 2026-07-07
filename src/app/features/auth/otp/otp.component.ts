@@ -8,6 +8,7 @@ import {
 } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
+import { SessionTokenType } from '../../../core/models/session.model';
 
 @Component({
   selector: 'app-otp',
@@ -116,7 +117,7 @@ export class OtpComponent implements AfterViewInit {
     this.auth.verifyOtp(this.email, otp).subscribe({
       next: session => {
         this.loading = false;
-        if (session.token_type === 'session') {
+        if (session.token_type === SessionTokenType.Session) {
           this.auth.storeSession(session);
           this.router.navigate(['/user-management/users']);
         } else {

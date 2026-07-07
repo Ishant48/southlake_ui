@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { GljeTab, GljeRow } from './glje-tab';
+import { GljeTab, GljeRow, GljeAmountField } from './glje-tab';
 
 describe('GljeTab', () => {
   let component: GljeTab;
@@ -96,12 +96,12 @@ describe('GljeTab', () => {
     const r = row({ debit: 100, credit: 0 });
     component.localRows = [r];
 
-    component.onRowAmountChange(r, 'debit');
+    component.onRowAmountChange(r, GljeAmountField.Debit);
     expect(r.credit).toBe(0);
 
     r.debit = 0;
     r.credit = 50;
-    component.onRowAmountChange(r, 'credit');
+    component.onRowAmountChange(r, GljeAmountField.Credit);
     expect(r.debit).toBe(0);
   });
 

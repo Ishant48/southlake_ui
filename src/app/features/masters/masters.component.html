@@ -7,352 +7,138 @@
     </div>
     <!-- Dynamic Header Buttons -->
     <div>
-      @if (currentTab === "mgas") {
-        <button class="btn-primary" (click)="openMgaAdd()">Add MGA</button>
-      } @else if (currentTab === "states") {
-        <button class="btn-primary" (click)="openStateAdd()">Add State</button>
-      } @else if (currentTab === "risk-companies") {
-        <button class="btn-primary" (click)="openRiskCompanyAdd()">Add Risk Company</button>
-      } @else if (currentTab === "gl-mappings") {
-        <button class="btn-primary" (click)="openGlMappingAdd()">Add Mapping</button>
+      @if (currentTab === MasterTab.Mgas) {
+        <button class="btn-primary" (click)="mgasTab?.openMgaAdd()">Add MGA</button>
+      } @else if (currentTab === MasterTab.States) {
+        <button class="btn-primary" (click)="statesTab?.openStateAdd()">Add State</button>
+      } @else if (currentTab === MasterTab.RiskCompanies) {
+        <button class="btn-primary" (click)="riskCompaniesTab?.openRiskCompanyAdd()">Add Risk Company</button>
+      } @else if (currentTab === MasterTab.GlMappings) {
+        <button class="btn-primary" (click)="glMappingsTab?.openGlMappingAdd()">Add Mapping</button>
       } @else if (
-        currentTab === "lobs" ||
-        currentTab === "cobs" ||
-        currentTab === "reinsurers" ||
-        currentTab === "brokers" ||
-        currentTab === "products" ||
-        currentTab === "document-types" ||
-        currentTab === "sequence-prefix-counters"
+        currentTab === MasterTab.Lobs ||
+        currentTab === MasterTab.Cobs ||
+        currentTab === MasterTab.Reinsurers ||
+        currentTab === MasterTab.Brokers ||
+        currentTab === MasterTab.Products ||
+        currentTab === MasterTab.DocumentTypes ||
+        currentTab === MasterTab.SequencePrefixCounters
       ) {
-        <button
-          class="btn-primary"
-          (click)="
-            openSimpleAdd(
-              currentTab === 'lobs'
-                ? 'lob'
-                : currentTab === 'cobs'
-                  ? 'cob'
-                  : currentTab === 'reinsurers'
-                    ? 'reinsurer'
-                    : currentTab === 'brokers'
-                      ? 'broker'
-                      : currentTab === 'products'
-                        ? 'product'
-                        : currentTab === 'document-types'
-                          ? 'document-type'
-                          : 'sequence-prefix-counter'
-            )
-          "
-        >
-          Add
-          {{
-            currentTab === "lobs"
-              ? "LOB"
-              : currentTab === "cobs"
-                ? "COB"
-                : currentTab === "reinsurers"
-                  ? "Reinsurer"
-                  : currentTab === "brokers"
-                    ? "Broker"
-                    : currentTab === "products"
-                      ? "Product"
-                      : currentTab === "document-types"
-                        ? "Document Type"
-                        : "Sequence Counter"
-          }}
+        <button class="btn-primary" (click)="simpleMasterTab?.openSimpleAdd()">
+          Add {{ simpleMasterTab?.addLabel }}
         </button>
-      } @else if (currentTab === "locked-periods") {
-        <button class="btn-primary" (click)="openLockPeriodAdd()">Lock Period</button>
+      } @else if (currentTab === MasterTab.LockedPeriods) {
+        <button class="btn-primary" (click)="lockedPeriodsTab?.openLockPeriodAdd()">Lock Period</button>
       }
     </div>
   </div>
 
   <!-- Tab Bar -->
   <div class="tab-bar">
-    <button class="tab-link" [class.active]="currentTab === 'treaties'" (click)="selectTab('treaties')">
+    <button class="tab-link" [class.active]="currentTab === MasterTab.Treaties" (click)="selectTab(MasterTab.Treaties)">
       Treaties
     </button>
-    <button class="tab-link" [class.active]="currentTab === 'mgas'" (click)="selectTab('mgas')">MGAs</button>
-    <button class="tab-link" [class.active]="currentTab === 'lobs'" (click)="selectTab('lobs')">LOBs</button>
-    <button class="tab-link" [class.active]="currentTab === 'cobs'" (click)="selectTab('cobs')">COBs</button>
-    <button class="tab-link" [class.active]="currentTab === 'states'" (click)="selectTab('states')">States</button>
-    <button class="tab-link" [class.active]="currentTab === 'reinsurers'" (click)="selectTab('reinsurers')">
+    <button class="tab-link" [class.active]="currentTab === MasterTab.Mgas" (click)="selectTab(MasterTab.Mgas)">
+      MGAs
+    </button>
+    <button class="tab-link" [class.active]="currentTab === MasterTab.Lobs" (click)="selectTab(MasterTab.Lobs)">
+      LOBs
+    </button>
+    <button class="tab-link" [class.active]="currentTab === MasterTab.Cobs" (click)="selectTab(MasterTab.Cobs)">
+      COBs
+    </button>
+    <button class="tab-link" [class.active]="currentTab === MasterTab.States" (click)="selectTab(MasterTab.States)">
+      States
+    </button>
+    <button
+      class="tab-link"
+      [class.active]="currentTab === MasterTab.Reinsurers"
+      (click)="selectTab(MasterTab.Reinsurers)"
+    >
       Reinsurers
     </button>
-    <button class="tab-link" [class.active]="currentTab === 'risk-companies'" (click)="selectTab('risk-companies')">
+    <button
+      class="tab-link"
+      [class.active]="currentTab === MasterTab.RiskCompanies"
+      (click)="selectTab(MasterTab.RiskCompanies)"
+    >
       Risk Companies
     </button>
-    <button class="tab-link" [class.active]="currentTab === 'brokers'" (click)="selectTab('brokers')">Brokers</button>
-    <button class="tab-link" [class.active]="currentTab === 'products'" (click)="selectTab('products')">
+    <button class="tab-link" [class.active]="currentTab === MasterTab.Brokers" (click)="selectTab(MasterTab.Brokers)">
+      Brokers
+    </button>
+    <button class="tab-link" [class.active]="currentTab === MasterTab.Products" (click)="selectTab(MasterTab.Products)">
       Products
     </button>
-    <button class="tab-link" [class.active]="currentTab === 'locked-periods'" (click)="selectTab('locked-periods')">
+    <button
+      class="tab-link"
+      [class.active]="currentTab === MasterTab.LockedPeriods"
+      (click)="selectTab(MasterTab.LockedPeriods)"
+    >
       Month-End Closing
     </button>
-    <button class="tab-link" [class.active]="currentTab === 'document-types'" (click)="selectTab('document-types')">
+    <button
+      class="tab-link"
+      [class.active]="currentTab === MasterTab.DocumentTypes"
+      (click)="selectTab(MasterTab.DocumentTypes)"
+    >
       Document Types
     </button>
     <button
       class="tab-link"
-      [class.active]="currentTab === 'sequence-prefix-counters'"
-      (click)="selectTab('sequence-prefix-counters')"
+      [class.active]="currentTab === MasterTab.SequencePrefixCounters"
+      (click)="selectTab(MasterTab.SequencePrefixCounters)"
     >
       Sequence Counters
     </button>
-    <button class="tab-link" [class.active]="currentTab === 'gl-mappings'" (click)="selectTab('gl-mappings')">
+    <button
+      class="tab-link"
+      [class.active]="currentTab === MasterTab.GlMappings"
+      (click)="selectTab(MasterTab.GlMappings)"
+    >
       GL Map
     </button>
   </div>
 
-  <!-- Content Card -->
-  <div class="content-card">
-    <!-- Toolbar Filters -->
-    <div class="filters-bar">
-      @if (currentTab === "treaties") {
-        <select class="filter-select" [(ngModel)]="mgaFilter" (ngModelChange)="onFilterChange()">
-          <option value="all">All MGAs</option>
-          @for (mga of mgaOptions; track mga.id) {
-            <option [value]="mga.id">{{ mga.name }}</option>
-          }
-        </select>
-      }
-
-      <select class="filter-select" [(ngModel)]="statusFilter" (ngModelChange)="onFilterChange()">
-        <option value="all">All Statuses</option>
-        <option value="active">Active</option>
-        <option value="inactive">Inactive</option>
-      </select>
-
-      <div class="search-wrap">
-        <input
-          class="search-input"
-          type="text"
-          placeholder="Search here"
-          [(ngModel)]="searchTerm"
-          (ngModelChange)="onFilterChange()"
-          style="padding-left: 12px; padding-right: 34px"
-        />
-        <svg
-          class="search-icon-right"
-          width="15"
-          height="15"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-        >
-          <circle cx="11" cy="11" r="8" />
-          <line x1="21" y1="21" x2="16.65" y2="16.65" />
-        </svg>
-      </div>
-      <button
-        class="btn-action-outline"
-        (click)="exportToExcel()"
-        style="
-          height: 38px;
-          padding: 0 14px;
-          display: inline-flex;
-          align-items: center;
-          gap: 6px;
-          justify-content: center;
-          margin-left: auto;
-        "
-      >
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path
-            d="M5 3.5 A1.5 1.5 0 0 1 6.5 2 H14 L19 7 V20.5 A1.5 1.5 0 0 1 17.5 22 H6.5 A1.5 1.5 0 0 1 5 20.5 V3.5 Z"
-            fill="#e2e6e9"
-          />
-          <path d="M14 2 V5.5 A1.5 1.5 0 0 0 15.5 7 H19 Z" fill="#c3c8cc" />
-          <path d="M8 7 H12 M8 9.75 H15 M8 12.5 H14" stroke="#19a347" stroke-width="1.5" stroke-linecap="round" />
-          <path d="M2 14 V12.5 C2 11 3 10 4.5 10 H5 V14 Z" fill="#0d7028" />
-          <rect x="2" y="14" width="20" height="8" rx="1.5" fill="#19a347" />
-          <text
-            x="12"
-            y="20.2"
-            font-family="Arial, sans-serif"
-            font-weight="900"
-            font-size="6.2"
-            fill="#ffffff"
-            text-anchor="middle"
-            letter-spacing="0.2"
-          >
-            CSV
-          </text>
-        </svg>
-        <span>Export</span>
-      </button>
-    </div>
-
-    <app-masters-grid
-      [loading]="loading"
-      [rowData]="currentList"
-      [columnDefs]="currentColumnDefs"
-      [gridOptions]="gridOptions"
-    ></app-masters-grid>
-  </div>
-
-  <app-simple-form-modal
-    [open]="showSimpleModal"
-    [title]="simpleModalTitle"
-    [mode]="simpleMode"
-    [model]="simpleForm"
-    [isEditMode]="isEditMode"
-    [submitting]="submitting"
-    [lobOptions]="lobOptions"
-    [cobOptions]="cobOptions"
-    [lobLabelFn]="lobLabelFn"
-    [cobLabelFn]="cobLabelFn"
-    [typeOptions]="simpleFormTypeOptions"
-    [nameLabelFn]="nameLabelFn"
-    (closed)="showSimpleModal = false"
-    (save)="submitSimple($event)"
-  ></app-simple-form-modal>
-
-  <!-- MGA CREATE / EDIT MODAL -->
-  <app-mga-form-modal
-    [open]="showMgaModal"
-    [title]="mgaModalTitle"
-    [model]="mgaForm"
-    [isEditMode]="isEditMode"
-    [submitting]="submitting"
-    [stateOptions]="stateOptions"
-    [stateAbbrLabelFn]="stateAbbrLabelFn"
-    (closed)="showMgaModal = false"
-    (save)="submitMga($event)"
-  ></app-mga-form-modal>
-
-  <!-- STATE CREATE / EDIT MODAL -->
-  <app-state-form-modal
-    [open]="showStateModal"
-    [title]="stateModalTitle"
-    [model]="stateForm"
-    [isEditMode]="isEditMode"
-    [submitting]="submitting"
-    (closed)="showStateModal = false"
-    (save)="submitState($event)"
-  ></app-state-form-modal>
-
-  <!-- RISK COMPANY CREATE / EDIT MODAL -->
-  <app-risk-company-form-modal
-    [open]="showRiskCompanyModal"
-    [title]="riskCompanyModalTitle"
-    [model]="riskCompanyForm"
-    [isEditMode]="isEditMode"
-    [submitting]="submitting"
-    [stateOptions]="stateOptions"
-    [stateAbbrLabelFn]="stateAbbrLabelFn"
-    (closed)="showRiskCompanyModal = false"
-    (save)="submitRiskCompany($event)"
-  ></app-risk-company-form-modal>
-
-  <!-- NOTES VIEW MODAL -->
-  <app-notes-modal
-    [open]="showNotesModal"
-    [title]="notesModalTitle"
-    [text]="notesModalText"
-    (closed)="showNotesModal = false"
-  ></app-notes-modal>
-
-  <!-- GENERIC DOCUMENT DRAWER -->
-  <app-document-drawer
-    [open]="showDocModal"
-    [subtitle]="documentDrawerSubtitle"
-    [documentsList]="documentsList"
-    [documentTypesOptions]="documentTypesOptions"
-    [uploadingDoc]="uploadingDoc"
-    (closed)="showDocModal = false"
-    (fileSelected)="onDocumentUpload($event)"
-    (download)="downloadDoc($event)"
-    (delete)="deleteDoc($event)"
-  ></app-document-drawer>
-
-  <!-- TREATY CREATE / EDIT MODAL -->
-  <app-treaty-form-modal
-    [open]="showTreatyModal"
-    [title]="treatyModalTitle"
-    [model]="treatyForm"
-    [isEditMode]="isEditMode"
-    [submitting]="submitting"
-    [selectedStates]="treatySelectedStates"
-    [selectedLobs]="treatySelectedLobs"
-    [selectedCobs]="treatySelectedCobs"
-    [riskCompanyOptions]="riskCompanyOptions"
-    [reinsurerOptions]="reinsurerOptions"
-    [brokerOptions]="brokerOptions"
-    [mgaOptions]="mgaOptions"
-    [stateOptions]="stateOptions"
-    [lobOptions]="lobOptions"
-    [cobOptions]="cobOptions"
-    [riskCompanyLabelFn]="riskCompanyLabelFn"
-    [reinsurerLabelFn]="reinsurerLabelFn"
-    [stateLabelFn]="stateLabelFn"
-    [brokerLabelFn]="brokerLabelFn"
-    [mgaLabelFn]="mgaLabelFn"
-    [lobLabelFn]="lobLabelFn"
-    [cobLabelFn]="cobLabelFn"
-    (closed)="showTreatyModal = false"
-    (save)="submitTreaty($event)"
-  ></app-treaty-form-modal>
-
-  <!-- Add ITD Manual Modal -->
-  <app-itd-form-modal
-    [open]="showItdModal"
-    [isEditMode]="hasITDSeeded(itdForm.program)"
-    [model]="itdForm"
-    [itdStatesList]="itdStatesList"
-    [monthsList]="monthsList"
-    [yearsList]="yearsList"
-    [initialMonth]="itdSelectedMonth"
-    [initialYear]="itdSelectedYear"
-    (closed)="showItdModal = false"
-    (save)="saveManualITD($event)"
-  ></app-itd-form-modal>
-
-  <!-- GL Mapping Modal -->
-  <app-gl-mapping-form-modal
-    [open]="showGlMappingModal"
-    [title]="glMappingModalTitle"
-    [model]="glMappingForm"
-    [submitting]="submitting"
-    [coaOptions]="coaOptions"
-    [typeOptions]="glMappingTypeOptionsList"
-    [coaLabelFn]="coaLabelFn"
-    [nameLabelFn]="nameLabelFn"
-    (closed)="showGlMappingModal = false"
-    (save)="submitGlMapping($event)"
-  ></app-gl-mapping-form-modal>
-
-  <!-- Lock Period Modal -->
-  <app-lock-period-modal
-    [open]="showLockPeriodModal"
-    [period]="newPeriodToLock"
-    [submitting]="submitting"
-    (closed)="showLockPeriodModal = false"
-    (save)="submitLockPeriod($event)"
-  ></app-lock-period-modal>
-
-  <!-- Confirm Dialog component binding -->
-  <app-confirm-dialog
-    [open]="confirmOpen"
-    [title]="confirmTitle"
-    [message]="confirmMessage"
-    (confirmed)="onConfirm()"
-    (cancelled)="onCancelConfirm()"
-  />
-
-  <input
-    type="file"
-    #monthlyExcelInput
-    style="display: none"
-    (change)="onTreatyMonthlyUpload($event)"
-    accept=".xlsx,.xls,.csv"
-  />
-  <input
-    type="file"
-    #itdExcelInput
-    style="display: none"
-    (change)="onTreatyITDUpload($event)"
-    accept=".xlsx,.xls,.csv"
-  />
+  @switch (currentTab) {
+    @case (MasterTab.Treaties) {
+      <app-treaties-tab></app-treaties-tab>
+    }
+    @case (MasterTab.Mgas) {
+      <app-mgas-tab></app-mgas-tab>
+    }
+    @case (MasterTab.States) {
+      <app-states-tab></app-states-tab>
+    }
+    @case (MasterTab.RiskCompanies) {
+      <app-risk-companies-tab></app-risk-companies-tab>
+    }
+    @case (MasterTab.GlMappings) {
+      <app-gl-mappings-tab></app-gl-mappings-tab>
+    }
+    @case (MasterTab.LockedPeriods) {
+      <app-locked-periods-tab></app-locked-periods-tab>
+    }
+    @case (MasterTab.Lobs) {
+      <app-simple-master-tab [mode]="SimpleMode.Lob"></app-simple-master-tab>
+    }
+    @case (MasterTab.Cobs) {
+      <app-simple-master-tab [mode]="SimpleMode.Cob"></app-simple-master-tab>
+    }
+    @case (MasterTab.Reinsurers) {
+      <app-simple-master-tab [mode]="SimpleMode.Reinsurer"></app-simple-master-tab>
+    }
+    @case (MasterTab.Brokers) {
+      <app-simple-master-tab [mode]="SimpleMode.Broker"></app-simple-master-tab>
+    }
+    @case (MasterTab.Products) {
+      <app-simple-master-tab [mode]="SimpleMode.Product"></app-simple-master-tab>
+    }
+    @case (MasterTab.DocumentTypes) {
+      <app-simple-master-tab [mode]="SimpleMode.DocumentType"></app-simple-master-tab>
+    }
+    @case (MasterTab.SequencePrefixCounters) {
+      <app-simple-master-tab [mode]="SimpleMode.SequencePrefixCounter"></app-simple-master-tab>
+    }
+  }
 </div>

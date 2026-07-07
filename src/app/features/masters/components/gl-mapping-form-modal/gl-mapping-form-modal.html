@@ -12,7 +12,7 @@
         </button>
       </div>
 
-      <form (submit)="submit()" class="panel-body">
+      <form [formGroup]="form" (ngSubmit)="submit()" class="panel-body">
         <div class="form-field field-spaced">
           <span class="form-label">Chart of Account *</span>
           <app-dropdown-search
@@ -21,7 +21,8 @@
             bindValue="id"
             placeholder="Select Account"
             [itemLabelFn]="coaLabelFn"
-            [(selectedValue)]="formValue.coa_id"
+            [selectedValue]="form.controls.coa_id.value"
+            (selectedValueChange)="onCoaIdChange($event)"
           ></app-dropdown-search>
           <span class="field-hint">Only child ledger accounts are available for mapping.</span>
         </div>
@@ -34,7 +35,8 @@
             bindValue="id"
             placeholder="Select Type"
             [itemLabelFn]="nameLabelFn"
-            [(selectedValue)]="formValue.type"
+            [selectedValue]="form.controls.type.value"
+            (selectedValueChange)="onTypeChange($event)"
           ></app-dropdown-search>
           <span class="field-hint">Each mapping type (AR, AP, MGA, BRK) can only be mapped to a single account.</span>
         </div>

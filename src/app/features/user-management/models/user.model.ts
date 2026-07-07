@@ -1,14 +1,37 @@
 import { Role } from './role.model';
 
+export enum UserType {
+  Staff = 'staff',
+  MgaUser = 'mga_user',
+  BrokerUser = 'broker_user',
+  CustomerUser = 'customer_user',
+}
+
+export enum UserStatus {
+  Active = 'active',
+  Inactive = 'inactive',
+  Pending = 'pending',
+}
+
+export enum PanelMode {
+  View = 'view',
+  Edit = 'edit',
+}
+
+export enum UserDetailTab {
+  Profile = 'profile',
+  Permissions = 'permissions',
+}
+
 export interface User {
   id: string;
   email: string;
   name: string;
   role?: Role;
-  user_type: 'staff' | 'mga_user' | 'broker_user' | 'customer_user';
+  user_type: UserType;
   department?: string;
   title?: string;
-  status: 'active' | 'inactive' | 'pending';
+  status: UserStatus;
   initials: string;
   avatar_color: string;
   last_login_at?: string;

@@ -1,0 +1,21 @@
+<app-itd-form-modal
+  [open]="showItdModal"
+  [isEditMode]="treatiesState.hasITDSeeded(itdForm.program)"
+  [model]="itdForm"
+  [itdStatesList]="itdStatesList"
+  [monthsList]="monthsList"
+  [yearsList]="yearsList"
+  [initialMonth]="itdSelectedMonth"
+  [initialYear]="itdSelectedYear"
+  (closed)="showItdModal = false"
+  (save)="saveManualITD($event)"
+></app-itd-form-modal>
+
+<input
+  type="file"
+  #monthlyExcelInput
+  style="display: none"
+  (change)="onMonthlyUpload($event)"
+  accept=".xlsx,.xls,.csv"
+/>
+<input type="file" #itdExcelInput style="display: none" (change)="onItdUpload($event)" accept=".xlsx,.xls,.csv" />

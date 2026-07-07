@@ -1,7 +1,11 @@
 @if (open) {
   <!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events, @angular-eslint/template/interactive-supports-focus -- backdrop click-to-dismiss, not an interactive control; keyboard dismissal is handled via Escape at the dialog level -->
   <div class="modal-overlay" (click)="$event.target === $event.currentTarget && close()">
-    <div class="modal-box {{ mode === 'lob' || mode === 'cob' || mode === 'product' ? 'treaty-modal' : 'coa-modal' }}">
+    <div
+      class="modal-box {{
+        mode === SimpleMode.Lob || mode === SimpleMode.Cob || mode === SimpleMode.Product ? 'treaty-modal' : 'coa-modal'
+      }}"
+    >
       <div class="panel-header">
         <h3 class="panel-title">{{ title }}</h3>
         <button class="panel-close" (click)="close()" aria-label="Close modal">
@@ -12,72 +16,53 @@
         </button>
       </div>
 
-      <form (submit)="submit()" class="panel-body scrollable-body">
+      <form [formGroup]="form" (ngSubmit)="submit()" class="panel-body scrollable-body">
         <div class="form-row">
           <div class="form-field">
             <label for="m-code" class="form-label">
               {{
-                mode === "lob"
+                mode === SimpleMode.Lob
                   ? "LOB ID *"
-                  : mode === "cob"
+                  : mode === SimpleMode.Cob
                     ? "Class ID *"
-                    : mode === "broker"
+                    : mode === SimpleMode.Broker
                       ? "Broker Code *"
-                      : mode === "product"
+                      : mode === SimpleMode.Product
                         ? "Product ID *"
-                        : mode === "sequence-prefix-counter"
+                        : mode === SimpleMode.SequencePrefixCounter
                           ? "Sequence Code *"
                           : "Code ID *"
               }}
             </label>
-            <input
-              id="m-code"
-              [(ngModel)]="formValue.code"
-              name="code"
-              type="text"
-              required
-              placeholder="e.g. TX"
-              [disabled]="isEditMode || mode === 'product'"
-              class="form-input"
-            />
+            <input id="m-code" formControlName="code" type="text" placeholder="e.g. TX" class="form-input" />
           </div>
           <div class="form-field">
             <label for="m-name" class="form-label">
               {{
-                mode === "lob"
+                mode === SimpleMode.Lob
                   ? "LOB Name *"
-                  : mode === "cob"
+                  : mode === SimpleMode.Cob
                     ? "Class Name *"
-                    : mode === "broker"
+                    : mode === SimpleMode.Broker
                       ? "Broker Name *"
-                      : mode === "product"
+                      : mode === SimpleMode.Product
                         ? "Product Name *"
-                        : mode === "sequence-prefix-counter"
+                        : mode === SimpleMode.SequencePrefixCounter
                           ? "Sequence Name *"
                           : "Name *"
               }}
             </label>
-            <input
-              id="m-name"
-              [(ngModel)]="formValue.name"
-              name="name"
-              type="text"
-              required
-              placeholder="e.g. Texas"
-              [disabled]="mode === 'product'"
-              class="form-input"
-            />
+            <input id="m-name" formControlName="name" type="text" placeholder="e.g. Texas" class="form-input" />
           </div>
         </div>
 
-        @if (mode === "broker") {
+        @if (mode === SimpleMode.Broker) {
           <div class="form-row form-row-spaced">
             <div class="form-field">
               <label for="m-contact-name" class="form-label">Contact Name</label>
               <input
                 id="m-contact-name"
-                [(ngModel)]="formValue.contact_name"
-                name="contact_name"
+                formControlName="contact_name"
                 type="text"
                 placeholder="Contact Name"
                 class="form-input"
@@ -87,8 +72,7 @@
               <label for="m-contact-phone" class="form-label">Contact Phone</label>
               <input
                 id="m-contact-phone"
-                [(ngModel)]="formValue.contact_phone"
-                name="contact_phone"
+                formControlName="contact_phone"
                 type="text"
                 placeholder="Contact Phone"
                 class="form-input"
@@ -100,8 +84,7 @@
               <label for="m-contact-email" class="form-label">Contact Email</label>
               <input
                 id="m-contact-email"
-                [(ngModel)]="formValue.contact_email"
-                name="contact_email"
+                formControlName="contact_email"
                 type="email"
                 placeholder="Contact Email"
                 class="form-input"
@@ -110,7 +93,7 @@
           </div>
         }
 
-        @if (mode === "product") {
+        @if (mode === SimpleMode.Product) {
           <div class="form-row form-row-spaced">
             <div class="form-field">
               <span class="form-label">Line of Business *</span>
@@ -120,8 +103,8 @@
                 bindValue="id"
                 placeholder="Select LOB"
                 [itemLabelFn]="lobLabelFn"
-                [selectedValue]="formValue.lob_id"
-                (selectedValueChange)="formValue.lob_id = $any($event); onProductLobCobChange()"
+                [selectedValue]="form.controls.lob_id.value"
+                (selectedValueChange)="form.controls.lob_id.setValue($any($event)); onProductLobCobChange()"
               ></app-dropdown-search>
             </div>
             <div class="form-field">
@@ -132,8 +115,8 @@
                 bindValue="id"
                 placeholder="Select COB"
                 [itemLabelFn]="cobLabelFn"
-                [selectedValue]="formValue.cob_id"
-                (selectedValueChange)="formValue.cob_id = $any($event); onProductLobCobChange()"
+                [selectedValue]="form.controls.cob_id.value"
+                (selectedValueChange)="form.controls.cob_id.setValue($any($event)); onProductLobCobChange()"
               ></app-dropdown-search>
             </div>
           </div>
@@ -142,8 +125,7 @@
               <label for="m-description-2" class="form-label">Description</label>
               <textarea
                 id="m-description"
-                [(ngModel)]="formValue.description"
-                name="description"
+                formControlName="description"
                 placeholder="Product description..."
                 class="form-input textarea-field"
               ></textarea>
@@ -151,9 +133,9 @@
           </div>
         }
 
-        @if (mode === "lob" || mode === "cob") {
+        @if (mode === SimpleMode.Lob || mode === SimpleMode.Cob) {
           <div class="form-row form-row-spaced">
-            @if (mode === "cob") {
+            @if (mode === SimpleMode.Cob) {
               <div class="form-field">
                 <label for="m-priority" class="form-label">Class Type</label>
                 <app-dropdown-search
@@ -162,20 +144,14 @@
                   bindValue="id"
                   placeholder="Select Type"
                   [itemLabelFn]="nameLabelFn"
-                  [(selectedValue)]="formValue.type"
+                  [selectedValue]="form.controls.type.value"
+                  (selectedValueChange)="form.controls.type.setValue($any($event))"
                 ></app-dropdown-search>
               </div>
             }
             <div class="form-field">
               <label for="m-priority-2" class="form-label">Priority</label>
-              <input
-                id="m-priority"
-                [(ngModel)]="formValue.priority"
-                name="priority"
-                type="number"
-                placeholder="1"
-                class="form-input"
-              />
+              <input id="m-priority" formControlName="priority" type="number" placeholder="1" class="form-input" />
             </div>
           </div>
 
@@ -184,11 +160,11 @@
               <label for="m-taxable" class="form-label">Taxable</label>
               <div class="radio-group">
                 <label>
-                  <input id="m-taxable" type="radio" [value]="true" [(ngModel)]="formValue.taxable" name="taxable" />
+                  <input id="m-taxable" type="radio" [value]="true" formControlName="taxable" />
                   Yes
                 </label>
                 <label>
-                  <input type="radio" [value]="false" [(ngModel)]="formValue.taxable" name="taxable" />
+                  <input type="radio" [value]="false" formControlName="taxable" />
                   No
                 </label>
               </div>
@@ -197,17 +173,11 @@
               <label for="m-fullyearned" class="form-label">Fully Earned</label>
               <div class="radio-group">
                 <label>
-                  <input
-                    id="m-fullyearned"
-                    type="radio"
-                    [value]="true"
-                    [(ngModel)]="formValue.fully_earned"
-                    name="fullyEarned"
-                  />
+                  <input id="m-fullyearned" type="radio" [value]="true" formControlName="fully_earned" />
                   Yes
                 </label>
                 <label>
-                  <input type="radio" [value]="false" [(ngModel)]="formValue.fully_earned" name="fullyEarned" />
+                  <input type="radio" [value]="false" formControlName="fully_earned" />
                   No
                 </label>
               </div>
@@ -219,8 +189,7 @@
               <label for="m-description-3" class="form-label">Description</label>
               <textarea
                 id="m-description-3"
-                [(ngModel)]="formValue.description"
-                name="description"
+                formControlName="description"
                 placeholder="Description details..."
                 class="form-input textarea-field"
               ></textarea>
@@ -228,43 +197,26 @@
           </div>
         }
 
-        @if (mode === "sequence-prefix-counter") {
+        @if (mode === SimpleMode.SequencePrefixCounter) {
           <div class="form-row form-row-spaced">
             <div class="form-field">
               <label for="m-prefix" class="form-label">Prefix</label>
-              <input
-                id="m-prefix"
-                [(ngModel)]="formValue.prefix"
-                name="prefix"
-                type="text"
-                placeholder="e.g. POL"
-                class="form-input"
-              />
+              <input id="m-prefix" formControlName="prefix" type="text" placeholder="e.g. POL" class="form-input" />
             </div>
           </div>
           <div class="form-row form-row-spaced">
             <div class="form-field">
               <label for="m-next-value" class="form-label">Next Value *</label>
-              <input
-                id="m-next-value"
-                [(ngModel)]="formValue.next_value"
-                name="next_value"
-                type="number"
-                placeholder="1"
-                class="form-input"
-                required
-              />
+              <input id="m-next-value" formControlName="next_value" type="number" placeholder="1" class="form-input" />
             </div>
             <div class="form-field">
               <label for="m-padding-width" class="form-label">Padding Width *</label>
               <input
                 id="m-padding-width"
-                [(ngModel)]="formValue.padding_width"
-                name="padding_width"
+                formControlName="padding_width"
                 type="number"
                 placeholder="4"
                 class="form-input"
-                required
               />
             </div>
           </div>
@@ -273,8 +225,7 @@
               <label for="m-description-4" class="form-label">Description</label>
               <textarea
                 id="m-description-4"
-                [(ngModel)]="formValue.description"
-                name="description"
+                formControlName="description"
                 placeholder="Description..."
                 class="form-input textarea-field"
               ></textarea>
@@ -284,7 +235,7 @@
 
         <div class="form-field active-status-field">
           <div class="form-checkbox-field">
-            <input [(ngModel)]="formValue.is_active" name="isActive" type="checkbox" id="simpleIsActive" />
+            <input formControlName="is_active" type="checkbox" id="simpleIsActive" />
             <label for="simpleIsActive" class="checkbox-label">Active Status</label>
           </div>
         </div>

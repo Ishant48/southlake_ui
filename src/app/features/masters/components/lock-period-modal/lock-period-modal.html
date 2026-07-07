@@ -12,15 +12,13 @@
         </button>
       </div>
 
-      <form (submit)="submit()" class="panel-body">
+      <form [formGroup]="form" (ngSubmit)="submit()" class="panel-body">
         <div class="form-field field-spaced">
           <label for="m-newperiodtolock" class="form-label">Period Name *</label>
           <input
             id="m-newperiodtolock"
-            [(ngModel)]="periodValue"
-            name="newPeriodToLock"
+            formControlName="period"
             type="text"
-            required
             placeholder="e.g. June 2026"
             class="form-input"
           />

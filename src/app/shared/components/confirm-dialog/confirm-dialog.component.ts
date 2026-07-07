@@ -1,5 +1,11 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 
+export enum ConfirmDialogType {
+  Danger = 'danger',
+  Warning = 'warning',
+  Info = 'info',
+}
+
 @Component({
   selector: 'app-confirm-dialog',
   standalone: true,
@@ -8,12 +14,14 @@ import { Component, Input, Output, EventEmitter } from '@angular/core';
   styleUrl: './confirm-dialog.component.scss',
 })
 export class ConfirmDialogComponent {
+  protected readonly ConfirmDialogType = ConfirmDialogType;
+
   @Input() open = false;
   @Input() title = 'Confirm Action';
   @Input() message = 'Are you sure you want to proceed?';
   @Input() confirmLabel = 'Confirm';
   @Input() cancelLabel = 'Cancel';
-  @Input() type: 'danger' | 'warning' | 'info' = 'danger';
+  @Input() type: ConfirmDialogType = ConfirmDialogType.Danger;
 
   @Output() confirmed = new EventEmitter<void>();
   @Output() cancelled = new EventEmitter<void>();

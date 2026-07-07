@@ -1,6 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { MgaFormModal, MgaFormValue, createBlankMgaForm } from './mga-form-modal';
+import { MgaFormModal } from './mga-form-modal';
+import { MgaFormValue, createBlankMgaForm } from '../../models/mga-form.model';
 
 describe('MgaFormModal', () => {
   let component: MgaFormModal;
@@ -34,7 +35,7 @@ describe('MgaFormModal', () => {
     expect((fixture.nativeElement as HTMLElement).querySelector('.modal-overlay')).toBeNull();
   });
 
-  it('copies the model into local formValue on change, cloning other_names', () => {
+  it('patches the form from the model input on change', () => {
     component.model = sample;
     component.ngOnChanges({
       model: {
@@ -44,24 +45,31 @@ describe('MgaFormModal', () => {
         isFirstChange: () => true,
       },
     });
-    expect(component.formValue).toEqual(sample);
-    expect(component.formValue.other_names).not.toBe(sample.other_names);
+    expect(component.form.getRawValue()).toEqual(sample);
   });
 
   it('adds and removes other-name rows', () => {
-    component.formValue = { ...createBlankMgaForm(), other_names: [] };
+    component.model = { ...createBlankMgaForm(), other_names: [] };
+    component.ngOnChanges({
+      model: {
+        currentValue: component.model,
+        previousValue: undefined,
+        firstChange: true,
+        isFirstChange: () => true,
+      },
+    });
 
     component.addOtherNameRow();
-    expect(component.formValue.other_names).toEqual([{ state: '', displayName: '' }]);
+    expect(component.form.controls.other_names.value).toEqual([{ state: '', displayName: '' }]);
 
     component.addOtherNameRow();
-    expect(component.formValue.other_names.length).toBe(2);
+    expect(component.form.controls.other_names.value.length).toBe(2);
 
     component.removeOtherNameRow(0);
-    expect(component.formValue.other_names.length).toBe(1);
+    expect(component.form.controls.other_names.value.length).toBe(1);
   });
 
-  it('emits save with the current form value', () => {
+  it('emits save with the current form value when valid', () => {
     component.model = sample;
     component.ngOnChanges({
       model: {
@@ -76,7 +84,38 @@ describe('MgaFormModal', () => {
 
     component.submit();
 
-    expect(saveSpy).toHaveBeenCalledWith(component.formValue);
+    expect(saveSpy).toHaveBeenCalledWith(sample);
+  });
+
+  it('does not emit save when the form is invalid', () => {
+    component.model = { ...sample, name: '' };
+    component.ngOnChanges({
+      model: {
+        currentValue: component.model,
+        previousValue: undefined,
+        firstChange: true,
+        isFirstChange: () => true,
+      },
+    });
+    const saveSpy = vi.fn();
+    component.save.subscribe(saveSpy);
+
+    component.submit();
+
+    expect(saveSpy).not.toHaveBeenCalled();
+  });
+
+  it('disables the mga code field in edit mode', () => {
+    component.isEditMode = true;
+    component.ngOnChanges({
+      isEditMode: {
+        currentValue: true,
+        previousValue: false,
+        firstChange: true,
+        isFirstChange: () => true,
+      },
+    });
+    expect(component.form.controls.mga_code.disabled).toBe(true);
   });
 
   it('emits closed when the close button is clicked', () => {

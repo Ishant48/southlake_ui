@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ChartOfAccountsApi } from './services/chart-of-accounts-api';
 import { ChartOfAccount, ChartOfAccountDocument } from '../../core/models/chart-of-account.model';
+import { ActiveStatusFilter } from '../../core/models/active-status-filter.model';
 import { TreeAccount } from './models/chart-of-account.model';
 import { ToastService } from '../../shared/components/toast/toast.service';
 import { ConfirmDialogComponent } from '../../shared/components/confirm-dialog/confirm-dialog.component';
@@ -12,7 +13,10 @@ import { AgGridAngular } from 'ag-grid-angular';
 import { ColDef, GridOptions, GridReadyEvent } from 'ag-grid-community';
 import { AgGridConfigService } from '../../core/services/ag-grid-config.service';
 
-import { CoaGridCellRenderer } from './components/coa-grid-cell-renderer/coa-grid-cell-renderer';
+import {
+  CoaGridCellRenderer,
+  CoaGridCellVariant,
+} from './components/coa-grid-cell-renderer/coa-grid-cell-renderer';
 import {
   AccountFormModal,
   AccountFormSaveEvent,
@@ -55,7 +59,7 @@ export class ChartOfAccountsComponent implements OnInit {
       headerName: 'COA TYPE',
       field: 'is_root',
       cellRenderer: CoaGridCellRenderer,
-      cellRendererParams: { variant: 'badge' },
+      cellRendererParams: { variant: CoaGridCellVariant.Badge },
       flex: 12,
       minWidth: 100,
     },
@@ -70,7 +74,7 @@ export class ChartOfAccountsComponent implements OnInit {
       headerName: 'NAME',
       field: 'description',
       cellRenderer: CoaGridCellRenderer,
-      cellRendererParams: { variant: 'tree-name' },
+      cellRendererParams: { variant: CoaGridCellVariant.TreeName },
       flex: 40,
       minWidth: 350,
     },
@@ -92,14 +96,14 @@ export class ChartOfAccountsComponent implements OnInit {
       headerName: 'NORMAL BAL...',
       field: 'normal_balance',
       cellRenderer: CoaGridCellRenderer,
-      cellRendererParams: { variant: 'balance-badge' },
+      cellRendererParams: { variant: CoaGridCellVariant.BalanceBadge },
       flex: 14,
       minWidth: 100,
     },
     {
       headerName: 'ACTIONS',
       cellRenderer: CoaGridCellRenderer,
-      cellRendererParams: { variant: 'actions' },
+      cellRendererParams: { variant: CoaGridCellVariant.Actions },
       sortable: false,
       minWidth: 230,
       maxWidth: 240,
@@ -108,7 +112,7 @@ export class ChartOfAccountsComponent implements OnInit {
   ];
 
   // Modals state
-  statusFilter: 'all' | 'active' | 'inactive' = 'all';
+  statusFilter: ActiveStatusFilter = ActiveStatusFilter.All;
   typeFilter: string = 'all';
   earningAccountCode: number | null = null;
 
@@ -158,7 +162,9 @@ export class ChartOfAccountsComponent implements OnInit {
     this.service
       .getAccounts(
         this.searchTerm || undefined,
-        this.statusFilter === 'all' ? undefined : this.statusFilter === 'active',
+        this.statusFilter === ActiveStatusFilter.All
+          ? undefined
+          : this.statusFilter === ActiveStatusFilter.Active,
       )
       .subscribe({
         next: accounts => {
@@ -288,7 +294,7 @@ export class ChartOfAccountsComponent implements OnInit {
     this.loadAccounts();
   }
 
-  onStatusFilter(status: 'all' | 'active' | 'inactive'): void {
+  onStatusFilter(status: ActiveStatusFilter): void {
     this.statusFilter = status;
     this.loadAccounts();
   }

@@ -1,9 +1,16 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
 
+export enum ToastType {
+  Success = 'success',
+  Error = 'error',
+  Warning = 'warning',
+  Info = 'info',
+}
+
 export interface Toast {
   id: string;
-  type: 'success' | 'error' | 'warning' | 'info';
+  type: ToastType;
   message: string;
   title?: string;
 }
@@ -13,7 +20,7 @@ export class ToastService {
   private toastsSubject = new BehaviorSubject<Toast[]>([]);
   toasts$ = this.toastsSubject.asObservable();
 
-  show(type: Toast['type'], message: string, title?: string): void {
+  show(type: ToastType, message: string, title?: string): void {
     const id = crypto.randomUUID();
     const toast: Toast = { id, type, message, title };
     this.toastsSubject.next([...this.toastsSubject.value, toast]);
@@ -21,16 +28,16 @@ export class ToastService {
   }
 
   success(message: string, title?: string): void {
-    this.show('success', message, title);
+    this.show(ToastType.Success, message, title);
   }
   error(message: string, title?: string): void {
-    this.show('error', message, title);
+    this.show(ToastType.Error, message, title);
   }
   warning(message: string, title?: string): void {
-    this.show('warning', message, title);
+    this.show(ToastType.Warning, message, title);
   }
   info(message: string, title?: string): void {
-    this.show('info', message, title);
+    this.show(ToastType.Info, message, title);
   }
 
   dismiss(id: string): void {

@@ -3,7 +3,12 @@ import { CommonModule, TitleCasePipe } from '@angular/common';
 import { ICellRendererAngularComp } from 'ag-grid-angular';
 import { ICellRendererParams } from 'ag-grid-community';
 
-export type CoaGridCellVariant = 'badge' | 'tree-name' | 'balance-badge' | 'actions';
+export enum CoaGridCellVariant {
+  Badge = 'badge',
+  TreeName = 'tree-name',
+  BalanceBadge = 'balance-badge',
+  Actions = 'actions',
+}
 
 export interface CoaGridCellRendererParams extends ICellRendererParams {
   variant: CoaGridCellVariant;
@@ -16,7 +21,9 @@ export interface CoaGridCellRendererParams extends ICellRendererParams {
   styleUrl: './coa-grid-cell-renderer.scss',
 })
 export class CoaGridCellRenderer implements ICellRendererAngularComp {
-  variant: CoaGridCellVariant = 'badge';
+  protected readonly CoaGridCellVariant = CoaGridCellVariant;
+
+  variant: CoaGridCellVariant = CoaGridCellVariant.Badge;
   params!: CoaGridCellRendererParams;
 
   // badge / tree-name / balance-badge shared state

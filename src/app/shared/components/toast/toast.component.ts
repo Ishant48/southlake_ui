@@ -1,6 +1,6 @@
 import { Component, inject } from '@angular/core';
 import { AsyncPipe } from '@angular/common';
-import { ToastService } from './toast.service';
+import { ToastService, ToastType } from './toast.service';
 
 @Component({
   selector: 'app-toast',
@@ -10,6 +10,8 @@ import { ToastService } from './toast.service';
   styleUrl: './toast.component.scss',
 })
 export class ToastComponent {
+  protected readonly ToastType = ToastType;
+
   private toastService = inject(ToastService);
   toasts$ = this.toastService.toasts$;
 

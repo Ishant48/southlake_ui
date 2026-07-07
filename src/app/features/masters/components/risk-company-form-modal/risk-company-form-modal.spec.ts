@@ -1,10 +1,10 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
+import { RiskCompanyFormModal } from './risk-company-form-modal';
 import {
-  RiskCompanyFormModal,
   RiskCompanyFormValue,
   createBlankRiskCompanyForm,
-} from './risk-company-form-modal';
+} from '../../models/risk-company-form.model';
 
 describe('RiskCompanyFormModal', () => {
   let component: RiskCompanyFormModal;
@@ -36,7 +36,7 @@ describe('RiskCompanyFormModal', () => {
     expect((fixture.nativeElement as HTMLElement).querySelector('.modal-overlay')).toBeNull();
   });
 
-  it('copies the model into local formValue on change', () => {
+  it('patches the form from the model input on change', () => {
     component.model = sample;
     component.ngOnChanges({
       model: {
@@ -46,11 +46,10 @@ describe('RiskCompanyFormModal', () => {
         isFirstChange: () => true,
       },
     });
-    expect(component.formValue).toEqual(sample);
-    expect(component.formValue).not.toBe(sample);
+    expect(component.form.getRawValue()).toEqual(sample);
   });
 
-  it('emits save with the current form value', () => {
+  it('emits save with the current form value when valid', () => {
     component.model = sample;
     component.ngOnChanges({
       model: {
@@ -66,6 +65,48 @@ describe('RiskCompanyFormModal', () => {
     component.submit();
 
     expect(saveSpy).toHaveBeenCalledWith(sample);
+  });
+
+  it('does not emit save when the form is invalid', () => {
+    component.model = { ...sample, name: '' };
+    component.ngOnChanges({
+      model: {
+        currentValue: component.model,
+        previousValue: undefined,
+        firstChange: true,
+        isFirstChange: () => true,
+      },
+    });
+    const saveSpy = vi.fn();
+    component.save.subscribe(saveSpy);
+
+    component.submit();
+
+    expect(saveSpy).not.toHaveBeenCalled();
+  });
+
+  it('disables company_id in edit mode', () => {
+    component.isEditMode = true;
+    component.ngOnChanges({
+      isEditMode: {
+        currentValue: true,
+        previousValue: false,
+        firstChange: true,
+        isFirstChange: () => true,
+      },
+    });
+    expect(component.form.controls.company_id.disabled).toBe(true);
+
+    component.isEditMode = false;
+    component.ngOnChanges({
+      isEditMode: {
+        currentValue: false,
+        previousValue: true,
+        firstChange: false,
+        isFirstChange: () => false,
+      },
+    });
+    expect(component.form.controls.company_id.disabled).toBe(false);
   });
 
   it('emits closed when the close button is clicked', () => {

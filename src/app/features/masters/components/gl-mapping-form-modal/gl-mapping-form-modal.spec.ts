@@ -1,6 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { GlMappingFormModal, GlMappingFormValue } from './gl-mapping-form-modal';
+import { GlMappingFormModal } from './gl-mapping-form-modal';
+import { GlMappingFormValue } from '../../models/gl-mapping-form.model';
 
 describe('GlMappingFormModal', () => {
   let component: GlMappingFormModal;
@@ -28,7 +29,7 @@ describe('GlMappingFormModal', () => {
     expect((fixture.nativeElement as HTMLElement).querySelector('.modal-overlay')).toBeNull();
   });
 
-  it('copies the model into local formValue on change', () => {
+  it('patches the form from the model input on change', () => {
     component.model = sample;
     component.ngOnChanges({
       model: {
@@ -38,11 +39,10 @@ describe('GlMappingFormModal', () => {
         isFirstChange: () => true,
       },
     });
-    expect(component.formValue).toEqual(sample);
-    expect(component.formValue).not.toBe(sample);
+    expect(component.form.getRawValue()).toEqual(sample);
   });
 
-  it('emits save with the current form value', () => {
+  it('emits save with the current form value when valid', () => {
     component.model = sample;
     component.ngOnChanges({
       model: {
@@ -58,6 +58,24 @@ describe('GlMappingFormModal', () => {
     component.submit();
 
     expect(saveSpy).toHaveBeenCalledWith(sample);
+  });
+
+  it('does not emit save when the form is invalid', () => {
+    component.model = { ...sample, coa_id: '', type: '' };
+    component.ngOnChanges({
+      model: {
+        currentValue: component.model,
+        previousValue: undefined,
+        firstChange: true,
+        isFirstChange: () => true,
+      },
+    });
+    const saveSpy = vi.fn();
+    component.save.subscribe(saveSpy);
+
+    component.submit();
+
+    expect(saveSpy).not.toHaveBeenCalled();
   });
 
   it('emits closed when the close button is clicked', () => {

@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { SettingsAccordions } from './settings-accordions';
+import { SettingsAccordions, SettingsAccordionSection } from './settings-accordions';
 
 describe('SettingsAccordions', () => {
   let component: SettingsAccordions;
@@ -27,15 +27,15 @@ describe('SettingsAccordions', () => {
   });
 
   it('toggleAccordion flips only the targeted section', () => {
-    component.toggleAccordion('parameters');
+    component.toggleAccordion(SettingsAccordionSection.Parameters);
     expect(component.parametersExpanded).toBe(true);
     expect(component.ratesExpanded).toBe(false);
     expect(component.mappingsExpanded).toBe(false);
 
-    component.toggleAccordion('rates');
+    component.toggleAccordion(SettingsAccordionSection.Rates);
     expect(component.ratesExpanded).toBe(true);
 
-    component.toggleAccordion('parameters');
+    component.toggleAccordion(SettingsAccordionSection.Parameters);
     expect(component.parametersExpanded).toBe(false);
   });
 
@@ -46,7 +46,7 @@ describe('SettingsAccordions', () => {
   });
 
   it('renders the card body once its section is expanded', () => {
-    component.toggleAccordion('mappings');
+    component.toggleAccordion(SettingsAccordionSection.Mappings);
     fixture.detectChanges();
     const bodies = (fixture.nativeElement as HTMLElement).querySelectorAll('.card-body');
     expect(bodies.length).toBe(1);
