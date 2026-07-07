@@ -3,7 +3,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { Observable } from 'rxjs';
 import { FormsModule } from '@angular/forms';
-import { ColDef, GridOptions, ICellRendererParams } from 'ag-grid-community';
+import { ColDef, GridOptions } from 'ag-grid-community';
 import { AgGridConfigService } from '../../core/services/ag-grid-config.service';
 import { MastersGrid } from './components/masters-grid/masters-grid';
 import { NotesModal } from '../../shared/components/notes-modal/notes-modal';
@@ -26,10 +26,6 @@ import {
 } from './components/simple-form-modal/simple-form-modal';
 import { MgaFormModal, MgaFormValue } from './components/mga-form-modal/mga-form-modal';
 import { TreatyFormModal, TreatySaveEvent } from './components/treaty-form-modal/treaty-form-modal';
-import {
-  ActionButtonConfig,
-  ActionButtonsCell,
-} from '../../shared/components/grid-renderers/action-buttons-cell/action-buttons-cell';
 import { StatusBadgeCell } from '../../shared/components/grid-renderers/status-badge-cell/status-badge-cell';
 import { StatesApi } from './services/states-api';
 import { MgasApi } from './services/mgas-api';
@@ -71,7 +67,6 @@ import {
   DocumentMode,
 } from './models/master-tab.model';
 import { ItdExhibit, ItdForm, ItdStateOption } from './models/itd.model';
-import { LockedPeriod } from './models/locked-period.model';
 import { HttpErrorLike } from '../../core/models/http-error.model';
 import { ActiveStatusFilter } from '../../core/models/active-status-filter.model';
 import { GlMappingsApi } from './services/gl-mappings-api';
@@ -79,6 +74,19 @@ import { ChartOfAccountsApi } from '../chart-of-accounts/services/chart-of-accou
 import { GlMapping, GlMappingType } from './models/gl-mapping.model';
 import { ChartOfAccount } from '../../core/models/chart-of-account.model';
 import { ReinsuranceApi } from '../reinsurance-calculations/services/reinsurance-api';
+import { buildTreatiesColumnDefs } from './grid-columns/treaties-columns';
+import { buildMgasColumnDefs } from './grid-columns/mgas-columns';
+import { buildStatesColumnDefs } from './grid-columns/states-columns';
+import { buildRiskCompaniesColumnDefs } from './grid-columns/risk-companies-columns';
+import { buildGlMappingsColumnDefs } from './grid-columns/gl-mappings-columns';
+import { buildLobsColumnDefs } from './grid-columns/lobs-columns';
+import { buildCobsColumnDefs } from './grid-columns/cobs-columns';
+import { buildReinsurersColumnDefs } from './grid-columns/reinsurers-columns';
+import { buildBrokersColumnDefs } from './grid-columns/brokers-columns';
+import { buildProductsColumnDefs } from './grid-columns/products-columns';
+import { buildLockedPeriodsColumnDefs } from './grid-columns/locked-periods-columns';
+import { buildDocumentTypesColumnDefs } from './grid-columns/document-types-columns';
+import { buildSequencePrefixCountersColumnDefs } from './grid-columns/sequence-prefix-counters-columns';
 
 @Component({
   selector: 'app-masters',
@@ -778,531 +786,31 @@ export class MastersComponent implements OnInit {
 
     switch (this.currentTab) {
       case MasterTab.Treaties:
-        return [
-          { headerName: 'CODE', field: 'treaty_code', flex: 1, minWidth: 100, maxWidth: 120 },
-          { headerName: 'TREATY NAME', field: 'name', flex: 2, minWidth: 150 },
-          {
-            headerName: 'MGA',
-            valueGetter: p => this.getMgasListDisplay(p.data),
-            flex: 1.5,
-            minWidth: 120,
-          },
-          {
-            headerName: 'CARRIERS',
-            valueGetter: p => this.getCarriersListDisplay(p.data),
-            flex: 2,
-            minWidth: 200,
-          },
-          {
-            headerName: 'STATES',
-            valueGetter: p => this.getStatesListDisplay(p.data?.treaty_states),
-            flex: 1.5,
-            minWidth: 120,
-          },
-          {
-            headerName: 'LOBS (COBS)',
-            valueGetter: p => this.getLobsListDisplay(p.data?.treaty_lobs),
-            flex: 2,
-            minWidth: 150,
-          },
-          {
-            headerName: 'ACTIONS',
-            cellRenderer: ActionButtonsCell,
-            cellRendererParams: {
-              buttons: (data: Treaty) => {
-                const btns: ActionButtonConfig[] = [];
-                if (this.hasITDSeeded(data.name)) {
-                  btns.push({ label: 'Upload Excel', action: 'uploadExcel' });
-                }
-                btns.push({ label: 'Upload ITD', action: 'uploadItd' });
-                btns.push({ label: 'Manual ITD', action: 'manualItd' });
-                btns.push({ label: 'Edit', action: 'edit' });
-                btns.push({ label: 'Delete', action: 'delete', danger: true });
-                return btns;
-              },
-              onClick: (action: string, data: Treaty) => {
-                if (action === 'uploadExcel') this.triggerTreatyMonthlyUpload(data);
-                if (action === 'uploadItd') this.triggerTreatyITDUpload(data);
-                if (action === 'manualItd') this.openAddItdModal(data);
-                if (action === 'edit') this.openTreatyEdit(data);
-                if (action === 'delete') this.deleteTreaty(data);
-              },
-            },
-            flex: 0,
-            width: 220,
-            minWidth: 220,
-            maxWidth: 220,
-            cellStyle: { justifyContent: 'flex-start' },
-          },
-        ];
-
+        return buildTreatiesColumnDefs(this);
       case MasterTab.Mgas:
-        return [
-          { headerName: 'MGA CODE', field: 'mga_code', flex: 1, minWidth: 100, maxWidth: 120 },
-          { headerName: 'MGA NAME', field: 'name', flex: 2, minWidth: 150 },
-          { headerName: 'NAICS CODE', field: 'naics_code', flex: 1.2, minWidth: 120 },
-          {
-            headerName: 'TAX PAYABLE IN-HOUSE',
-            field: 'tax_payable_inhouse',
-            cellRenderer: StatusBadgeCell,
-            flex: 1.5,
-            minWidth: 150,
-          },
-          statusCol,
-          {
-            headerName: 'ACTIONS',
-            cellRenderer: ActionButtonsCell,
-            cellRendererParams: {
-              buttons: [
-                { label: 'Add Treaties', action: 'addTreaty' },
-                { label: 'Document', action: 'doc' },
-                { label: 'Edit', action: 'edit' },
-                { label: 'Delete', action: 'delete', danger: true },
-              ],
-              onClick: (action: string, data: MgaMaster) => {
-                if (action === 'addTreaty') this.openTreatyAdd(data.id);
-                if (action === 'doc') this.openDocModal(DocumentMode.Mga, data);
-                if (action === 'edit') this.openMgaEdit(data);
-                if (action === 'delete') this.deleteMga(data);
-              },
-            },
-            flex: 0,
-            width: 320,
-            minWidth: 320,
-            maxWidth: 320,
-          },
-        ];
-
+        return buildMgasColumnDefs(this, statusCol);
       case MasterTab.States:
-        return [
-          { headerName: 'STATE CODE', field: 'state_code', flex: 1, minWidth: 100 },
-          { headerName: 'STATE ABBR', field: 'state_abbr', flex: 1, minWidth: 100 },
-          { headerName: 'STATE NAME', field: 'name', flex: 3, minWidth: 200 },
-          {
-            headerName: 'ACTIONS',
-            cellRenderer: ActionButtonsCell,
-            cellRendererParams: {
-              buttons: [
-                { label: 'Document', action: 'doc' },
-                { label: 'Notes', action: 'notes' },
-                { label: 'Edit', action: 'edit' },
-                { label: 'Delete', action: 'delete', danger: true },
-              ],
-              onClick: (action: string, data: StateMaster) => {
-                if (action === 'doc') this.openDocModal(DocumentMode.State, data);
-                if (action === 'notes')
-                  this.openNotesModal('State Notes: ' + data.name, data.notes);
-                if (action === 'edit') this.openStateEdit(data);
-                if (action === 'delete') this.deleteState(data);
-              },
-            },
-            flex: 0,
-            width: 280,
-            minWidth: 280,
-            maxWidth: 280,
-          },
-        ];
-
+        return buildStatesColumnDefs(this);
       case MasterTab.RiskCompanies:
-        return [
-          {
-            headerName: 'COMPANY',
-            valueGetter: p =>
-              `${p.data.company_id}${p.data.risk_company_id ? ` (${p.data.risk_company_id})` : ''}`,
-            flex: 1.5,
-            minWidth: 150,
-          },
-          { headerName: 'ID NAME', field: 'id_name', flex: 1.5, minWidth: 150 },
-          { headerName: 'NAME', field: 'name', flex: 3, minWidth: 200 },
-          { headerName: 'PHONE', field: 'phone', flex: 1.5, minWidth: 120 },
-          {
-            headerName: 'ADMITTED',
-            field: 'is_admitted',
-            cellRenderer: StatusBadgeCell,
-            flex: 1,
-            minWidth: 100,
-          },
-          { headerName: 'STATE', field: 'state', flex: 1, minWidth: 80 },
-          {
-            headerName: 'ACTIONS',
-            cellRenderer: ActionButtonsCell,
-            cellRendererParams: {
-              buttons: [
-                { label: 'Document', action: 'doc' },
-                { label: 'Notes', action: 'notes' },
-                { label: 'View Policy', action: 'policy' },
-                { label: 'Edit', action: 'edit' },
-                { label: 'Delete', action: 'delete', danger: true },
-              ],
-              onClick: (action: string, data: RiskCompany) => {
-                if (action === 'doc') this.openDocModal(DocumentMode.RiskCompany, data);
-                if (action === 'notes')
-                  this.openNotesModal('Risk Company Notes: ' + data.name, data.notes);
-                if (action === 'policy') this.viewPolicy(data);
-                if (action === 'edit') this.openRiskCompanyEdit(data);
-                if (action === 'delete') this.deleteRiskCompany(data);
-              },
-            },
-            flex: 0,
-            width: 360,
-            minWidth: 360,
-            maxWidth: 360,
-          },
-        ];
-
+        return buildRiskCompaniesColumnDefs(this);
       case MasterTab.GlMappings:
-        return [
-          {
-            headerName: 'GL NUMBER',
-            valueGetter: p => this.getGLNumberDisplay(p.data),
-            flex: 2,
-            minWidth: 200,
-          },
-          {
-            headerName: 'TYPE',
-            field: 'type',
-            cellRenderer: (p: ICellRendererParams<GlMapping, string>) =>
-              `<span class="type-badge ${p.value?.toLowerCase()}">${p.value}</span>`,
-            flex: 1,
-            minWidth: 100,
-          },
-          {
-            headerName: 'ACTIONS',
-            cellRenderer: ActionButtonsCell,
-            cellRendererParams: {
-              buttons: [
-                { label: 'Edit', action: 'edit' },
-                { label: 'Delete', action: 'delete', danger: true },
-              ],
-              onClick: (action: string, data: GlMapping) => {
-                if (action === 'edit') this.openGlMappingEdit(data);
-                if (action === 'delete') this.deleteGlMapping(data);
-              },
-            },
-            flex: 0,
-            width: 160,
-            minWidth: 160,
-            maxWidth: 160,
-          },
-        ];
-
+        return buildGlMappingsColumnDefs(this);
       case MasterTab.Lobs:
-        return [
-          { headerName: 'LOB CODE', field: 'lob_code', flex: 1, minWidth: 100, maxWidth: 120 },
-          {
-            headerName: 'LOB NAME',
-            valueGetter: p => p.data.name,
-            cellRenderer: (p: ICellRendererParams<LineOfBusiness>) => {
-              const desc = p.data?.description
-                ? `<div style="font-size: 11px; color: var(--gray-500); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 220px;" title="${p.data.description}">${p.data.description}</div>`
-                : '';
-              return `<div style="line-height:1.2; margin-top:10px;"><div style="font-weight: 500;">${p.data?.name}</div>${desc}</div>`;
-            },
-            flex: 3,
-            minWidth: 200,
-          },
-          {
-            headerName: 'TAXABLE',
-            field: 'taxable',
-            cellRenderer: StatusBadgeCell,
-            flex: 1,
-            minWidth: 100,
-          },
-          { headerName: 'PRIORITY', field: 'priority', flex: 1, minWidth: 100 },
-          {
-            headerName: 'FULLY EARNED',
-            field: 'fully_earned',
-            cellRenderer: StatusBadgeCell,
-            flex: 1,
-            minWidth: 120,
-          },
-          statusCol,
-          {
-            headerName: 'ACTIONS',
-            cellRenderer: ActionButtonsCell,
-            cellRendererParams: {
-              buttons: [
-                { label: 'Edit', action: 'edit' },
-                { label: 'Delete', action: 'delete', danger: true },
-              ],
-              onClick: (action: string, data: LineOfBusiness) => {
-                if (action === 'edit') this.openSimpleEdit(SimpleMode.Lob, data);
-                if (action === 'delete') this.deleteSimple(SimpleMode.Lob, data);
-              },
-            },
-            flex: 0,
-            width: 160,
-            minWidth: 160,
-            maxWidth: 160,
-          },
-        ];
-
+        return buildLobsColumnDefs(this, statusCol);
       case MasterTab.Cobs:
-        return [
-          { headerName: 'CLASS CODE', field: 'cob_code', flex: 1, minWidth: 100, maxWidth: 120 },
-          {
-            headerName: 'CLASS NAME',
-            valueGetter: p => p.data.name,
-            cellRenderer: (p: ICellRendererParams<CobMaster>) => {
-              const desc = p.data?.description
-                ? `<div style="font-size: 11px; color: var(--gray-500); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 220px;" title="${p.data.description}">${p.data.description}</div>`
-                : '';
-              return `<div style="line-height:1.2; margin-top:10px;"><div style="font-weight: 500;">${p.data?.name}</div>${desc}</div>`;
-            },
-            flex: 3,
-            minWidth: 200,
-          },
-          { headerName: 'CLASS TYPE', field: 'type', flex: 1.5, minWidth: 120 },
-          {
-            headerName: 'TAXABLE',
-            field: 'taxable',
-            cellRenderer: StatusBadgeCell,
-            flex: 1,
-            minWidth: 100,
-          },
-          { headerName: 'PRIORITY', field: 'priority', flex: 1, minWidth: 100 },
-          {
-            headerName: 'FULLY EARNED',
-            field: 'fully_earned',
-            cellRenderer: StatusBadgeCell,
-            flex: 1,
-            minWidth: 120,
-          },
-          statusCol,
-          {
-            headerName: 'ACTIONS',
-            cellRenderer: ActionButtonsCell,
-            cellRendererParams: {
-              buttons: [
-                { label: 'Edit', action: 'edit' },
-                { label: 'Delete', action: 'delete', danger: true },
-              ],
-              onClick: (action: string, data: CobMaster) => {
-                if (action === 'edit') this.openSimpleEdit(SimpleMode.Cob, data);
-                if (action === 'delete') this.deleteSimple(SimpleMode.Cob, data);
-              },
-            },
-            flex: 0,
-            width: 160,
-            minWidth: 160,
-            maxWidth: 160,
-          },
-        ];
-
+        return buildCobsColumnDefs(this, statusCol);
       case MasterTab.Reinsurers:
-        return [
-          {
-            headerName: 'CODE ID',
-            field: 'reinsurer_company_id',
-            flex: 1.5,
-            minWidth: 120,
-            maxWidth: 180,
-          },
-          { headerName: 'NAME', field: 'name', flex: 3, minWidth: 200 },
-          statusCol,
-          {
-            headerName: 'ACTIONS',
-            cellRenderer: ActionButtonsCell,
-            cellRendererParams: {
-              buttons: [
-                { label: 'Edit', action: 'edit' },
-                { label: 'Delete', action: 'delete', danger: true },
-              ],
-              onClick: (action: string, data: ReinsurerCompany) => {
-                if (action === 'edit') this.openSimpleEdit(SimpleMode.Reinsurer, data);
-                if (action === 'delete') this.deleteSimple(SimpleMode.Reinsurer, data);
-              },
-            },
-            flex: 0,
-            width: 160,
-            minWidth: 160,
-            maxWidth: 160,
-          },
-        ];
-
+        return buildReinsurersColumnDefs(this, statusCol);
       case MasterTab.Brokers:
-        return [
-          { headerName: 'BROKER CODE', field: 'brokerCode', flex: 1.5, minWidth: 120 },
-          { headerName: 'NAME', field: 'name', flex: 2, minWidth: 150 },
-          { headerName: 'CONTACT NAME', field: 'contactName', flex: 1.5, minWidth: 120 },
-          { headerName: 'EMAIL', field: 'contactEmail', flex: 2, minWidth: 150 },
-          { headerName: 'PHONE', field: 'contactPhone', flex: 1.5, minWidth: 120 },
-          statusCol,
-          {
-            headerName: 'ACTIONS',
-            cellRenderer: ActionButtonsCell,
-            cellRendererParams: {
-              buttons: [
-                { label: 'Edit', action: 'edit' },
-                { label: 'Delete', action: 'delete', danger: true },
-              ],
-              onClick: (action: string, data: SimpleMasterRecord) => {
-                if (action === 'edit') this.openSimpleEdit(SimpleMode.Broker, data);
-                if (action === 'delete') this.deleteSimple(SimpleMode.Broker, data);
-              },
-            },
-            flex: 0,
-            width: 160,
-            minWidth: 160,
-            maxWidth: 160,
-          },
-        ];
-
+        return buildBrokersColumnDefs(this, statusCol);
       case MasterTab.Products:
-        return [
-          { headerName: 'PRODUCT ID', field: 'productId', flex: 1.5, minWidth: 120 },
-          { headerName: 'NAME', field: 'name', flex: 2, minWidth: 150 },
-          {
-            headerName: 'LOB',
-            // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- an empty string should also fall back to the placeholder/default shown here
-            valueGetter: p => p.data.lob?.name || '-',
-            flex: 1.5,
-            minWidth: 120,
-          },
-          {
-            headerName: 'COB',
-            // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- an empty string should also fall back to the placeholder/default shown here
-            valueGetter: p => p.data.cob?.name || '-',
-            flex: 1.5,
-            minWidth: 120,
-          },
-          { headerName: 'DESCRIPTION', field: 'description', flex: 2.5, minWidth: 180 },
-          statusCol,
-          {
-            headerName: 'ACTIONS',
-            cellRenderer: ActionButtonsCell,
-            cellRendererParams: {
-              buttons: [
-                { label: 'Edit', action: 'edit' },
-                { label: 'Delete', action: 'delete', danger: true },
-              ],
-              onClick: (action: string, data: SimpleMasterRecord) => {
-                if (action === 'edit') this.openSimpleEdit(SimpleMode.Product, data);
-                if (action === 'delete') this.deleteSimple(SimpleMode.Product, data);
-              },
-            },
-            flex: 0,
-            width: 160,
-            minWidth: 160,
-            maxWidth: 160,
-          },
-        ];
-
+        return buildProductsColumnDefs(this, statusCol);
       case MasterTab.LockedPeriods:
-        return [
-          { headerName: 'PERIOD', field: 'period', flex: 1.5, minWidth: 120 },
-          {
-            headerName: 'STATUS',
-            valueGetter: p => (p.data.isLocked ? 'Locked' : 'Open'),
-            cellRenderer: (p: ICellRendererParams<LockedPeriod, string>) => {
-              const color = p.value === 'Locked' ? '#e05470' : '#19a347';
-              return `<span style="font-weight: 700; color: ${color};">${p.value}</span>`;
-            },
-            flex: 1,
-            minWidth: 100,
-          },
-          {
-            headerName: 'LOCKED BY',
-            // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- an empty string should also fall back to the placeholder/default shown here
-            valueGetter: p => p.data.user?.name || '-',
-            flex: 1.5,
-            minWidth: 120,
-          },
-          {
-            headerName: 'LOCKED AT',
-            valueGetter: p => (p.data.lockedAt ? new Date(p.data.lockedAt).toLocaleString() : '-'),
-            flex: 2,
-            minWidth: 150,
-          },
-          {
-            headerName: 'ACTIONS',
-            cellRenderer: ActionButtonsCell,
-            cellRendererParams: {
-              buttons: (data: LockedPeriod) => [
-                {
-                  label: data.isLocked ? 'Unlock' : 'Lock',
-                  action: data.isLocked ? 'unlock' : 'lock',
-                },
-              ],
-              onClick: (action: string, data: LockedPeriod) => {
-                if (action === 'lock') this.togglePeriodLock(data.period, true);
-                if (action === 'unlock') this.togglePeriodLock(data.period, false);
-              },
-            },
-            flex: 0,
-            width: 120,
-            minWidth: 120,
-            maxWidth: 120,
-          },
-        ];
-
+        return buildLockedPeriodsColumnDefs(this);
       case MasterTab.DocumentTypes:
-        return [
-          { headerName: 'CODE', field: 'code', flex: 1.5, minWidth: 120 },
-          { headerName: 'NAME', field: 'name', flex: 2, minWidth: 150 },
-          { headerName: 'DESCRIPTION', field: 'description', flex: 3, minWidth: 200 },
-          statusCol,
-          {
-            headerName: 'ACTIONS',
-            cellRenderer: ActionButtonsCell,
-            cellRendererParams: {
-              buttons: [
-                { label: 'Edit', action: 'edit' },
-                { label: 'Delete', action: 'delete', danger: true },
-              ],
-              onClick: (action: string, data: DocumentType) => {
-                if (action === 'edit') this.openSimpleEdit(SimpleMode.DocumentType, data);
-                if (action === 'delete') this.deleteSimple(SimpleMode.DocumentType, data);
-              },
-            },
-            flex: 0,
-            width: 160,
-            minWidth: 160,
-            maxWidth: 160,
-          },
-        ];
-
+        return buildDocumentTypesColumnDefs(this, statusCol);
       case MasterTab.SequencePrefixCounters:
-        return [
-          { headerName: 'CODE', field: 'code', flex: 1.5, minWidth: 120 },
-          { headerName: 'NAME', field: 'name', flex: 2, minWidth: 150 },
-          { headerName: 'PREFIX', field: 'prefix', flex: 1, minWidth: 100 },
-          {
-            headerName: 'NEXT VALUE',
-            valueGetter: p =>
-              p.data.next_value !== undefined ? p.data.next_value : p.data.nextValue,
-            flex: 1,
-            minWidth: 100,
-          },
-          {
-            headerName: 'PADDING WIDTH',
-            valueGetter: p =>
-              p.data.padding_width !== undefined ? p.data.padding_width : p.data.paddingWidth,
-            flex: 1,
-            minWidth: 100,
-          },
-          { headerName: 'DESCRIPTION', field: 'description', flex: 2.5, minWidth: 180 },
-          statusCol,
-          {
-            headerName: 'ACTIONS',
-            cellRenderer: ActionButtonsCell,
-            cellRendererParams: {
-              buttons: [
-                { label: 'Edit', action: 'edit' },
-                { label: 'Delete', action: 'delete', danger: true },
-              ],
-              onClick: (action: string, data: SequencePrefixCounter) => {
-                if (action === 'edit') this.openSimpleEdit(SimpleMode.SequencePrefixCounter, data);
-                if (action === 'delete') this.deleteSimple(SimpleMode.SequencePrefixCounter, data);
-              },
-            },
-            flex: 0,
-            width: 160,
-            minWidth: 160,
-            maxWidth: 160,
-          },
-        ];
-
+        return buildSequencePrefixCountersColumnDefs(this, statusCol);
       default:
         return [];
     }
