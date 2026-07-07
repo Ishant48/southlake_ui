@@ -160,6 +160,7 @@ export class SimpleMasterTab implements OnInit {
     this.modalTitle = `Add New ${this.simpleMastersState.getMasterLabel(this.mode)}`;
     this.form = createBlankSimpleForm();
     this.showModal = true;
+    this.cdr.detectChanges();
   }
 
   openSimpleEdit(mode: SimpleMode, item: SimpleEditableItem): void {

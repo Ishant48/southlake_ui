@@ -102,7 +102,7 @@ export class GlMappingsTab implements OnInit {
     this.form = createBlankGlMappingForm();
     this.loadCoaOptions();
     this.showModal = true;
-    this.cdr.markForCheck();
+    this.cdr.detectChanges();
   }
 
   openGlMappingEdit(mapping: GlMapping): void {

@@ -69,7 +69,7 @@ export class LockedPeriodsTab implements OnInit {
   openLockPeriodAdd(): void {
     this.newPeriodToLock = '';
     this.showLockPeriodModal = true;
-    this.cdr.markForCheck();
+    this.cdr.detectChanges();
   }
 
   submitLockPeriod(period: string): void {

@@ -118,6 +118,7 @@ export class StatesTab implements OnInit {
     this.modalTitle = 'Add State';
     this.form = createBlankStateForm();
     this.showModal = true;
+    this.cdr.detectChanges();
   }
 
   openStateEdit(state: StateMaster): void {

@@ -137,6 +137,7 @@ export class MgasTab implements OnInit {
     this.modalTitle = 'Add MGA';
     this.form = createBlankMgaForm();
     this.showModal = true;
+    this.cdr.detectChanges();
   }
 
   openMgaEdit(mga: MgaMaster): void {
