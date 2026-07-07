@@ -23,6 +23,7 @@ import { downloadCsv } from '../../utils/csv-export.util';
 import { buildMgasExportData } from './mgas-tab.export';
 import { buildMgasColumnDefs } from '../../grid-columns/mgas-columns';
 import { mapMgaToFormValue, buildMgaPayload } from './mgas-tab.util';
+import { TreatyQuickAddState } from '../../services/treaty-quick-add-state';
 import { StatusBadgeCell } from '../../../../shared/components/grid-renderers/status-badge-cell/status-badge-cell';
 
 @Component({
@@ -48,6 +49,7 @@ export class MgasTab implements OnInit {
   private agGridConfig = inject(AgGridConfigService);
   private router = inject(Router);
   private route = inject(ActivatedRoute);
+  private treatyQuickAddState = inject(TreatyQuickAddState);
 
   gridOptions: GridOptions = this.agGridConfig.getDefaultGridOptions();
   loading = false;
@@ -192,11 +194,14 @@ export class MgasTab implements OnInit {
   }
 
   // Cross-tab navigation: switches to the Treaties tab and carries the mga id
-  // via query param, which TreatiesTab reads on init to pre-fill the Add Treaty modal.
+  // via a shared state service, which TreatiesTab reads on init to pre-fill
+  // the Add Treaty modal (no query param mutation, so sidebar/tab-bar active
+  // state stays in sync).
   openTreatyAdd(mgaId: string): void {
+    this.treatyQuickAddState.pendingMgaId = mgaId;
     this.router.navigate([], {
       relativeTo: this.route,
-      queryParams: { tab: MasterTab.Treaties, addTreatyMgaId: mgaId },
+      queryParams: { tab: MasterTab.Treaties },
       queryParamsHandling: 'merge',
     });
   }

@@ -1,7 +1,6 @@
 import { Component, OnInit, ViewChild, ChangeDetectorRef, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ActivatedRoute, Router } from '@angular/router';
 import { GridOptions, ColDef } from 'ag-grid-community';
 import { AgGridConfigService } from '../../../../core/services/ag-grid-config.service';
 import { ActiveStatusFilter } from '../../../../core/models/active-status-filter.model';
@@ -13,6 +12,7 @@ import { TreatyFormModal } from '../treaty-form-modal/treaty-form-modal';
 import { TreatyUploadsPanel } from '../treaty-uploads-panel/treaty-uploads-panel';
 import { TreatiesState } from '../../services/treaties-state';
 import { TreatyOptionsState } from '../../services/treaty-options-state';
+import { TreatyQuickAddState } from '../../services/treaty-quick-add-state';
 import { Treaty, TreatyState, TreatyLob } from '../../models/master.model';
 import { TreatySaveEvent } from '../../models/treaty-form.model';
 import { buildTreatiesColumnDefs } from '../../grid-columns/treaties-columns';
@@ -58,8 +58,7 @@ export class TreatiesTab implements OnInit {
   private toast = inject(ToastService);
   private cdr = inject(ChangeDetectorRef);
   private agGridConfig = inject(AgGridConfigService);
-  private route = inject(ActivatedRoute);
-  private router = inject(Router);
+  private treatyQuickAddState = inject(TreatyQuickAddState);
 
   protected readonly mgaLabelFn = mgaLabelFn;
   protected readonly riskCompanyLabelFn = riskCompanyLabelFn;
@@ -92,14 +91,10 @@ export class TreatiesTab implements OnInit {
     this.treatyOptionsState.loadMgaOptions().subscribe(() => this.cdr.markForCheck());
     this.load();
 
-    const addTreatyMgaId = this.route.snapshot.queryParams['addTreatyMgaId'] as string | undefined;
-    if (addTreatyMgaId) {
-      this.openTreatyAdd(addTreatyMgaId);
-      this.router.navigate([], {
-        relativeTo: this.route,
-        queryParams: { addTreatyMgaId: null },
-        queryParamsHandling: 'merge',
-      });
+    const pendingMgaId = this.treatyQuickAddState.pendingMgaId;
+    if (pendingMgaId) {
+      this.treatyQuickAddState.pendingMgaId = null;
+      this.openTreatyAdd(pendingMgaId);
     }
   }
 
