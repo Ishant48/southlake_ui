@@ -150,7 +150,7 @@ export function buildMastersExportData(ctx: MastersComponent): MastersExportData
     case MasterTab.GlMappings:
       return {
         headers: ['GL Number', 'Type'],
-        rows: ctx.glMappings.map(m => [ctx.getGLNumberDisplay(m), m.type]),
+        rows: ctx.glMappingsState.glMappings.map(m => [ctx.getGLNumberDisplay(m), m.type]),
         filename: 'gl_mappings.csv',
       };
 

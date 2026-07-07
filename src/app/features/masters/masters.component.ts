@@ -68,8 +68,7 @@ import {
 import { ItdExhibit, ItdForm, ItdStateOption } from './models/itd.model';
 import { HttpErrorLike } from '../../core/models/http-error.model';
 import { ActiveStatusFilter } from '../../core/models/active-status-filter.model';
-import { GlMappingsApi } from './services/gl-mappings-api';
-import { ChartOfAccountsApi } from '../chart-of-accounts/services/chart-of-accounts-api';
+import { GlMappingsState } from './services/gl-mappings-state';
 import { GlMapping, GlMappingType } from './models/gl-mapping.model';
 import { ChartOfAccount } from '../../core/models/chart-of-account.model';
 import { ReinsuranceApi } from '../reinsurance-calculations/services/reinsurance-api';
@@ -153,8 +152,7 @@ export class MastersComponent implements OnInit {
   private cdr = inject(ChangeDetectorRef);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
-  private glMappingsService = inject(GlMappingsApi);
-  private coaService = inject(ChartOfAccountsApi);
+  glMappingsState = inject(GlMappingsState);
   private agGridConfig = inject(AgGridConfigService);
 
   gridOptions: GridOptions = this.agGridConfig.getDefaultGridOptions();
@@ -163,8 +161,6 @@ export class MastersComponent implements OnInit {
   @ViewChild('itdExcelInput') itdExcelInput!: ElementRef<HTMLInputElement>;
 
   currentTab: MasterTab = MasterTab.Treaties;
-  glMappings: GlMapping[] = [];
-  coaOptions: ChartOfAccount[] = [];
   showGlMappingModal = false;
   glMappingModalTitle = 'Add GL Mapping';
   glMappingForm: Partial<GlMapping> = {
@@ -683,7 +679,7 @@ export class MastersComponent implements OnInit {
       case MasterTab.RiskCompanies:
         return this.riskCompanies;
       case MasterTab.GlMappings:
-        return this.glMappings;
+        return this.glMappingsState.glMappings;
       case MasterTab.Brokers:
         return this.simpleMastersState.brokers;
       case MasterTab.Products:
@@ -1668,19 +1664,8 @@ export class MastersComponent implements OnInit {
   // GL MAPPINGS ACTIONS
   // ==========================================
   loadGlMappings(): void {
-    this.glMappingsService.getMappings().subscribe({
-      next: data => {
-        if (this.searchTerm) {
-          const term = this.searchTerm.toLowerCase();
-          this.glMappings = data.filter(m => {
-            const typeMatch = m.type.toLowerCase().includes(term);
-            const code = m.coa?.account_code?.toString() ?? '';
-            const desc = m.coa?.description?.toLowerCase() ?? '';
-            return typeMatch || code.includes(term) || desc.includes(term);
-          });
-        } else {
-          this.glMappings = data;
-        }
+    this.glMappingsState.load(this.searchTerm).subscribe({
+      next: () => {
         this.loading = false;
         this.cdr.markForCheck();
       },
@@ -1693,9 +1678,8 @@ export class MastersComponent implements OnInit {
   }
 
   loadCoaOptions(): void {
-    this.coaService.getAccounts(undefined, true).subscribe({
-      next: data => {
-        this.coaOptions = data.filter(coa => !coa.is_parent);
+    this.glMappingsState.loadCoaOptions().subscribe({
+      next: () => {
         this.cdr.markForCheck();
       },
       error: () => {
@@ -1744,45 +1728,28 @@ export class MastersComponent implements OnInit {
       type: this.glMappingForm.type,
     };
 
-    if (this.isEditMode && this.glMappingForm.id) {
-      this.glMappingsService.updateMapping(this.glMappingForm.id, payload).subscribe({
-        next: () => {
-          this.toast.success('GL Mapping updated successfully');
-          this.showGlMappingModal = false;
-          this.submitting = false;
-          this.loadGlMappings();
-        },
-        error: err => {
-          // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- an empty string should also fall back to the placeholder/default shown here
-          const msg = err.error?.message || 'Failed to update GL mapping';
-          this.toast.error(msg);
-          this.submitting = false;
-          this.cdr.markForCheck();
-        },
-      });
-    } else {
-      this.glMappingsService.createMapping(payload).subscribe({
-        next: () => {
-          this.toast.success('GL Mapping created successfully');
-          this.showGlMappingModal = false;
-          this.submitting = false;
-          this.loadGlMappings();
-        },
-        error: err => {
-          // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- an empty string should also fall back to the placeholder/default shown here
-          const msg = err.error?.message || 'Failed to create GL mapping';
-          this.toast.error(msg);
-          this.submitting = false;
-          this.cdr.markForCheck();
-        },
-      });
-    }
+    const isUpdate = this.isEditMode && !!this.glMappingForm.id;
+    this.glMappingsState.save(this.isEditMode, this.glMappingForm.id, payload).subscribe({
+      next: () => {
+        this.toast.success(`GL Mapping ${isUpdate ? 'updated' : 'created'} successfully`);
+        this.showGlMappingModal = false;
+        this.submitting = false;
+        this.loadGlMappings();
+      },
+      error: (err: HttpErrorLike) => {
+        // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- an empty string should also fall back to the placeholder/default shown here
+        const msg = err.error?.message || `Failed to ${isUpdate ? 'update' : 'create'} GL mapping`;
+        this.toast.error(msg);
+        this.submitting = false;
+        this.cdr.markForCheck();
+      },
+    });
   }
 
   deleteGlMapping(mapping: GlMapping): void {
     this.confirmOpen = true;
     this.pendingAction = () => {
-      this.glMappingsService.deleteMapping(mapping.id).subscribe({
+      this.glMappingsState.delete(mapping.id).subscribe({
         next: () => {
           this.toast.success('GL Mapping deleted successfully');
           this.loadGlMappings();
@@ -1806,8 +1773,7 @@ export class MastersComponent implements OnInit {
   }
 
   getGLNumberDisplay(mapping: GlMapping): string {
-    if (!mapping.coa) return '-';
-    return `${mapping.coa.account_code} - ${mapping.coa.description}`;
+    return this.glMappingsState.getGLNumberDisplay(mapping);
   }
 
   selectedTreatyForUpload: Treaty | null = null;
