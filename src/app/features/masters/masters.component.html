@@ -798,162 +798,17 @@
   ></app-state-form-modal>
 
   <!-- RISK COMPANY CREATE / EDIT MODAL -->
-  @if (showRiskCompanyModal) {
-    <!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events, @angular-eslint/template/interactive-supports-focus -- backdrop click-to-dismiss / stopPropagation guard, not an interactive control; keyboard dismissal is handled via Escape at the dialog level -->
-    <div class="modal-overlay" (click)="$event.target === $event.currentTarget && (showRiskCompanyModal = false)">
-      <div class="modal-box treaty-modal">
-        <div class="panel-header">
-          <h3 class="panel-title">{{ riskCompanyModalTitle }}</h3>
-          <button class="panel-close" (click)="showRiskCompanyModal = false" aria-label="Close modal">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-              <line x1="18" y1="6" x2="6" y2="18" />
-              <line x1="6" y1="6" x2="18" y2="18" />
-            </svg>
-          </button>
-        </div>
-
-        <form
-          (submit)="submitRiskCompany()"
-          class="panel-body"
-          style="max-height: calc(100vh - 200px); overflow-y: auto"
-        >
-          <!-- Names Info -->
-          <div class="form-section-title" style="margin-top: 0">Names Info</div>
-          <div class="form-row">
-            <div class="form-field">
-              <label for="m-companyid-2" class="form-label">Company ID</label>
-              <input
-                id="m-companyid-2"
-                [(ngModel)]="riskCompanyForm.company_id"
-                name="companyId"
-                type="number"
-                placeholder="e.g. 283"
-                class="form-input"
-                [disabled]="isEditMode"
-              />
-            </div>
-            <div class="form-field">
-              <label for="m-idname-2" class="form-label">ID Name</label>
-              <input
-                id="m-idname-2"
-                [(ngModel)]="riskCompanyForm.id_name"
-                name="idName"
-                type="text"
-                placeholder="ID Name"
-                class="form-input"
-              />
-            </div>
-            <div class="form-field">
-              <label for="m-name-2" class="form-label">Name *</label>
-              <input
-                id="m-name-2"
-                [(ngModel)]="riskCompanyForm.name"
-                name="name"
-                type="text"
-                required
-                placeholder="Name"
-                class="form-input"
-              />
-            </div>
-          </div>
-
-          <!-- Addresses & Other -->
-          <div class="form-section-title">Addresses & Other</div>
-          <div class="form-row">
-            <div class="form-field">
-              <label for="m-address-2" class="form-label">Address 1</label>
-              <input
-                id="m-address-2"
-                [(ngModel)]="riskCompanyForm.address"
-                name="address"
-                type="text"
-                placeholder="Address 1"
-                class="form-input"
-              />
-            </div>
-            <div class="form-field">
-              <label for="m-zip-2" class="form-label">Zip</label>
-              <input
-                id="m-zip-2"
-                [(ngModel)]="riskCompanyForm.zip"
-                name="zip"
-                type="text"
-                placeholder="Zip"
-                class="form-input"
-              />
-            </div>
-            <div class="form-field">
-              <label for="m-city-2" class="form-label">City</label>
-              <input
-                id="m-city-2"
-                [(ngModel)]="riskCompanyForm.city"
-                name="city"
-                type="text"
-                placeholder="City"
-                class="form-input"
-              />
-            </div>
-            <div class="form-field">
-              <label for="m-phone-3" class="form-label">State</label>
-              <app-dropdown-search
-                [items]="stateOptions"
-                [isMultiSelect]="false"
-                bindValue="state_abbr"
-                placeholder="Select state"
-                [itemLabelFn]="stateAbbrLabelFn"
-                [(selectedValue)]="riskCompanyForm.state"
-              ></app-dropdown-search>
-            </div>
-          </div>
-
-          <div class="form-row" style="margin-top: 8px">
-            <div class="form-field">
-              <label for="m-phone-4" class="form-label">Phone</label>
-              <input
-                id="m-phone-3"
-                [(ngModel)]="riskCompanyForm.phone"
-                name="phone"
-                type="text"
-                placeholder="Phone"
-                class="form-input"
-              />
-            </div>
-            <div class="form-field">
-              <label for="m-isadmitted" class="form-label">Admitted</label>
-              <div class="radio-group">
-                <label>
-                  <input
-                    id="m-isadmitted"
-                    type="radio"
-                    [value]="true"
-                    [(ngModel)]="riskCompanyForm.is_admitted"
-                    name="isAdmitted"
-                  />
-                  Yes
-                </label>
-                <label>
-                  <input type="radio" [value]="false" [(ngModel)]="riskCompanyForm.is_admitted" name="isAdmitted" />
-                  No
-                </label>
-              </div>
-            </div>
-          </div>
-        </form>
-
-        <div class="panel-footer">
-          <button type="button" class="btn-ghost" (click)="showRiskCompanyModal = false">Cancel</button>
-          <button type="button" class="btn-primary" [disabled]="submitting" (click)="submitRiskCompany()">
-            @if (submitting) {
-              <span class="spinner btn-spinner" style="width: 14px; height: 14px"></span>
-              <span>Saving...</span>
-            } @else {
-              <span>Save Risk Company</span>
-            }
-          </button>
-        </div>
-      </div>
-    </div>
-  }
+  <app-risk-company-form-modal
+    [open]="showRiskCompanyModal"
+    [title]="riskCompanyModalTitle"
+    [model]="riskCompanyForm"
+    [isEditMode]="isEditMode"
+    [submitting]="submitting"
+    [stateOptions]="stateOptions"
+    [stateAbbrLabelFn]="stateAbbrLabelFn"
+    (closed)="showRiskCompanyModal = false"
+    (save)="submitRiskCompany($event)"
+  ></app-risk-company-form-modal>
 
   <!-- NOTES VIEW MODAL -->
   <app-notes-modal

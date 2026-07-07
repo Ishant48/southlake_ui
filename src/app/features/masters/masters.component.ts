@@ -15,6 +15,10 @@ import {
 } from './components/gl-mapping-form-modal/gl-mapping-form-modal';
 import { LockPeriodModal } from './components/lock-period-modal/lock-period-modal';
 import {
+  RiskCompanyFormModal,
+  RiskCompanyFormValue,
+} from './components/risk-company-form-modal/risk-company-form-modal';
+import {
   ActionButtonConfig,
   ActionButtonsCell,
 } from '../../shared/components/grid-renderers/action-buttons-cell/action-buttons-cell';
@@ -151,6 +155,7 @@ type MasterTab =
     StateFormModal,
     GlMappingFormModal,
     LockPeriodModal,
+    RiskCompanyFormModal,
   ],
   templateUrl: './masters.component.html',
   styleUrl: './masters.component.scss',
@@ -1992,7 +1997,8 @@ export class MastersComponent implements OnInit {
     this.showRiskCompanyModal = true;
   }
 
-  submitRiskCompany(): void {
+  submitRiskCompany(formValue: RiskCompanyFormValue): void {
+    this.riskCompanyForm = formValue;
     if (!this.riskCompanyForm.risk_company_id) {
       this.riskCompanyForm.risk_company_id = this.riskCompanyForm.company_id
         ? 'RC-' + this.riskCompanyForm.company_id

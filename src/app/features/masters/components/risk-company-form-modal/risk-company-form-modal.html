@@ -1,0 +1,150 @@
+@if (open) {
+  <!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events, @angular-eslint/template/interactive-supports-focus -- backdrop click-to-dismiss, not an interactive control; keyboard dismissal is handled via Escape at the dialog level -->
+  <div class="modal-overlay" (click)="$event.target === $event.currentTarget && close()">
+    <div class="modal-box treaty-modal">
+      <div class="panel-header">
+        <h3 class="panel-title">{{ title }}</h3>
+        <button class="panel-close" (click)="close()" aria-label="Close modal">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <line x1="18" y1="6" x2="6" y2="18" />
+            <line x1="6" y1="6" x2="18" y2="18" />
+          </svg>
+        </button>
+      </div>
+
+      <form (submit)="submit()" class="panel-body scrollable-body">
+        <div class="form-section-title no-top-margin">Names Info</div>
+        <div class="form-row">
+          <div class="form-field">
+            <label for="rc-companyid" class="form-label">Company ID</label>
+            <input
+              id="rc-companyid"
+              [(ngModel)]="formValue.company_id"
+              name="companyId"
+              type="number"
+              placeholder="e.g. 283"
+              class="form-input"
+              [disabled]="isEditMode"
+            />
+          </div>
+          <div class="form-field">
+            <label for="rc-idname" class="form-label">ID Name</label>
+            <input
+              id="rc-idname"
+              [(ngModel)]="formValue.id_name"
+              name="idName"
+              type="text"
+              placeholder="ID Name"
+              class="form-input"
+            />
+          </div>
+          <div class="form-field">
+            <label for="rc-name" class="form-label">Name *</label>
+            <input
+              id="rc-name"
+              [(ngModel)]="formValue.name"
+              name="name"
+              type="text"
+              required
+              placeholder="Name"
+              class="form-input"
+            />
+          </div>
+        </div>
+
+        <div class="form-section-title">Addresses & Other</div>
+        <div class="form-row">
+          <div class="form-field">
+            <label for="rc-address" class="form-label">Address 1</label>
+            <input
+              id="rc-address"
+              [(ngModel)]="formValue.address"
+              name="address"
+              type="text"
+              placeholder="Address 1"
+              class="form-input"
+            />
+          </div>
+          <div class="form-field">
+            <label for="rc-zip" class="form-label">Zip</label>
+            <input
+              id="rc-zip"
+              [(ngModel)]="formValue.zip"
+              name="zip"
+              type="text"
+              placeholder="Zip"
+              class="form-input"
+            />
+          </div>
+          <div class="form-field">
+            <label for="rc-city" class="form-label">City</label>
+            <input
+              id="rc-city"
+              [(ngModel)]="formValue.city"
+              name="city"
+              type="text"
+              placeholder="City"
+              class="form-input"
+            />
+          </div>
+          <div class="form-field">
+            <label for="rc-state" class="form-label">State</label>
+            <app-dropdown-search
+              [items]="stateOptions"
+              [isMultiSelect]="false"
+              bindValue="state_abbr"
+              placeholder="Select state"
+              [itemLabelFn]="stateAbbrLabelFn"
+              [(selectedValue)]="formValue.state"
+            ></app-dropdown-search>
+          </div>
+        </div>
+
+        <div class="form-row form-row-spaced">
+          <div class="form-field">
+            <label for="rc-phone" class="form-label">Phone</label>
+            <input
+              id="rc-phone"
+              [(ngModel)]="formValue.phone"
+              name="phone"
+              type="text"
+              placeholder="Phone"
+              class="form-input"
+            />
+          </div>
+          <div class="form-field">
+            <span class="form-label">Admitted</span>
+            <div class="radio-group">
+              <label>
+                <input
+                  id="rc-isadmitted"
+                  type="radio"
+                  [value]="true"
+                  [(ngModel)]="formValue.is_admitted"
+                  name="isAdmitted"
+                />
+                Yes
+              </label>
+              <label>
+                <input type="radio" [value]="false" [(ngModel)]="formValue.is_admitted" name="isAdmitted" />
+                No
+              </label>
+            </div>
+          </div>
+        </div>
+      </form>
+
+      <div class="panel-footer">
+        <button type="button" class="btn-ghost" (click)="close()">Cancel</button>
+        <button type="button" class="btn-primary" [disabled]="submitting" (click)="submit()">
+          @if (submitting) {
+            <span class="spinner btn-spinner save-spinner"></span>
+            <span>Saving...</span>
+          } @else {
+            <span>Save Risk Company</span>
+          }
+        </button>
+      </div>
+    </div>
+  </div>
+}

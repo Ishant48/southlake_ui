@@ -1,0 +1,17 @@
+.scrollable-body {
+  max-height: calc(100vh - 200px);
+  overflow-y: auto;
+}
+
+.no-top-margin {
+  margin-top: 0;
+}
+
+.form-row-spaced {
+  margin-top: 8px;
+}
+
+.save-spinner {
+  width: 14px;
+  height: 14px;
+}
