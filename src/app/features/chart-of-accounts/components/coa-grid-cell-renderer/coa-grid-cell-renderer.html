@@ -1,0 +1,47 @@
+@switch (variant) {
+  @case ("badge") {
+    <span class="coa-badge" [class.root]="isRoot" [class.sub]="!isRoot">
+      {{ isRoot ? "Root COA" : "Sub COA" }}
+    </span>
+  }
+  @case ("tree-name") {
+    <div class="coa-name-cell" [style.padding-left.px]="treeDepth * 32">
+      @if (treeDepth > 0) {
+        <span class="tree-connector" [style.left.px]="(treeDepth - 1) * 32 + 12"></span>
+      }
+      <div class="coa-name-text">
+        <div class="coa-title">{{ description }}</div>
+        <div class="coa-subtitle">
+          {{ notes || (isRoot ? "Insurance ledger root group" : "-") }}
+        </div>
+      </div>
+    </div>
+  }
+  @case ("balance-badge") {
+    <span class="balance-badge" [class.debit]="balance === 'debit'" [class.credit]="balance === 'credit'">
+      {{ balance || "-" | titlecase }}
+    </span>
+  }
+  @case ("actions") {
+    <div class="coa-actions-cell">
+      @if (isRoot) {
+        <span
+          class="view-link"
+          role="button"
+          tabindex="0"
+          (click)="onView($event)"
+          (keydown.enter)="onView($event)"
+          (keydown.space)="onView($event); $event.preventDefault()"
+        >
+          View
+        </span>
+      } @else {
+        <div class="action-buttons-list">
+          <button class="btn-action-outline" (click)="onDocument($event)">Document</button>
+          <button class="btn-action-outline" (click)="onNotes($event)">Notes</button>
+          <button class="btn-action-outline" (click)="onEdit($event)">Edit</button>
+        </div>
+      }
+    </div>
+  }
+}

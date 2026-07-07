@@ -2,11 +2,11 @@ import { Component, inject, OnInit, ChangeDetectorRef } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { debounceTime, distinctUntilChanged, Subject } from 'rxjs';
-import { User, UserStats, PendingInvite } from '../../../core/models/user.model';
-import { Role } from '../../../core/models/role.model';
+import { User, UserStats, PendingInvite } from '../models/user.model';
+import { Role } from '../models/role.model';
 import { AuthService } from '../../../core/services/auth.service';
-import { UsersService } from '../../../core/services/users.service';
-import { RolesService } from '../../../core/services/roles.service';
+import { UsersApi } from '../services/users-api';
+import { RolesApi } from '../services/roles-api';
 import { ToastService } from '../../../shared/components/toast/toast.service';
 import { UsersTableComponent } from './users-table/users-table.component';
 import { InvitePanelComponent } from './invite-panel/invite-panel.component';
@@ -30,8 +30,8 @@ import { ConfirmDialogComponent } from '../../../shared/components/confirm-dialo
 })
 export class UsersComponent implements OnInit {
   private authService = inject(AuthService);
-  private usersService = inject(UsersService);
-  private rolesService = inject(RolesService);
+  private usersService = inject(UsersApi);
+  private rolesService = inject(RolesApi);
   private toast = inject(ToastService);
   private cdr = inject(ChangeDetectorRef);
 
@@ -272,14 +272,14 @@ export class UsersComponent implements OnInit {
     const rows = this.users.map(u => [
       u.name || '',
       u.email,
-      u.role?.label || '-',
+      u.role?.label ?? '-',
       u.status || '-',
     ]);
 
     this.downloadCSV(headers, rows, 'users.csv');
   }
 
-  private downloadCSV(headers: string[], rows: any[][], filename: string): void {
+  private downloadCSV(headers: string[], rows: (string | number)[][], filename: string): void {
     const csvContent = [
       headers.map(h => `"${h.replace(/"/g, '""')}"`).join(','),
       ...rows.map(row =>

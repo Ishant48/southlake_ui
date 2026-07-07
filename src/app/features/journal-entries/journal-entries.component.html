@@ -7,7 +7,7 @@
           <h1>Journal Entry Register</h1>
           <p class="subtitle">Review and manage journal batches, general ledger adjustments, and accounting entries.</p>
         </div>
-        
+
         <div class="amount-summary-badge">
           <div class="amount-label">Total Register Amount</div>
           <div class="amount-val">{{ formatCurrency(totalBatchesAmount) }}</div>
@@ -18,9 +18,9 @@
         <div class="controls-left">
           <div class="filter-control-group-row">
             <div class="filter-control-group">
-              <label>Period</label>
+              <label for="je-period-select">Period</label>
               <div class="select-wrapper period-select">
-                <select [(ngModel)]="selectedPeriod" (ngModelChange)="onFilterChange()">
+                <select id="je-period-select" [(ngModel)]="selectedPeriod" (ngModelChange)="onFilterChange()">
                   @for (p of periods; track p) {
                     <option [value]="p">{{ p }}</option>
                   }
@@ -31,9 +31,9 @@
           </div>
 
           <div class="filter-control-group">
-            <label>Agent Name</label>
+            <label for="je-agent-select">Agent Name</label>
             <div class="select-wrapper agent-select">
-              <select [(ngModel)]="selectedAgent" (ngModelChange)="onFilterChange()">
+              <select id="je-agent-select" [(ngModel)]="selectedAgent" (ngModelChange)="onFilterChange()">
                 @for (a of agentsList; track a) {
                   <option [value]="a">{{ a }}</option>
                 }
@@ -53,7 +53,7 @@
     </div>
 
     <div class="card table-card">
-      <div class="filters-bar" style="padding: 12px 20px;">
+      <div class="filters-bar" style="padding: 12px 20px">
         <div class="search-wrap">
           <input
             class="search-input"
@@ -98,7 +98,15 @@
           <p class="subtitle">Manage batch lines, add adjustments, and verify ledger balance.</p>
         </div>
         <button class="btn-back" (click)="backToList()">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 4px;">
+          <svg
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            style="margin-right: 4px"
+          >
             <line x1="19" y1="12" x2="5" y2="12" />
             <polyline points="12 19 5 12 12 5" />
           </svg>
@@ -123,13 +131,20 @@
           <div class="metric-label">Total Credits</div>
           <div class="metric-val">{{ formatCurrency(batchTotalCredits) }}</div>
         </div>
-        <div class="detail-metric-card" [class.green-badge]="batchDifference === 0" [class.red-badge]="batchDifference > 0">
+        <div
+          class="detail-metric-card"
+          [class.green-badge]="batchDifference === 0"
+          [class.red-badge]="batchDifference > 0"
+        >
           <div class="metric-label">Difference</div>
           <div class="metric-val">{{ formatCurrency(batchDifference) }}</div>
         </div>
       </div>
 
-      <div class="header-actions-row" style="margin-top: 20px; border-top: 1px solid var(--gray-200, #e2e8f0); padding-top: 16px;">
+      <div
+        class="header-actions-row"
+        style="margin-top: 20px; border-top: 1px solid var(--gray-200, #e2e8f0); padding-top: 16px"
+      >
         <button class="btn-add-batch" (click)="openAddEntryForm()">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
             <line x1="12" y1="5" x2="12" y2="19" />
@@ -141,7 +156,7 @@
     </div>
 
     <div class="card table-card">
-      <div class="filters-bar" style="padding: 12px 20px;">
+      <div class="filters-bar" style="padding: 12px 20px">
         <div class="search-wrap">
           <input
             class="search-input"
@@ -349,8 +364,8 @@
         </div>
         <div class="modal-body">
           <div class="form-group">
-            <label>Process Period</label>
-            <input type="text" class="form-control" [value]="selectedPeriod" readonly />
+            <label for="je-add-batch-period">Process Period</label>
+            <input id="je-add-batch-period" type="text" class="form-control" [value]="selectedPeriod" readonly />
           </div>
         </div>
         <div class="modal-footer">

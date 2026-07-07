@@ -11,9 +11,14 @@
   <div class="header-selectors card mb-4">
     <div class="selection-grid">
       <div class="select-group">
-        <label>Active Workbook & Month</label>
+        <label for="rc-active-workbook-month">Active Workbook & Month</label>
         <div class="select-with-action">
-          <select [(ngModel)]="selectedWorkbookId" (change)="onWorkbookChange()" class="form-control">
+          <select
+            id="rc-active-workbook-month"
+            [(ngModel)]="selectedWorkbookId"
+            (change)="onWorkbookChange()"
+            class="form-control"
+          >
             <option [value]="null" disabled selected *ngIf="workbooks.length === 0">No workbooks uploaded</option>
             <option [value]="null" disabled selected *ngIf="workbooks.length > 0">Select workbook...</option>
             <option *ngFor="let wb of workbooks" [value]="wb.id">
@@ -46,8 +51,13 @@
       </div>
 
       <div class="select-group">
-        <label>Reporting State</label>
-        <select [(ngModel)]="selectedState" (change)="onStateChange()" class="form-control state-select">
+        <label for="rc-reporting-state">Reporting State</label>
+        <select
+          id="rc-reporting-state"
+          [(ngModel)]="selectedState"
+          (change)="onStateChange()"
+          class="form-control state-select"
+        >
           <option *ngFor="let st of states" [value]="st">{{ st }}</option>
         </select>
       </div>
@@ -61,7 +71,11 @@
       <div class="card settings-card">
         <div
           class="card-header"
+          role="button"
+          tabindex="0"
           (click)="toggleAccordion('parameters')"
+          (keydown.enter)="toggleAccordion('parameters')"
+          (keydown.space)="toggleAccordion('parameters'); $event.preventDefault()"
           style="cursor: pointer; display: flex; justify-content: space-between; align-items: center; user-select: none"
         >
           <h2>📝 Required Parameters ({{ selectedState }})</h2>
@@ -79,44 +93,104 @@
           <div class="card-body">
             <div class="form-grid">
               <div class="form-group">
-                <label>Premiums Written</label>
-                <input type="number" [(ngModel)]="paramsForm.pw" class="form-control" readonly />
+                <label for="rc-premiums-written">Premiums Written</label>
+                <input
+                  id="rc-premiums-written"
+                  type="number"
+                  [(ngModel)]="paramsForm.pw"
+                  class="form-control"
+                  readonly
+                />
               </div>
               <div class="form-group">
-                <label>Previous Unearned Premium Reserve</label>
-                <input type="number" [(ngModel)]="paramsForm.prev_uep" class="form-control" readonly />
+                <label for="rc-previous-unearned-premium-reserve">Previous Unearned Premium Reserve</label>
+                <input
+                  id="rc-previous-unearned-premium-reserve"
+                  type="number"
+                  [(ngModel)]="paramsForm.prev_uep"
+                  class="form-control"
+                  readonly
+                />
               </div>
               <div class="form-group">
-                <label>Current Unearned Premium Reserve</label>
-                <input type="number" [(ngModel)]="paramsForm.curr_uep" class="form-control" readonly />
+                <label for="rc-current-unearned-premium-reserve">Current Unearned Premium Reserve</label>
+                <input
+                  id="rc-current-unearned-premium-reserve"
+                  type="number"
+                  [(ngModel)]="paramsForm.curr_uep"
+                  class="form-control"
+                  readonly
+                />
               </div>
               <div class="form-group">
-                <label>Previous Loss Reserves</label>
-                <input type="number" [(ngModel)]="paramsForm.prev_loss_reserves" class="form-control" readonly />
+                <label for="rc-previous-loss-reserves">Previous Loss Reserves</label>
+                <input
+                  id="rc-previous-loss-reserves"
+                  type="number"
+                  [(ngModel)]="paramsForm.prev_loss_reserves"
+                  class="form-control"
+                  readonly
+                />
               </div>
               <div class="form-group">
-                <label>Previous Loss IBNR Reserves</label>
-                <input type="number" [(ngModel)]="paramsForm.loss_ibnr" class="form-control" readonly />
+                <label for="rc-previous-loss-ibnr-reserves">Previous Loss IBNR Reserves</label>
+                <input
+                  id="rc-previous-loss-ibnr-reserves"
+                  type="number"
+                  [(ngModel)]="paramsForm.loss_ibnr"
+                  class="form-control"
+                  readonly
+                />
               </div>
               <div class="form-group">
-                <label>Previous LAE IBNR Reserves - DCC</label>
-                <input type="number" [(ngModel)]="paramsForm.lae_ibnr_dcc" class="form-control" readonly />
+                <label for="rc-previous-lae-ibnr-reserves-dcc">Previous LAE IBNR Reserves - DCC</label>
+                <input
+                  id="rc-previous-lae-ibnr-reserves-dcc"
+                  type="number"
+                  [(ngModel)]="paramsForm.lae_ibnr_dcc"
+                  class="form-control"
+                  readonly
+                />
               </div>
               <div class="form-group">
-                <label>Previous LAE IBNR Reserves - AOE</label>
-                <input type="number" [(ngModel)]="paramsForm.lae_ibnr_aoe" class="form-control" readonly />
+                <label for="rc-previous-lae-ibnr-reserves-aoe">Previous LAE IBNR Reserves - AOE</label>
+                <input
+                  id="rc-previous-lae-ibnr-reserves-aoe"
+                  type="number"
+                  [(ngModel)]="paramsForm.lae_ibnr_aoe"
+                  class="form-control"
+                  readonly
+                />
               </div>
               <div class="form-group">
-                <label>Previous LAE Reserves - DCC</label>
-                <input type="number" [(ngModel)]="paramsForm.prev_lae_reserves_dcc" class="form-control" readonly />
+                <label for="rc-previous-lae-reserves-dcc">Previous LAE Reserves - DCC</label>
+                <input
+                  id="rc-previous-lae-reserves-dcc"
+                  type="number"
+                  [(ngModel)]="paramsForm.prev_lae_reserves_dcc"
+                  class="form-control"
+                  readonly
+                />
               </div>
               <div class="form-group">
-                <label>Previous LAE Reserves - AOE</label>
-                <input type="number" [(ngModel)]="paramsForm.prev_lae_reserves_aoe" class="form-control" readonly />
+                <label for="rc-previous-lae-reserves-aoe">Previous LAE Reserves - AOE</label>
+                <input
+                  id="rc-previous-lae-reserves-aoe"
+                  type="number"
+                  [(ngModel)]="paramsForm.prev_lae_reserves_aoe"
+                  class="form-control"
+                  readonly
+                />
               </div>
               <div class="form-group">
-                <label>Previous ULAE IBNR Reserves</label>
-                <input type="number" [(ngModel)]="paramsForm.ulae_ibnr" class="form-control" readonly />
+                <label for="rc-previous-ulae-ibnr-reserves">Previous ULAE IBNR Reserves</label>
+                <input
+                  id="rc-previous-ulae-ibnr-reserves"
+                  type="number"
+                  [(ngModel)]="paramsForm.ulae_ibnr"
+                  class="form-control"
+                  readonly
+                />
               </div>
             </div>
           </div>
@@ -127,7 +201,11 @@
       <div class="card settings-card">
         <div
           class="card-header"
+          role="button"
+          tabindex="0"
           (click)="toggleAccordion('rates')"
+          (keydown.enter)="toggleAccordion('rates')"
+          (keydown.space)="toggleAccordion('rates'); $event.preventDefault()"
           style="cursor: pointer; display: flex; justify-content: space-between; align-items: center; user-select: none"
         >
           <h2>📊 Actuarial Rates & Commissions (%)</h2>
@@ -145,40 +223,64 @@
           <div class="card-body">
             <div class="form-grid">
               <div class="form-group">
-                <label>Quota Share (%)</label>
-                <input type="number" [(ngModel)]="ratesForm.qs" class="form-control" readonly />
+                <label for="rc-quota-share">Quota Share (%)</label>
+                <input id="rc-quota-share" type="number" [(ngModel)]="ratesForm.qs" class="form-control" readonly />
               </div>
               <div class="form-group">
-                <label>Ceding Fee (%)</label>
-                <input type="number" [(ngModel)]="ratesForm.cf" class="form-control" readonly />
+                <label for="rc-ceding-fee">Ceding Fee (%)</label>
+                <input id="rc-ceding-fee" type="number" [(ngModel)]="ratesForm.cf" class="form-control" readonly />
               </div>
               <div class="form-group">
-                <label>Ceding Commission (%)</label>
-                <input type="number" [(ngModel)]="ratesForm.comm" class="form-control" readonly />
+                <label for="rc-ceding-commission">Ceding Commission (%)</label>
+                <input
+                  id="rc-ceding-commission"
+                  type="number"
+                  [(ngModel)]="ratesForm.comm"
+                  class="form-control"
+                  readonly
+                />
               </div>
               <div class="form-group">
-                <label>ULAE Rate (%)</label>
-                <input type="number" [(ngModel)]="ratesForm.ulae" class="form-control" readonly />
+                <label for="rc-ulae-rate">ULAE Rate (%)</label>
+                <input id="rc-ulae-rate" type="number" [(ngModel)]="ratesForm.ulae" class="form-control" readonly />
               </div>
               <div class="form-group">
-                <label>Boards Charge (%)</label>
-                <input type="number" [(ngModel)]="ratesForm.boards_charge" class="form-control" readonly />
+                <label for="rc-boards-charge">Boards Charge (%)</label>
+                <input
+                  id="rc-boards-charge"
+                  type="number"
+                  [(ngModel)]="ratesForm.boards_charge"
+                  class="form-control"
+                  readonly
+                />
               </div>
               <div class="form-group">
-                <label>Loss Ratio Cap (%)</label>
-                <input type="number" [(ngModel)]="ratesForm.loss_ratio_cap" class="form-control" readonly />
+                <label for="rc-loss-ratio-cap">Loss Ratio Cap (%)</label>
+                <input
+                  id="rc-loss-ratio-cap"
+                  type="number"
+                  [(ngModel)]="ratesForm.loss_ratio_cap"
+                  class="form-control"
+                  readonly
+                />
               </div>
               <div class="form-group">
-                <label>Loss Pick (%)</label>
-                <input type="number" [(ngModel)]="ratesForm.loss_pick" class="form-control" readonly />
+                <label for="rc-loss-pick">Loss Pick (%)</label>
+                <input
+                  id="rc-loss-pick"
+                  type="number"
+                  [(ngModel)]="ratesForm.loss_pick"
+                  class="form-control"
+                  readonly
+                />
               </div>
               <div class="form-group">
-                <label>LAE DCC (%)</label>
-                <input type="number" [(ngModel)]="ratesForm.lae_dcc" class="form-control" readonly />
+                <label for="rc-lae-dcc">LAE DCC (%)</label>
+                <input id="rc-lae-dcc" type="number" [(ngModel)]="ratesForm.lae_dcc" class="form-control" readonly />
               </div>
               <div class="form-group">
-                <label>LAE AOE (%)</label>
-                <input type="number" [(ngModel)]="ratesForm.lae_aoe" class="form-control" readonly />
+                <label for="rc-lae-aoe">LAE AOE (%)</label>
+                <input id="rc-lae-aoe" type="number" [(ngModel)]="ratesForm.lae_aoe" class="form-control" readonly />
               </div>
             </div>
           </div>
@@ -189,7 +291,11 @@
       <div class="card settings-card">
         <div
           class="card-header"
+          role="button"
+          tabindex="0"
           (click)="toggleAccordion('mappings')"
+          (keydown.enter)="toggleAccordion('mappings')"
+          (keydown.space)="toggleAccordion('mappings'); $event.preventDefault()"
           style="cursor: pointer; display: flex; justify-content: space-between; align-items: center; user-select: none"
         >
           <h2>💼 GL Segment Mappings</h2>
@@ -207,32 +313,38 @@
           <div class="card-body">
             <div class="form-grid">
               <div class="form-group">
-                <label>Company (Comp)</label>
-                <input type="text" [(ngModel)]="mappingsForm.comp" class="form-control" readonly />
+                <label for="rc-company-comp">Company (Comp)</label>
+                <input id="rc-company-comp" type="text" [(ngModel)]="mappingsForm.comp" class="form-control" readonly />
               </div>
               <div class="form-group">
-                <label>Cost Center (CC)</label>
-                <input type="text" [(ngModel)]="mappingsForm.cc" class="form-control" readonly />
+                <label for="rc-cost-center-cc">Cost Center (CC)</label>
+                <input id="rc-cost-center-cc" type="text" [(ngModel)]="mappingsForm.cc" class="form-control" readonly />
               </div>
               <div class="form-group">
-                <label>MGA Code</label>
-                <input type="text" [(ngModel)]="mappingsForm.mga" class="form-control" readonly />
+                <label for="rc-mga-code">MGA Code</label>
+                <input id="rc-mga-code" type="text" [(ngModel)]="mappingsForm.mga" class="form-control" readonly />
               </div>
               <div class="form-group">
-                <label>LOB Code</label>
-                <input type="text" [(ngModel)]="mappingsForm.lob" class="form-control" readonly />
+                <label for="rc-lob-code">LOB Code</label>
+                <input id="rc-lob-code" type="text" [(ngModel)]="mappingsForm.lob" class="form-control" readonly />
               </div>
               <div class="form-group">
-                <label>Extension (Ext)</label>
-                <input type="text" [(ngModel)]="mappingsForm.ext" class="form-control" readonly />
+                <label for="rc-extension-ext">Extension (Ext)</label>
+                <input id="rc-extension-ext" type="text" [(ngModel)]="mappingsForm.ext" class="form-control" readonly />
               </div>
               <div class="form-group">
-                <label>Subledger (Sub)</label>
-                <input type="text" [(ngModel)]="mappingsForm.sub" class="form-control" readonly />
+                <label for="rc-subledger-sub">Subledger (Sub)</label>
+                <input id="rc-subledger-sub" type="text" [(ngModel)]="mappingsForm.sub" class="form-control" readonly />
               </div>
               <div class="form-group">
-                <label>Line Description Suffix</label>
-                <input type="text" [(ngModel)]="mappingsForm.line_desc_suffix" class="form-control" readonly />
+                <label for="rc-line-description-suffix">Line Description Suffix</label>
+                <input
+                  id="rc-line-description-suffix"
+                  type="text"
+                  [(ngModel)]="mappingsForm.line_desc_suffix"
+                  class="form-control"
+                  readonly
+                />
               </div>
             </div>
           </div>
@@ -412,7 +524,7 @@
                   </td>
                   <td class="text-right text-green font-bold">
                     <ng-container *ngIf="!row.isNew">
-                      {{ row.debit > 0 ? formatCurrency(row.debit) : "-" }}
+                      {{ (row.debit ?? 0) > 0 ? formatCurrency(row.debit) : "-" }}
                     </ng-container>
                     <input
                       *ngIf="row.isNew"
@@ -424,7 +536,7 @@
                   </td>
                   <td class="text-right text-red font-bold">
                     <ng-container *ngIf="!row.isNew">
-                      {{ row.credit > 0 ? formatCurrency(row.credit) : "-" }}
+                      {{ (row.credit ?? 0) > 0 ? formatCurrency(row.credit) : "-" }}
                     </ng-container>
                     <input
                       *ngIf="row.isNew"
@@ -458,12 +570,24 @@
         <div *ngIf="activeTab === 'cash' && cashSettlement">
           <div class="cash-inputs-bar">
             <div class="form-group-inline">
-              <label>Beginning Balance</label>
-              <input type="number" [(ngModel)]="cashSettlement.beg_bal" (change)="saveCashParams()" class="form-control-sm" />
+              <label for="rc-beginning-balance">Beginning Balance</label>
+              <input
+                id="rc-beginning-balance"
+                type="number"
+                [(ngModel)]="cashSettlement.beg_bal"
+                (change)="saveCashParams()"
+                class="form-control-sm"
+              />
             </div>
             <div class="form-group-inline">
-              <label>Amount Paid (Loss Funding)</label>
-              <input type="number" [(ngModel)]="cashSettlement.amt_paid" (change)="saveCashParams()" class="form-control-sm" />
+              <label for="rc-amount-paid-loss-funding">Amount Paid (Loss Funding)</label>
+              <input
+                id="rc-amount-paid-loss-funding"
+                type="number"
+                [(ngModel)]="cashSettlement.amt_paid"
+                (change)="saveCashParams()"
+                class="form-control-sm"
+              />
             </div>
             <button class="btn btn-primary" (click)="saveCashParams()">Update Balances</button>
           </div>
@@ -479,26 +603,48 @@
                 </tr>
                 <tr class="header-sub">
                   <th class="col-total text-center">100 %</th>
-                  <th class="col-reins text-center">{{ (cashSettlement.reinsurerName || 'Starlight Re') + ' ' + (cashSettlement.qsPct || 100) + '%' }}</th>
-                  <th class="col-ssic text-center">{{ (100 - (cashSettlement.qsPct || 100)) + '%' }}</th>
+                  <th class="col-reins text-center">
+                    {{ (cashSettlement.reinsurerName || "Starlight Re") + " " + (cashSettlement.qsPct || 100) + "%" }}
+                  </th>
+                  <th class="col-ssic text-center">{{ 100 - (cashSettlement.qsPct || 100) + "%" }}</th>
                 </tr>
               </thead>
               <tbody>
-                <tr *ngFor="let r of cashSettlement.rows" [class.bold-row]="r.isBold" [class.subtotal-row]="r.isSubtotal">
+                <tr
+                  *ngFor="let r of cashSettlement.rows"
+                  [class.bold-row]="r.isBold"
+                  [class.subtotal-row]="r.isSubtotal"
+                >
                   <td class="col-desc">{{ r.label }}</td>
                   <td class="text-right col-total">{{ formatAccounting(r.total) }}</td>
-                  <td class="text-right col-reins" [class.text-red]="r.reinsColor === 'red'" [class.text-purple]="r.reinsColor === 'purple'">
+                  <td
+                    class="text-right col-reins"
+                    [class.text-red]="r.reinsColor === 'red'"
+                    [class.text-purple]="r.reinsColor === 'purple'"
+                  >
                     {{ formatAccounting(r.reins) }}
                   </td>
-                  <td class="text-right col-ssic"
-                      [class.text-green]="r.ssicColor === 'green'"
-                      [class.single-underline]="r.ssicUnderline"
-                      [class.editable-cell]="r.isInput">
+                  <td
+                    class="text-right col-ssic"
+                    [class.text-green]="r.ssicColor === 'green'"
+                    [class.single-underline]="r.ssicUnderline"
+                    [class.editable-cell]="r.isInput"
+                  >
                     <ng-container *ngIf="r.isInput === 'beg_bal'">
-                      <input type="number" [(ngModel)]="cashSettlement.beg_bal" (change)="saveCashParams()" class="table-inline-input" />
+                      <input
+                        type="number"
+                        [(ngModel)]="cashSettlement.beg_bal"
+                        (change)="saveCashParams()"
+                        class="table-inline-input"
+                      />
                     </ng-container>
                     <ng-container *ngIf="r.isInput === 'amt_paid'">
-                      <input type="number" [(ngModel)]="cashSettlement.amt_paid" (change)="saveCashParams()" class="table-inline-input" />
+                      <input
+                        type="number"
+                        [(ngModel)]="cashSettlement.amt_paid"
+                        (change)="saveCashParams()"
+                        class="table-inline-input"
+                      />
                     </ng-container>
                     <ng-container *ngIf="!r.isInput">
                       {{ formatAccounting(r.ssic) }}
@@ -526,7 +672,8 @@
     </div>
     <h3>No Active Workbook Selected</h3>
     <p>
-      Please select an active program workbook and month from the dropdown above to analyze monthly ceding calculations, cash settlements, and GL segment mappings.
+      Please select an active program workbook and month from the dropdown above to analyze monthly ceding calculations,
+      cash settlements, and GL segment mappings.
     </p>
     <div class="features-teaser">
       <div class="teaser-item">

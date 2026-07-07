@@ -1,6 +1,20 @@
 @if (open) {
-  <div class="dialog-overlay" (click)="onCancel()">
-    <div class="dialog-box" (click)="$event.stopPropagation()" role="dialog" [attr.aria-label]="title">
+  <div
+    class="dialog-overlay"
+    (click)="onCancel()"
+    tabindex="0"
+    role="button"
+    (keydown.enter)="onCancel()"
+    (keydown.space)="onCancel(); $event.preventDefault()"
+  >
+    <div
+      class="dialog-box"
+      (click)="$event.stopPropagation()"
+      (keydown.enter)="$event.stopPropagation()"
+      tabindex="0"
+      role="dialog"
+      [attr.aria-label]="title"
+    >
       <div class="dialog-header">
         @if (type === "danger") {
           <div class="dialog-icon dialog-icon-danger">

@@ -8,8 +8,8 @@ import {
   SimpleChanges,
 } from '@angular/core';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
-import { Role } from '../../../../core/models/role.model';
-import { UsersService } from '../../../../core/services/users.service';
+import { Role } from '../../models/role.model';
+import { UsersApi } from '../../services/users-api';
 import { ToastService } from '../../../../shared/components/toast/toast.service';
 
 @Component({
@@ -26,7 +26,7 @@ export class InvitePanelComponent implements OnChanges {
   @Output() invited = new EventEmitter<void>();
 
   private fb = inject(FormBuilder);
-  private usersService = inject(UsersService);
+  private usersService = inject(UsersApi);
   private toast = inject(ToastService);
 
   loading = false;

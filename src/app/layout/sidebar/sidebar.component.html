@@ -22,7 +22,14 @@
     <div class="sidebar-nav">
       <!-- 1. Dashboard -->
       <div class="nav-item-group" [class.expanded]="dashboardExpanded">
-        <a class="nav-item group-header" (click)="toggleDashboard($event)">
+        <a
+          class="nav-item group-header"
+          (click)="toggleDashboard($event)"
+          tabindex="0"
+          role="button"
+          (keydown.enter)="toggleDashboard($event)"
+          (keydown.space)="toggleDashboard($event)"
+        >
           <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
             <rect x="3" y="3" width="7" height="7" rx="1.5" />
             <rect x="14" y="3" width="7" height="7" rx="1.5" />
@@ -62,7 +69,14 @@
         hasPermission("reinsurance", "view")
       ) {
         <div class="nav-item-group" [class.expanded]="accountingExpanded">
-          <a class="nav-item group-header" (click)="toggleAccounting($event)">
+          <a
+            class="nav-item group-header"
+            (click)="toggleAccounting($event)"
+            tabindex="0"
+            role="button"
+            (keydown.enter)="toggleAccounting($event)"
+            (keydown.space)="toggleAccounting($event)"
+          >
             <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
               <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
               <polyline points="14 2 14 8 20 8" />
@@ -161,7 +175,14 @@
       <!-- 3. MGA Operations / Master Data collapsible -->
       @if (hasPermission("master_data", "view")) {
         <div class="nav-item-group" [class.expanded]="mastersExpanded">
-          <a class="nav-item group-header" (click)="toggleMasters($event)">
+          <a
+            class="nav-item group-header"
+            (click)="toggleMasters($event)"
+            tabindex="0"
+            role="button"
+            (keydown.enter)="toggleMasters($event)"
+            (keydown.space)="toggleMasters($event)"
+          >
             <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
               <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
               <polyline points="9 22 9 12 15 12 15 22" />
@@ -373,7 +394,9 @@
                 stroke-linecap="round"
                 stroke-linejoin="round"
               >
-                <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
+                <path
+                  d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"
+                />
                 <polyline points="3.27 6.96 12 12.01 20.73 6.96" />
                 <line x1="12" y1="22.08" x2="12" y2="12" />
               </svg>
@@ -476,7 +499,14 @@
       <!-- 4. System Admin (collapsible, wrapping User Management) -->
       @if (hasPermission("user_management", "view")) {
         <div class="nav-item-group" [class.expanded]="adminExpanded">
-          <a class="nav-item group-header" (click)="toggleAdmin($event)">
+          <a
+            class="nav-item group-header"
+            (click)="toggleAdmin($event)"
+            tabindex="0"
+            role="button"
+            (keydown.enter)="toggleAdmin($event)"
+            (keydown.space)="toggleAdmin($event)"
+          >
             <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
               <circle cx="12" cy="12" r="3" />
               <path

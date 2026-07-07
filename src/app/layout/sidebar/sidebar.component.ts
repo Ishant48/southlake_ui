@@ -2,7 +2,7 @@ import { Component, inject, OnInit, HostListener } from '@angular/core';
 import { RouterLink, RouterLinkActive, Router, NavigationEnd } from '@angular/router';
 import { filter } from 'rxjs/operators';
 import { AuthService } from '../../core/services/auth.service';
-import { SidebarService } from '../../core/services/sidebar.service';
+import { SidebarState } from '../state/sidebar.state';
 
 @Component({
   selector: 'app-sidebar',
@@ -14,7 +14,7 @@ import { SidebarService } from '../../core/services/sidebar.service';
 export class SidebarComponent implements OnInit {
   private router = inject(Router);
   private authService = inject(AuthService);
-  sidebarService = inject(SidebarService);
+  sidebarService = inject(SidebarState);
 
   dashboardExpanded = true;
   accountingExpanded = false;
@@ -49,7 +49,7 @@ export class SidebarComponent implements OnInit {
           ? 'Administrator'
           : roleObj;
     }
-    const roleName = roleObj?.name || 'User';
+    const roleName = roleObj?.name ?? 'User';
     return roleName === 'superadmin'
       ? 'Super Administrator'
       : roleName === 'admin'
@@ -74,11 +74,10 @@ export class SidebarComponent implements OnInit {
     this.checkScreenSize();
     this.checkActiveRoute(this.router.url);
 
-    this.router.events
-      .pipe(filter(event => event instanceof NavigationEnd))
-      .subscribe((event: any) => {
-        this.checkActiveRoute(event.urlAfterRedirects || event.url);
-      });
+    this.router.events.pipe(filter(event => event instanceof NavigationEnd)).subscribe(event => {
+      const navEvent = event as NavigationEnd;
+      this.checkActiveRoute(navEvent.urlAfterRedirects || navEvent.url);
+    });
   }
 
   private checkActiveRoute(url: string): void {

@@ -1,6 +1,13 @@
 <div class="dropdown-search-container" [class.open]="isOpen" [class.disabled]="disabled">
   <!-- Trigger Button -->
-  <div class="dropdown-search-trigger" (click)="toggleDropdown()">
+  <div
+    class="dropdown-search-trigger"
+    (click)="toggleDropdown()"
+    tabindex="0"
+    role="button"
+    (keydown.enter)="toggleDropdown()"
+    (keydown.space)="toggleDropdown(); $event.preventDefault()"
+  >
     <span class="dropdown-trigger-text" [class.placeholder]="getDisplayText() === placeholder">
       {{ getDisplayText() }}
     </span>
@@ -46,6 +53,11 @@
         class="dropdown-search-item"
         [class.selected]="isSelected(item)"
         (click)="isMultiSelect ? toggleMulti(item) : selectSingle(item); $event.stopPropagation()"
+        tabindex="0"
+        role="option"
+        [attr.aria-selected]="isSelected(item)"
+        (keydown.enter)="isMultiSelect ? toggleMulti(item) : selectSingle(item)"
+        (keydown.space)="isMultiSelect ? toggleMulti(item) : selectSingle(item); $event.preventDefault()"
       >
         <!-- Checkbox for multi-select -->
         <input

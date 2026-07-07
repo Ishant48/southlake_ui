@@ -1,0 +1,11 @@
+<div class="user-cell">
+  <div class="user-avatar" [style.background]="avatarColor">
+    {{ initials }}
+  </div>
+  <div class="user-cell-text">
+    <span class="user-name">{{ name }}</span>
+    @if (email) {
+      <span class="user-email">{{ email }}</span>
+    }
+  </div>
+</div>

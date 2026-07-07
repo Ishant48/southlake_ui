@@ -1,9 +1,13 @@
 import { Component, inject, OnInit, ChangeDetectorRef } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
+<<<<<<< HEAD
 import { PaginationComponent } from '../../../shared/ui/pagination/pagination.component';
 import { Role, RoleDetail } from '../../../core/models/role.model';
+=======
+import { Role, RoleDetail } from '../models/role.model';
+>>>>>>> a17f8f8fbcc84f348fbc8f059a23960b2fccbca0
 import { AuthService } from '../../../core/services/auth.service';
-import { RolesService } from '../../../core/services/roles.service';
+import { RolesApi } from '../services/roles-api';
 import { ToastService } from '../../../shared/components/toast/toast.service';
 import { RolePermissionsModalComponent } from './role-permissions-modal/role-permissions-modal.component';
 import { ConfirmDialogComponent } from '../../../shared/components/confirm-dialog/confirm-dialog.component';
@@ -17,7 +21,7 @@ import { ConfirmDialogComponent } from '../../../shared/components/confirm-dialo
 })
 export class RolesComponent implements OnInit {
   private authService = inject(AuthService);
-  private rolesService = inject(RolesService);
+  private rolesService = inject(RolesApi);
   private toast = inject(ToastService);
   private cdr = inject(ChangeDetectorRef);
 

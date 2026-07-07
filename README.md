@@ -46,14 +46,25 @@ The Angular 22 frontend for the **Southlake Insurance** platform. Provides the c
 
 ## Project Structure
 
+This app follows a **feature-sliced architecture**: everything a feature owns — its API
+calls, RxJS state, ag-Grid config, forms, sub-components, and models — lives inside that
+feature's own folder. `core/` holds only things genuinely shared by every feature (auth,
+guards, interceptors, cross-feature models). When a service or model is used by more than
+one feature, it lives inside whichever feature is its most natural owner, and the other
+features import it from there — it does **not** get centralized into `core/` just because
+more than one feature needs it (see `ChartOfAccountsApi`, `MastersApi`, `ReinsuranceApi`
+below for examples of this).
+
 ```
 southlake_ui/
 ├── angular.json                          Angular workspace config
-├── tsconfig.json
+├── tsconfig.json / tsconfig.spec.json    App and test TypeScript configs
+├── vitest.config.ts                      Vitest + coverage configuration
 ├── package.json
 │
 └── src/
     ├── main.ts                           Bootstrap entry point
+    ├── test-setup.ts                     Vitest + Angular TestBed environment setup
     ├── index.html
     ├── styles.scss                       Global reset + @use partials
     │
@@ -73,54 +84,127 @@ southlake_ui/
         ├── app.routes.ts                 Top-level routes (lazy feature routes + guards)
         ├── app.component.ts / .html
         │
-        ├── core/                         Singleton services, guards, interceptors
-        │   ├── models/                   TypeScript interfaces
-        │   │   ├── user.model.ts
-        │   │   ├── role.model.ts
-        │   │   ├── permission.model.ts
-        │   │   ├── session.model.ts
-        │   │   └── activity-log.model.ts
-        │   ├── services/                 API service wrappers (all HTTP calls)
-        │   │   ├── auth.service.ts       Login, OTP, logout, fetchCurrentUser
-        │   │   ├── users.service.ts
-        │   │   ├── roles.service.ts
-        │   │   ├── permissions.service.ts
-        │   │   └── activity-logs.service.ts
+        ├── core/                         Global singletons only — nothing feature-specific
+        │   ├── models/
+        │   │   ├── chart-of-account.model.ts   Used by chart-of-accounts, journal-entries,
+        │   │   │                               masters, gl-mappings — genuinely cross-feature
+        │   │   └── session.model.ts
+        │   ├── services/
+        │   │   ├── auth.service.ts       Login, OTP, session/localStorage, permission checks —
+        │   │   │                         used by guards, the interceptor, and every feature
+        │   │   └── ag-grid-config.service.ts   Shared default ag-Grid options
         │   ├── guards/
         │   │   ├── auth.guard.ts         Redirects unauthenticated users to /auth/login
         │   │   └── permission.guard.ts   Fetches /auth/me on navigation, enforces view access
         │   └── interceptors/
         │       └── auth.interceptor.ts   Attaches Bearer token; handles 401 auto-logout
         │
-        ├── shared/                       Reusable UI components
+        ├── shared/                       Pure, stateless reusable components
         │   └── components/
         │       ├── toast/                Success / error / info toast notifications
         │       ├── confirm-dialog/       Generic confirmation modal
-        │       └── loading-spinner/      Full-screen loading overlay
+        │       ├── loading-spinner/      Full-screen loading overlay
+        │       ├── dropdown-search/      Generic searchable select (works with any item type)
+        │       └── grid-renderers/       Reusable ag-Grid cell renderers
+        │           ├── avatar-cell/
+        │           ├── status-badge-cell/
+        │           └── action-buttons-cell/
         │
         ├── layout/                       App shell
+        │   ├── state/
+        │   │   └── sidebar.state.ts      Sidebar collapsed/expanded UI state
         │   ├── main-layout/              Router outlet wrapper
         │   ├── sidebar/                  Navigation with dynamic permission-based visibility
         │   └── header/                   Topbar with user menu
         │
-        └── features/                     Lazy-loaded feature modules
+        └── features/                     Lazy-loaded, feature-sliced modules
             ├── auth/
             │   ├── login/                Email entry page
             │   ├── otp/                  6-digit OTP input
-            │   ├── session-conflict/     Single-device conflict resolution
-            │   └── accept-invite/        Password setup for newly invited users
+            │   └── session-conflict/     Single-device conflict resolution
             │
             ├── dashboard/                Main landing page after login
             │
-            ├── user-management/
-            │   ├── users/                User list, invite panel, user detail panel
-            │   ├── roles/                Role cards, permission matrix modal
-            │   └── activity-logs/        Audit log table with filters
-            │
             ├── chart-of-accounts/        COA hierarchy view
+            │   ├── components/
+            │   │   └── coa-grid-cell-renderer/   Single variant-driven renderer for all
+            │   │                                 4 COA grid cell types (badge/tree-name/
+            │   │                                 balance-badge/actions)
+            │   ├── models/               TreeAccount (page-local; ChartOfAccount is core)
+            │   └── services/
+            │       └── chart-of-accounts-api.ts  Consumed cross-feature by journal-entries
+            │                                     and masters too
             │
-            └── masters/                  Master data management
+            ├── journal-entries/
+            │   ├── models/               JournalEntry, JournalEntryBatch, form-row types
+            │   └── services/
+            │       └── journal-entries-api.ts
+            │
+            ├── masters/                  Master data management (states, MGAs, treaties,
+            │   │                         reinsurers, risk companies, LOBs, COBs, brokers,
+            │   │                         products, locked periods, document types, ...)
+            │   ├── models/               master.model.ts, gl-mapping.model.ts
+            │   └── services/
+            │       ├── masters-api.ts          Consumed cross-feature by journal-entries
+            │       │                           and reinsurance-calculations too
+            │       └── gl-mappings-api.ts
+            │
+            ├── reinsurance-calculations/
+            │   ├── models/               reinsurance.model.ts (Workbook, StateExhibit)
+            │   └── services/
+            │       └── reinsurance-api.ts      Consumed cross-feature by masters too
+            │
+            ├── test-balance/
+            │   ├── models/
+            │   └── services/
+            │       ├── test-balance-api.ts     HTTP calls
+            │       └── test-balance-state.ts   RxJS BehaviorSubject state layer
+            │
+            └── user-management/
+                ├── models/               role.model.ts, user.model.ts, permission.model.ts
+                ├── services/             roles-api.ts, users-api.ts, permissions-api.ts
+                │                         (shared across the roles/ and users/ sub-features)
+                ├── roles/                Role cards, permission matrix modal
+                ├── users/                User list, invite panel, user detail panel
+                └── activity-logs/        Audit log table with filters
+                    ├── models/           activity-log.model.ts (exclusive to this sub-feature)
+                    └── services/
+                        └── activity-logs-api.ts
 ```
+
+### Naming conventions
+
+| Thing          | Convention        | Example                      |
+|----------------|--------------------|-------------------------------|
+| Components     | no `.component.` suffix, `kebab-case` file, `PascalCase` class (matches `ng generate`'s Angular 20+ default) | `masters.ts` / `class Masters` |
+| API services   | `*-api.ts`         | `chart-of-accounts-api.ts`   |
+| State services | `*-state.ts`       | `test-balance-state.ts`      |
+| Grid services  | `*-grid.ts`        | (introduce when a feature's ag-Grid config grows large enough to extract) |
+| Form services  | `*-form.ts`        | (introduce when a feature's reactive form grows large enough to extract) |
+| Models         | `*.model.ts`       | `journal-entry.model.ts`     |
+
+### Styling rule
+
+No inline `style="..."` in templates and no inline `styles: [...]` in `@Component`
+decorators. A style used by more than one component belongs in `src/styles/*.scss`; a
+style specific to one component stays in that component's own `.scss` file.
+
+### Adding a new feature
+
+1. Create `features/<name>/` with `models/` and `services/` subfolders as needed —
+   don't pre-create empty folders for concerns the feature doesn't have yet.
+2. Put the main routed page component at `features/<name>/<name>.ts` (+ `.html`/`.scss`/
+   `.spec.ts`). Sub-components go under `features/<name>/components/<sub-name>/`.
+3. If the feature calls a backend endpoint, add `features/<name>/services/<name>-api.ts`.
+   If it needs to be consumed by another feature, that's fine — the other feature imports
+   it directly (see `ChartOfAccountsApi`, `MastersApi` above) rather than the endpoint
+   being duplicated or hoisted into `core/`.
+4. If the feature holds data that multiple parts of its own UI need to react to, add an
+   RxJS `BehaviorSubject`-backed `features/<name>/services/<name>-state.ts` between the
+   component and the API service (see `TestBalanceState` for the pattern).
+5. Add the route to `app.routes.ts` (or the feature's own `<name>.routes.ts` if it has
+   sub-routes) using `loadComponent`/`loadChildren` — every route is lazy-loaded.
+6. Write specs alongside every new file. Run `npm run test:coverage` before committing.
 
 ---
 
@@ -225,6 +309,13 @@ Only `apiUrl` needs to be changed. Angular's build system automatically swaps th
 | `npm run lint:fix`       | Auto-fix all fixable ESLint violations                 |
 | `npm run format`         | Auto-format all TS, HTML, and SCSS files with Prettier |
 | `npm run format:check`   | Check formatting without writing changes               |
+| `npm run test`           | Run the Vitest suite in watch mode                     |
+| `npm run test:ci`        | Run the Vitest suite once, with JUnit output           |
+| `npm run test:coverage`  | Run the suite once and generate an lcov/HTML coverage report |
+
+A Husky `pre-commit` hook runs `lint-staged` (ESLint `--fix` + Prettier) on staged
+files automatically — a commit is blocked until staged `.ts`/`.html`/`.scss` files are
+clean.
 
 ---
 
@@ -249,7 +340,6 @@ Only `apiUrl` needs to be changed. Angular's build system automatically swaps th
 | `/auth/login`                         | `LoginComponent`           | None                                |
 | `/auth/otp`                           | `OtpComponent`             | None                                |
 | `/auth/session-conflict`              | `SessionConflictComponent` | None                                |
-| `/auth/accept-invite`                 | `AcceptInviteComponent`    | None                                |
 | `/dashboard`                          | `DashboardComponent`       | `authGuard`                         |
 | `/user-management/users`              | `UsersComponent`           | `authGuard`, `permissionGuard`      |
 | `/user-management/roles`              | `RolesComponent`           | `authGuard`, `permissionGuard`      |
@@ -280,12 +370,11 @@ Only `apiUrl` needs to be changed. Angular's build system automatically swaps th
                     → Store new token → Navigate to /dashboard
    → "Cancel"       → Back to /auth/login
 
-4. /auth/accept-invite (first-time users)
-   → User clicks the email invite link
-   → Lands on the "Create Your Password" screen
-   → POST /auth/accept-invite { token, password }
-   → Navigate to /auth/login to sign in
 ```
+
+> `AuthService.getInviteDetails()` / `acceptInvite()` exist for a first-time-user
+> invite-acceptance flow, but there is currently no routed page consuming them — this
+> is a known gap, not a documentation error.
 
 Session token is stored as `sl_session_token` in `localStorage`.
 The `authInterceptor` automatically attaches `Authorization: Bearer <token>` to all outgoing requests.
@@ -341,12 +430,6 @@ All design tokens are defined as CSS custom properties in `src/styles/_variables
 - Pasting a 6-digit string fills all inputs at once.
 - All six filled triggers auto-submit.
 
-### Accept Invite (`features/auth/accept-invite/`)
-- Shown to users clicking an invite link for the first time.
-- Displays a **"Create Your Password"** form.
-- Validates the invite token from the URL query params.
-- On success, redirects to `/auth/login`.
-
 ### Slide Panels (`features/user-management/users/invite-panel/`, `user-detail-panel/`)
 - Fixed panels anchored to the right edge of the screen.
 - Opens with a CSS transition (`right: 0`) and a blurred backdrop.
@@ -383,7 +466,15 @@ npm run format
 
 # Check formatting without writing changes
 npm run format:check
+
+# Run unit tests once (CI mode) and generate coverage
+npm run test:coverage
 ```
+
+Every new file should ship with a spec. API services get `HttpTestingController`-based
+specs (see `chart-of-accounts-api.spec.ts` for the pattern); components get
+`TestBed`-based specs; RxJS state services get specs asserting on the observable
+values after calling their methods (see `test-balance-state.spec.ts`).
 
 **Recommended VS Code extensions:**
 
@@ -406,20 +497,28 @@ Always use the Angular CLI so the correct file structure is created:
 
 ```bash
 # Feature component
-ng generate component features/my-feature/my-component --standalone --style=scss
+ng generate component features/my-feature/my-component
+
+# Sub-component nested under a feature
+ng generate component features/my-feature/components/my-widget
 
 # Shared component
-ng generate component shared/components/my-widget --standalone --style=scss
+ng generate component shared/components/my-widget
 
 # Layout component
-ng generate component layout/my-panel --standalone --style=scss
+ng generate component layout/my-panel
 ```
 
-Each `ng generate component` creates four files:
-- `my-component.component.ts` — class + metadata
-- `my-component.component.html` — template
-- `my-component.component.scss` — component styles
-- `my-component.component.spec.ts` — unit test shell
+This Angular version's default schematic (matching the no-suffix convention used
+throughout this codebase — see [Naming conventions](#project-structure)) creates four
+files without a `.component.` infix:
+- `my-widget.ts` — class + metadata (class name `MyWidget`, no `Component` suffix)
+- `my-widget.html` — template
+- `my-widget.scss` — component styles
+- `my-widget.spec.ts` — unit test shell
+
+Do not pass `--standalone` or `--style=scss` — both are already the project defaults
+(`angular.json` → `schematics`).
 
 ---
 
