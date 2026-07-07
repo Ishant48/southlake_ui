@@ -86,6 +86,8 @@ import { buildProductsColumnDefs } from './grid-columns/products-columns';
 import { buildLockedPeriodsColumnDefs } from './grid-columns/locked-periods-columns';
 import { buildDocumentTypesColumnDefs } from './grid-columns/document-types-columns';
 import { buildSequencePrefixCountersColumnDefs } from './grid-columns/sequence-prefix-counters-columns';
+import { buildMastersExportData } from './services/masters-export-data';
+import { downloadCsv } from './utils/csv-export.util';
 
 @Component({
   selector: 'app-masters',
@@ -145,7 +147,7 @@ export class MastersComponent implements OnInit {
   private brokersApi = inject(BrokersApi);
   private lockedPeriodsApi = inject(LockedPeriodsApi);
   private documentTypesApi = inject(DocumentTypesApi);
-  private simpleMastersState = inject(SimpleMastersState);
+  simpleMastersState = inject(SimpleMastersState);
   private reinsuranceService = inject(ReinsuranceApi);
   private toast = inject(ToastService);
   private cdr = inject(ChangeDetectorRef);
@@ -1658,216 +1660,8 @@ export class MastersComponent implements OnInit {
   }
 
   exportToExcel(): void {
-    let headers: string[] = [];
-    let rows: (string | number | null | undefined)[][] = [];
-    let filename = '';
-
-    switch (this.currentTab) {
-      case MasterTab.Treaties:
-        headers = ['Code', 'Treaty Name', 'MGA', 'Risk Company', 'States', 'LOBs (COBs)', 'Status'];
-        rows = this.treaties.map(t => [
-          t.treaty_code,
-          t.name,
-          this.getMgasListDisplay(t),
-          // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- an empty string should also fall back to the placeholder/default shown here
-          t.risk_company?.name || '-',
-          this.getStatesListDisplay(t.treaty_states),
-          this.getLobsListDisplay(t.treaty_lobs),
-          t.is_active ? 'Active' : 'Inactive',
-        ]);
-        filename = 'treaties.csv';
-        break;
-
-      case MasterTab.Mgas:
-        headers = ['MGA Code', 'MGA Name', 'Tax Payable In-house', 'Ledger Amount', 'Status'];
-        rows = this.mgas.map(m => [
-          m.mga_code,
-          m.name,
-          m.tax_payable_inhouse ? 'Yes' : 'No',
-          m.ledger_amount !== undefined ? `$${m.ledger_amount.toFixed(2)}` : '$0.00',
-          m.is_active ? 'Active' : 'Inactive',
-        ]);
-        filename = 'mgas.csv';
-        break;
-
-      case MasterTab.States:
-        headers = ['State Code', 'State Abbr', 'State Name', 'Status'];
-        rows = this.states.map(s => [
-          s.state_code,
-          s.state_abbr,
-          s.name,
-          s.is_active ? 'Active' : 'Inactive',
-        ]);
-        filename = 'states.csv';
-        break;
-
-      case MasterTab.RiskCompanies:
-        headers = [
-          'Company',
-          'ID Name',
-          'Name',
-          'Phone',
-          'Admitted',
-          'State',
-          'Address 1',
-          'Zip',
-          'City',
-          'Status',
-        ];
-        rows = this.riskCompanies.map(r => [
-          r.company_id,
-          // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- an empty string should also fall back to the placeholder/default shown here
-          r.id_name || '-',
-          r.name,
-          // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- an empty string should also fall back to the placeholder/default shown here
-          r.phone || '-',
-          r.is_admitted ? 'Yes' : 'No',
-          // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- an empty string should also fall back to the placeholder/default shown here
-          r.state || '-',
-          // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- an empty string should also fall back to the placeholder/default shown here
-          r.address || '-',
-          // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- an empty string should also fall back to the placeholder/default shown here
-          r.zip || '-',
-          // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- an empty string should also fall back to the placeholder/default shown here
-          r.city || '-',
-          r.is_active ? 'Active' : 'Inactive',
-        ]);
-        filename = 'risk_companies.csv';
-        break;
-
-      case MasterTab.Lobs:
-        headers = [
-          'LOB Code',
-          'LOB Name',
-          'Taxable',
-          'Priority',
-          'Fully Earned',
-          'Status',
-          'Description',
-        ];
-        rows = this.simpleMastersState.lobs.map(l => [
-          l.lob_code,
-          l.name,
-          l.taxable ? 'Yes' : 'No',
-          l.priority,
-          l.fully_earned ? 'Yes' : 'No',
-          l.is_active ? 'Active' : 'Inactive',
-          // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- an empty string should also fall back to the placeholder/default shown here
-          l.description || '-',
-        ]);
-        filename = 'lobs.csv';
-        break;
-
-      case MasterTab.Cobs:
-        headers = [
-          'Class Code',
-          'Class Name',
-          'Class Type',
-          'Taxable',
-          'Priority',
-          'Fully Earned',
-          'Status',
-          'Description',
-        ];
-        rows = this.simpleMastersState.cobs.map(c => [
-          c.cob_code,
-          c.name,
-          // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- an empty string should also fall back to the placeholder/default shown here
-          c.type || '-',
-          c.taxable ? 'Yes' : 'No',
-          c.priority,
-          c.fully_earned ? 'Yes' : 'No',
-          c.is_active ? 'Active' : 'Inactive',
-          // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- an empty string should also fall back to the placeholder/default shown here
-          c.description || '-',
-        ]);
-        filename = 'cobs.csv';
-        break;
-
-      case MasterTab.Reinsurers:
-        headers = ['Code ID', 'Name', 'Status'];
-        rows = this.simpleMastersState.reinsurers.map(r => [
-          r.reinsurer_company_id,
-          r.name,
-          r.is_active ? 'Active' : 'Inactive',
-        ]);
-        filename = 'reinsurers.csv';
-        break;
-
-      case MasterTab.GlMappings:
-        headers = ['GL Number', 'Type'];
-        rows = this.glMappings.map(m => [this.getGLNumberDisplay(m), m.type]);
-        filename = 'gl_mappings.csv';
-        break;
-
-      case MasterTab.DocumentTypes:
-        headers = ['Code', 'Name', 'Description', 'Status'];
-        rows = this.simpleMastersState.documentTypes.map(d => [
-          d.code,
-          d.name,
-          // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- an empty string should also fall back to the placeholder/default shown here
-          d.description || '-',
-          d.isActive ? 'Active' : 'Inactive',
-        ]);
-        filename = 'document_types.csv';
-        break;
-
-      case MasterTab.SequencePrefixCounters:
-        headers = [
-          'Code',
-          'Name',
-          'Prefix',
-          'Next Value',
-          'Padding Width',
-          'Description',
-          'Status',
-        ];
-        rows = this.simpleMastersState.sequencePrefixCounters.map(s => [
-          s.code,
-          s.name,
-          // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- an empty string should also fall back to the placeholder/default shown here
-          s.prefix || '-',
-          // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- an empty string should also fall back to the placeholder/default shown here
-          s.next_value !== undefined ? s.next_value : s.nextValue || 1,
-          // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- an empty string should also fall back to the placeholder/default shown here
-          s.padding_width !== undefined ? s.padding_width : s.paddingWidth || 4,
-          // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- an empty string should also fall back to the placeholder/default shown here
-          s.description || '-',
-          s.isActive ? 'Active' : 'Inactive',
-        ]);
-        filename = 'sequence_prefix_counters.csv';
-        break;
-    }
-
-    this.downloadCSV(headers, rows, filename);
-  }
-
-  private downloadCSV(
-    headers: string[],
-    rows: (string | number | null | undefined)[][],
-    filename: string,
-  ): void {
-    const csvContent = [
-      headers.map(h => `"${h.replace(/"/g, '""')}"`).join(','),
-      ...rows.map(row =>
-        row
-          .map(val => {
-            const str = val === null || val === undefined ? '' : String(val);
-            return `"${str.replace(/"/g, '""')}"`;
-          })
-          .join(','),
-      ),
-    ].join('\r\n');
-
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    const url = URL.createObjectURL(blob);
-    link.setAttribute('href', url);
-    link.setAttribute('download', filename);
-    link.style.visibility = 'hidden';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    const { headers, rows, filename } = buildMastersExportData(this);
+    downloadCsv(headers, rows, filename);
   }
 
   // ==========================================
