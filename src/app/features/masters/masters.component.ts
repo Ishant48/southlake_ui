@@ -21,6 +21,7 @@ import {
 import { ItdFormModal, ItdFormValue } from './components/itd-form-modal/itd-form-modal';
 import { SimpleFormModal, SimpleFormValue } from './components/simple-form-modal/simple-form-modal';
 import { MgaFormModal, MgaFormValue } from './components/mga-form-modal/mga-form-modal';
+import { TreatyFormModal, TreatySaveEvent } from './components/treaty-form-modal/treaty-form-modal';
 import {
   ActionButtonConfig,
   ActionButtonsCell,
@@ -29,7 +30,6 @@ import { StatusBadgeCell } from '../../shared/components/grid-renderers/status-b
 import { MastersApi } from './services/masters-api';
 import { ToastService } from '../../shared/components/toast/toast.service';
 import { ConfirmDialogComponent } from '../../shared/components/confirm-dialog/confirm-dialog.component';
-import { DropdownSearchComponent } from '../../shared/components/dropdown-search/dropdown-search.component';
 import { environment } from '../../../environments/environment';
 import {
   StateMaster,
@@ -151,7 +151,6 @@ type MasterTab =
     CommonModule,
     FormsModule,
     ConfirmDialogComponent,
-    DropdownSearchComponent,
     MastersGrid,
     NotesModal,
     DocumentDrawer,
@@ -162,6 +161,7 @@ type MasterTab =
     ItdFormModal,
     SimpleFormModal,
     MgaFormModal,
+    TreatyFormModal,
   ],
   templateUrl: './masters.component.html',
   styleUrl: './masters.component.scss',
@@ -2257,7 +2257,12 @@ export class MastersComponent implements OnInit {
     this.showTreatyModal = true;
   }
 
-  submitTreaty(): void {
+  submitTreaty(event: TreatySaveEvent): void {
+    this.treatyForm = event.form;
+    this.treatySelectedStates = event.selectedStates;
+    this.treatySelectedLobs = event.selectedLobs;
+    this.treatySelectedCobs = event.selectedCobs;
+
     if (!this.treatyForm.treaty_code || !this.treatyForm.name || !this.treatyForm.mga_id) {
       this.toast.error('Treaty Code, Name and MGA Underwriter are required');
       return;
@@ -2337,24 +2342,6 @@ export class MastersComponent implements OnInit {
   removeCarrierRow(index: number): void {
     if (this.treatyForm.carriers) {
       this.treatyForm.carriers.splice(index, 1);
-    }
-    this.cdr.markForCheck();
-  }
-
-  addReinsurerRow(): void {
-    if (!this.treatyForm.reinsurers) {
-      this.treatyForm.reinsurers = [];
-    }
-    this.treatyForm.reinsurers.push({
-      reinsurer_id: '',
-      cession_pct: 0,
-    });
-    this.cdr.markForCheck();
-  }
-
-  removeReinsurerRow(index: number): void {
-    if (this.treatyForm.reinsurers) {
-      this.treatyForm.reinsurers.splice(index, 1);
     }
     this.cdr.markForCheck();
   }

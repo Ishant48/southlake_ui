@@ -1,0 +1,87 @@
+.treaty-modal-wide {
+  max-width: 800px !important;
+}
+
+.scrollable-body {
+  max-height: 70vh;
+  overflow-y: auto;
+}
+
+.section-heading {
+  margin: 16px 0 12px 0;
+  color: var(--navy);
+  font-weight: 700;
+  font-size: 14px;
+  border-bottom: 1.5px solid var(--gray-200);
+  padding-bottom: 6px;
+}
+
+.section-heading.no-top-margin {
+  margin-top: 0;
+}
+
+.section-heading-with-action {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.add-reinsurer-btn {
+  font-size: 11px;
+  padding: 4px 8px;
+}
+
+.carrier-row {
+  margin-bottom: 8px;
+}
+
+.reinsurer-row {
+  align-items: flex-end;
+  margin-bottom: 8px;
+}
+
+.flex-1 {
+  flex: 1;
+}
+
+.flex-1-5 {
+  flex: 1.5;
+}
+
+.flex-2 {
+  flex: 2;
+}
+
+.remove-reinsurer-btn-wrap {
+  margin-left: 8px;
+  margin-bottom: 4px;
+}
+
+.remove-reinsurer-btn {
+  padding: 6px 10px;
+  font-size: 12px;
+  height: 38px;
+}
+
+.empty-reinsurer-hint {
+  color: var(--gray-500);
+  font-size: 12px;
+  margin-bottom: 12px;
+  font-style: italic;
+}
+
+.field-block {
+  margin-bottom: 16px;
+}
+
+.continuous-hint {
+  color: var(--gray-500);
+  font-weight: normal;
+  font-size: 11px;
+  margin-left: 4px;
+}
+
+.save-spinner {
+  width: 14px;
+  height: 14px;
+}
