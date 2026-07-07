@@ -1,7 +1,6 @@
 import { Component, inject, OnInit, ChangeDetectorRef, ViewChild, ElementRef } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import { Observable } from 'rxjs';
 import { FormsModule } from '@angular/forms';
 import { ColDef, GridOptions } from 'ag-grid-community';
 import { AgGridConfigService } from '../../core/services/ag-grid-config.service';
@@ -35,12 +34,12 @@ import { LobsApi } from './services/lobs-api';
 import { CobsApi } from './services/cobs-api';
 import { TreatiesApi } from './services/treaties-api';
 import { BrokersApi } from './services/brokers-api';
-import { DocumentTypesApi } from './services/document-types-api';
 import { LockedPeriodsState } from './services/locked-periods-state';
 import { SimpleMastersState } from './services/simple-masters-state';
 import { StatesState } from './services/states-state';
 import { RiskCompaniesState } from './services/risk-companies-state';
 import { MgasState } from './services/mgas-state';
+import { DocumentsDrawerState } from './services/documents-drawer-state';
 import { ToastService } from '../../shared/components/toast/toast.service';
 import { ConfirmDialogComponent } from '../../shared/components/confirm-dialog/confirm-dialog.component';
 import { environment } from '../../../environments/environment';
@@ -56,15 +55,12 @@ import {
   TreatyLob,
   TreatyCarrier,
   TreatyReinsurer,
-  DocumentType,
   SimpleMasterRecord,
 } from './models/master.model';
 import {
   MasterTab,
   MasterListItem,
   SimpleEditableItem,
-  DocumentableMaster,
-  MasterDocument,
   DocumentMode,
 } from './models/master-tab.model';
 import { ItdExhibit, ItdForm, ItdStateOption } from './models/itd.model';
@@ -146,12 +142,12 @@ export class MastersComponent implements OnInit {
   private cobsApi = inject(CobsApi);
   private treatiesApi = inject(TreatiesApi);
   private brokersApi = inject(BrokersApi);
-  private documentTypesApi = inject(DocumentTypesApi);
   simpleMastersState = inject(SimpleMastersState);
   lockedPeriodsState = inject(LockedPeriodsState);
   statesState = inject(StatesState);
   riskCompaniesState = inject(RiskCompaniesState);
   mgasState = inject(MgasState);
+  documentsDrawerState = inject(DocumentsDrawerState);
   private reinsuranceService = inject(ReinsuranceApi);
   private toast = inject(ToastService);
   private cdr = inject(ChangeDetectorRef);
@@ -326,9 +322,7 @@ export class MastersComponent implements OnInit {
   showDocModal = false;
   documentMode: DocumentMode = DocumentMode.Mga;
   selectedItem: MgaMaster | StateMaster | RiskCompany | null = null;
-  documentsList: MasterDocument[] = [];
   uploadingDoc = false;
-  documentTypesOptions: DocumentType[] = [];
   selectedDocType = '';
 
   // Notes View Modal
@@ -982,34 +976,17 @@ export class MastersComponent implements OnInit {
   openDocModal(mode: DocumentMode, item: MgaMaster | StateMaster | RiskCompany): void {
     this.documentMode = mode;
     this.selectedItem = item;
-    this.documentsList = [];
     this.selectedDocType = '';
-    this.documentTypesOptions = [];
     this.showDocModal = true;
 
-    this.documentTypesApi.getDocumentTypes(undefined, true).subscribe(res => {
-      this.documentTypesOptions = res;
-      this.cdr.markForCheck();
-    });
-
+    this.documentsDrawerState.loadDocumentTypes().subscribe(() => this.cdr.markForCheck());
     this.loadDocuments();
   }
 
   loadDocuments(): void {
     if (!this.selectedItem) return;
-    const id = this.selectedItem.id;
-    let request: Observable<DocumentableMaster>;
-    if (this.documentMode === DocumentMode.Mga) {
-      request = this.mgasApi.getMga(id);
-    } else if (this.documentMode === DocumentMode.State) {
-      request = this.statesApi.getState(id);
-    } else {
-      request = this.riskCompaniesApi.getRiskCompany(id);
-    }
-
-    request.subscribe({
-      next: res => {
-        this.documentsList = res.documents || [];
+    this.documentsDrawerState.loadDocuments(this.documentMode, this.selectedItem.id).subscribe({
+      next: () => {
         this.cdr.markForCheck();
       },
       error: () => {
@@ -1023,43 +1000,25 @@ export class MastersComponent implements OnInit {
     const { file, documentType } = payload;
 
     this.uploadingDoc = true;
-    let request: Observable<MasterDocument>;
-    if (this.documentMode === DocumentMode.Mga) {
-      request = this.mgasApi.uploadMgaDocument(this.selectedItem.id, file, documentType);
-    } else if (this.documentMode === DocumentMode.State) {
-      request = this.statesApi.uploadStateDocument(this.selectedItem.id, file, documentType);
-    } else {
-      request = this.riskCompaniesApi.uploadRiskCompanyDocument(
-        this.selectedItem.id,
-        file,
-        documentType,
-      );
-    }
-
-    request.subscribe({
-      next: () => {
-        this.toast.success('Document uploaded successfully');
-        this.loadDocuments();
-        this.uploadingDoc = false;
-        this.cdr.markForCheck();
-      },
-      error: (err: HttpErrorLike) => {
-        this.toast.error(err.error?.message ?? 'Failed to upload document');
-        this.uploadingDoc = false;
-        this.cdr.markForCheck();
-      },
-    });
+    this.documentsDrawerState
+      .upload(this.documentMode, this.selectedItem.id, file, documentType)
+      .subscribe({
+        next: () => {
+          this.toast.success('Document uploaded successfully');
+          this.loadDocuments();
+          this.uploadingDoc = false;
+          this.cdr.markForCheck();
+        },
+        error: (err: HttpErrorLike) => {
+          this.toast.error(err.error?.message ?? 'Failed to upload document');
+          this.uploadingDoc = false;
+          this.cdr.markForCheck();
+        },
+      });
   }
 
   downloadDoc(doc: DrawerDocument): void {
-    let endpoint = '';
-    if (this.documentMode === DocumentMode.Mga) {
-      endpoint = 'mgas';
-    } else if (this.documentMode === DocumentMode.State) {
-      endpoint = 'states';
-    } else {
-      endpoint = 'risk-companies';
-    }
+    const endpoint = this.documentsDrawerState.getDownloadEndpoint(this.documentMode);
     window.open(
       `${environment.apiUrl}/masters/${endpoint}/documents/download/${doc.file_url}`,
       '_blank',
@@ -1070,16 +1029,7 @@ export class MastersComponent implements OnInit {
     this.confirmTitle = 'Delete Document';
     this.confirmMessage = `Are you sure you want to delete attachment "${doc.file_name}"?`;
     this.pendingAction = () => {
-      let request: Observable<void>;
-      if (this.documentMode === DocumentMode.Mga) {
-        request = this.mgasApi.deleteMgaDocument(doc.id);
-      } else if (this.documentMode === DocumentMode.State) {
-        request = this.statesApi.deleteStateDocument(doc.id);
-      } else {
-        request = this.riskCompaniesApi.deleteRiskCompanyDocument(doc.id);
-      }
-
-      request.subscribe({
+      this.documentsDrawerState.delete(this.documentMode, doc.id).subscribe({
         next: () => {
           this.toast.success('Document deleted successfully');
           this.loadDocuments();

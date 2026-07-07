@@ -288,8 +288,8 @@
   <app-document-drawer
     [open]="showDocModal"
     [subtitle]="documentDrawerSubtitle"
-    [documentsList]="documentsList"
-    [documentTypesOptions]="documentTypesOptions"
+    [documentsList]="documentsDrawerState.documentsList"
+    [documentTypesOptions]="documentsDrawerState.documentTypesOptions"
     [uploadingDoc]="uploadingDoc"
     (closed)="showDocModal = false"
     (fileSelected)="onDocumentUpload($event)"
