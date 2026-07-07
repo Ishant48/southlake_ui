@@ -64,7 +64,7 @@ export function buildMastersExportData(ctx: MastersComponent): MastersExportData
           'City',
           'Status',
         ],
-        rows: ctx.riskCompanies.map(r => [
+        rows: ctx.riskCompaniesState.riskCompanies.map(r => [
           r.company_id,
           // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- an empty string should also fall back to the placeholder/default shown here
           r.id_name || '-',

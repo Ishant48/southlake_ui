@@ -39,6 +39,7 @@ import { DocumentTypesApi } from './services/document-types-api';
 import { LockedPeriodsState } from './services/locked-periods-state';
 import { SimpleMastersState } from './services/simple-masters-state';
 import { StatesState } from './services/states-state';
+import { RiskCompaniesState } from './services/risk-companies-state';
 import { ToastService } from '../../shared/components/toast/toast.service';
 import { ConfirmDialogComponent } from '../../shared/components/confirm-dialog/confirm-dialog.component';
 import { environment } from '../../../environments/environment';
@@ -148,6 +149,7 @@ export class MastersComponent implements OnInit {
   simpleMastersState = inject(SimpleMastersState);
   lockedPeriodsState = inject(LockedPeriodsState);
   statesState = inject(StatesState);
+  riskCompaniesState = inject(RiskCompaniesState);
   private reinsuranceService = inject(ReinsuranceApi);
   private toast = inject(ToastService);
   private cdr = inject(ChangeDetectorRef);
@@ -179,7 +181,6 @@ export class MastersComponent implements OnInit {
   // Data lists
   treaties: Treaty[] = [];
   mgas: MgaMaster[] = [];
-  riskCompanies: RiskCompany[] = [];
 
   // Pagination
   pageSize = 25;
@@ -569,9 +570,8 @@ export class MastersComponent implements OnInit {
         this.loadSimpleTab(SimpleMode.Reinsurer, search, active, 'Reinsurers');
         break;
       case MasterTab.RiskCompanies:
-        this.riskCompaniesApi.getRiskCompanies(search, active).subscribe({
-          next: res => {
-            this.riskCompanies = res;
+        this.riskCompaniesState.load(search, active).subscribe({
+          next: () => {
             this.loading = false;
             this.cdr.markForCheck();
           },
@@ -673,7 +673,7 @@ export class MastersComponent implements OnInit {
       case MasterTab.Reinsurers:
         return this.simpleMastersState.reinsurers;
       case MasterTab.RiskCompanies:
-        return this.riskCompanies;
+        return this.riskCompaniesState.riskCompanies;
       case MasterTab.GlMappings:
         return this.glMappingsState.glMappings;
       case MasterTab.Brokers:
@@ -1256,11 +1256,8 @@ export class MastersComponent implements OnInit {
     };
 
     if (this.isEditMode && !this.riskCompanyForm.id) return;
-    const request: Observable<RiskCompany> = this.isEditMode
-      ? this.riskCompaniesApi.updateRiskCompany(this.riskCompanyForm.id as string, payload)
-      : this.riskCompaniesApi.createRiskCompany(payload);
 
-    request.subscribe({
+    this.riskCompaniesState.save(this.isEditMode, this.riskCompanyForm.id, payload).subscribe({
       next: () => {
         this.toast.success('Risk Company saved successfully');
         this.showRiskCompanyModal = false;
@@ -1280,7 +1277,7 @@ export class MastersComponent implements OnInit {
     this.confirmTitle = 'Delete Risk Company';
     this.confirmMessage = `Are you sure you want to delete risk company "${rc.name}"? This action cannot be undone.`;
     this.pendingAction = () => {
-      this.riskCompaniesApi.deleteRiskCompany(rc.id).subscribe({
+      this.riskCompaniesState.delete(rc.id).subscribe({
         next: () => {
           this.toast.success('Risk Company deleted successfully');
           this.loadData();
