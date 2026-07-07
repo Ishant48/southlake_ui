@@ -2,33 +2,18 @@ import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
-import { JournalEntriesService } from '../../core/services/journal-entries.service';
-import { ChartOfAccountsService } from '../../core/services/chart-of-accounts.service';
+import { JournalEntriesApi } from './services/journal-entries-api';
+import { ChartOfAccountsApi } from '../chart-of-accounts/services/chart-of-accounts-api';
 import { MastersService } from '../../core/services/masters.service';
 import { ToastService } from '../../shared/components/toast/toast.service';
 import { ConfirmDialogComponent } from '../../shared/components/confirm-dialog/confirm-dialog.component';
 import { DropdownSearchComponent } from '../../shared/components/dropdown-search/dropdown-search.component';
-import { JournalEntryBatch, JournalEntry } from '../../core/models/journal-entry.model';
+import { JournalEntry, JournalEntryBatch, JournalEntryFormRow } from './models/journal-entry.model';
 import { ChartOfAccount } from '../../core/models/chart-of-account.model';
 import { ActionButtonsCell } from '../../shared/components/grid-renderers/action-buttons-cell/action-buttons-cell';
-import { ReinsuranceService } from '../../core/services/reinsurance.service';
 import { AgGridAngular } from 'ag-grid-angular';
 import { ColDef, GridOptions, ICellRendererParams } from 'ag-grid-community';
 import { AgGridConfigService } from '../../core/services/ag-grid-config.service';
-
-interface JournalEntryFormRow {
-  rowId: string;
-  je_number: number;
-  description: string;
-  coa_id: string;
-  sub: string;
-  debit: number | string | null;
-  credit: number | string | null;
-  date: string;
-  dp: string;
-  policy: string;
-  memo: string;
-}
 
 @Component({
   selector: 'app-journal-entries',
@@ -44,13 +29,12 @@ interface JournalEntryFormRow {
   styleUrl: './journal-entries.component.scss',
 })
 export class JournalEntriesComponent implements OnInit {
-  private service = inject(JournalEntriesService);
-  private coaService = inject(ChartOfAccountsService);
+  private service = inject(JournalEntriesApi);
+  private coaService = inject(ChartOfAccountsApi);
   private mastersService = inject(MastersService);
   private toast = inject(ToastService);
   private cdr = inject(ChangeDetectorRef);
   private route = inject(ActivatedRoute);
-  private reinsuranceService = inject(ReinsuranceService);
   private agGridConfig = inject(AgGridConfigService);
 
   gridOptions: GridOptions = this.agGridConfig.getDefaultGridOptions();
