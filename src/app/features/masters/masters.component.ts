@@ -3,9 +3,9 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { Observable } from 'rxjs';
 import { FormsModule } from '@angular/forms';
-import { AgGridAngular } from 'ag-grid-angular';
 import { ColDef, GridOptions, ICellRendererParams } from 'ag-grid-community';
 import { AgGridConfigService } from '../../core/services/ag-grid-config.service';
+import { MastersGrid } from './components/masters-grid/masters-grid';
 import {
   ActionButtonConfig,
   ActionButtonsCell,
@@ -137,7 +137,7 @@ type MasterTab =
     FormsModule,
     ConfirmDialogComponent,
     DropdownSearchComponent,
-    AgGridAngular,
+    MastersGrid,
   ],
   templateUrl: './masters.component.html',
   styleUrl: './masters.component.scss',
