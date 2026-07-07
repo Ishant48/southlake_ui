@@ -19,6 +19,7 @@ import {
   RiskCompanyFormValue,
 } from './components/risk-company-form-modal/risk-company-form-modal';
 import { ItdFormModal, ItdFormValue } from './components/itd-form-modal/itd-form-modal';
+import { SimpleFormModal, SimpleFormValue } from './components/simple-form-modal/simple-form-modal';
 import {
   ActionButtonConfig,
   ActionButtonsCell,
@@ -158,6 +159,7 @@ type MasterTab =
     LockPeriodModal,
     RiskCompanyFormModal,
     ItdFormModal,
+    SimpleFormModal,
   ],
   templateUrl: './masters.component.html',
   styleUrl: './masters.component.scss',
@@ -1459,7 +1461,8 @@ export class MastersComponent implements OnInit {
     this.showSimpleModal = true;
   }
 
-  submitSimple(): void {
+  submitSimple(formValue: SimpleFormValue): void {
+    this.simpleForm = formValue;
     if (!this.simpleForm.code || !this.simpleForm.name) {
       this.toast.error('Code and Name are required');
       return;
@@ -3082,21 +3085,5 @@ export class MastersComponent implements OnInit {
     this.newPeriodToLock = '';
     this.showLockPeriodModal = true;
     this.cdr.markForCheck();
-  }
-
-  onProductLobCobChange(): void {
-    const selectedLob = this.lobOptions.find(l => l.id === this.simpleForm.lob_id);
-    const selectedCob = this.cobOptions.find(c => c.id === this.simpleForm.cob_id);
-
-    const lobCode = selectedLob ? selectedLob.lob_code : '';
-    const cobCode = selectedCob ? selectedCob.cob_code : '';
-
-    if (lobCode && cobCode) {
-      this.simpleForm.code = `${lobCode}-${cobCode}`;
-      this.simpleForm.name = `${selectedLob?.name} - ${selectedCob?.name}`;
-    } else {
-      this.simpleForm.code = '';
-      this.simpleForm.name = '';
-    }
   }
 }
