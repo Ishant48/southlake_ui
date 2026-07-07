@@ -35,10 +35,9 @@ import { LobsApi } from './services/lobs-api';
 import { CobsApi } from './services/cobs-api';
 import { TreatiesApi } from './services/treaties-api';
 import { BrokersApi } from './services/brokers-api';
-import { ProductsApi } from './services/products-api';
 import { LockedPeriodsApi } from './services/locked-periods-api';
 import { DocumentTypesApi } from './services/document-types-api';
-import { SequencePrefixCountersApi } from './services/sequence-prefix-counters-api';
+import { SimpleMastersState } from './services/simple-masters-state';
 import { ToastService } from '../../shared/components/toast/toast.service';
 import { ConfirmDialogComponent } from '../../shared/components/confirm-dialog/confirm-dialog.component';
 import { environment } from '../../../environments/environment';
@@ -144,10 +143,9 @@ export class MastersComponent implements OnInit {
   private cobsApi = inject(CobsApi);
   private treatiesApi = inject(TreatiesApi);
   private brokersApi = inject(BrokersApi);
-  private productsApi = inject(ProductsApi);
   private lockedPeriodsApi = inject(LockedPeriodsApi);
   private documentTypesApi = inject(DocumentTypesApi);
-  private sequencePrefixCountersApi = inject(SequencePrefixCountersApi);
+  private simpleMastersState = inject(SimpleMastersState);
   private reinsuranceService = inject(ReinsuranceApi);
   private toast = inject(ToastService);
   private cdr = inject(ChangeDetectorRef);
@@ -182,15 +180,9 @@ export class MastersComponent implements OnInit {
   // Data lists
   treaties: Treaty[] = [];
   mgas: MgaMaster[] = [];
-  lobs: LineOfBusiness[] = [];
-  cobs: CobMaster[] = [];
   states: StateMaster[] = [];
-  reinsurers: ReinsurerCompany[] = [];
   riskCompanies: RiskCompany[] = [];
-  brokers: SimpleMasterRecord[] = [];
-  products: SimpleMasterRecord[] = [];
   lockedPeriods: SimpleMasterRecord[] = [];
-  documentTypes: DocumentType[] = [];
   sequencePrefixCounters: SequencePrefixCounter[] = [];
 
   // Pagination
@@ -559,32 +551,10 @@ export class MastersComponent implements OnInit {
         });
         break;
       case MasterTab.Lobs:
-        this.lobsApi.getLobs(search, active).subscribe({
-          next: res => {
-            this.lobs = res;
-            this.loading = false;
-            this.cdr.markForCheck();
-          },
-          error: () => {
-            this.toast.error('Failed to load LOBs');
-            this.loading = false;
-            this.cdr.markForCheck();
-          },
-        });
+        this.loadSimpleTab(SimpleMode.Lob, search, active, 'LOBs');
         break;
       case MasterTab.Cobs:
-        this.cobsApi.getCobs(search, active).subscribe({
-          next: res => {
-            this.cobs = res;
-            this.loading = false;
-            this.cdr.markForCheck();
-          },
-          error: () => {
-            this.toast.error('Failed to load COBs');
-            this.loading = false;
-            this.cdr.markForCheck();
-          },
-        });
+        this.loadSimpleTab(SimpleMode.Cob, search, active, 'COBs');
         break;
       case MasterTab.States:
         this.statesApi.getStates(search, active).subscribe({
@@ -601,18 +571,7 @@ export class MastersComponent implements OnInit {
         });
         break;
       case MasterTab.Reinsurers:
-        this.reinsurersApi.getReinsurers(search, active).subscribe({
-          next: res => {
-            this.reinsurers = res;
-            this.loading = false;
-            this.cdr.markForCheck();
-          },
-          error: () => {
-            this.toast.error('Failed to load Reinsurers');
-            this.loading = false;
-            this.cdr.markForCheck();
-          },
-        });
+        this.loadSimpleTab(SimpleMode.Reinsurer, search, active, 'Reinsurers');
         break;
       case MasterTab.RiskCompanies:
         this.riskCompaniesApi.getRiskCompanies(search, active).subscribe({
@@ -632,32 +591,10 @@ export class MastersComponent implements OnInit {
         this.loadGlMappings();
         break;
       case MasterTab.Brokers:
-        this.brokersApi.getBrokers(search, active).subscribe({
-          next: res => {
-            this.brokers = res;
-            this.loading = false;
-            this.cdr.markForCheck();
-          },
-          error: () => {
-            this.toast.error('Failed to load Brokers');
-            this.loading = false;
-            this.cdr.markForCheck();
-          },
-        });
+        this.loadSimpleTab(SimpleMode.Broker, search, active, 'Brokers');
         break;
       case MasterTab.Products:
-        this.productsApi.getProducts(search, active).subscribe({
-          next: res => {
-            this.products = res;
-            this.loading = false;
-            this.cdr.markForCheck();
-          },
-          error: () => {
-            this.toast.error('Failed to load Products');
-            this.loading = false;
-            this.cdr.markForCheck();
-          },
-        });
+        this.loadSimpleTab(SimpleMode.Product, search, active, 'Products');
         break;
       case MasterTab.LockedPeriods:
         this.lockedPeriodsApi.getLockedPeriods(search).subscribe({
@@ -674,34 +611,36 @@ export class MastersComponent implements OnInit {
         });
         break;
       case MasterTab.DocumentTypes:
-        this.documentTypesApi.getDocumentTypes(search, active).subscribe({
-          next: res => {
-            this.documentTypes = res;
-            this.loading = false;
-            this.cdr.markForCheck();
-          },
-          error: () => {
-            this.toast.error('Failed to load Document Types');
-            this.loading = false;
-            this.cdr.markForCheck();
-          },
-        });
+        this.loadSimpleTab(SimpleMode.DocumentType, search, active, 'Document Types');
         break;
       case MasterTab.SequencePrefixCounters:
-        this.sequencePrefixCountersApi.getSequencePrefixCounters(search, active).subscribe({
-          next: res => {
-            this.sequencePrefixCounters = res;
-            this.loading = false;
-            this.cdr.markForCheck();
-          },
-          error: () => {
-            this.toast.error('Failed to load Sequence Prefix & Counters');
-            this.loading = false;
-            this.cdr.markForCheck();
-          },
-        });
+        this.loadSimpleTab(
+          SimpleMode.SequencePrefixCounter,
+          search,
+          active,
+          'Sequence Prefix & Counters',
+        );
         break;
     }
+  }
+
+  private loadSimpleTab(
+    mode: SimpleMode,
+    search: string | undefined,
+    active: boolean | undefined,
+    errorLabel: string,
+  ): void {
+    this.simpleMastersState.load(mode, search, active).subscribe({
+      next: () => {
+        this.loading = false;
+        this.cdr.markForCheck();
+      },
+      error: () => {
+        this.toast.error(`Failed to load ${errorLabel}`);
+        this.loading = false;
+        this.cdr.markForCheck();
+      },
+    });
   }
 
   onFilterChange(): void {
@@ -732,27 +671,27 @@ export class MastersComponent implements OnInit {
       case MasterTab.Mgas:
         return this.mgas;
       case MasterTab.Lobs:
-        return this.lobs;
+        return this.simpleMastersState.lobs;
       case MasterTab.Cobs:
-        return this.cobs;
+        return this.simpleMastersState.cobs;
       case MasterTab.States:
         return this.states;
       case MasterTab.Reinsurers:
-        return this.reinsurers;
+        return this.simpleMastersState.reinsurers;
       case MasterTab.RiskCompanies:
         return this.riskCompanies;
       case MasterTab.GlMappings:
         return this.glMappings;
       case MasterTab.Brokers:
-        return this.brokers;
+        return this.simpleMastersState.brokers;
       case MasterTab.Products:
-        return this.products;
+        return this.simpleMastersState.products;
       case MasterTab.LockedPeriods:
         return this.lockedPeriods;
       case MasterTab.DocumentTypes:
-        return this.documentTypes;
+        return this.simpleMastersState.documentTypes;
       case MasterTab.SequencePrefixCounters:
-        return this.sequencePrefixCounters;
+        return this.simpleMastersState.sequencePrefixCounters;
       default:
         return [];
     }
@@ -822,7 +761,7 @@ export class MastersComponent implements OnInit {
   openSimpleAdd(mode: SimpleMode): void {
     this.simpleMode = mode;
     this.isEditMode = false;
-    this.simpleModalTitle = `Add New ${this.getMasterLabel(mode)}`;
+    this.simpleModalTitle = `Add New ${this.simpleMastersState.getMasterLabel(mode)}`;
     this.simpleForm = {
       code: '',
       name: '',
@@ -847,7 +786,7 @@ export class MastersComponent implements OnInit {
   openSimpleEdit(mode: SimpleMode, item: SimpleEditableItem): void {
     this.simpleMode = mode;
     this.isEditMode = true;
-    this.simpleModalTitle = `Edit ${this.getMasterLabel(mode)}`;
+    this.simpleModalTitle = `Edit ${this.simpleMastersState.getMasterLabel(mode)}`;
     const rec = item as unknown as Record<string, unknown>;
     this.simpleForm = {
       id: rec['id'] as string,
@@ -892,101 +831,11 @@ export class MastersComponent implements OnInit {
     }
     this.submitting = true;
 
-    const codeKey = this.getCodeKey(this.simpleMode);
-    const payload: Record<string, unknown> = {
-      [codeKey]: this.simpleForm.code,
-      name: this.simpleForm.name,
-      is_active: this.simpleForm.is_active,
-    };
-
-    if (this.simpleMode === SimpleMode.Lob || this.simpleMode === SimpleMode.Cob) {
-      payload['description'] = this.simpleForm.description || null;
-      payload['type'] = this.simpleMode === SimpleMode.Cob ? this.simpleForm.type || null : null;
-      payload['taxable'] = this.simpleForm.taxable || false;
-      payload['priority'] = Number(this.simpleForm.priority || 1);
-      payload['fully_earned'] = this.simpleForm.fully_earned || false;
-    } else if (this.simpleMode === SimpleMode.Broker) {
-      // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- '' should be sent as null, not an empty string
-      payload['contact_name'] = this.simpleForm.contact_name || null;
-      // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- '' should be sent as null, not an empty string
-      payload['contact_email'] = this.simpleForm.contact_email || null;
-      // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- '' should be sent as null, not an empty string
-      payload['contact_phone'] = this.simpleForm.contact_phone || null;
-    } else if (this.simpleMode === SimpleMode.Product) {
-      payload['description'] = this.simpleForm.description || null;
-      // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- '' should be sent as null, not an empty string
-      payload['lob_id'] = this.simpleForm.lob_id || null;
-      // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- '' should be sent as null, not an empty string
-      payload['cob_id'] = this.simpleForm.cob_id || null;
-    } else if (this.simpleMode === SimpleMode.SequencePrefixCounter) {
-      payload['description'] = this.simpleForm.description || null;
-      // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- '' should be sent as null, not an empty string
-      payload['prefix'] = this.simpleForm.prefix || null;
-      payload['next_value'] = Number(this.simpleForm.next_value ?? 1);
-      payload['padding_width'] = Number(this.simpleForm.padding_width ?? 4);
-    }
-
-    let request!: Observable<unknown>;
-    if (this.isEditMode) {
-      if (!this.simpleForm.id) return;
-      const id = this.simpleForm.id;
-      switch (this.simpleMode) {
-        case SimpleMode.Lob:
-          request = this.lobsApi.updateLob(id, payload as Partial<LineOfBusiness>);
-          break;
-        case SimpleMode.Cob:
-          request = this.cobsApi.updateCob(id, payload as Partial<CobMaster>);
-          break;
-        case SimpleMode.Reinsurer:
-          request = this.reinsurersApi.updateReinsurer(id, payload as Partial<ReinsurerCompany>);
-          break;
-        case SimpleMode.Broker:
-          request = this.brokersApi.updateBroker(id, payload as SimpleMasterRecord);
-          break;
-        case SimpleMode.Product:
-          request = this.productsApi.updateProduct(id, payload as SimpleMasterRecord);
-          break;
-        case SimpleMode.DocumentType:
-          request = this.documentTypesApi.updateDocumentType(id, payload as Partial<DocumentType>);
-          break;
-        case SimpleMode.SequencePrefixCounter:
-          request = this.sequencePrefixCountersApi.updateSequencePrefixCounter(
-            id,
-            payload as Partial<SequencePrefixCounter>,
-          );
-          break;
-      }
-    } else {
-      switch (this.simpleMode) {
-        case SimpleMode.Lob:
-          request = this.lobsApi.createLob(payload as Partial<LineOfBusiness>);
-          break;
-        case SimpleMode.Cob:
-          request = this.cobsApi.createCob(payload as Partial<CobMaster>);
-          break;
-        case SimpleMode.Reinsurer:
-          request = this.reinsurersApi.createReinsurer(payload as Partial<ReinsurerCompany>);
-          break;
-        case SimpleMode.Broker:
-          request = this.brokersApi.createBroker(payload as SimpleMasterRecord);
-          break;
-        case SimpleMode.Product:
-          request = this.productsApi.createProduct(payload as SimpleMasterRecord);
-          break;
-        case SimpleMode.DocumentType:
-          request = this.documentTypesApi.createDocumentType(payload as Partial<DocumentType>);
-          break;
-        case SimpleMode.SequencePrefixCounter:
-          request = this.sequencePrefixCountersApi.createSequencePrefixCounter(
-            payload as Partial<SequencePrefixCounter>,
-          );
-          break;
-      }
-    }
-
-    request.subscribe({
+    this.simpleMastersState.save(this.simpleMode, this.isEditMode, this.simpleForm).subscribe({
       next: () => {
-        this.toast.success(`${this.getMasterLabel(this.simpleMode)} saved successfully`);
+        this.toast.success(
+          `${this.simpleMastersState.getMasterLabel(this.simpleMode)} saved successfully`,
+        );
         this.showSimpleModal = false;
         this.submitting = false;
         this.loadData();
@@ -1001,38 +850,13 @@ export class MastersComponent implements OnInit {
   }
 
   deleteSimple(mode: SimpleMode, item: SimpleEditableItem): void {
-    this.confirmTitle = `Delete ${this.getMasterLabel(mode)}`;
+    this.confirmTitle = `Delete ${this.simpleMastersState.getMasterLabel(mode)}`;
     this.confirmMessage = `Are you sure you want to delete "${item.name}"? This action cannot be undone.`;
     this.pendingAction = () => {
       if (!item.id) return;
-      const id = item.id;
-      let request!: Observable<unknown>;
-      switch (mode) {
-        case SimpleMode.Lob:
-          request = this.lobsApi.deleteLob(id);
-          break;
-        case SimpleMode.Cob:
-          request = this.cobsApi.deleteCob(id);
-          break;
-        case SimpleMode.Reinsurer:
-          request = this.reinsurersApi.deleteReinsurer(id);
-          break;
-        case SimpleMode.Broker:
-          request = this.brokersApi.deleteBroker(id);
-          break;
-        case SimpleMode.Product:
-          request = this.productsApi.deleteProduct(id);
-          break;
-        case SimpleMode.DocumentType:
-          request = this.documentTypesApi.deleteDocumentType(id);
-          break;
-        case SimpleMode.SequencePrefixCounter:
-          request = this.sequencePrefixCountersApi.deleteSequencePrefixCounter(id);
-          break;
-      }
-      request.subscribe({
+      this.simpleMastersState.delete(mode, item.id).subscribe({
         next: () => {
-          this.toast.success(`${this.getMasterLabel(mode)} deleted`);
+          this.toast.success(`${this.simpleMastersState.getMasterLabel(mode)} deleted`);
           this.loadData();
         },
         error: (err: HttpErrorLike) => {
@@ -1833,51 +1657,6 @@ export class MastersComponent implements OnInit {
     this.pendingAction = null;
   }
 
-  // ==========================================
-  // HELPERS
-  // ==========================================
-  private getMasterLabel(mode: string): string {
-    switch (mode) {
-      case 'state':
-        return 'State';
-      case SimpleMode.Lob:
-        return 'Line of Business';
-      case SimpleMode.Cob:
-        return 'Class of Business';
-      case SimpleMode.Reinsurer:
-        return 'Reinsurer Company';
-      case 'risk-company':
-        return 'Risk Company';
-      case SimpleMode.Broker:
-        return 'Broker';
-      case SimpleMode.Product:
-        return 'Product';
-      case SimpleMode.DocumentType:
-        return 'Document Type';
-      case SimpleMode.SequencePrefixCounter:
-        return 'Sequence Prefix & Counter';
-      default:
-        return 'Master';
-    }
-  }
-
-  private getCodeKey(mode: string): string {
-    switch (mode) {
-      case 'state':
-        return 'state_code';
-      case SimpleMode.Lob:
-        return 'lob_code';
-      case SimpleMode.Cob:
-        return 'cob_code';
-      case SimpleMode.Reinsurer:
-        return 'reinsurer_company_id';
-      case 'risk-company':
-        return 'risk_company_id';
-      default:
-        return 'code';
-    }
-  }
-
   exportToExcel(): void {
     let headers: string[] = [];
     let rows: (string | number | null | undefined)[][] = [];
@@ -1966,7 +1745,7 @@ export class MastersComponent implements OnInit {
           'Status',
           'Description',
         ];
-        rows = this.lobs.map(l => [
+        rows = this.simpleMastersState.lobs.map(l => [
           l.lob_code,
           l.name,
           l.taxable ? 'Yes' : 'No',
@@ -1990,7 +1769,7 @@ export class MastersComponent implements OnInit {
           'Status',
           'Description',
         ];
-        rows = this.cobs.map(c => [
+        rows = this.simpleMastersState.cobs.map(c => [
           c.cob_code,
           c.name,
           // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- an empty string should also fall back to the placeholder/default shown here
@@ -2007,7 +1786,7 @@ export class MastersComponent implements OnInit {
 
       case MasterTab.Reinsurers:
         headers = ['Code ID', 'Name', 'Status'];
-        rows = this.reinsurers.map(r => [
+        rows = this.simpleMastersState.reinsurers.map(r => [
           r.reinsurer_company_id,
           r.name,
           r.is_active ? 'Active' : 'Inactive',
@@ -2023,7 +1802,7 @@ export class MastersComponent implements OnInit {
 
       case MasterTab.DocumentTypes:
         headers = ['Code', 'Name', 'Description', 'Status'];
-        rows = this.documentTypes.map(d => [
+        rows = this.simpleMastersState.documentTypes.map(d => [
           d.code,
           d.name,
           // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- an empty string should also fall back to the placeholder/default shown here
@@ -2043,7 +1822,7 @@ export class MastersComponent implements OnInit {
           'Description',
           'Status',
         ];
-        rows = this.sequencePrefixCounters.map(s => [
+        rows = this.simpleMastersState.sequencePrefixCounters.map(s => [
           s.code,
           s.name,
           // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- an empty string should also fall back to the placeholder/default shown here
