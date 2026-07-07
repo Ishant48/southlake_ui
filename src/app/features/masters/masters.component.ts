@@ -109,7 +109,7 @@ type MasterListItem =
   | DocumentType
   | SequencePrefixCounter;
 import { GlMappingsService } from '../../core/services/gl-mappings.service';
-import { ChartOfAccountsService } from '../../core/services/chart-of-accounts.service';
+import { ChartOfAccountsApi } from '../chart-of-accounts/services/chart-of-accounts-api';
 import { GlMapping } from '../../core/models/gl-mapping.model';
 import { ChartOfAccount } from '../../core/models/chart-of-account.model';
 import { ReinsuranceService } from '../../core/services/reinsurance.service';
@@ -177,7 +177,7 @@ export class MastersComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private glMappingsService = inject(GlMappingsService);
-  private coaService = inject(ChartOfAccountsService);
+  private coaService = inject(ChartOfAccountsApi);
   private agGridConfig = inject(AgGridConfigService);
 
   gridOptions: GridOptions = this.agGridConfig.getDefaultGridOptions();
