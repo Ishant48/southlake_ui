@@ -1,11 +1,11 @@
 import { Component, inject, OnInit, ChangeDetectorRef, ViewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink, RouterLinkActive } from '@angular/router';
-import { ActivityLog, ActivityLogsFilter } from '../../../core/models/activity-log.model';
-import { Module } from '../../../core/models/permission.model';
+import { ActivityLog, ActivityLogsFilter } from './models/activity-log.model';
+import { Module } from '../models/permission.model';
 import { AuthService } from '../../../core/services/auth.service';
-import { ActivityLogsService } from '../../../core/services/activity-logs.service';
-import { PermissionsService } from '../../../core/services/permissions.service';
+import { ActivityLogsApi } from './services/activity-logs-api';
+import { PermissionsApi } from '../services/permissions-api';
 import { ToastService } from '../../../shared/components/toast/toast.service';
 import { AgGridAngular } from 'ag-grid-angular';
 import { GridOptions, ColDef, ICellRendererParams } from 'ag-grid-community';
@@ -31,8 +31,8 @@ export class ActivityLogsComponent implements OnInit {
   @ViewChild(AgGridAngular) agGrid!: AgGridAngular;
 
   private authService = inject(AuthService);
-  private logsService = inject(ActivityLogsService);
-  private permissionsService = inject(PermissionsService);
+  private logsService = inject(ActivityLogsApi);
+  private permissionsService = inject(PermissionsApi);
   private toast = inject(ToastService);
   private cdr = inject(ChangeDetectorRef);
   private agGridConfig = inject(AgGridConfigService);

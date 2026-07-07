@@ -9,10 +9,10 @@ import {
   PendingInvite,
   UserStats,
 } from '../models/user.model';
-import { environment } from '../../../environments/environment';
+import { environment } from '../../../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
-export class UsersService {
+export class UsersApi {
   private http = inject(HttpClient);
   private base = `${environment.apiUrl}/users`;
 

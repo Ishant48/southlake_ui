@@ -3,7 +3,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Role, RoleDetail, CreateRolePayload } from '../models/role.model';
 import { PaginatedResult } from '../models/user.model';
-import { environment } from '../../../environments/environment';
+import { environment } from '../../../../environments/environment';
 
 export interface RolesFilter {
   page?: number;
@@ -11,7 +11,7 @@ export interface RolesFilter {
 }
 
 @Injectable({ providedIn: 'root' })
-export class RolesService {
+export class RolesApi {
   private http = inject(HttpClient);
   private base = `${environment.apiUrl}/roles`;
 

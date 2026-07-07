@@ -10,10 +10,10 @@ import {
 } from '@angular/core';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import { RoleDetail, CreateRolePayload } from '../../../../core/models/role.model';
-import { Permission } from '../../../../core/models/permission.model';
-import { RolesService } from '../../../../core/services/roles.service';
-import { PermissionsService } from '../../../../core/services/permissions.service';
+import { RoleDetail, CreateRolePayload } from '../../models/role.model';
+import { Permission } from '../../models/permission.model';
+import { RolesApi } from '../../services/roles-api';
+import { PermissionsApi } from '../../services/permissions-api';
 import { ToastService } from '../../../../shared/components/toast/toast.service';
 
 const COLOR_SWATCHES = ['#e05470', '#0d1b4b', '#2e7d32', '#1565c0', '#e65100', '#7c3aed'];
@@ -32,8 +32,8 @@ export class RolePermissionsModalComponent implements OnChanges {
   @Output() saved = new EventEmitter<void>();
 
   private fb = inject(FormBuilder);
-  private rolesService = inject(RolesService);
-  private permissionsService = inject(PermissionsService);
+  private rolesService = inject(RolesApi);
+  private permissionsService = inject(PermissionsApi);
   private toast = inject(ToastService);
   private cdr = inject(ChangeDetectorRef);
 

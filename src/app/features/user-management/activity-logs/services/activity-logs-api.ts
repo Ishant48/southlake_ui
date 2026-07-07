@@ -2,11 +2,11 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { ActivityLog, ActivityLogsFilter } from '../models/activity-log.model';
-import { PaginatedResult } from '../models/user.model';
-import { environment } from '../../../environments/environment';
+import { PaginatedResult } from '../../models/user.model';
+import { environment } from '../../../../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
-export class ActivityLogsService {
+export class ActivityLogsApi {
   private http = inject(HttpClient);
   private base = `${environment.apiUrl}/activity-logs`;
 

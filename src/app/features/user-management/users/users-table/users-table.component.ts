@@ -1,6 +1,6 @@
 import { Component, Input, Output, EventEmitter, inject, OnInit } from '@angular/core';
-import { User } from '../../../../core/models/user.model';
-import { Role } from '../../../../core/models/role.model';
+import { User } from '../../models/user.model';
+import { Role } from '../../models/role.model';
 import { AuthService } from '../../../../core/services/auth.service';
 import { AgGridAngular } from 'ag-grid-angular';
 import { GridOptions, ColDef, ICellRendererParams, SelectionChangedEvent } from 'ag-grid-community';

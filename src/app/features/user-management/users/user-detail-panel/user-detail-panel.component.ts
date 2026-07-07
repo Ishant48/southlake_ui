@@ -9,15 +9,15 @@ import {
   ChangeDetectorRef,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { User } from '../../../../core/models/user.model';
-import { Permission } from '../../../../core/models/permission.model';
+import { User } from '../../models/user.model';
+import { Permission } from '../../models/permission.model';
 import { AuthService } from '../../../../core/services/auth.service';
-import { UsersService } from '../../../../core/services/users.service';
-import { PermissionsService } from '../../../../core/services/permissions.service';
+import { UsersApi } from '../../services/users-api';
+import { PermissionsApi } from '../../services/permissions-api';
 import { ToastService } from '../../../../shared/components/toast/toast.service';
 import { UserStatusBadgeComponent } from '../user-status-badge/user-status-badge.component';
 
-import { Role } from '../../../../core/models/role.model';
+import { Role } from '../../models/role.model';
 
 interface UpdateUserProfilePayload {
   status: 'active' | 'inactive' | 'pending';
@@ -44,8 +44,8 @@ export class UserDetailPanelComponent implements OnChanges {
   @Output() updated = new EventEmitter<User>();
 
   private authService = inject(AuthService);
-  private usersService = inject(UsersService);
-  private permissionsService = inject(PermissionsService);
+  private usersService = inject(UsersApi);
+  private permissionsService = inject(PermissionsApi);
   private toast = inject(ToastService);
   private cdr = inject(ChangeDetectorRef);
 
