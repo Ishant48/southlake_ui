@@ -4,14 +4,15 @@ import { FormsModule } from '@angular/forms';
 import { DropdownSearchComponent } from '../../../../shared/components/dropdown-search/dropdown-search.component';
 import { LineOfBusiness, CobMaster } from '../../models/master.model';
 
-export type SimpleMode =
-  | 'lob'
-  | 'cob'
-  | 'reinsurer'
-  | 'broker'
-  | 'product'
-  | 'document-type'
-  | 'sequence-prefix-counter';
+export enum SimpleMode {
+  Lob = 'lob',
+  Cob = 'cob',
+  Reinsurer = 'reinsurer',
+  Broker = 'broker',
+  Product = 'product',
+  DocumentType = 'document-type',
+  SequencePrefixCounter = 'sequence-prefix-counter',
+}
 
 export interface SimpleFormValue {
   id?: string;
@@ -61,9 +62,11 @@ export function createBlankSimpleForm(): SimpleFormValue {
   styleUrl: './simple-form-modal.scss',
 })
 export class SimpleFormModal implements OnChanges {
+  protected readonly SimpleMode = SimpleMode;
+
   @Input() open = false;
   @Input() title = '';
-  @Input() mode: SimpleMode = 'lob';
+  @Input() mode: SimpleMode = SimpleMode.Lob;
   @Input() model: SimpleFormValue = createBlankSimpleForm();
   @Input() isEditMode = false;
   @Input() submitting = false;

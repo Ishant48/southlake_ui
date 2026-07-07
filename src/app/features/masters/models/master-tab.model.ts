@@ -15,20 +15,21 @@ import {
 } from './master.model';
 import { GlMapping } from './gl-mapping.model';
 
-export type MasterTab =
-  | 'treaties'
-  | 'mgas'
-  | 'lobs'
-  | 'cobs'
-  | 'states'
-  | 'reinsurers'
-  | 'risk-companies'
-  | 'gl-mappings'
-  | 'brokers'
-  | 'products'
-  | 'locked-periods'
-  | 'document-types'
-  | 'sequence-prefix-counters';
+export enum MasterTab {
+  Treaties = 'treaties',
+  Mgas = 'mgas',
+  Lobs = 'lobs',
+  Cobs = 'cobs',
+  States = 'states',
+  Reinsurers = 'reinsurers',
+  RiskCompanies = 'risk-companies',
+  GlMappings = 'gl-mappings',
+  Brokers = 'brokers',
+  Products = 'products',
+  LockedPeriods = 'locked-periods',
+  DocumentTypes = 'document-types',
+  SequencePrefixCounters = 'sequence-prefix-counters',
+}
 
 export type MasterListItem =
   | Treaty
@@ -57,3 +58,9 @@ export type DocumentableMaster =
   | (RiskCompany & { documents: RiskCompanyDocument[] });
 
 export type MasterDocument = MgaDocument | StateDocument | RiskCompanyDocument;
+
+export enum DocumentMode {
+  Mga = 'mga',
+  State = 'state',
+  RiskCompany = 'risk-company',
+}

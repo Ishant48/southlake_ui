@@ -7,61 +7,61 @@
     </div>
     <!-- Dynamic Header Buttons -->
     <div>
-      @if (currentTab === "mgas") {
+      @if (currentTab === MasterTab.Mgas) {
         <button class="btn-primary" (click)="openMgaAdd()">Add MGA</button>
-      } @else if (currentTab === "states") {
+      } @else if (currentTab === MasterTab.States) {
         <button class="btn-primary" (click)="openStateAdd()">Add State</button>
-      } @else if (currentTab === "risk-companies") {
+      } @else if (currentTab === MasterTab.RiskCompanies) {
         <button class="btn-primary" (click)="openRiskCompanyAdd()">Add Risk Company</button>
-      } @else if (currentTab === "gl-mappings") {
+      } @else if (currentTab === MasterTab.GlMappings) {
         <button class="btn-primary" (click)="openGlMappingAdd()">Add Mapping</button>
       } @else if (
-        currentTab === "lobs" ||
-        currentTab === "cobs" ||
-        currentTab === "reinsurers" ||
-        currentTab === "brokers" ||
-        currentTab === "products" ||
-        currentTab === "document-types" ||
-        currentTab === "sequence-prefix-counters"
+        currentTab === MasterTab.Lobs ||
+        currentTab === MasterTab.Cobs ||
+        currentTab === MasterTab.Reinsurers ||
+        currentTab === MasterTab.Brokers ||
+        currentTab === MasterTab.Products ||
+        currentTab === MasterTab.DocumentTypes ||
+        currentTab === MasterTab.SequencePrefixCounters
       ) {
         <button
           class="btn-primary"
           (click)="
             openSimpleAdd(
-              currentTab === 'lobs'
-                ? 'lob'
-                : currentTab === 'cobs'
-                  ? 'cob'
-                  : currentTab === 'reinsurers'
-                    ? 'reinsurer'
-                    : currentTab === 'brokers'
-                      ? 'broker'
-                      : currentTab === 'products'
-                        ? 'product'
-                        : currentTab === 'document-types'
-                          ? 'document-type'
-                          : 'sequence-prefix-counter'
+              currentTab === MasterTab.Lobs
+                ? SimpleMode.Lob
+                : currentTab === MasterTab.Cobs
+                  ? SimpleMode.Cob
+                  : currentTab === MasterTab.Reinsurers
+                    ? SimpleMode.Reinsurer
+                    : currentTab === MasterTab.Brokers
+                      ? SimpleMode.Broker
+                      : currentTab === MasterTab.Products
+                        ? SimpleMode.Product
+                        : currentTab === MasterTab.DocumentTypes
+                          ? SimpleMode.DocumentType
+                          : SimpleMode.SequencePrefixCounter
             )
           "
         >
           Add
           {{
-            currentTab === "lobs"
+            currentTab === MasterTab.Lobs
               ? "LOB"
-              : currentTab === "cobs"
+              : currentTab === MasterTab.Cobs
                 ? "COB"
-                : currentTab === "reinsurers"
+                : currentTab === MasterTab.Reinsurers
                   ? "Reinsurer"
-                  : currentTab === "brokers"
+                  : currentTab === MasterTab.Brokers
                     ? "Broker"
-                    : currentTab === "products"
+                    : currentTab === MasterTab.Products
                       ? "Product"
-                      : currentTab === "document-types"
+                      : currentTab === MasterTab.DocumentTypes
                         ? "Document Type"
                         : "Sequence Counter"
           }}
         </button>
-      } @else if (currentTab === "locked-periods") {
+      } @else if (currentTab === MasterTab.LockedPeriods) {
         <button class="btn-primary" (click)="openLockPeriodAdd()">Lock Period</button>
       }
     </div>
@@ -69,37 +69,67 @@
 
   <!-- Tab Bar -->
   <div class="tab-bar">
-    <button class="tab-link" [class.active]="currentTab === 'treaties'" (click)="selectTab('treaties')">
+    <button class="tab-link" [class.active]="currentTab === MasterTab.Treaties" (click)="selectTab(MasterTab.Treaties)">
       Treaties
     </button>
-    <button class="tab-link" [class.active]="currentTab === 'mgas'" (click)="selectTab('mgas')">MGAs</button>
-    <button class="tab-link" [class.active]="currentTab === 'lobs'" (click)="selectTab('lobs')">LOBs</button>
-    <button class="tab-link" [class.active]="currentTab === 'cobs'" (click)="selectTab('cobs')">COBs</button>
-    <button class="tab-link" [class.active]="currentTab === 'states'" (click)="selectTab('states')">States</button>
-    <button class="tab-link" [class.active]="currentTab === 'reinsurers'" (click)="selectTab('reinsurers')">
+    <button class="tab-link" [class.active]="currentTab === MasterTab.Mgas" (click)="selectTab(MasterTab.Mgas)">
+      MGAs
+    </button>
+    <button class="tab-link" [class.active]="currentTab === MasterTab.Lobs" (click)="selectTab(MasterTab.Lobs)">
+      LOBs
+    </button>
+    <button class="tab-link" [class.active]="currentTab === MasterTab.Cobs" (click)="selectTab(MasterTab.Cobs)">
+      COBs
+    </button>
+    <button class="tab-link" [class.active]="currentTab === MasterTab.States" (click)="selectTab(MasterTab.States)">
+      States
+    </button>
+    <button
+      class="tab-link"
+      [class.active]="currentTab === MasterTab.Reinsurers"
+      (click)="selectTab(MasterTab.Reinsurers)"
+    >
       Reinsurers
     </button>
-    <button class="tab-link" [class.active]="currentTab === 'risk-companies'" (click)="selectTab('risk-companies')">
+    <button
+      class="tab-link"
+      [class.active]="currentTab === MasterTab.RiskCompanies"
+      (click)="selectTab(MasterTab.RiskCompanies)"
+    >
       Risk Companies
     </button>
-    <button class="tab-link" [class.active]="currentTab === 'brokers'" (click)="selectTab('brokers')">Brokers</button>
-    <button class="tab-link" [class.active]="currentTab === 'products'" (click)="selectTab('products')">
+    <button class="tab-link" [class.active]="currentTab === MasterTab.Brokers" (click)="selectTab(MasterTab.Brokers)">
+      Brokers
+    </button>
+    <button class="tab-link" [class.active]="currentTab === MasterTab.Products" (click)="selectTab(MasterTab.Products)">
       Products
     </button>
-    <button class="tab-link" [class.active]="currentTab === 'locked-periods'" (click)="selectTab('locked-periods')">
+    <button
+      class="tab-link"
+      [class.active]="currentTab === MasterTab.LockedPeriods"
+      (click)="selectTab(MasterTab.LockedPeriods)"
+    >
       Month-End Closing
     </button>
-    <button class="tab-link" [class.active]="currentTab === 'document-types'" (click)="selectTab('document-types')">
+    <button
+      class="tab-link"
+      [class.active]="currentTab === MasterTab.DocumentTypes"
+      (click)="selectTab(MasterTab.DocumentTypes)"
+    >
       Document Types
     </button>
     <button
       class="tab-link"
-      [class.active]="currentTab === 'sequence-prefix-counters'"
-      (click)="selectTab('sequence-prefix-counters')"
+      [class.active]="currentTab === MasterTab.SequencePrefixCounters"
+      (click)="selectTab(MasterTab.SequencePrefixCounters)"
     >
       Sequence Counters
     </button>
-    <button class="tab-link" [class.active]="currentTab === 'gl-mappings'" (click)="selectTab('gl-mappings')">
+    <button
+      class="tab-link"
+      [class.active]="currentTab === MasterTab.GlMappings"
+      (click)="selectTab(MasterTab.GlMappings)"
+    >
       GL Map
     </button>
   </div>
@@ -108,7 +138,7 @@
   <div class="content-card">
     <!-- Toolbar Filters -->
     <div class="filters-bar">
-      @if (currentTab === "treaties") {
+      @if (currentTab === MasterTab.Treaties) {
         <select class="filter-select" [(ngModel)]="mgaFilter" (ngModelChange)="onFilterChange()">
           <option value="all">All MGAs</option>
           @for (mga of mgaOptions; track mga.id) {

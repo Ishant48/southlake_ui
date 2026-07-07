@@ -19,7 +19,11 @@ import {
   RiskCompanyFormValue,
 } from './components/risk-company-form-modal/risk-company-form-modal';
 import { ItdFormModal, ItdFormValue } from './components/itd-form-modal/itd-form-modal';
-import { SimpleFormModal, SimpleFormValue } from './components/simple-form-modal/simple-form-modal';
+import {
+  SimpleFormModal,
+  SimpleFormValue,
+  SimpleMode,
+} from './components/simple-form-modal/simple-form-modal';
 import { MgaFormModal, MgaFormValue } from './components/mga-form-modal/mga-form-modal';
 import { TreatyFormModal, TreatySaveEvent } from './components/treaty-form-modal/treaty-form-modal';
 import {
@@ -64,13 +68,14 @@ import {
   SimpleEditableItem,
   DocumentableMaster,
   MasterDocument,
+  DocumentMode,
 } from './models/master-tab.model';
 import { ItdExhibit, ItdForm, ItdStateOption } from './models/itd.model';
 import { LockedPeriod } from './models/locked-period.model';
 import { HttpErrorLike } from '../../core/models/http-error.model';
 import { GlMappingsApi } from './services/gl-mappings-api';
 import { ChartOfAccountsApi } from '../chart-of-accounts/services/chart-of-accounts-api';
-import { GlMapping } from './models/gl-mapping.model';
+import { GlMapping, GlMappingType } from './models/gl-mapping.model';
 import { ChartOfAccount } from '../../core/models/chart-of-account.model';
 import { ReinsuranceApi } from '../reinsurance-calculations/services/reinsurance-api';
 
@@ -97,6 +102,9 @@ import { ReinsuranceApi } from '../reinsurance-calculations/services/reinsurance
   styleUrl: './masters.component.scss',
 })
 export class MastersComponent implements OnInit {
+  protected readonly MasterTab = MasterTab;
+  protected readonly SimpleMode = SimpleMode;
+
   // Label formatters for searchable dropdowns
   mgaLabelFn = (item: MgaMaster) => (item ? `${item.name} (${item.mga_code})` : '');
   riskCompanyLabelFn = (item: RiskCompany) =>
@@ -118,12 +126,7 @@ export class MastersComponent implements OnInit {
     { id: 'Other', name: 'Other' },
   ];
 
-  glMappingTypeOptionsList = [
-    { id: 'AR', name: 'AR' },
-    { id: 'AP', name: 'AP' },
-    { id: 'MGA', name: 'MGA' },
-    { id: 'BRK', name: 'BRK' },
-  ];
+  glMappingTypeOptionsList = Object.values(GlMappingType).map(type => ({ id: type, name: type }));
   private statesApi = inject(StatesApi);
   private mgasApi = inject(MgasApi);
   private reinsurersApi = inject(ReinsurersApi);
@@ -150,7 +153,7 @@ export class MastersComponent implements OnInit {
   @ViewChild('monthlyExcelInput') monthlyExcelInput!: ElementRef<HTMLInputElement>;
   @ViewChild('itdExcelInput') itdExcelInput!: ElementRef<HTMLInputElement>;
 
-  currentTab: MasterTab = 'treaties';
+  currentTab: MasterTab = MasterTab.Treaties;
   glMappings: GlMapping[] = [];
   coaOptions: ChartOfAccount[] = [];
   showGlMappingModal = false;
@@ -159,7 +162,6 @@ export class MastersComponent implements OnInit {
     coa_id: '',
     type: '',
   };
-  glMappingTypeOptions = ['AR', 'AP', 'MGA', 'BRK'];
   loading = false;
   searchTerm = '';
   statusFilter: 'all' | 'active' | 'inactive' = 'all';
@@ -189,14 +191,7 @@ export class MastersComponent implements OnInit {
   // Simple Modals (LOB, COB, Reinsurer, Broker, Product)
   showSimpleModal = false;
   simpleModalTitle = '';
-  simpleMode:
-    | 'lob'
-    | 'cob'
-    | 'reinsurer'
-    | 'broker'
-    | 'product'
-    | 'document-type'
-    | 'sequence-prefix-counter' = 'lob';
+  simpleMode: SimpleMode = SimpleMode.Lob;
   isEditMode = false;
   submitting = false;
 
@@ -330,7 +325,7 @@ export class MastersComponent implements OnInit {
 
   // Generic Documents Drawer
   showDocModal = false;
-  documentMode: 'mga' | 'state' | 'risk-company' = 'mga';
+  documentMode: DocumentMode = DocumentMode.Mga;
   selectedItem: MgaMaster | StateMaster | RiskCompany | null = null;
   documentsList: MasterDocument[] = [];
   uploadingDoc = false;
@@ -461,27 +456,10 @@ export class MastersComponent implements OnInit {
 
     this.route.queryParams.subscribe(params => {
       const tab = params['tab'] as MasterTab;
-      if (
-        tab &&
-        [
-          'treaties',
-          'mgas',
-          'lobs',
-          'cobs',
-          'states',
-          'reinsurers',
-          'risk-companies',
-          'gl-mappings',
-          'brokers',
-          'products',
-          'locked-periods',
-          'document-types',
-          'sequence-prefix-counters',
-        ].includes(tab)
-      ) {
+      if (tab && Object.values(MasterTab).includes(tab)) {
         this.currentTab = tab;
       } else {
-        this.currentTab = 'treaties';
+        this.currentTab = MasterTab.Treaties;
       }
       this.searchTerm = '';
       this.statusFilter = 'all';
@@ -511,7 +489,7 @@ export class MastersComponent implements OnInit {
     const active = this.activeFilterStatus;
 
     switch (this.currentTab) {
-      case 'treaties':
+      case MasterTab.Treaties:
         this.reinsuranceService.getWorkbooks().subscribe({
           next: wbs => {
             this.seededProgramITD.clear();
@@ -557,7 +535,7 @@ export class MastersComponent implements OnInit {
           },
         });
         break;
-      case 'mgas':
+      case MasterTab.Mgas:
         this.mgasApi.getMgas(search, active).subscribe({
           next: res => {
             this.mgas = res;
@@ -571,7 +549,7 @@ export class MastersComponent implements OnInit {
           },
         });
         break;
-      case 'lobs':
+      case MasterTab.Lobs:
         this.lobsApi.getLobs(search, active).subscribe({
           next: res => {
             this.lobs = res;
@@ -585,7 +563,7 @@ export class MastersComponent implements OnInit {
           },
         });
         break;
-      case 'cobs':
+      case MasterTab.Cobs:
         this.cobsApi.getCobs(search, active).subscribe({
           next: res => {
             this.cobs = res;
@@ -599,7 +577,7 @@ export class MastersComponent implements OnInit {
           },
         });
         break;
-      case 'states':
+      case MasterTab.States:
         this.statesApi.getStates(search, active).subscribe({
           next: res => {
             this.states = res;
@@ -613,7 +591,7 @@ export class MastersComponent implements OnInit {
           },
         });
         break;
-      case 'reinsurers':
+      case MasterTab.Reinsurers:
         this.reinsurersApi.getReinsurers(search, active).subscribe({
           next: res => {
             this.reinsurers = res;
@@ -627,7 +605,7 @@ export class MastersComponent implements OnInit {
           },
         });
         break;
-      case 'risk-companies':
+      case MasterTab.RiskCompanies:
         this.riskCompaniesApi.getRiskCompanies(search, active).subscribe({
           next: res => {
             this.riskCompanies = res;
@@ -641,10 +619,10 @@ export class MastersComponent implements OnInit {
           },
         });
         break;
-      case 'gl-mappings':
+      case MasterTab.GlMappings:
         this.loadGlMappings();
         break;
-      case 'brokers':
+      case MasterTab.Brokers:
         this.brokersApi.getBrokers(search, active).subscribe({
           next: res => {
             this.brokers = res;
@@ -658,7 +636,7 @@ export class MastersComponent implements OnInit {
           },
         });
         break;
-      case 'products':
+      case MasterTab.Products:
         this.productsApi.getProducts(search, active).subscribe({
           next: res => {
             this.products = res;
@@ -672,7 +650,7 @@ export class MastersComponent implements OnInit {
           },
         });
         break;
-      case 'locked-periods':
+      case MasterTab.LockedPeriods:
         this.lockedPeriodsApi.getLockedPeriods(search).subscribe({
           next: res => {
             this.lockedPeriods = res;
@@ -686,7 +664,7 @@ export class MastersComponent implements OnInit {
           },
         });
         break;
-      case 'document-types':
+      case MasterTab.DocumentTypes:
         this.documentTypesApi.getDocumentTypes(search, active).subscribe({
           next: res => {
             this.documentTypes = res;
@@ -700,7 +678,7 @@ export class MastersComponent implements OnInit {
           },
         });
         break;
-      case 'sequence-prefix-counters':
+      case MasterTab.SequencePrefixCounters:
         this.sequencePrefixCountersApi.getSequencePrefixCounters(search, active).subscribe({
           next: res => {
             this.sequencePrefixCounters = res;
@@ -731,7 +709,7 @@ export class MastersComponent implements OnInit {
 
   get currentList(): MasterListItem[] {
     switch (this.currentTab) {
-      case 'treaties': {
+      case MasterTab.Treaties: {
         let list = this.treaties;
         if (this.mgaFilter && this.mgaFilter !== 'all') {
           list = list.filter(
@@ -742,29 +720,29 @@ export class MastersComponent implements OnInit {
         }
         return list;
       }
-      case 'mgas':
+      case MasterTab.Mgas:
         return this.mgas;
-      case 'lobs':
+      case MasterTab.Lobs:
         return this.lobs;
-      case 'cobs':
+      case MasterTab.Cobs:
         return this.cobs;
-      case 'states':
+      case MasterTab.States:
         return this.states;
-      case 'reinsurers':
+      case MasterTab.Reinsurers:
         return this.reinsurers;
-      case 'risk-companies':
+      case MasterTab.RiskCompanies:
         return this.riskCompanies;
-      case 'gl-mappings':
+      case MasterTab.GlMappings:
         return this.glMappings;
-      case 'brokers':
+      case MasterTab.Brokers:
         return this.brokers;
-      case 'products':
+      case MasterTab.Products:
         return this.products;
-      case 'locked-periods':
+      case MasterTab.LockedPeriods:
         return this.lockedPeriods;
-      case 'document-types':
+      case MasterTab.DocumentTypes:
         return this.documentTypes;
-      case 'sequence-prefix-counters':
+      case MasterTab.SequencePrefixCounters:
         return this.sequencePrefixCounters;
       default:
         return [];
@@ -798,7 +776,7 @@ export class MastersComponent implements OnInit {
     };
 
     switch (this.currentTab) {
-      case 'treaties':
+      case MasterTab.Treaties:
         return [
           { headerName: 'CODE', field: 'treaty_code', flex: 1, minWidth: 100, maxWidth: 120 },
           { headerName: 'TREATY NAME', field: 'name', flex: 2, minWidth: 150 },
@@ -857,7 +835,7 @@ export class MastersComponent implements OnInit {
           },
         ];
 
-      case 'mgas':
+      case MasterTab.Mgas:
         return [
           { headerName: 'MGA CODE', field: 'mga_code', flex: 1, minWidth: 100, maxWidth: 120 },
           { headerName: 'MGA NAME', field: 'name', flex: 2, minWidth: 150 },
@@ -882,7 +860,7 @@ export class MastersComponent implements OnInit {
               ],
               onClick: (action: string, data: MgaMaster) => {
                 if (action === 'addTreaty') this.openTreatyAdd(data.id);
-                if (action === 'doc') this.openDocModal('mga', data);
+                if (action === 'doc') this.openDocModal(DocumentMode.Mga, data);
                 if (action === 'edit') this.openMgaEdit(data);
                 if (action === 'delete') this.deleteMga(data);
               },
@@ -894,7 +872,7 @@ export class MastersComponent implements OnInit {
           },
         ];
 
-      case 'states':
+      case MasterTab.States:
         return [
           { headerName: 'STATE CODE', field: 'state_code', flex: 1, minWidth: 100 },
           { headerName: 'STATE ABBR', field: 'state_abbr', flex: 1, minWidth: 100 },
@@ -910,7 +888,7 @@ export class MastersComponent implements OnInit {
                 { label: 'Delete', action: 'delete', danger: true },
               ],
               onClick: (action: string, data: StateMaster) => {
-                if (action === 'doc') this.openDocModal('state', data);
+                if (action === 'doc') this.openDocModal(DocumentMode.State, data);
                 if (action === 'notes')
                   this.openNotesModal('State Notes: ' + data.name, data.notes);
                 if (action === 'edit') this.openStateEdit(data);
@@ -924,7 +902,7 @@ export class MastersComponent implements OnInit {
           },
         ];
 
-      case 'risk-companies':
+      case MasterTab.RiskCompanies:
         return [
           {
             headerName: 'COMPANY',
@@ -956,7 +934,7 @@ export class MastersComponent implements OnInit {
                 { label: 'Delete', action: 'delete', danger: true },
               ],
               onClick: (action: string, data: RiskCompany) => {
-                if (action === 'doc') this.openDocModal('risk-company', data);
+                if (action === 'doc') this.openDocModal(DocumentMode.RiskCompany, data);
                 if (action === 'notes')
                   this.openNotesModal('Risk Company Notes: ' + data.name, data.notes);
                 if (action === 'policy') this.viewPolicy(data);
@@ -971,7 +949,7 @@ export class MastersComponent implements OnInit {
           },
         ];
 
-      case 'gl-mappings':
+      case MasterTab.GlMappings:
         return [
           {
             headerName: 'GL NUMBER',
@@ -1007,7 +985,7 @@ export class MastersComponent implements OnInit {
           },
         ];
 
-      case 'lobs':
+      case MasterTab.Lobs:
         return [
           { headerName: 'LOB CODE', field: 'lob_code', flex: 1, minWidth: 100, maxWidth: 120 },
           {
@@ -1047,8 +1025,8 @@ export class MastersComponent implements OnInit {
                 { label: 'Delete', action: 'delete', danger: true },
               ],
               onClick: (action: string, data: LineOfBusiness) => {
-                if (action === 'edit') this.openSimpleEdit('lob', data);
-                if (action === 'delete') this.deleteSimple('lob', data);
+                if (action === 'edit') this.openSimpleEdit(SimpleMode.Lob, data);
+                if (action === 'delete') this.deleteSimple(SimpleMode.Lob, data);
               },
             },
             flex: 0,
@@ -1058,7 +1036,7 @@ export class MastersComponent implements OnInit {
           },
         ];
 
-      case 'cobs':
+      case MasterTab.Cobs:
         return [
           { headerName: 'CLASS CODE', field: 'cob_code', flex: 1, minWidth: 100, maxWidth: 120 },
           {
@@ -1099,8 +1077,8 @@ export class MastersComponent implements OnInit {
                 { label: 'Delete', action: 'delete', danger: true },
               ],
               onClick: (action: string, data: CobMaster) => {
-                if (action === 'edit') this.openSimpleEdit('cob', data);
-                if (action === 'delete') this.deleteSimple('cob', data);
+                if (action === 'edit') this.openSimpleEdit(SimpleMode.Cob, data);
+                if (action === 'delete') this.deleteSimple(SimpleMode.Cob, data);
               },
             },
             flex: 0,
@@ -1110,7 +1088,7 @@ export class MastersComponent implements OnInit {
           },
         ];
 
-      case 'reinsurers':
+      case MasterTab.Reinsurers:
         return [
           {
             headerName: 'CODE ID',
@@ -1130,8 +1108,8 @@ export class MastersComponent implements OnInit {
                 { label: 'Delete', action: 'delete', danger: true },
               ],
               onClick: (action: string, data: ReinsurerCompany) => {
-                if (action === 'edit') this.openSimpleEdit('reinsurer', data);
-                if (action === 'delete') this.deleteSimple('reinsurer', data);
+                if (action === 'edit') this.openSimpleEdit(SimpleMode.Reinsurer, data);
+                if (action === 'delete') this.deleteSimple(SimpleMode.Reinsurer, data);
               },
             },
             flex: 0,
@@ -1141,7 +1119,7 @@ export class MastersComponent implements OnInit {
           },
         ];
 
-      case 'brokers':
+      case MasterTab.Brokers:
         return [
           { headerName: 'BROKER CODE', field: 'brokerCode', flex: 1.5, minWidth: 120 },
           { headerName: 'NAME', field: 'name', flex: 2, minWidth: 150 },
@@ -1158,8 +1136,8 @@ export class MastersComponent implements OnInit {
                 { label: 'Delete', action: 'delete', danger: true },
               ],
               onClick: (action: string, data: SimpleMasterRecord) => {
-                if (action === 'edit') this.openSimpleEdit('broker', data);
-                if (action === 'delete') this.deleteSimple('broker', data);
+                if (action === 'edit') this.openSimpleEdit(SimpleMode.Broker, data);
+                if (action === 'delete') this.deleteSimple(SimpleMode.Broker, data);
               },
             },
             flex: 0,
@@ -1169,7 +1147,7 @@ export class MastersComponent implements OnInit {
           },
         ];
 
-      case 'products':
+      case MasterTab.Products:
         return [
           { headerName: 'PRODUCT ID', field: 'productId', flex: 1.5, minWidth: 120 },
           { headerName: 'NAME', field: 'name', flex: 2, minWidth: 150 },
@@ -1198,8 +1176,8 @@ export class MastersComponent implements OnInit {
                 { label: 'Delete', action: 'delete', danger: true },
               ],
               onClick: (action: string, data: SimpleMasterRecord) => {
-                if (action === 'edit') this.openSimpleEdit('product', data);
-                if (action === 'delete') this.deleteSimple('product', data);
+                if (action === 'edit') this.openSimpleEdit(SimpleMode.Product, data);
+                if (action === 'delete') this.deleteSimple(SimpleMode.Product, data);
               },
             },
             flex: 0,
@@ -1209,7 +1187,7 @@ export class MastersComponent implements OnInit {
           },
         ];
 
-      case 'locked-periods':
+      case MasterTab.LockedPeriods:
         return [
           { headerName: 'PERIOD', field: 'period', flex: 1.5, minWidth: 120 },
           {
@@ -1257,7 +1235,7 @@ export class MastersComponent implements OnInit {
           },
         ];
 
-      case 'document-types':
+      case MasterTab.DocumentTypes:
         return [
           { headerName: 'CODE', field: 'code', flex: 1.5, minWidth: 120 },
           { headerName: 'NAME', field: 'name', flex: 2, minWidth: 150 },
@@ -1272,8 +1250,8 @@ export class MastersComponent implements OnInit {
                 { label: 'Delete', action: 'delete', danger: true },
               ],
               onClick: (action: string, data: DocumentType) => {
-                if (action === 'edit') this.openSimpleEdit('document-type', data);
-                if (action === 'delete') this.deleteSimple('document-type', data);
+                if (action === 'edit') this.openSimpleEdit(SimpleMode.DocumentType, data);
+                if (action === 'delete') this.deleteSimple(SimpleMode.DocumentType, data);
               },
             },
             flex: 0,
@@ -1283,7 +1261,7 @@ export class MastersComponent implements OnInit {
           },
         ];
 
-      case 'sequence-prefix-counters':
+      case MasterTab.SequencePrefixCounters:
         return [
           { headerName: 'CODE', field: 'code', flex: 1.5, minWidth: 120 },
           { headerName: 'NAME', field: 'name', flex: 2, minWidth: 150 },
@@ -1313,8 +1291,8 @@ export class MastersComponent implements OnInit {
                 { label: 'Delete', action: 'delete', danger: true },
               ],
               onClick: (action: string, data: SequencePrefixCounter) => {
-                if (action === 'edit') this.openSimpleEdit('sequence-prefix-counter', data);
-                if (action === 'delete') this.deleteSimple('sequence-prefix-counter', data);
+                if (action === 'edit') this.openSimpleEdit(SimpleMode.SequencePrefixCounter, data);
+                if (action === 'delete') this.deleteSimple(SimpleMode.SequencePrefixCounter, data);
               },
             },
             flex: 0,
@@ -1412,26 +1390,26 @@ export class MastersComponent implements OnInit {
       is_active: this.simpleForm.is_active,
     };
 
-    if (this.simpleMode === 'lob' || this.simpleMode === 'cob') {
+    if (this.simpleMode === SimpleMode.Lob || this.simpleMode === SimpleMode.Cob) {
       payload['description'] = this.simpleForm.description || null;
-      payload['type'] = this.simpleMode === 'cob' ? this.simpleForm.type || null : null;
+      payload['type'] = this.simpleMode === SimpleMode.Cob ? this.simpleForm.type || null : null;
       payload['taxable'] = this.simpleForm.taxable || false;
       payload['priority'] = Number(this.simpleForm.priority || 1);
       payload['fully_earned'] = this.simpleForm.fully_earned || false;
-    } else if (this.simpleMode === 'broker') {
+    } else if (this.simpleMode === SimpleMode.Broker) {
       // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- '' should be sent as null, not an empty string
       payload['contact_name'] = this.simpleForm.contact_name || null;
       // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- '' should be sent as null, not an empty string
       payload['contact_email'] = this.simpleForm.contact_email || null;
       // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- '' should be sent as null, not an empty string
       payload['contact_phone'] = this.simpleForm.contact_phone || null;
-    } else if (this.simpleMode === 'product') {
+    } else if (this.simpleMode === SimpleMode.Product) {
       payload['description'] = this.simpleForm.description || null;
       // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- '' should be sent as null, not an empty string
       payload['lob_id'] = this.simpleForm.lob_id || null;
       // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- '' should be sent as null, not an empty string
       payload['cob_id'] = this.simpleForm.cob_id || null;
-    } else if (this.simpleMode === 'sequence-prefix-counter') {
+    } else if (this.simpleMode === SimpleMode.SequencePrefixCounter) {
       payload['description'] = this.simpleForm.description || null;
       // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- '' should be sent as null, not an empty string
       payload['prefix'] = this.simpleForm.prefix || null;
@@ -1444,25 +1422,25 @@ export class MastersComponent implements OnInit {
       if (!this.simpleForm.id) return;
       const id = this.simpleForm.id;
       switch (this.simpleMode) {
-        case 'lob':
+        case SimpleMode.Lob:
           request = this.lobsApi.updateLob(id, payload as Partial<LineOfBusiness>);
           break;
-        case 'cob':
+        case SimpleMode.Cob:
           request = this.cobsApi.updateCob(id, payload as Partial<CobMaster>);
           break;
-        case 'reinsurer':
+        case SimpleMode.Reinsurer:
           request = this.reinsurersApi.updateReinsurer(id, payload as Partial<ReinsurerCompany>);
           break;
-        case 'broker':
+        case SimpleMode.Broker:
           request = this.brokersApi.updateBroker(id, payload as SimpleMasterRecord);
           break;
-        case 'product':
+        case SimpleMode.Product:
           request = this.productsApi.updateProduct(id, payload as SimpleMasterRecord);
           break;
-        case 'document-type':
+        case SimpleMode.DocumentType:
           request = this.documentTypesApi.updateDocumentType(id, payload as Partial<DocumentType>);
           break;
-        case 'sequence-prefix-counter':
+        case SimpleMode.SequencePrefixCounter:
           request = this.sequencePrefixCountersApi.updateSequencePrefixCounter(
             id,
             payload as Partial<SequencePrefixCounter>,
@@ -1471,25 +1449,25 @@ export class MastersComponent implements OnInit {
       }
     } else {
       switch (this.simpleMode) {
-        case 'lob':
+        case SimpleMode.Lob:
           request = this.lobsApi.createLob(payload as Partial<LineOfBusiness>);
           break;
-        case 'cob':
+        case SimpleMode.Cob:
           request = this.cobsApi.createCob(payload as Partial<CobMaster>);
           break;
-        case 'reinsurer':
+        case SimpleMode.Reinsurer:
           request = this.reinsurersApi.createReinsurer(payload as Partial<ReinsurerCompany>);
           break;
-        case 'broker':
+        case SimpleMode.Broker:
           request = this.brokersApi.createBroker(payload as SimpleMasterRecord);
           break;
-        case 'product':
+        case SimpleMode.Product:
           request = this.productsApi.createProduct(payload as SimpleMasterRecord);
           break;
-        case 'document-type':
+        case SimpleMode.DocumentType:
           request = this.documentTypesApi.createDocumentType(payload as Partial<DocumentType>);
           break;
-        case 'sequence-prefix-counter':
+        case SimpleMode.SequencePrefixCounter:
           request = this.sequencePrefixCountersApi.createSequencePrefixCounter(
             payload as Partial<SequencePrefixCounter>,
           );
@@ -1521,25 +1499,25 @@ export class MastersComponent implements OnInit {
       const id = item.id;
       let request!: Observable<unknown>;
       switch (mode) {
-        case 'lob':
+        case SimpleMode.Lob:
           request = this.lobsApi.deleteLob(id);
           break;
-        case 'cob':
+        case SimpleMode.Cob:
           request = this.cobsApi.deleteCob(id);
           break;
-        case 'reinsurer':
+        case SimpleMode.Reinsurer:
           request = this.reinsurersApi.deleteReinsurer(id);
           break;
-        case 'broker':
+        case SimpleMode.Broker:
           request = this.brokersApi.deleteBroker(id);
           break;
-        case 'product':
+        case SimpleMode.Product:
           request = this.productsApi.deleteProduct(id);
           break;
-        case 'document-type':
+        case SimpleMode.DocumentType:
           request = this.documentTypesApi.deleteDocumentType(id);
           break;
-        case 'sequence-prefix-counter':
+        case SimpleMode.SequencePrefixCounter:
           request = this.sequencePrefixCountersApi.deleteSequencePrefixCounter(id);
           break;
       }
@@ -1689,10 +1667,7 @@ export class MastersComponent implements OnInit {
     return `${code} - ${this.selectedItem?.name ?? ''}`;
   }
 
-  openDocModal(
-    mode: 'mga' | 'state' | 'risk-company',
-    item: MgaMaster | StateMaster | RiskCompany,
-  ): void {
+  openDocModal(mode: DocumentMode, item: MgaMaster | StateMaster | RiskCompany): void {
     this.documentMode = mode;
     this.selectedItem = item;
     this.documentsList = [];
@@ -1712,9 +1687,9 @@ export class MastersComponent implements OnInit {
     if (!this.selectedItem) return;
     const id = this.selectedItem.id;
     let request: Observable<DocumentableMaster>;
-    if (this.documentMode === 'mga') {
+    if (this.documentMode === DocumentMode.Mga) {
       request = this.mgasApi.getMga(id);
-    } else if (this.documentMode === 'state') {
+    } else if (this.documentMode === DocumentMode.State) {
       request = this.statesApi.getState(id);
     } else {
       request = this.riskCompaniesApi.getRiskCompany(id);
@@ -1737,9 +1712,9 @@ export class MastersComponent implements OnInit {
 
     this.uploadingDoc = true;
     let request: Observable<MasterDocument>;
-    if (this.documentMode === 'mga') {
+    if (this.documentMode === DocumentMode.Mga) {
       request = this.mgasApi.uploadMgaDocument(this.selectedItem.id, file, documentType);
-    } else if (this.documentMode === 'state') {
+    } else if (this.documentMode === DocumentMode.State) {
       request = this.statesApi.uploadStateDocument(this.selectedItem.id, file, documentType);
     } else {
       request = this.riskCompaniesApi.uploadRiskCompanyDocument(
@@ -1766,9 +1741,9 @@ export class MastersComponent implements OnInit {
 
   downloadDoc(doc: DrawerDocument): void {
     let endpoint = '';
-    if (this.documentMode === 'mga') {
+    if (this.documentMode === DocumentMode.Mga) {
       endpoint = 'mgas';
-    } else if (this.documentMode === 'state') {
+    } else if (this.documentMode === DocumentMode.State) {
       endpoint = 'states';
     } else {
       endpoint = 'risk-companies';
@@ -1784,9 +1759,9 @@ export class MastersComponent implements OnInit {
     this.confirmMessage = `Are you sure you want to delete attachment "${doc.file_name}"?`;
     this.pendingAction = () => {
       let request: Observable<void>;
-      if (this.documentMode === 'mga') {
+      if (this.documentMode === DocumentMode.Mga) {
         request = this.mgasApi.deleteMgaDocument(doc.id);
-      } else if (this.documentMode === 'state') {
+      } else if (this.documentMode === DocumentMode.State) {
         request = this.statesApi.deleteStateDocument(doc.id);
       } else {
         request = this.riskCompaniesApi.deleteRiskCompanyDocument(doc.id);
@@ -2356,21 +2331,21 @@ export class MastersComponent implements OnInit {
     switch (mode) {
       case 'state':
         return 'State';
-      case 'lob':
+      case SimpleMode.Lob:
         return 'Line of Business';
-      case 'cob':
+      case SimpleMode.Cob:
         return 'Class of Business';
-      case 'reinsurer':
+      case SimpleMode.Reinsurer:
         return 'Reinsurer Company';
       case 'risk-company':
         return 'Risk Company';
-      case 'broker':
+      case SimpleMode.Broker:
         return 'Broker';
-      case 'product':
+      case SimpleMode.Product:
         return 'Product';
-      case 'document-type':
+      case SimpleMode.DocumentType:
         return 'Document Type';
-      case 'sequence-prefix-counter':
+      case SimpleMode.SequencePrefixCounter:
         return 'Sequence Prefix & Counter';
       default:
         return 'Master';
@@ -2381,11 +2356,11 @@ export class MastersComponent implements OnInit {
     switch (mode) {
       case 'state':
         return 'state_code';
-      case 'lob':
+      case SimpleMode.Lob:
         return 'lob_code';
-      case 'cob':
+      case SimpleMode.Cob:
         return 'cob_code';
-      case 'reinsurer':
+      case SimpleMode.Reinsurer:
         return 'reinsurer_company_id';
       case 'risk-company':
         return 'risk_company_id';
@@ -2400,7 +2375,7 @@ export class MastersComponent implements OnInit {
     let filename = '';
 
     switch (this.currentTab) {
-      case 'treaties':
+      case MasterTab.Treaties:
         headers = ['Code', 'Treaty Name', 'MGA', 'Risk Company', 'States', 'LOBs (COBs)', 'Status'];
         rows = this.treaties.map(t => [
           t.treaty_code,
@@ -2415,7 +2390,7 @@ export class MastersComponent implements OnInit {
         filename = 'treaties.csv';
         break;
 
-      case 'mgas':
+      case MasterTab.Mgas:
         headers = ['MGA Code', 'MGA Name', 'Tax Payable In-house', 'Ledger Amount', 'Status'];
         rows = this.mgas.map(m => [
           m.mga_code,
@@ -2427,7 +2402,7 @@ export class MastersComponent implements OnInit {
         filename = 'mgas.csv';
         break;
 
-      case 'states':
+      case MasterTab.States:
         headers = ['State Code', 'State Abbr', 'State Name', 'Status'];
         rows = this.states.map(s => [
           s.state_code,
@@ -2438,7 +2413,7 @@ export class MastersComponent implements OnInit {
         filename = 'states.csv';
         break;
 
-      case 'risk-companies':
+      case MasterTab.RiskCompanies:
         headers = [
           'Company',
           'ID Name',
@@ -2472,7 +2447,7 @@ export class MastersComponent implements OnInit {
         filename = 'risk_companies.csv';
         break;
 
-      case 'lobs':
+      case MasterTab.Lobs:
         headers = [
           'LOB Code',
           'LOB Name',
@@ -2495,7 +2470,7 @@ export class MastersComponent implements OnInit {
         filename = 'lobs.csv';
         break;
 
-      case 'cobs':
+      case MasterTab.Cobs:
         headers = [
           'Class Code',
           'Class Name',
@@ -2521,7 +2496,7 @@ export class MastersComponent implements OnInit {
         filename = 'cobs.csv';
         break;
 
-      case 'reinsurers':
+      case MasterTab.Reinsurers:
         headers = ['Code ID', 'Name', 'Status'];
         rows = this.reinsurers.map(r => [
           r.reinsurer_company_id,
@@ -2531,13 +2506,13 @@ export class MastersComponent implements OnInit {
         filename = 'reinsurers.csv';
         break;
 
-      case 'gl-mappings':
+      case MasterTab.GlMappings:
         headers = ['GL Number', 'Type'];
         rows = this.glMappings.map(m => [this.getGLNumberDisplay(m), m.type]);
         filename = 'gl_mappings.csv';
         break;
 
-      case 'document-types':
+      case MasterTab.DocumentTypes:
         headers = ['Code', 'Name', 'Description', 'Status'];
         rows = this.documentTypes.map(d => [
           d.code,
@@ -2549,7 +2524,7 @@ export class MastersComponent implements OnInit {
         filename = 'document_types.csv';
         break;
 
-      case 'sequence-prefix-counters':
+      case MasterTab.SequencePrefixCounters:
         headers = [
           'Code',
           'Name',
