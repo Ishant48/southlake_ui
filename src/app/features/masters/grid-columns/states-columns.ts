@@ -1,10 +1,10 @@
 import { ColDef } from 'ag-grid-community';
-import type { MastersComponent } from '../masters.component';
+import type { StatesTab } from '../components/states-tab/states-tab';
 import { ActionButtonsCell } from '../../../shared/components/grid-renderers/action-buttons-cell/action-buttons-cell';
 import { StateMaster } from '../models/master.model';
 import { DocumentMode } from '../models/master-tab.model';
 
-export function buildStatesColumnDefs(ctx: MastersComponent): ColDef[] {
+export function buildStatesColumnDefs(ctx: StatesTab): ColDef[] {
   return [
     { headerName: 'STATE CODE', field: 'state_code', flex: 1, minWidth: 100 },
     { headerName: 'STATE ABBR', field: 'state_abbr', flex: 1, minWidth: 100 },

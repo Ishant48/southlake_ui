@@ -1,11 +1,11 @@
 import { ColDef, ICellRendererParams } from 'ag-grid-community';
-import type { MastersComponent } from '../masters.component';
+import type { SimpleMasterTab } from '../components/simple-master-tab/simple-master-tab';
 import { ActionButtonsCell } from '../../../shared/components/grid-renderers/action-buttons-cell/action-buttons-cell';
 import { StatusBadgeCell } from '../../../shared/components/grid-renderers/status-badge-cell/status-badge-cell';
 import { CobMaster } from '../models/master.model';
 import { SimpleMode } from '../components/simple-form-modal/simple-form-modal';
 
-export function buildCobsColumnDefs(ctx: MastersComponent, statusCol: ColDef): ColDef[] {
+export function buildCobsColumnDefs(ctx: SimpleMasterTab, statusCol: ColDef): ColDef[] {
   return [
     { headerName: 'CLASS CODE', field: 'cob_code', flex: 1, minWidth: 100, maxWidth: 120 },
     {

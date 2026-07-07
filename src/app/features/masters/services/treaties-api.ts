@@ -4,7 +4,7 @@ import { Observable } from 'rxjs';
 import { environment } from '../../../../environments/environment';
 import { Treaty } from '../models/master.model';
 
-type TreatyPayload = Partial<Treaty> & {
+export type TreatyPayload = Partial<Treaty> & {
   state_ids?: string[];
   lobs?: { lob_id: string; cob_ids: string[] }[];
 };

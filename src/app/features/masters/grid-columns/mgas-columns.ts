@@ -1,11 +1,11 @@
 import { ColDef } from 'ag-grid-community';
-import type { MastersComponent } from '../masters.component';
+import type { MgasTab } from '../components/mgas-tab/mgas-tab';
 import { ActionButtonsCell } from '../../../shared/components/grid-renderers/action-buttons-cell/action-buttons-cell';
 import { StatusBadgeCell } from '../../../shared/components/grid-renderers/status-badge-cell/status-badge-cell';
 import { MgaMaster } from '../models/master.model';
 import { DocumentMode } from '../models/master-tab.model';
 
-export function buildMgasColumnDefs(ctx: MastersComponent, statusCol: ColDef): ColDef[] {
+export function buildMgasColumnDefs(ctx: MgasTab, statusCol: ColDef): ColDef[] {
   return [
     { headerName: 'MGA CODE', field: 'mga_code', flex: 1, minWidth: 100, maxWidth: 120 },
     { headerName: 'MGA NAME', field: 'name', flex: 2, minWidth: 150 },

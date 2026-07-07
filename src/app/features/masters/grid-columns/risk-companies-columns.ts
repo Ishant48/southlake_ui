@@ -1,11 +1,11 @@
 import { ColDef } from 'ag-grid-community';
-import type { MastersComponent } from '../masters.component';
+import type { RiskCompaniesTab } from '../components/risk-companies-tab/risk-companies-tab';
 import { ActionButtonsCell } from '../../../shared/components/grid-renderers/action-buttons-cell/action-buttons-cell';
 import { StatusBadgeCell } from '../../../shared/components/grid-renderers/status-badge-cell/status-badge-cell';
 import { RiskCompany } from '../models/master.model';
 import { DocumentMode } from '../models/master-tab.model';
 
-export function buildRiskCompaniesColumnDefs(ctx: MastersComponent): ColDef[] {
+export function buildRiskCompaniesColumnDefs(ctx: RiskCompaniesTab): ColDef[] {
   return [
     {
       headerName: 'COMPANY',

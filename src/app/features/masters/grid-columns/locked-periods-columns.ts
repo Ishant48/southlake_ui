@@ -1,9 +1,9 @@
 import { ColDef, ICellRendererParams } from 'ag-grid-community';
-import type { MastersComponent } from '../masters.component';
+import type { LockedPeriodsTab } from '../components/locked-periods-tab/locked-periods-tab';
 import { ActionButtonsCell } from '../../../shared/components/grid-renderers/action-buttons-cell/action-buttons-cell';
 import { LockedPeriod } from '../models/locked-period.model';
 
-export function buildLockedPeriodsColumnDefs(ctx: MastersComponent): ColDef[] {
+export function buildLockedPeriodsColumnDefs(ctx: LockedPeriodsTab): ColDef[] {
   return [
     { headerName: 'PERIOD', field: 'period', flex: 1.5, minWidth: 120 },
     {

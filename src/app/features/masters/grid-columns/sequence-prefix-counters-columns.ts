@@ -1,11 +1,11 @@
 import { ColDef } from 'ag-grid-community';
-import type { MastersComponent } from '../masters.component';
+import type { SimpleMasterTab } from '../components/simple-master-tab/simple-master-tab';
 import { ActionButtonsCell } from '../../../shared/components/grid-renderers/action-buttons-cell/action-buttons-cell';
 import { SequencePrefixCounter } from '../models/master.model';
 import { SimpleMode } from '../components/simple-form-modal/simple-form-modal';
 
 export function buildSequencePrefixCountersColumnDefs(
-  ctx: MastersComponent,
+  ctx: SimpleMasterTab,
   statusCol: ColDef,
 ): ColDef[] {
   return [

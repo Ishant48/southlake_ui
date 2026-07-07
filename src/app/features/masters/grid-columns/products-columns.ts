@@ -1,10 +1,10 @@
 import { ColDef } from 'ag-grid-community';
-import type { MastersComponent } from '../masters.component';
+import type { SimpleMasterTab } from '../components/simple-master-tab/simple-master-tab';
 import { ActionButtonsCell } from '../../../shared/components/grid-renderers/action-buttons-cell/action-buttons-cell';
 import { SimpleMasterRecord } from '../models/master.model';
 import { SimpleMode } from '../components/simple-form-modal/simple-form-modal';
 
-export function buildProductsColumnDefs(ctx: MastersComponent, statusCol: ColDef): ColDef[] {
+export function buildProductsColumnDefs(ctx: SimpleMasterTab, statusCol: ColDef): ColDef[] {
   return [
     { headerName: 'PRODUCT ID', field: 'productId', flex: 1.5, minWidth: 120 },
     { headerName: 'NAME', field: 'name', flex: 2, minWidth: 150 },

@@ -1,12 +1,12 @@
 import { ColDef } from 'ag-grid-community';
-import type { MastersComponent } from '../masters.component';
+import type { TreatiesTab } from '../components/treaties-tab/treaties-tab';
 import {
   ActionButtonConfig,
   ActionButtonsCell,
 } from '../../../shared/components/grid-renderers/action-buttons-cell/action-buttons-cell';
 import { Treaty } from '../models/master.model';
 
-export function buildTreatiesColumnDefs(ctx: MastersComponent): ColDef[] {
+export function buildTreatiesColumnDefs(ctx: TreatiesTab): ColDef[] {
   return [
     { headerName: 'CODE', field: 'treaty_code', flex: 1, minWidth: 100, maxWidth: 120 },
     { headerName: 'TREATY NAME', field: 'name', flex: 2, minWidth: 150 },

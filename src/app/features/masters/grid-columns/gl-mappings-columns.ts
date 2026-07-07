@@ -1,9 +1,9 @@
 import { ColDef, ICellRendererParams } from 'ag-grid-community';
-import type { MastersComponent } from '../masters.component';
+import type { GlMappingsTab } from '../components/gl-mappings-tab/gl-mappings-tab';
 import { ActionButtonsCell } from '../../../shared/components/grid-renderers/action-buttons-cell/action-buttons-cell';
 import { GlMapping } from '../models/gl-mapping.model';
 
-export function buildGlMappingsColumnDefs(ctx: MastersComponent): ColDef[] {
+export function buildGlMappingsColumnDefs(ctx: GlMappingsTab): ColDef[] {
   return [
     {
       headerName: 'GL NUMBER',
