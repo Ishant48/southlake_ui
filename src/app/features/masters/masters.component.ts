@@ -108,9 +108,9 @@ type MasterListItem =
   | SimpleMasterRecord
   | DocumentType
   | SequencePrefixCounter;
-import { GlMappingsService } from '../../core/services/gl-mappings.service';
+import { GlMappingsApi } from './services/gl-mappings-api';
 import { ChartOfAccountsApi } from '../chart-of-accounts/services/chart-of-accounts-api';
-import { GlMapping } from '../../core/models/gl-mapping.model';
+import { GlMapping } from './models/gl-mapping.model';
 import { ChartOfAccount } from '../../core/models/chart-of-account.model';
 import { ReinsuranceService } from '../../core/services/reinsurance.service';
 
@@ -176,7 +176,7 @@ export class MastersComponent implements OnInit {
   private cdr = inject(ChangeDetectorRef);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
-  private glMappingsService = inject(GlMappingsService);
+  private glMappingsService = inject(GlMappingsApi);
   private coaService = inject(ChartOfAccountsApi);
   private agGridConfig = inject(AgGridConfigService);
 

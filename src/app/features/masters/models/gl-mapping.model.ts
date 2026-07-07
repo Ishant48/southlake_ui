@@ -1,4 +1,4 @@
-import { ChartOfAccount } from './chart-of-account.model';
+import { ChartOfAccount } from '../../../core/models/chart-of-account.model';
 
 export interface GlMapping {
   id: string;
