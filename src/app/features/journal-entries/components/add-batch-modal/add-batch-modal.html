@@ -1,0 +1,22 @@
+@if (open) {
+  <div class="modal-overlay">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2>Add Batch</h2>
+        <button class="close-btn" (click)="close()">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="je-add-batch-period">Process Period</label>
+          <input id="je-add-batch-period" type="text" class="form-control" [value]="period" readonly />
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-primary" [disabled]="submitting" (click)="submit()">
+          {{ submitting ? "Adding..." : "Add" }}
+        </button>
+        <button class="btn btn-cancel" (click)="close()">Cancel</button>
+      </div>
+    </div>
+  </div>
+}

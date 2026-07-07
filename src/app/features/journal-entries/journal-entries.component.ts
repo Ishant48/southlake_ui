@@ -7,13 +7,14 @@ import { ChartOfAccountsApi } from '../chart-of-accounts/services/chart-of-accou
 import { MastersApi } from '../masters/services/masters-api';
 import { ToastService } from '../../shared/components/toast/toast.service';
 import { ConfirmDialogComponent } from '../../shared/components/confirm-dialog/confirm-dialog.component';
-import { DropdownSearchComponent } from '../../shared/components/dropdown-search/dropdown-search.component';
 import { JournalEntry, JournalEntryBatch, JournalEntryFormRow } from './models/journal-entry.model';
 import { ChartOfAccount } from '../../core/models/chart-of-account.model';
 import { ActionButtonsCell } from '../../shared/components/grid-renderers/action-buttons-cell/action-buttons-cell';
 import { AgGridAngular } from 'ag-grid-angular';
 import { ColDef, GridOptions, ICellRendererParams } from 'ag-grid-community';
 import { AgGridConfigService } from '../../core/services/ag-grid-config.service';
+import { JournalEntryFormView } from './components/journal-entry-form-view/journal-entry-form-view';
+import { AddBatchModal } from './components/add-batch-modal/add-batch-modal';
 
 @Component({
   selector: 'app-journal-entries',
@@ -22,8 +23,9 @@ import { AgGridConfigService } from '../../core/services/ag-grid-config.service'
     CommonModule,
     FormsModule,
     ConfirmDialogComponent,
-    DropdownSearchComponent,
     AgGridAngular,
+    JournalEntryFormView,
+    AddBatchModal,
   ],
   templateUrl: './journal-entries.component.html',
   styleUrl: './journal-entries.component.scss',
@@ -541,71 +543,13 @@ export class JournalEntriesComponent implements OnInit {
     this.cdr.markForCheck();
   }
 
-  addRow(): void {
-    const todayStr = new Date().toISOString().split('T')[0];
-    const prevRow = this.formEntries[this.formEntries.length - 1];
-
-    const newRowConfig = {
-      je_number: this.nextJeNumber,
-      description: prevRow ? prevRow.description : '',
-      coa_id: '',
-      sub: prevRow ? prevRow.sub : '',
-      debit: null,
-      credit: null,
-      date: prevRow ? prevRow.date : todayStr,
-      dp: prevRow ? prevRow.dp : '',
-      policy: prevRow ? prevRow.policy : '',
-      memo: prevRow ? prevRow.memo : '',
-    };
-
-    // Create and push two more rows of same fields
-    this.formEntries.push(this.createBlankRow(newRowConfig));
-    this.formEntries.push(this.createBlankRow(newRowConfig));
-  }
-
-  copyRow(index: number): void {
-    const source = this.formEntries[index];
-    // Create copy with new rowId
-    const duplicate = this.createBlankRow({
-      ...source,
-    });
-    // Insert immediately after the source row
-    this.formEntries.splice(index + 1, 0, duplicate);
-  }
-
-  deleteRow(index: number): void {
-    if (this.formEntries.length > 1) {
-      this.formEntries.splice(index, 1);
-    } else {
-      // Just clear the single remaining row
-      this.formEntries[0] = this.createBlankRow();
-    }
-  }
-
-  get formTotalDebits(): number {
-    return this.formEntries.reduce((sum, r) => sum + Number(r.debit ?? 0), 0);
-  }
-
-  get formTotalCredits(): number {
-    return this.formEntries.reduce((sum, r) => sum + Number(r.credit ?? 0), 0);
-  }
-
-  get formDifference(): number {
-    return Math.abs(this.formTotalDebits - this.formTotalCredits);
-  }
-
-  get isFormBalanced(): boolean {
-    const debits = Math.round((this.formTotalDebits + Number.EPSILON) * 100) / 100;
-    const credits = Math.round((this.formTotalCredits + Number.EPSILON) * 100) / 100;
-    return debits > 0 && debits === credits;
-  }
-
-  postJournalEntries(): void {
+  postJournalEntries(entries: JournalEntryFormRow[]): void {
+    this.formEntries = entries;
     if (!this.selectedBatch) return;
 
     // Validate inputs
-    for (let i = 0; i < this.formEntries.length; i++) {
-      const row = this.formEntries[i];
+    for (let i = 0; i < entries.length; i++) {
+      const row = entries[i];
       if (!row.description.trim()) {
         this.toast.error(`Row ${i + 1}: Description is required`);
         return;
@@ -630,10 +574,14 @@ export class JournalEntriesComponent implements OnInit {
       }
     }
 
-    if (!this.isFormBalanced) {
-      this.toast.error(
-        `Journal Entry is not balanced. Difference: $${this.formDifference.toFixed(2)}`,
-      );
+    const totalDebits = entries.reduce((sum, r) => sum + Number(r.debit ?? 0), 0);
+    const totalCredits = entries.reduce((sum, r) => sum + Number(r.credit ?? 0), 0);
+    const debits = Math.round((totalDebits + Number.EPSILON) * 100) / 100;
+    const credits = Math.round((totalCredits + Number.EPSILON) * 100) / 100;
+    const isBalanced = debits > 0 && debits === credits;
+    if (!isBalanced) {
+      const difference = Math.abs(totalDebits - totalCredits);
+      this.toast.error(`Journal Entry is not balanced. Difference: $${difference.toFixed(2)}`);
       return;
     }
 
@@ -641,7 +589,7 @@ export class JournalEntriesComponent implements OnInit {
 
     const payload = {
       je_number: this.nextJeNumber,
-      lines: this.formEntries.map(r => ({
+      lines: entries.map(r => ({
         description: r.description.trim(),
         coa_id: r.coa_id,
 
