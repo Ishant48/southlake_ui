@@ -28,14 +28,14 @@ import { StatusBadgeRenderer } from './components/renderers/status-badge-cell';
   standalone: true,
   imports: [
     CommonModule,
-    FormsModule, 
-    RouterLink, 
-    RouterLinkActive, 
+    FormsModule,
+    RouterLink,
+    RouterLinkActive,
     AgGridAngular,
     ActivityHeaderComponent,
     ActivitySummaryCardsComponent,
     ActivityFiltersComponent,
-    ActivityDrawerComponent
+    ActivityDrawerComponent,
   ],
   templateUrl: './activity-logs.component.html',
   styleUrl: './activity-logs.component.scss',
@@ -99,7 +99,7 @@ export class ActivityLogsComponent implements OnInit {
       ...this.agGridConfig.getDefaultGridOptions(),
       pagination: false,
       rowSelection: 'single',
-      onRowClicked: (event: RowClickedEvent) => this.openDrawer(event.data)
+      onRowClicked: (event: RowClickedEvent) => this.openDrawer(event.data),
     };
 
     this.columnDefs = [
@@ -174,7 +174,7 @@ export class ActivityLogsComponent implements OnInit {
         cellRenderer: StatusBadgeRenderer,
         flex: 1,
         minWidth: 120,
-      }
+      },
     ];
   }
 
@@ -205,7 +205,7 @@ export class ActivityLogsComponent implements OnInit {
         next: result => {
           // Inject mock UI data that backend doesn't provide
           this.logs = result.data.map(log => this.injectMockData(log));
-          
+
           this.total = result.total;
           this.totalPages = result.total_pages;
           this.currentPage = result.page;
@@ -227,7 +227,7 @@ export class ActivityLogsComponent implements OnInit {
     const osList = ['Windows 11', 'macOS 13', 'iOS 16', 'Android 13'];
 
     const random = (arr: string[]) => arr[Math.floor(Math.random() * arr.length)];
-    
+
     // Weighted status logic
     const isError = log.action === 'delete' || Math.random() > 0.8;
     const status = isError ? (Math.random() > 0.5 ? 'Failed' : 'Critical') : 'Success';
@@ -241,10 +241,13 @@ export class ActivityLogsComponent implements OnInit {
       os: random(osList),
       session_id: 'sess_' + Math.random().toString(36).substr(2, 9),
       correlation_id: 'req_' + Math.random().toString(36).substr(2, 9),
-      field_changes: Math.random() > 0.5 ? [
-        { field: 'Status', old_value: 'Draft', new_value: 'Published' },
-        { field: 'Assigned To', old_value: 'Unassigned', new_value: 'John Doe' }
-      ] : undefined
+      field_changes:
+        Math.random() > 0.5
+          ? [
+              { field: 'Status', old_value: 'Draft', new_value: 'Published' },
+              { field: 'Assigned To', old_value: 'Unassigned', new_value: 'John Doe' },
+            ]
+          : undefined,
     };
   }
 

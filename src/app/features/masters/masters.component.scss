@@ -268,13 +268,4 @@
 }
 
 /* Grid layout for treaty terms form to prevent layout breaking when ULAE flat rate shows */
-.treaty-form-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 16px;
-  margin-bottom: 16px;
 
-  .form-field {
-    min-width: 0;
-  }
-}

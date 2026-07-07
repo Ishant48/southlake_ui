@@ -50,17 +50,12 @@ export class SimpleFormModal implements OnChanges {
       this.simpleFormService.patchForm(this.form, this.model);
     }
     if (changes['mode'] || changes['isEditMode']) {
-      const isProduct = this.mode === SimpleMode.Product;
-      if (this.isEditMode || isProduct) {
+      if (this.isEditMode) {
         this.form.controls.code.disable();
       } else {
         this.form.controls.code.enable();
       }
-      if (isProduct) {
-        this.form.controls.name.disable();
-      } else {
-        this.form.controls.name.enable();
-      }
+      this.form.controls.name.enable();
     }
   }
 
