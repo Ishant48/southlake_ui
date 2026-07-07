@@ -1043,211 +1043,25 @@
   }
 
   <!-- NOTES VIEW MODAL -->
-  @if (showNotesModal) {
-    <!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events, @angular-eslint/template/interactive-supports-focus -- backdrop click-to-dismiss / stopPropagation guard, not an interactive control; keyboard dismissal is handled via Escape at the dialog level -->
-    <div class="modal-overlay" (click)="$event.target === $event.currentTarget && (showNotesModal = false)">
-      <div class="modal-box coa-modal">
-        <div class="panel-header">
-          <h3 class="panel-title">{{ notesModalTitle }}</h3>
-          <button class="panel-close" (click)="showNotesModal = false" aria-label="Close modal">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-              <line x1="18" y1="6" x2="6" y2="18" />
-              <line x1="6" y1="6" x2="18" y2="18" />
-            </svg>
-          </button>
-        </div>
-        <div
-          class="panel-body"
-          style="
-            white-space: pre-wrap;
-            font-size: 14px;
-            color: var(--gray-700);
-            line-height: 1.6;
-            max-height: 50vh;
-            overflow-y: auto;
-          "
-        >
-          {{ notesModalText }}
-        </div>
-        <div class="panel-footer">
-          <button type="button" class="btn-ghost" (click)="showNotesModal = false">Close</button>
-        </div>
-      </div>
-    </div>
-  }
+  <app-notes-modal
+    [open]="showNotesModal"
+    [title]="notesModalTitle"
+    [text]="notesModalText"
+    (closed)="showNotesModal = false"
+  ></app-notes-modal>
 
   <!-- GENERIC DOCUMENT DRAWER -->
-  @if (showDocModal) {
-    <!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events, @angular-eslint/template/interactive-supports-focus -- backdrop click-to-dismiss / stopPropagation guard, not an interactive control; keyboard dismissal is handled via Escape at the dialog level -->
-    <div class="modal-overlay" (click)="$event.target === $event.currentTarget && (showDocModal = false)">
-      <div class="modal-box coa-modal doc-modal">
-        <div class="panel-header">
-          <div>
-            <h3 class="panel-title">Attachment Documents</h3>
-            <p class="panel-subtitle" style="font-size: 12px; margin-top: 2px">
-              Attachments for:
-              {{
-                $any(selectedItem)?.mga_code || $any(selectedItem)?.state_abbr || $any(selectedItem)?.risk_company_id
-              }}
-              -
-              {{ selectedItem?.name }}
-            </p>
-          </div>
-          <button class="panel-close" (click)="showDocModal = false" aria-label="Close modal">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-              <line x1="18" y1="6" x2="6" y2="18" />
-              <line x1="6" y1="6" x2="18" y2="18" />
-            </svg>
-          </button>
-        </div>
-
-        <div class="panel-body">
-          <div
-            class="upload-section"
-            style="
-              display: flex;
-              flex-direction: column;
-              gap: 12px;
-              margin-bottom: 20px;
-              border-bottom: 1px solid var(--gray-200);
-              padding-bottom: 16px;
-            "
-          >
-            <div style="display: flex; flex-direction: column; gap: 6px">
-              <span class="upload-label" style="font-weight: 600; color: var(--gray-700)">Document Type</span>
-              <select
-                [(ngModel)]="selectedDocType"
-                class="form-control"
-                style="
-                  width: 100%;
-                  height: 38px;
-                  border: 1px solid var(--gray-300);
-                  border-radius: 6px;
-                  padding: 0 12px;
-                  font-family: &quot;Instrument Sans&quot;, sans-serif;
-                "
-              >
-                <option value="">-- Select Document Type --</option>
-                @for (dt of documentTypesOptions; track dt.id) {
-                  <option [value]="dt.code">{{ dt.name }}</option>
-                }
-              </select>
-            </div>
-
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 4px">
-              <span class="upload-label" style="font-weight: 600; color: var(--gray-700)">Attach File</span>
-              <label
-                class="btn-primary upload-btn"
-                [style.opacity]="selectedDocType ? '1' : '0.5'"
-                [style.cursor]="selectedDocType ? 'pointer' : 'not-allowed'"
-              >
-                @if (uploadingDoc) {
-                  <span class="spinner btn-spinner" style="width: 12px; height: 12px; margin-right: 6px"></span>
-                  <span>Uploading...</span>
-                } @else {
-                  <svg
-                    width="14"
-                    height="14"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2.5"
-                    style="margin-right: 6px"
-                  >
-                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                    <polyline points="17 8 12 3 7 8" />
-                    <line x1="12" y1="3" x2="12" y2="15" />
-                  </svg>
-                  <span>Upload File</span>
-                }
-                <input
-                  type="file"
-                  [disabled]="uploadingDoc || !selectedDocType"
-                  (change)="onFileSelected($event)"
-                  style="display: none"
-                />
-              </label>
-            </div>
-          </div>
-
-          <div class="documents-list">
-            @if (documentsList.length === 0) {
-              <div class="empty-docs">
-                <svg
-                  width="32"
-                  height="32"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="var(--gray-400)"
-                  stroke-width="1.5"
-                  style="margin-bottom: 8px"
-                >
-                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                  <polyline points="14 2 14 8 20 8" />
-                </svg>
-                <p>No documents uploaded yet.</p>
-              </div>
-            } @else {
-              @for (doc of documentsList; track doc.id) {
-                <div class="doc-item">
-                  <div class="doc-info">
-                    <svg
-                      class="doc-icon"
-                      width="16"
-                      height="16"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      stroke-width="2"
-                    >
-                      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                      <polyline points="14 2 14 8 20 8" />
-                    </svg>
-                    <div class="doc-meta">
-                      <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap">
-                        <span class="doc-name" [title]="doc.file_name">{{ doc.file_name }}</span>
-                        @if ($any(doc).document_type || $any(doc).documentType) {
-                          <span
-                            style="
-                              font-size: 10px;
-                              font-weight: 700;
-                              background: var(--gray-100);
-                              color: var(--gray-600);
-                              padding: 2px 6px;
-                              border-radius: 4px;
-                              border: 1px solid var(--gray-200);
-                            "
-                          >
-                            {{ $any(doc).document_type || $any(doc).documentType }}
-                          </span>
-                        }
-                      </div>
-                      <span class="doc-date">Uploaded {{ doc.uploaded_at | date: "short" }}</span>
-                    </div>
-                  </div>
-                  <div class="action-buttons-list">
-                    <button (click)="downloadDoc(doc)" class="btn-action-outline" style="height: 26px; padding: 0 8px">
-                      Download
-                    </button>
-                    <button
-                      (click)="deleteDoc(doc)"
-                      class="btn-action-outline btn-action-danger-outline"
-                      style="height: 26px; padding: 0 8px"
-                    >
-                      Delete
-                    </button>
-                  </div>
-                </div>
-              }
-            }
-          </div>
-        </div>
-        <div class="panel-footer">
-          <button type="button" class="btn-ghost" (click)="showDocModal = false">Close</button>
-        </div>
-      </div>
-    </div>
-  }
+  <app-document-drawer
+    [open]="showDocModal"
+    [subtitle]="documentDrawerSubtitle"
+    [documentsList]="documentsList"
+    [documentTypesOptions]="documentTypesOptions"
+    [uploadingDoc]="uploadingDoc"
+    (closed)="showDocModal = false"
+    (fileSelected)="onDocumentUpload($event)"
+    (download)="downloadDoc($event)"
+    (delete)="deleteDoc($event)"
+  ></app-document-drawer>
 
   <!-- TREATY CREATE / EDIT MODAL -->
   @if (showTreatyModal) {

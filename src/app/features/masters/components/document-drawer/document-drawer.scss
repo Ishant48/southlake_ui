@@ -1,0 +1,90 @@
+.doc-drawer-subtitle {
+  font-size: 12px;
+  margin-top: 2px;
+}
+
+.upload-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 20px;
+  border-bottom: 1px solid var(--gray-200);
+  padding-bottom: 16px;
+}
+
+.upload-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.upload-label {
+  font-weight: 600;
+  color: var(--gray-700);
+}
+
+.doc-type-select {
+  width: 100%;
+  height: 38px;
+  border: 1px solid var(--gray-300);
+  border-radius: 6px;
+  padding: 0 12px;
+  font-family: "Instrument Sans", sans-serif;
+}
+
+.upload-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 4px;
+}
+
+.upload-btn {
+  opacity: 1;
+  cursor: pointer;
+
+  &.upload-btn-disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+.upload-spinner {
+  width: 12px;
+  height: 12px;
+  margin-right: 6px;
+}
+
+.upload-icon {
+  margin-right: 6px;
+}
+
+.upload-file-input {
+  display: none;
+}
+
+.empty-docs-icon {
+  margin-bottom: 8px;
+}
+
+.doc-name-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.doc-type-badge {
+  font-size: 10px;
+  font-weight: 700;
+  background: var(--gray-100);
+  color: var(--gray-600);
+  padding: 2px 6px;
+  border-radius: 4px;
+  border: 1px solid var(--gray-200);
+}
+
+.doc-action-btn {
+  height: 26px;
+  padding: 0 8px;
+}

@@ -6,6 +6,8 @@ import { FormsModule } from '@angular/forms';
 import { ColDef, GridOptions, ICellRendererParams } from 'ag-grid-community';
 import { AgGridConfigService } from '../../core/services/ag-grid-config.service';
 import { MastersGrid } from './components/masters-grid/masters-grid';
+import { NotesModal } from './components/notes-modal/notes-modal';
+import { DocumentDrawer, DrawerDocument } from './components/document-drawer/document-drawer';
 import {
   ActionButtonConfig,
   ActionButtonsCell,
@@ -138,6 +140,8 @@ type MasterTab =
     ConfirmDialogComponent,
     DropdownSearchComponent,
     MastersGrid,
+    NotesModal,
+    DocumentDrawer,
   ],
   templateUrl: './masters.component.html',
   styleUrl: './masters.component.scss',
@@ -1737,6 +1741,13 @@ export class MastersComponent implements OnInit {
   // ==========================================
   // GENERIC DOCUMENTS DRAWER ACTIONS
   // ==========================================
+  get documentDrawerSubtitle(): string {
+    const item = this.selectedItem as unknown as Record<string, unknown> | null;
+    if (!item) return '';
+    const code = item['mga_code'] ?? item['state_abbr'] ?? item['risk_company_id'] ?? '';
+    return `${code} - ${this.selectedItem?.name ?? ''}`;
+  }
+
   openDocModal(
     mode: 'mga' | 'state' | 'risk-company',
     item: MgaMaster | StateMaster | RiskCompany,
@@ -1779,29 +1790,18 @@ export class MastersComponent implements OnInit {
     });
   }
 
-  onFileSelected(event: Event): void {
-    const input = event.target as HTMLInputElement;
-    const file = input.files?.[0];
-    if (!file || !this.selectedItem) return;
-
-    if (!this.selectedDocType) {
-      this.toast.error('Please select a Document Type first');
-      input.value = '';
-      return;
-    }
+  onDocumentUpload(payload: { file: File; documentType: string }): void {
+    if (!this.selectedItem) return;
+    const { file, documentType } = payload;
 
     this.uploadingDoc = true;
     let request: Observable<MasterDocument>;
     if (this.documentMode === 'mga') {
-      request = this.service.uploadMgaDocument(this.selectedItem.id, file, this.selectedDocType);
+      request = this.service.uploadMgaDocument(this.selectedItem.id, file, documentType);
     } else if (this.documentMode === 'state') {
-      request = this.service.uploadStateDocument(this.selectedItem.id, file, this.selectedDocType);
+      request = this.service.uploadStateDocument(this.selectedItem.id, file, documentType);
     } else {
-      request = this.service.uploadRiskCompanyDocument(
-        this.selectedItem.id,
-        file,
-        this.selectedDocType,
-      );
+      request = this.service.uploadRiskCompanyDocument(this.selectedItem.id, file, documentType);
     }
 
     request.subscribe({
@@ -1809,7 +1809,6 @@ export class MastersComponent implements OnInit {
         this.toast.success('Document uploaded successfully');
         this.loadDocuments();
         this.uploadingDoc = false;
-        input.value = '';
         this.cdr.markForCheck();
       },
       error: (err: HttpErrorLike) => {
@@ -1820,7 +1819,7 @@ export class MastersComponent implements OnInit {
     });
   }
 
-  downloadDoc(doc: MasterDocument): void {
+  downloadDoc(doc: DrawerDocument): void {
     let endpoint = '';
     if (this.documentMode === 'mga') {
       endpoint = 'mgas';
@@ -1835,7 +1834,7 @@ export class MastersComponent implements OnInit {
     );
   }
 
-  deleteDoc(doc: MasterDocument): void {
+  deleteDoc(doc: DrawerDocument): void {
     this.confirmTitle = 'Delete Document';
     this.confirmMessage = `Are you sure you want to delete attachment "${doc.file_name}"?`;
     this.pendingAction = () => {
