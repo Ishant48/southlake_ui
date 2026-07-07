@@ -398,8 +398,7 @@ export class ReinsuranceCalculationsComponent implements OnInit {
 
   onSaveCashParams(event: CashSettlementSaveEvent): void {
     if (!this.cashSettlement) return;
-    this.cashSettlement.beg_bal = event.beg_bal;
-    this.cashSettlement.amt_paid = event.amt_paid;
+    this.cashSettlement = { ...this.cashSettlement, ...event };
     this.saveCashParams();
   }
 

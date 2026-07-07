@@ -33,12 +33,9 @@ import { ConfirmDialogComponent } from '../../shared/components/confirm-dialog/c
 import { environment } from '../../../environments/environment';
 import {
   StateMaster,
-  StateDocument,
   MgaMaster,
-  MgaDocument,
   ReinsurerCompany,
   RiskCompany,
-  RiskCompanyDocument,
   LineOfBusiness,
   CobMaster,
   Treaty,
@@ -50,99 +47,21 @@ import {
   SequencePrefixCounter,
   SimpleMasterRecord,
 } from './models/master.model';
-
-type DocumentableMaster =
-  | (MgaMaster & { documents: MgaDocument[] })
-  | (StateMaster & { documents: StateDocument[] })
-  | (RiskCompany & { documents: RiskCompanyDocument[] });
-
-type MasterDocument = MgaDocument | StateDocument | RiskCompanyDocument;
-
-type HttpErrorLike = { error?: { message?: string } };
-
-interface ItdExhibit {
-  uep: number;
-  loss_reserves: number;
-  loss_ibnr: number;
-  lae_reserves_dcc: number;
-  lae_ibnr_dcc: number;
-  lae_reserves_aoe: number;
-  lae_ibnr_aoe: number;
-  ulae_ibnr: number;
-}
-
-interface ItdRates {
-  qs: number;
-  cf: number;
-  comm: number;
-  ulae: number;
-  boards_charge: number;
-  loss_ratio_cap: number;
-  loss_pick: number;
-  lae_dcc: number;
-  lae_aoe: number;
-}
-
-interface ItdForm {
-  program: string;
-  month_key: string;
-  month_label: string;
-  rates: ItdRates;
-  exhibits: Record<string, ItdExhibit>;
-}
-
-interface ItdStateOption {
-  code: string;
-  label: string;
-}
-
-interface LockedPeriod {
-  period: string;
-  isLocked: boolean;
-  user?: { name?: string };
-  lockedAt?: string;
-}
-
-type SimpleEditableItem =
-  | LineOfBusiness
-  | CobMaster
-  | ReinsurerCompany
-  | SimpleMasterRecord
-  | DocumentType
-  | SequencePrefixCounter;
-
-type MasterListItem =
-  | Treaty
-  | MgaMaster
-  | LineOfBusiness
-  | CobMaster
-  | StateMaster
-  | ReinsurerCompany
-  | RiskCompany
-  | GlMapping
-  | SimpleMasterRecord
-  | DocumentType
-  | SequencePrefixCounter;
+import {
+  MasterTab,
+  MasterListItem,
+  SimpleEditableItem,
+  DocumentableMaster,
+  MasterDocument,
+} from './models/master-tab.model';
+import { ItdExhibit, ItdForm, ItdStateOption } from './models/itd.model';
+import { LockedPeriod } from './models/locked-period.model';
+import { HttpErrorLike } from '../../core/models/http-error.model';
 import { GlMappingsApi } from './services/gl-mappings-api';
 import { ChartOfAccountsApi } from '../chart-of-accounts/services/chart-of-accounts-api';
 import { GlMapping } from './models/gl-mapping.model';
 import { ChartOfAccount } from '../../core/models/chart-of-account.model';
 import { ReinsuranceApi } from '../reinsurance-calculations/services/reinsurance-api';
-
-type MasterTab =
-  | 'treaties'
-  | 'mgas'
-  | 'lobs'
-  | 'cobs'
-  | 'states'
-  | 'reinsurers'
-  | 'risk-companies'
-  | 'gl-mappings'
-  | 'brokers'
-  | 'products'
-  | 'locked-periods'
-  | 'document-types'
-  | 'sequence-prefix-counters';
 
 @Component({
   selector: 'app-masters',
@@ -2875,11 +2794,8 @@ export class MastersComponent implements OnInit {
   }
   openAddItdModal(treaty: Treaty): void {
     this.selectedTreatyForItd = treaty;
-    this.itdForm.program = treaty.name;
     this.itdSelectedMonth = '12';
     this.itdSelectedYear = '2025';
-    this.itdForm.month_key = '2025-12';
-    this.itdForm.month_label = 'December 2025';
 
     const states: ItdStateOption[] = (treaty.treaty_states ?? [])
       .map((s: TreatyState) => {
@@ -2897,9 +2813,9 @@ export class MastersComponent implements OnInit {
     ];
     this.itdSelectedStateCode = 'TOTAL';
 
-    this.itdForm.exhibits = {};
+    const blankExhibits: Record<string, ItdExhibit> = {};
     for (const st of this.itdStatesList) {
-      this.itdForm.exhibits[st.code] = {
+      blankExhibits[st.code] = {
         uep: 0,
         loss_reserves: 0,
         loss_ibnr: 0,
@@ -2910,6 +2826,13 @@ export class MastersComponent implements OnInit {
         ulae_ibnr: 0,
       };
     }
+    this.itdForm = {
+      ...this.itdForm,
+      program: treaty.name,
+      month_key: '2025-12',
+      month_label: 'December 2025',
+      exhibits: blankExhibits,
+    };
 
     const wbId = this.itdWorkbookIds.get(treaty.name);
     if (wbId) {
@@ -2922,10 +2845,11 @@ export class MastersComponent implements OnInit {
             return Number(val ?? 0);
           };
 
+          const loadedExhibits: Record<string, ItdExhibit> = { ...this.itdForm.exhibits };
           for (const se of exhibits) {
             const stateCode = String(se.stateCode ?? se.state_code);
-            if (stateCode && this.itdForm.exhibits[stateCode]) {
-              this.itdForm.exhibits[stateCode] = {
+            if (stateCode && loadedExhibits[stateCode]) {
+              loadedExhibits[stateCode] = {
                 uep: getVal(se.uep),
                 loss_reserves: getVal(se.loss_reserves ?? se.lossReserves),
                 loss_ibnr: getVal(se.loss_ibnr ?? se.lossIbnr),
@@ -2937,6 +2861,7 @@ export class MastersComponent implements OnInit {
               };
             }
           }
+          this.itdForm = { ...this.itdForm, exhibits: loadedExhibits };
           this.showItdModal = true;
           this.cdr.markForCheck();
         },
@@ -2953,10 +2878,7 @@ export class MastersComponent implements OnInit {
   }
 
   saveManualITD(formValue: ItdFormValue): void {
-    this.itdForm.program = formValue.program;
-    this.itdForm.month_key = formValue.month_key;
-    this.itdForm.month_label = formValue.month_label;
-    this.itdForm.exhibits = formValue.exhibits;
+    this.itdForm = { ...this.itdForm, ...formValue };
 
     if (!this.selectedTreatyForItd) return;
 
