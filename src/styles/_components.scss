@@ -335,6 +335,13 @@
   &.input-error {
     border-color: var(--red);
   }
+
+  &:disabled {
+    background: var(--gray-50);
+    color: var(--gray-500);
+    border-color: var(--gray-200);
+    cursor: not-allowed;
+  }
 }
 
 .field-error {

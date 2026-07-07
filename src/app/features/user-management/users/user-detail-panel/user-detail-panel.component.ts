@@ -199,15 +199,13 @@ export class UserDetailPanelComponent implements OnChanges {
     this.profileError = '';
 
     const payload: UpdateUserProfilePayload = {
-      status: this.editStatus,
+      status: this.editStatus !== this.user.status ? this.editStatus : undefined,
+      name: this.editName !== this.user.name ? this.editName : undefined,
+      department: this.editDepartment !== this.user.department ? this.editDepartment : undefined,
+      title: this.editTitle !== this.user.title ? this.editTitle : undefined,
     };
 
     if (this.mode === 'edit') {
-      payload.name = this.editName;
-      payload.role_id = this.editRoleId;
-      payload.department = this.editDepartment || null;
-      payload.title = this.editTitle || null;
-
       // Generate initials
       let initials = '';
       const parts = this.editName.trim().split(/\s+/);

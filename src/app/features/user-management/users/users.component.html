@@ -75,19 +75,83 @@
   <div class="content-card">
     <!-- Top Action Bar matching screenshot -->
     <div class="table-top-toolbar">
-      <div class="top-left">
-        <div class="view-dropdown">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-            <circle cx="9" cy="7" r="4"></circle>
-            <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-            <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-          </svg>
-          <span>All Users</span>
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <polyline points="6 9 12 15 18 9"></polyline>
-          </svg>
+      <div class="top-left" style="display: flex; align-items: center; gap: 12px">
+        <div class="view-dropdown-wrapper" style="position: relative">
+          <div
+            class="view-dropdown"
+            (click)="viewDropdownOpen = !viewDropdownOpen"
+            tabindex="0"
+            (keydown.enter)="viewDropdownOpen = !viewDropdownOpen"
+            role="button"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+              <circle cx="9" cy="7" r="4"></circle>
+              <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+              <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+            </svg>
+            <span>{{ currentViewName }}</span>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="6 9 12 15 18 9"></polyline>
+            </svg>
+          </div>
+
+          @if (viewDropdownOpen) {
+            <div class="view-dropdown-menu">
+              <div
+                class="view-dropdown-item"
+                (click)="selectView('')"
+                tabindex="0"
+                (keydown.enter)="selectView('')"
+                role="button"
+                [class.active]="roleFilter === ''"
+              >
+                All Users
+              </div>
+              @for (role of roles; track role.id) {
+                <div
+                  class="view-dropdown-item"
+                  (click)="selectView(role.id)"
+                  tabindex="0"
+                  (keydown.enter)="selectView(role.id)"
+                  role="button"
+                  [class.active]="roleFilter === role.id"
+                >
+                  {{ role.label }}
+                </div>
+              }
+            </div>
+          }
         </div>
+
+        <div class="search-wrap">
+          <svg
+            class="search-icon"
+            width="15"
+            height="15"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <circle cx="11" cy="11" r="8" />
+            <line x1="21" y1="21" x2="16.65" y2="16.65" />
+          </svg>
+          <input
+            class="search-input"
+            type="text"
+            placeholder="Search"
+            [(ngModel)]="searchTerm"
+            (ngModelChange)="onSearch($event)"
+          />
+        </div>
+
+        <select class="filter-select" [(ngModel)]="statusFilter" (ngModelChange)="onFilterChange()">
+          <option value="">All Statuses</option>
+          <option value="active">Active</option>
+          <option value="inactive">Inactive</option>
+          <option value="pending">Pending</option>
+        </select>
       </div>
       <div class="top-right">
         @if (hasPermission("user.create")) {
@@ -106,80 +170,11 @@
               <polyline points="7 10 12 15 17 10" />
               <line x1="12" y1="15" x2="12" y2="3" />
             </svg>
-            <span>Import / Export</span>
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <polyline points="6 9 12 15 18 9"></polyline>
-            </svg>
+            <span>Export</span>
           </button>
         }
       </div>
     </div>
-
-    <!-- Sub Toolbar with Search, Sort, Filter matching screenshot -->
-    <div class="filters-bar">
-      <div class="search-wrap">
-        <svg
-          class="search-icon"
-          width="15"
-          height="15"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-        >
-          <circle cx="11" cy="11" r="8" />
-          <line x1="21" y1="21" x2="16.65" y2="16.65" />
-        </svg>
-        <input
-          class="search-input"
-          type="text"
-          placeholder="Search"
-          [(ngModel)]="searchTerm"
-          (ngModelChange)="onSearch($event)"
-        />
-      </div>
-
-      <div class="toolbar-pill-btn">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <line x1="11" y1="5" x2="11" y2="19"></line>
-          <line x1="18" y1="9" x2="18" y2="19"></line>
-          <polyline points="7 9 11 5 15 9"></polyline>
-          <polyline points="14 15 18 19 22 15"></polyline>
-        </svg>
-        <span>Sort</span>
-      </div>
-
-      <div class="toolbar-pill-btn">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
-        </svg>
-        <span>Filter</span>
-      </div>
-
-      <select class="filter-select" [(ngModel)]="roleFilter" (ngModelChange)="onFilterChange()">
-        <option value="">All Roles</option>
-        @for (role of roles; track role.id) {
-          <option [value]="role.id">{{ role.label }}</option>
-        }
-      </select>
-
-      <select class="filter-select" [(ngModel)]="statusFilter" (ngModelChange)="onFilterChange()">
-        <option value="">All Statuses</option>
-        <option value="active">Active</option>
-        <option value="inactive">Inactive</option>
-        <option value="pending">Pending</option>
-      </select>
-    </div>
-
-    @if (selectedIds.length > 0) {
-      <div class="bulk-bar">
-        <span class="bulk-count">{{ selectedIds.length }} selected</span>
-        @if (hasPermission("user.edit")) {
-          <button class="btn-danger-outline" (click)="openBulkDeactivate()">Deactivate Selected</button>
-        }
-        <button class="btn-ghost-sm" (click)="clearSelection()">Clear</button>
-      </div>
-    }
 
     <app-users-table
       [users]="users"

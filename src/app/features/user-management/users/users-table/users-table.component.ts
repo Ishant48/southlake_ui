@@ -37,7 +37,10 @@ export class UsersTableComponent implements OnInit {
   skeletonRows = [1, 2, 3, 4, 5];
 
   ngOnInit(): void {
-    this.gridOptions = this.agGridConfig.getDefaultGridOptions();
+    this.gridOptions = {
+      ...this.agGridConfig.getDefaultGridOptions(),
+      rowSelection: 'multiple',
+    };
     this.setupColumns();
   }
 
@@ -57,7 +60,6 @@ export class UsersTableComponent implements OnInit {
         maxWidth: 50,
         resizable: false,
         sortable: false,
-        pinned: 'left',
       });
     }
 

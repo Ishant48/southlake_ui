@@ -60,12 +60,8 @@
                 </span>
               </div>
               <div class="info-row">
-                <span class="info-label">Role *</span>
-                <select class="form-input" [(ngModel)]="editRoleId">
-                  @for (role of roles; track role.id) {
-                    <option [value]="role.id">{{ role.label }}</option>
-                  }
-                </select>
+                <span class="info-label">Role</span>
+                <input type="text" class="form-input" [value]="user.role?.label ?? 'None'" disabled />
               </div>
               <div class="info-row">
                 <span class="info-label">Department</span>
@@ -107,13 +103,6 @@
             <span class="info-label">Account Status</span>
             <div class="status-toggle-row">
               <app-user-status-badge [status]="editStatus" />
-              <button
-                class="toggle-btn"
-                [class.active]="editStatus === 'active'"
-                (click)="editStatus = editStatus === 'active' ? 'inactive' : 'active'"
-              >
-                {{ editStatus === "active" ? "Deactivate" : "Activate" }}
-              </button>
             </div>
           </div>
 

@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, inject, OnInit, ChangeDetectorRef, HostListener } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { debounceTime, distinctUntilChanged, Subject } from 'rxjs';
@@ -72,6 +72,20 @@ export class UsersComponent implements OnInit {
   confirmTitle = '';
   confirmMessage = '';
   pendingAction: (() => void) | null = null;
+
+  viewDropdownOpen = false;
+
+  get currentViewName(): string {
+    if (!this.roleFilter) return 'All Users';
+    const role = this.roles.find(r => r.id === this.roleFilter);
+    return role ? role.label : 'All Users';
+  }
+
+  selectView(roleId: string): void {
+    this.roleFilter = roleId;
+    this.viewDropdownOpen = false;
+    this.onFilterChange();
+  }
 
   private searchSubject = new Subject<string>();
 
@@ -230,8 +244,12 @@ export class UsersComponent implements OnInit {
 
   onUserUpdated(user: User): void {
     const idx = this.users.findIndex(u => u.id === user.id);
-    if (idx >= 0) this.users[idx] = user;
+    if (idx >= 0) {
+      this.users[idx] = user;
+      this.users = [...this.users];
+    }
     this.loadStats();
+    this.cdr.markForCheck();
   }
 
   onRevokeInvite(id: string): void {
@@ -301,5 +319,13 @@ export class UsersComponent implements OnInit {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+  }
+
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent) {
+    const target = event.target as HTMLElement;
+    if (!target.closest('.view-dropdown-wrapper')) {
+      this.viewDropdownOpen = false;
+    }
   }
 }
