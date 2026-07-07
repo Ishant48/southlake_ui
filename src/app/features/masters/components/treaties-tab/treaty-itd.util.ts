@@ -75,14 +75,22 @@ export function buildManualItdPayload(formValue: {
     const ex = formValue.exhibits[code];
     return {
       state_code: code,
+      stateCode: code,
       uep: Number(ex.uep ?? 0),
       loss_reserves: Number(ex.loss_reserves ?? 0),
+      lossReserves: Number(ex.loss_reserves ?? 0),
       loss_ibnr: Number(ex.loss_ibnr ?? 0),
+      lossIbnr: Number(ex.loss_ibnr ?? 0),
       lae_reserves_dcc: Number(ex.lae_reserves_dcc ?? 0),
+      laeReservesDcc: Number(ex.lae_reserves_dcc ?? 0),
       lae_ibnr_dcc: Number(ex.lae_ibnr_dcc ?? 0),
+      laeIbnrDcc: Number(ex.lae_ibnr_dcc ?? 0),
       lae_reserves_aoe: Number(ex.lae_reserves_aoe ?? 0),
+      laeReservesAoe: Number(ex.lae_reserves_aoe ?? 0),
       lae_ibnr_aoe: Number(ex.lae_ibnr_aoe ?? 0),
+      laeIbnrAoe: Number(ex.lae_ibnr_aoe ?? 0),
       ulae_ibnr: Number(ex.ulae_ibnr ?? 0),
+      ulaeIbnr: Number(ex.ulae_ibnr ?? 0),
     };
   });
 

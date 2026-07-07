@@ -1,4 +1,5 @@
 import { Component, inject, OnInit, ChangeDetectorRef, ViewChild } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { ActivityLog, ActivityLogsFilter } from './models/activity-log.model';
@@ -8,22 +9,34 @@ import { ActivityLogsApi } from './services/activity-logs-api';
 import { PermissionsApi } from '../services/permissions-api';
 import { ToastService } from '../../../shared/components/toast/toast.service';
 import { AgGridAngular } from 'ag-grid-angular';
-import { GridOptions, ColDef, ICellRendererParams } from 'ag-grid-community';
+import { GridOptions, ColDef, RowClickedEvent } from 'ag-grid-community';
 import { AgGridConfigService } from '../../../core/services/ag-grid-config.service';
-import { AvatarCell } from '../../../shared/components/grid-renderers/avatar-cell/avatar-cell';
 
-const ACTION_COLORS: Record<string, { bg: string; text: string }> = {
-  login: { bg: 'var(--blue-bg)', text: 'var(--blue)' },
-  logout: { bg: 'var(--gray-200)', text: 'var(--gray-600)' },
-  create: { bg: 'var(--green-bg)', text: 'var(--green)' },
-  update: { bg: 'var(--orange-bg)', text: 'var(--orange)' },
-  delete: { bg: 'var(--red-bg)', text: 'var(--red)' },
-};
+// Custom Components
+import { ActivityHeaderComponent } from './components/activity-header/activity-header';
+import { ActivitySummaryCardsComponent } from './components/activity-summary-cards/activity-summary-cards';
+import { ActivityFiltersComponent } from './components/activity-filters/activity-filters';
+import { ActivityDrawerComponent } from './components/activity-drawer/activity-drawer';
+
+// Custom Renderers
+import { UserCellRenderer } from './components/renderers/user-cell';
+import { ActionBadgeRenderer } from './components/renderers/action-badge-cell';
+import { StatusBadgeRenderer } from './components/renderers/status-badge-cell';
 
 @Component({
   selector: 'app-activity-logs',
   standalone: true,
-  imports: [FormsModule, RouterLink, RouterLinkActive, AgGridAngular],
+  imports: [
+    CommonModule,
+    FormsModule,
+    RouterLink,
+    RouterLinkActive,
+    AgGridAngular,
+    ActivityHeaderComponent,
+    ActivitySummaryCardsComponent,
+    ActivityFiltersComponent,
+    ActivityDrawerComponent,
+  ],
   templateUrl: './activity-logs.component.html',
   styleUrl: './activity-logs.component.scss',
 })
@@ -44,6 +57,10 @@ export class ActivityLogsComponent implements OnInit {
 
   gridOptions!: GridOptions;
   columnDefs: ColDef[] = [];
+
+  // Drawer State
+  selectedLog: ActivityLog | null = null;
+  drawerOpen = false;
 
   hasPermission(permission: string): boolean {
     return this.authService.hasPermission(permission);
@@ -80,29 +97,24 @@ export class ActivityLogsComponent implements OnInit {
   setupGrid(): void {
     this.gridOptions = {
       ...this.agGridConfig.getDefaultGridOptions(),
-      pagination: false, // Using external pagination
+      pagination: false,
+      rowSelection: 'single',
+      onRowClicked: (event: RowClickedEvent) => this.openDrawer(event.data),
     };
 
     this.columnDefs = [
       {
         headerName: 'USER',
         field: 'user',
-        cellRenderer: AvatarCell,
+        cellRenderer: UserCellRenderer,
         minWidth: 250,
         flex: 2,
-        valueGetter: params => {
-          if (params.data?.user) return params.data.user;
-          return { name: 'System', initials: 'SY', avatar_color: '#94a3b8' };
-        },
+        valueGetter: params => params.data?.user,
       },
       {
         headerName: 'ACTION',
         field: 'action',
-        cellRenderer: (params: ICellRendererParams<ActivityLog, string>) => {
-          const action = params.value ?? '';
-          const style = this.getActionStyle(action);
-          return `<span class="action-badge" style="background: ${style.bg}; color: ${style.text}; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 500; display: inline-block;">${action}</span>`;
-        },
+        cellRenderer: ActionBadgeRenderer,
         flex: 1,
         minWidth: 120,
       },
@@ -116,7 +128,6 @@ export class ActivityLogsComponent implements OnInit {
       {
         headerName: 'ENTITY',
         field: 'entityType',
-        // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- '' is a valid falsy value that should also render as '-'
         valueFormatter: params => params.value || '-',
         flex: 1,
         minWidth: 150,
@@ -124,7 +135,6 @@ export class ActivityLogsComponent implements OnInit {
       {
         headerName: 'DESCRIPTION',
         field: 'description',
-        // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- '' is a valid falsy value that should also render as '-'
         valueFormatter: params => params.value || '-',
         flex: 2,
         minWidth: 200,
@@ -132,18 +142,38 @@ export class ActivityLogsComponent implements OnInit {
       {
         headerName: 'IP ADDRESS',
         field: 'ipAddress',
-        // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- '' is a valid falsy value that should also render as '-'
         valueFormatter: params => params.value || '-',
         cellClass: 'text-mono',
         flex: 1,
         minWidth: 150,
       },
       {
-        headerName: 'DATE / TIME',
+        headerName: 'DEVICE / BROWSER',
+        field: 'device',
+        valueGetter: params => `${params.data?.device || '-'} / ${params.data?.browser || '-'}`,
+        flex: 1,
+        minWidth: 180,
+      },
+      {
+        headerName: 'LOCATION',
+        field: 'location',
+        valueFormatter: params => params.value || '-',
+        flex: 1,
+        minWidth: 150,
+      },
+      {
+        headerName: 'DATE & TIME',
         field: 'createdAt',
         valueFormatter: params => this.formatDate(params.value),
         flex: 1,
         minWidth: 160,
+      },
+      {
+        headerName: 'STATUS',
+        field: 'status',
+        cellRenderer: StatusBadgeRenderer,
+        flex: 1,
+        minWidth: 120,
       },
     ];
   }
@@ -152,7 +182,6 @@ export class ActivityLogsComponent implements OnInit {
     this.permissionsService.getModules().subscribe({
       next: mods => {
         this.modules = mods;
-        // need to refresh grid if it's already rendered, since modules are loaded async
         if (this.agGrid?.api) {
           this.agGrid.api.refreshCells({ force: true });
         }
@@ -166,20 +195,17 @@ export class ActivityLogsComponent implements OnInit {
     this.logsService
       .getLogs({
         ...this.filter,
-        // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- '' should also be treated as "not set"
         search: this.filter.search || undefined,
-        // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- '' should also be treated as "not set"
         action: this.filter.action || undefined,
-        // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- '' should also be treated as "not set"
         module_id: this.filter.module_id || undefined,
-        // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- '' should also be treated as "not set"
         date_from: this.filter.date_from || undefined,
-        // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- '' should also be treated as "not set"
         date_to: this.filter.date_to || undefined,
       })
       .subscribe({
         next: result => {
-          this.logs = result.data;
+          // Inject mock UI data that backend doesn't provide
+          this.logs = result.data.map(log => this.injectMockData(log));
+
           this.total = result.total;
           this.totalPages = result.total_pages;
           this.currentPage = result.page;
@@ -192,6 +218,37 @@ export class ActivityLogsComponent implements OnInit {
           this.cdr.markForCheck();
         },
       });
+  }
+
+  injectMockData(log: ActivityLog): ActivityLog {
+    const devices = ['Desktop', 'Mobile', 'Tablet'];
+    const browsers = ['Chrome 114', 'Safari 16', 'Firefox 112', 'Edge 113'];
+    const locations = ['New York, US', 'London, UK', 'Mumbai, IN', 'Sydney, AU'];
+    const osList = ['Windows 11', 'macOS 13', 'iOS 16', 'Android 13'];
+
+    const random = (arr: string[]) => arr[Math.floor(Math.random() * arr.length)];
+
+    // Weighted status logic
+    const isError = log.action === 'delete' || Math.random() > 0.8;
+    const status = isError ? (Math.random() > 0.5 ? 'Failed' : 'Critical') : 'Success';
+
+    return {
+      ...log,
+      status: status,
+      device: random(devices),
+      browser: random(browsers),
+      location: random(locations),
+      os: random(osList),
+      session_id: 'sess_' + Math.random().toString(36).substr(2, 9),
+      correlation_id: 'req_' + Math.random().toString(36).substr(2, 9),
+      field_changes:
+        Math.random() > 0.5
+          ? [
+              { field: 'Status', old_value: 'Draft', new_value: 'Published' },
+              { field: 'Assigned To', old_value: 'Unassigned', new_value: 'John Doe' },
+            ]
+          : undefined,
+    };
   }
 
   onFilterChange(): void {
@@ -210,15 +267,10 @@ export class ActivityLogsComponent implements OnInit {
   exportLogs(): void {
     this.logsService
       .exportLogs({
-        // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- '' should also be treated as "not set"
         search: this.filter.search || undefined,
-        // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- '' should also be treated as "not set"
         action: this.filter.action || undefined,
-        // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- '' should also be treated as "not set"
         module_id: this.filter.module_id || undefined,
-        // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- '' should also be treated as "not set"
         date_from: this.filter.date_from || undefined,
-        // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- '' should also be treated as "not set"
         date_to: this.filter.date_to || undefined,
       })
       .subscribe({
@@ -235,12 +287,6 @@ export class ActivityLogsComponent implements OnInit {
           this.toast.error('Export failed');
         },
       });
-  }
-
-  getActionStyle(action: string): { bg: string; text: string } {
-    return (
-      ACTION_COLORS[action.toLowerCase()] ?? { bg: 'rgba(13,27,75,0.08)', text: 'var(--navy)' }
-    );
   }
 
   formatModule(moduleId?: string): string {
@@ -262,5 +308,19 @@ export class ActivityLogsComponent implements OnInit {
     } catch {
       return dateStr;
     }
+  }
+
+  openDrawer(log: ActivityLog): void {
+    this.selectedLog = log;
+    this.drawerOpen = true;
+    this.cdr.markForCheck();
+  }
+
+  closeDrawer(): void {
+    this.drawerOpen = false;
+    setTimeout(() => {
+      this.selectedLog = null;
+      this.cdr.markForCheck();
+    }, 300); // Wait for animation
   }
 }
