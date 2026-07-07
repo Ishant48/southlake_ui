@@ -204,7 +204,7 @@
 
   <!-- NOTES VIEW MODAL -->
   @if (showNotesModal) {
-    <div class="modal-overlay" (click)="$event.target === $event.currentTarget && (showNotesModal = false)">
+    <div class="modal-overlay" (click)="$event.target === $event.currentTarget && (showNotesModal = false)" tabindex="-1" (keydown.escape)="showNotesModal = false">
       <div class="modal-box coa-modal">
         <div class="panel-header">
           <h3 class="panel-title">{{ notesModalTitle }}</h3>
@@ -237,7 +237,7 @@
 
   <!-- GENERIC DOCUMENT DRAWER -->
   @if (showDocModal) {
-    <div class="modal-overlay" (click)="$event.target === $event.currentTarget && (showDocModal = false)">
+    <div class="modal-overlay" (click)="$event.target === $event.currentTarget && (showDocModal = false)" tabindex="-1" (keydown.escape)="showDocModal = false">
       <div class="modal-box coa-modal doc-modal">
         <div class="panel-header">
           <div>

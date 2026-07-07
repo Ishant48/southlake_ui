@@ -36,7 +36,7 @@
 
 <!-- GL Mapping Modal -->
 @if (showGlMappingModal) {
-  <div class="modal-overlay" (click)="$event.target === $event.currentTarget && (showGlMappingModal = false)">
+  <div class="modal-overlay" (click)="$event.target === $event.currentTarget && (showGlMappingModal = false)" tabindex="-1" (keydown.escape)="showGlMappingModal = false">
     <div class="modal-box" style="max-width: 480px">
       <div class="panel-header">
         <h3 class="panel-title">{{ glMappingModalTitle }}</h3>

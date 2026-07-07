@@ -10,7 +10,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AgGridAngular } from 'ag-grid-angular';
 import { ColDef, GridOptions } from 'ag-grid-community';
-import { GlMappingsService } from '../../../core/services/gl-mappings.service';
+import { GlMappingsService } from '../services/gl-mappings.service';
 import { ChartOfAccountsService } from '../../../core/services/chart-of-accounts.service';
 import { GlMapping } from '../../../core/models/gl-mapping.model';
 import { ChartOfAccount } from '../../../core/models/chart-of-account.model';

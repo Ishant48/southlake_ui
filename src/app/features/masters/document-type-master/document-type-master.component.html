@@ -35,7 +35,7 @@
 }
 
 @if (showDocumentTypeModal) {
-  <div class="modal-overlay" (click)="$event.target === $event.currentTarget && (showDocumentTypeModal = false)">
+  <div class="modal-overlay" (click)="$event.target === $event.currentTarget && (showDocumentTypeModal = false)" tabindex="-1" (keydown.escape)="showDocumentTypeModal = false">
     <div class="modal-box coa-modal">
       <div class="panel-header">
         <h3 class="panel-title">{{ documentTypeModalTitle }}</h3>

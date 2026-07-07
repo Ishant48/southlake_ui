@@ -35,7 +35,7 @@
 }
 
 @if (showCobModal) {
-  <div class="modal-overlay" (click)="$event.target === $event.currentTarget && (showCobModal = false)">
+  <div class="modal-overlay" (click)="$event.target === $event.currentTarget && (showCobModal = false)" tabindex="-1" (keydown.escape)="showCobModal = false">
     <div class="modal-box treaty-modal">
       <div class="panel-header">
         <h3 class="panel-title">{{ cobModalTitle }}</h3>
@@ -50,7 +50,7 @@
       <form (submit)="submitCob()" class="panel-body" style="max-height: calc(100vh - 200px); overflow-y: auto">
         <div class="form-row">
           <div class="form-field">
-            <label class="form-label">Class ID *</label>
+            <label for="classId" class="form-label">Class ID *</label>
             <input
               [(ngModel)]="cobForm.code"
               name="code"
@@ -62,7 +62,7 @@
             />
           </div>
           <div class="form-field">
-            <label class="form-label">Class Name *</label>
+            <label for="className" class="form-label">Class Name *</label>
             <input
               [(ngModel)]="cobForm.name"
               name="name"
@@ -76,7 +76,7 @@
 
         <div class="form-row" style="margin-top: 8px">
           <div class="form-field">
-            <label class="form-label">Class Type</label>
+            <label for="classType" class="form-label">Class Type</label>
             <app-dropdown-search
               [items]="simpleFormTypeOptions"
               [isMultiSelect]="false"
@@ -87,7 +87,7 @@
             ></app-dropdown-search>
           </div>
           <div class="form-field">
-            <label class="form-label">Priority</label>
+            <label for="priority" class="form-label">Priority</label>
             <input
               [(ngModel)]="cobForm.priority"
               name="priority"
@@ -100,7 +100,7 @@
 
         <div class="form-row" style="margin-top: 8px">
           <div class="form-field">
-            <label class="form-label">Taxable</label>
+            <label for="taxable" class="form-label">Taxable</label>
             <div class="radio-group">
               <label>
                 <input type="radio" [value]="true" [(ngModel)]="cobForm.taxable" name="taxable" />
@@ -113,7 +113,7 @@
             </div>
           </div>
           <div class="form-field">
-            <label class="form-label">Fully Earned</label>
+            <label for="fullyEarned" class="form-label">Fully Earned</label>
             <div class="radio-group">
               <label>
                 <input type="radio" [value]="true" [(ngModel)]="cobForm.fully_earned" name="fullyEarned" />
@@ -129,7 +129,7 @@
 
         <div class="form-row" style="margin-top: 8px">
           <div class="form-field">
-            <label class="form-label">Description</label>
+            <label for="description" class="form-label">Description</label>
             <textarea
               [(ngModel)]="cobForm.description"
               name="description"

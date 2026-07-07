@@ -35,7 +35,7 @@
 }
 
 @if (showStateModal) {
-  <div class="modal-overlay" (click)="$event.target === $event.currentTarget && (showStateModal = false)">
+  <div class="modal-overlay" (click)="$event.target === $event.currentTarget && (showStateModal = false)" tabindex="-1" (keydown.escape)="showStateModal = false">
     <div class="modal-box coa-modal">
       <div class="panel-header">
         <h3 class="panel-title">{{ stateModalTitle }}</h3>

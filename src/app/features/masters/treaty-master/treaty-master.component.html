@@ -71,7 +71,7 @@
 
 <!-- TREATY CREATE / EDIT MODAL – always in DOM -->
 @if (showTreatyModal) {
-  <div class="modal-overlay" (click)="$event.target === $event.currentTarget && (showTreatyModal = false)">
+  <div class="modal-overlay" (click)="$event.target === $event.currentTarget && (showTreatyModal = false)" tabindex="-1" (keydown.escape)="showTreatyModal = false">
     <div class="modal-box coa-modal treaty-modal" style="max-width: 800px !important">
       <div class="panel-header">
         <h3 class="panel-title">{{ treatyModalTitle }}</h3>
@@ -560,10 +560,9 @@
 
 <!-- Add/Edit ITD Manual Modal – always in DOM -->
 @if (showItdModal) {
-  <div class="modal-overlay" (click)="showItdModal = false">
+  <div class="modal-overlay" (click)="$event.target === $event.currentTarget && (showItdModal = false)" tabindex="-1" (keydown.escape)="showItdModal = false">
     <div
       class="modal-box"
-      (click)="$event.stopPropagation()"
       style="max-width: 900px; width: 90%; max-height: 90vh; display: flex; flex-direction: column"
     >
       <div class="panel-header" style="flex-shrink: 0">

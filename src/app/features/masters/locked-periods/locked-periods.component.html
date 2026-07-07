@@ -36,7 +36,7 @@
 
 <!-- Lock Period Modal -->
 @if (showLockPeriodModal) {
-  <div class="modal-overlay" (click)="$event.target === $event.currentTarget && (showLockPeriodModal = false)">
+  <div class="modal-overlay" (click)="$event.target === $event.currentTarget && (showLockPeriodModal = false)" tabindex="-1" (keydown.escape)="showLockPeriodModal = false">
     <div class="modal-box" style="max-width: 400px">
       <div class="panel-header">
         <h3 class="panel-title">Lock Accounting Period</h3>

@@ -35,7 +35,7 @@
 }
 
 @if (showRiskCompanyModal) {
-  <div class="modal-overlay" (click)="$event.target === $event.currentTarget && (showRiskCompanyModal = false)">
+  <div class="modal-overlay" (click)="$event.target === $event.currentTarget && (showRiskCompanyModal = false)" tabindex="-1" (keydown.escape)="showRiskCompanyModal = false">
     <div class="modal-box treaty-modal">
       <div class="panel-header">
         <h3 class="panel-title">{{ riskCompanyModalTitle }}</h3>

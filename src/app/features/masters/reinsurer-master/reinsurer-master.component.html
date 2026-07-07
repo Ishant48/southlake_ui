@@ -35,7 +35,7 @@
 }
 
 @if (showReinsurerModal) {
-  <div class="modal-overlay" (click)="$event.target === $event.currentTarget && (showReinsurerModal = false)">
+  <div class="modal-overlay" (click)="$event.target === $event.currentTarget && (showReinsurerModal = false)" tabindex="-1" (keydown.escape)="showReinsurerModal = false">
     <div class="modal-box coa-modal">
       <div class="panel-header">
         <h3 class="panel-title">{{ reinsurerModalTitle }}</h3>

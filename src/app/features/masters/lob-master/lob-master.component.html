@@ -35,7 +35,7 @@
 }
 
 @if (showLobModal) {
-  <div class="modal-overlay" (click)="$event.target === $event.currentTarget && (showLobModal = false)">
+  <div class="modal-overlay" (click)="$event.target === $event.currentTarget && (showLobModal = false)" tabindex="-1" (keydown.escape)="showLobModal = false">
     <div class="modal-box treaty-modal">
       <div class="panel-header">
         <h3 class="panel-title">{{ lobModalTitle }}</h3>

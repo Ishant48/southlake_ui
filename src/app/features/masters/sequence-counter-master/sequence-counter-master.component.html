@@ -35,7 +35,7 @@
 }
 
 @if (showSequenceCounterModal) {
-  <div class="modal-overlay" (click)="$event.target === $event.currentTarget && (showSequenceCounterModal = false)">
+  <div class="modal-overlay" (click)="$event.target === $event.currentTarget && (showSequenceCounterModal = false)" tabindex="-1" (keydown.escape)="showSequenceCounterModal = false">
     <div class="modal-box coa-modal">
       <div class="panel-header">
         <h3 class="panel-title">{{ sequenceCounterModalTitle }}</h3>

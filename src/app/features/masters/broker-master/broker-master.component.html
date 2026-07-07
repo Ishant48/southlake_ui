@@ -35,7 +35,7 @@
 }
 
 @if (showBrokerModal) {
-  <div class="modal-overlay" (click)="$event.target === $event.currentTarget && (showBrokerModal = false)">
+  <div class="modal-overlay" (click)="$event.target === $event.currentTarget && (showBrokerModal = false)" tabindex="-1" (keydown.escape)="showBrokerModal = false">
     <div class="modal-box coa-modal">
       <div class="panel-header">
         <h3 class="panel-title">{{ brokerModalTitle }}</h3>
@@ -50,7 +50,7 @@
       <form (submit)="submitBroker()" class="panel-body" style="max-height: calc(100vh - 200px); overflow-y: auto">
         <div class="form-row">
           <div class="form-field">
-            <label class="form-label">Broker Code *</label>
+            <label  for="brokerCode" class="form-label">Broker Code *</label>
             <input
               [(ngModel)]="brokerForm.code"
               name="code"
@@ -62,7 +62,7 @@
             />
           </div>
           <div class="form-field">
-            <label class="form-label">Broker Name *</label>
+            <label  for="brokerName" class="form-label">Broker Name *</label>
             <input
               [(ngModel)]="brokerForm.name"
               name="name"
@@ -76,7 +76,7 @@
 
         <div class="form-row" style="margin-top: 8px">
           <div class="form-field">
-            <label class="form-label">Contact Name</label>
+            <label  for="contactName" class="form-label">Contact Name</label>
             <input
               [(ngModel)]="brokerForm.contact_name"
               name="contact_name"
@@ -86,7 +86,7 @@
             />
           </div>
           <div class="form-field">
-            <label class="form-label">Contact Phone</label>
+            <label  for="contactPhone" class="form-label">Contact Phone</label>
             <input
               [(ngModel)]="brokerForm.contact_phone"
               name="contact_phone"
@@ -99,7 +99,7 @@
 
         <div class="form-row" style="margin-top: 8px">
           <div class="form-field">
-            <label class="form-label">Contact Email</label>
+            <label  for="contactEmail" class="form-label">Contact Email</label>
             <input
               [(ngModel)]="brokerForm.contact_email"
               name="contact_email"
