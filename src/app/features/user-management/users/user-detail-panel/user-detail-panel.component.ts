@@ -20,7 +20,7 @@ import { UserStatusBadgeComponent } from '../user-status-badge/user-status-badge
 import { Role } from '../../models/role.model';
 
 interface UpdateUserProfilePayload {
-  status: 'active' | 'inactive' | 'pending';
+  status?: 'active' | 'inactive' | 'pending';
   name?: string;
   role_id?: string;
   department?: string | null;
