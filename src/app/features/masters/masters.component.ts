@@ -8,6 +8,7 @@ import { AgGridConfigService } from '../../core/services/ag-grid-config.service'
 import { MastersGrid } from './components/masters-grid/masters-grid';
 import { NotesModal } from './components/notes-modal/notes-modal';
 import { DocumentDrawer, DrawerDocument } from './components/document-drawer/document-drawer';
+import { StateFormModal, StateFormValue } from './components/state-form-modal/state-form-modal';
 import {
   ActionButtonConfig,
   ActionButtonsCell,
@@ -142,6 +143,7 @@ type MasterTab =
     MastersGrid,
     NotesModal,
     DocumentDrawer,
+    StateFormModal,
   ],
   templateUrl: './masters.component.html',
   styleUrl: './masters.component.scss',
@@ -1884,7 +1886,8 @@ export class MastersComponent implements OnInit {
     this.showStateModal = true;
   }
 
-  submitState(): void {
+  submitState(formValue: StateFormValue): void {
+    this.stateForm = formValue;
     if (this.stateForm.state_code === null || !this.stateForm.state_abbr || !this.stateForm.name) {
       this.toast.error('State Code, State Abbr, and Name are required');
       return;
