@@ -13,7 +13,10 @@ import { AgGridAngular } from 'ag-grid-angular';
 import { ColDef, GridOptions, GridReadyEvent } from 'ag-grid-community';
 import { AgGridConfigService } from '../../core/services/ag-grid-config.service';
 
-import { CoaGridCellRenderer } from './components/coa-grid-cell-renderer/coa-grid-cell-renderer';
+import {
+  CoaGridCellRenderer,
+  CoaGridCellVariant,
+} from './components/coa-grid-cell-renderer/coa-grid-cell-renderer';
 import {
   AccountFormModal,
   AccountFormSaveEvent,
@@ -56,7 +59,7 @@ export class ChartOfAccountsComponent implements OnInit {
       headerName: 'COA TYPE',
       field: 'is_root',
       cellRenderer: CoaGridCellRenderer,
-      cellRendererParams: { variant: 'badge' },
+      cellRendererParams: { variant: CoaGridCellVariant.Badge },
       flex: 12,
       minWidth: 100,
     },
@@ -71,7 +74,7 @@ export class ChartOfAccountsComponent implements OnInit {
       headerName: 'NAME',
       field: 'description',
       cellRenderer: CoaGridCellRenderer,
-      cellRendererParams: { variant: 'tree-name' },
+      cellRendererParams: { variant: CoaGridCellVariant.TreeName },
       flex: 40,
       minWidth: 350,
     },
@@ -93,14 +96,14 @@ export class ChartOfAccountsComponent implements OnInit {
       headerName: 'NORMAL BAL...',
       field: 'normal_balance',
       cellRenderer: CoaGridCellRenderer,
-      cellRendererParams: { variant: 'balance-badge' },
+      cellRendererParams: { variant: CoaGridCellVariant.BalanceBadge },
       flex: 14,
       minWidth: 100,
     },
     {
       headerName: 'ACTIONS',
       cellRenderer: CoaGridCellRenderer,
-      cellRendererParams: { variant: 'actions' },
+      cellRendererParams: { variant: CoaGridCellVariant.Actions },
       sortable: false,
       minWidth: 230,
       maxWidth: 240,

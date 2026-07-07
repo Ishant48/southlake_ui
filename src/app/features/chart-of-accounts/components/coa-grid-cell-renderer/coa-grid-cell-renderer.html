@@ -1,10 +1,10 @@
 @switch (variant) {
-  @case ("badge") {
+  @case (CoaGridCellVariant.Badge) {
     <span class="coa-badge" [class.root]="isRoot" [class.sub]="!isRoot">
       {{ isRoot ? "Root COA" : "Sub COA" }}
     </span>
   }
-  @case ("tree-name") {
+  @case (CoaGridCellVariant.TreeName) {
     <div class="coa-name-cell" [style.padding-left.px]="treeDepth * 32">
       @if (treeDepth > 0) {
         <span class="tree-connector" [style.left.px]="(treeDepth - 1) * 32 + 12"></span>
@@ -17,12 +17,12 @@
       </div>
     </div>
   }
-  @case ("balance-badge") {
+  @case (CoaGridCellVariant.BalanceBadge) {
     <span class="balance-badge" [class.debit]="balance === 'debit'" [class.credit]="balance === 'credit'">
       {{ balance || "-" | titlecase }}
     </span>
   }
-  @case ("actions") {
+  @case (CoaGridCellVariant.Actions) {
     <div class="coa-actions-cell">
       @if (isRoot) {
         <span

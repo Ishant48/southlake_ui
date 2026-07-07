@@ -1,6 +1,10 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { CoaGridCellRenderer, CoaGridCellRendererParams } from './coa-grid-cell-renderer';
+import {
+  CoaGridCellRenderer,
+  CoaGridCellRendererParams,
+  CoaGridCellVariant,
+} from './coa-grid-cell-renderer';
 
 describe('CoaGridCellRenderer', () => {
   let component: CoaGridCellRenderer;
@@ -22,7 +26,7 @@ describe('CoaGridCellRenderer', () => {
 
   it('renders the badge variant based on is_root', () => {
     component.agInit({
-      variant: 'badge',
+      variant: CoaGridCellVariant.Badge,
       data: { is_root: true },
     } as unknown as CoaGridCellRendererParams);
     expect(component.isRoot).toBe(true);
@@ -30,7 +34,7 @@ describe('CoaGridCellRenderer', () => {
 
   it('renders the tree-name variant fields', () => {
     component.agInit({
-      variant: 'tree-name',
+      variant: CoaGridCellVariant.TreeName,
       data: { treeDepth: 2, description: 'Cash', notes: 'Liquid asset', is_root: false },
     } as unknown as CoaGridCellRendererParams);
 
@@ -41,7 +45,7 @@ describe('CoaGridCellRenderer', () => {
 
   it('renders the balance-badge variant field', () => {
     component.agInit({
-      variant: 'balance-badge',
+      variant: CoaGridCellVariant.BalanceBadge,
       data: { normal_balance: 'debit' },
     } as unknown as CoaGridCellRendererParams);
     expect(component.balance).toBe('debit');
@@ -49,11 +53,11 @@ describe('CoaGridCellRenderer', () => {
 
   it('refresh re-reads row data and reports success', () => {
     component.agInit({
-      variant: 'badge',
+      variant: CoaGridCellVariant.Badge,
       data: { is_root: false },
     } as unknown as CoaGridCellRendererParams);
     const result = component.refresh({
-      variant: 'badge',
+      variant: CoaGridCellVariant.Badge,
       data: { is_root: true },
     } as unknown as CoaGridCellRendererParams);
 
@@ -68,7 +72,7 @@ describe('CoaGridCellRenderer', () => {
     const openEditModal = vi.fn();
     const data = { id: 1 };
     component.agInit({
-      variant: 'actions',
+      variant: CoaGridCellVariant.Actions,
       data,
       context: { componentParent: { openViewModal, openDocModal, openNotesModal, openEditModal } },
     } as unknown as CoaGridCellRendererParams);

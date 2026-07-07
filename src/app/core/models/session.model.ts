@@ -1,5 +1,10 @@
+export enum SessionTokenType {
+  Session = 'session',
+  Challenge = 'challenge',
+}
+
 export interface SessionToken {
-  token_type: 'session' | 'challenge';
+  token_type: SessionTokenType;
   session_token?: string;
   user?: {
     id: string;
