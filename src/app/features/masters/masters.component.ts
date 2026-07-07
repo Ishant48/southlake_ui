@@ -11,7 +11,7 @@ import {
   ActionButtonsCell,
 } from '../../shared/components/grid-renderers/action-buttons-cell/action-buttons-cell';
 import { StatusBadgeCell } from '../../shared/components/grid-renderers/status-badge-cell/status-badge-cell';
-import { MastersService } from '../../core/services/masters.service';
+import { MastersApi } from './services/masters-api';
 import { ToastService } from '../../shared/components/toast/toast.service';
 import { ConfirmDialogComponent } from '../../shared/components/confirm-dialog/confirm-dialog.component';
 import { DropdownSearchComponent } from '../../shared/components/dropdown-search/dropdown-search.component';
@@ -34,7 +34,7 @@ import {
   DocumentType,
   SequencePrefixCounter,
   SimpleMasterRecord,
-} from '../../core/models/master.model';
+} from './models/master.model';
 
 type DocumentableMaster =
   | (MgaMaster & { documents: MgaDocument[] })
@@ -112,7 +112,7 @@ import { GlMappingsApi } from './services/gl-mappings-api';
 import { ChartOfAccountsApi } from '../chart-of-accounts/services/chart-of-accounts-api';
 import { GlMapping } from './models/gl-mapping.model';
 import { ChartOfAccount } from '../../core/models/chart-of-account.model';
-import { ReinsuranceService } from '../../core/services/reinsurance.service';
+import { ReinsuranceApi } from '../reinsurance-calculations/services/reinsurance-api';
 
 type MasterTab =
   | 'treaties'
@@ -170,8 +170,8 @@ export class MastersComponent implements OnInit {
     { id: 'MGA', name: 'MGA' },
     { id: 'BRK', name: 'BRK' },
   ];
-  private service = inject(MastersService);
-  private reinsuranceService = inject(ReinsuranceService);
+  private service = inject(MastersApi);
+  private reinsuranceService = inject(ReinsuranceApi);
   private toast = inject(ToastService);
   private cdr = inject(ChangeDetectorRef);
   private route = inject(ActivatedRoute);

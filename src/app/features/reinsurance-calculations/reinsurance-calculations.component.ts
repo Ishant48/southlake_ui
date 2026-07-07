@@ -2,12 +2,12 @@ import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { ReinsuranceService } from '../../core/services/reinsurance.service';
+import { ReinsuranceApi } from './services/reinsurance-api';
 import { ToastService } from '../../shared/components/toast/toast.service';
-import { MastersService } from '../../core/services/masters.service';
+import { MastersApi } from '../masters/services/masters-api';
 import { ConfirmDialogComponent } from '../../shared/components/confirm-dialog/confirm-dialog.component';
-import { StateExhibit, Workbook } from '../../core/models/reinsurance.model';
-import { TreatyState } from '../../core/models/master.model';
+import { StateExhibit, Workbook } from './models/reinsurance.model';
+import { TreatyState } from '../masters/models/master.model';
 
 interface ReinsuranceParamsForm {
   pw: number;
@@ -111,11 +111,11 @@ interface JournalEntryBatch {
   styleUrl: './reinsurance-calculations.component.scss',
 })
 export class ReinsuranceCalculationsComponent implements OnInit {
-  private service = inject(ReinsuranceService);
+  private service = inject(ReinsuranceApi);
   private toast = inject(ToastService);
   private cdr = inject(ChangeDetectorRef);
   private router = inject(Router);
-  private mastersService = inject(MastersService);
+  private mastersService = inject(MastersApi);
 
   workbooks: Workbook[] = [];
   selectedWorkbookId: number | null = null;

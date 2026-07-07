@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { JournalEntriesApi } from './services/journal-entries-api';
 import { ChartOfAccountsApi } from '../chart-of-accounts/services/chart-of-accounts-api';
-import { MastersService } from '../../core/services/masters.service';
+import { MastersApi } from '../masters/services/masters-api';
 import { ToastService } from '../../shared/components/toast/toast.service';
 import { ConfirmDialogComponent } from '../../shared/components/confirm-dialog/confirm-dialog.component';
 import { DropdownSearchComponent } from '../../shared/components/dropdown-search/dropdown-search.component';
@@ -31,7 +31,7 @@ import { AgGridConfigService } from '../../core/services/ag-grid-config.service'
 export class JournalEntriesComponent implements OnInit {
   private service = inject(JournalEntriesApi);
   private coaService = inject(ChartOfAccountsApi);
-  private mastersService = inject(MastersService);
+  private mastersService = inject(MastersApi);
   private toast = inject(ToastService);
   private cdr = inject(ChangeDetectorRef);
   private route = inject(ActivatedRoute);
