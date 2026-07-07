@@ -41,7 +41,7 @@ export function buildMastersExportData(ctx: MastersComponent): MastersExportData
     case MasterTab.States:
       return {
         headers: ['State Code', 'State Abbr', 'State Name', 'Status'],
-        rows: ctx.states.map(s => [
+        rows: ctx.statesState.states.map(s => [
           s.state_code,
           s.state_abbr,
           s.name,

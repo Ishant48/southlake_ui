@@ -38,6 +38,7 @@ import { BrokersApi } from './services/brokers-api';
 import { DocumentTypesApi } from './services/document-types-api';
 import { LockedPeriodsState } from './services/locked-periods-state';
 import { SimpleMastersState } from './services/simple-masters-state';
+import { StatesState } from './services/states-state';
 import { ToastService } from '../../shared/components/toast/toast.service';
 import { ConfirmDialogComponent } from '../../shared/components/confirm-dialog/confirm-dialog.component';
 import { environment } from '../../../environments/environment';
@@ -146,6 +147,7 @@ export class MastersComponent implements OnInit {
   private documentTypesApi = inject(DocumentTypesApi);
   simpleMastersState = inject(SimpleMastersState);
   lockedPeriodsState = inject(LockedPeriodsState);
+  statesState = inject(StatesState);
   private reinsuranceService = inject(ReinsuranceApi);
   private toast = inject(ToastService);
   private cdr = inject(ChangeDetectorRef);
@@ -177,7 +179,6 @@ export class MastersComponent implements OnInit {
   // Data lists
   treaties: Treaty[] = [];
   mgas: MgaMaster[] = [];
-  states: StateMaster[] = [];
   riskCompanies: RiskCompany[] = [];
 
   // Pagination
@@ -552,9 +553,8 @@ export class MastersComponent implements OnInit {
         this.loadSimpleTab(SimpleMode.Cob, search, active, 'COBs');
         break;
       case MasterTab.States:
-        this.statesApi.getStates(search, active).subscribe({
-          next: res => {
-            this.states = res;
+        this.statesState.load(search, active).subscribe({
+          next: () => {
             this.loading = false;
             this.cdr.markForCheck();
           },
@@ -669,7 +669,7 @@ export class MastersComponent implements OnInit {
       case MasterTab.Cobs:
         return this.simpleMastersState.cobs;
       case MasterTab.States:
-        return this.states;
+        return this.statesState.states;
       case MasterTab.Reinsurers:
         return this.simpleMastersState.reinsurers;
       case MasterTab.RiskCompanies:
@@ -1148,11 +1148,8 @@ export class MastersComponent implements OnInit {
     };
 
     if (this.isEditMode && !this.stateForm.id) return;
-    const request: Observable<StateMaster> = this.isEditMode
-      ? this.statesApi.updateState(this.stateForm.id as string, payload)
-      : this.statesApi.createState(payload);
 
-    request.subscribe({
+    this.statesState.save(this.isEditMode, this.stateForm.id, payload).subscribe({
       next: () => {
         this.toast.success('State saved successfully');
         this.showStateModal = false;
@@ -1172,7 +1169,7 @@ export class MastersComponent implements OnInit {
     this.confirmTitle = 'Delete State';
     this.confirmMessage = `Are you sure you want to delete state "${state.name}"? This action cannot be undone.`;
     this.pendingAction = () => {
-      this.statesApi.deleteState(state.id).subscribe({
+      this.statesState.delete(state.id).subscribe({
         next: () => {
           this.toast.success('State deleted successfully');
           this.loadData();
