@@ -40,6 +40,7 @@ import { LockedPeriodsState } from './services/locked-periods-state';
 import { SimpleMastersState } from './services/simple-masters-state';
 import { StatesState } from './services/states-state';
 import { RiskCompaniesState } from './services/risk-companies-state';
+import { MgasState } from './services/mgas-state';
 import { ToastService } from '../../shared/components/toast/toast.service';
 import { ConfirmDialogComponent } from '../../shared/components/confirm-dialog/confirm-dialog.component';
 import { environment } from '../../../environments/environment';
@@ -150,6 +151,7 @@ export class MastersComponent implements OnInit {
   lockedPeriodsState = inject(LockedPeriodsState);
   statesState = inject(StatesState);
   riskCompaniesState = inject(RiskCompaniesState);
+  mgasState = inject(MgasState);
   private reinsuranceService = inject(ReinsuranceApi);
   private toast = inject(ToastService);
   private cdr = inject(ChangeDetectorRef);
@@ -180,7 +182,6 @@ export class MastersComponent implements OnInit {
 
   // Data lists
   treaties: Treaty[] = [];
-  mgas: MgaMaster[] = [];
 
   // Pagination
   pageSize = 25;
@@ -534,9 +535,8 @@ export class MastersComponent implements OnInit {
         });
         break;
       case MasterTab.Mgas:
-        this.mgasApi.getMgas(search, active).subscribe({
-          next: res => {
-            this.mgas = res;
+        this.mgasState.load(search, active).subscribe({
+          next: () => {
             this.loading = false;
             this.cdr.markForCheck();
           },
@@ -663,7 +663,7 @@ export class MastersComponent implements OnInit {
         return list;
       }
       case MasterTab.Mgas:
-        return this.mgas;
+        return this.mgasState.mgas;
       case MasterTab.Lobs:
         return this.simpleMastersState.lobs;
       case MasterTab.Cobs:
@@ -932,45 +932,30 @@ export class MastersComponent implements OnInit {
           : null,
     };
 
-    if (this.isEditMode) {
-      if (!this.mgaForm.id) return;
-      this.mgasApi.updateMga(this.mgaForm.id, payload).subscribe({
-        next: () => {
-          this.toast.success('MGA updated successfully');
-          this.showMgaModal = false;
-          this.submitting = false;
-          this.loadData();
-        },
-        error: (err: HttpErrorLike) => {
-          // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- '' should also fall back to the default message
-          this.toast.error(err.error?.message || 'Failed to update MGA');
-          this.submitting = false;
-          this.cdr.markForCheck();
-        },
-      });
-    } else {
-      this.mgasApi.createMga(payload).subscribe({
-        next: () => {
-          this.toast.success('MGA created successfully');
-          this.showMgaModal = false;
-          this.submitting = false;
-          this.loadData();
-        },
-        error: (err: HttpErrorLike) => {
-          // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- '' should also fall back to the default message
-          this.toast.error(err.error?.message || 'Failed to create MGA');
-          this.submitting = false;
-          this.cdr.markForCheck();
-        },
-      });
-    }
+    if (this.isEditMode && !this.mgaForm.id) return;
+    const isUpdate = this.isEditMode;
+
+    this.mgasState.save(isUpdate, this.mgaForm.id, payload).subscribe({
+      next: () => {
+        this.toast.success(`MGA ${isUpdate ? 'updated' : 'created'} successfully`);
+        this.showMgaModal = false;
+        this.submitting = false;
+        this.loadData();
+      },
+      error: (err: HttpErrorLike) => {
+        // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- '' should also fall back to the default message
+        this.toast.error(err.error?.message || `Failed to ${isUpdate ? 'update' : 'create'} MGA`);
+        this.submitting = false;
+        this.cdr.markForCheck();
+      },
+    });
   }
 
   deleteMga(mga: MgaMaster): void {
     this.confirmTitle = 'Delete MGA';
     this.confirmMessage = `Are you sure you want to delete MGA "${mga.name}"? This action cannot be undone.`;
     this.pendingAction = () => {
-      this.mgasApi.deleteMga(mga.id).subscribe({
+      this.mgasState.delete(mga.id).subscribe({
         next: () => {
           this.toast.success('MGA deleted successfully');
           this.loadData();

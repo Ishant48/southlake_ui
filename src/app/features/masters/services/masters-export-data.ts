@@ -28,7 +28,7 @@ export function buildMastersExportData(ctx: MastersComponent): MastersExportData
     case MasterTab.Mgas:
       return {
         headers: ['MGA Code', 'MGA Name', 'Tax Payable In-house', 'Ledger Amount', 'Status'],
-        rows: ctx.mgas.map(m => [
+        rows: ctx.mgasState.mgas.map(m => [
           m.mga_code,
           m.name,
           m.tax_payable_inhouse ? 'Yes' : 'No',
