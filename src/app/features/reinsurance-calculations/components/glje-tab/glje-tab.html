@@ -1,0 +1,118 @@
+<div class="export-bar flex-between">
+  <button class="btn btn-success" (click)="post.emit()" [disabled]="postingBatch">
+    🚀 Post to Journal Entries Batch
+  </button>
+  <button class="btn btn-primary" (click)="exportCsv.emit()">📥 Export Mappings to CSV</button>
+</div>
+<div class="table-container">
+  <table class="data-table font-mono">
+    <thead>
+      <tr>
+        <th>Account Description</th>
+        <th>Comp</th>
+        <th>ACCOUNT</th>
+        <th>CC</th>
+        <th>MGA</th>
+        <th>LOB</th>
+        <th>ST</th>
+        <th>EXT</th>
+        <th>Sub</th>
+        <th class="text-right">Debit</th>
+        <th class="text-right">Credit</th>
+        <th class="text-center">Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let row of localRows; let i = index">
+        <td class="font-sans font-semibold">
+          <ng-container *ngIf="!row.isNew">{{ row.desc }}</ng-container>
+          <input
+            *ngIf="row.isNew"
+            type="text"
+            [(ngModel)]="row.desc"
+            (ngModelChange)="onRowChange()"
+            placeholder="Account description"
+          />
+        </td>
+        <td>
+          <ng-container *ngIf="!row.isNew">{{ row.comp }}</ng-container>
+          <input
+            *ngIf="row.isNew"
+            type="text"
+            [(ngModel)]="row.comp"
+            (ngModelChange)="onRowChange()"
+            class="col-comp"
+          />
+        </td>
+        <td>
+          <ng-container *ngIf="!row.isNew">{{ row.account }}</ng-container>
+          <input
+            *ngIf="row.isNew"
+            type="text"
+            [(ngModel)]="row.account"
+            (ngModelChange)="onRowChange()"
+            class="col-account"
+            placeholder="Code"
+          />
+        </td>
+        <td>
+          <ng-container *ngIf="!row.isNew">{{ row.cc }}</ng-container>
+          <input *ngIf="row.isNew" type="text" [(ngModel)]="row.cc" (ngModelChange)="onRowChange()" class="col-comp" />
+        </td>
+        <td>
+          <ng-container *ngIf="!row.isNew">{{ row.mga }}</ng-container>
+          <input *ngIf="row.isNew" type="text" [(ngModel)]="row.mga" (ngModelChange)="onRowChange()" class="col-comp" />
+        </td>
+        <td>
+          <ng-container *ngIf="!row.isNew">{{ row.lob }}</ng-container>
+          <input *ngIf="row.isNew" type="text" [(ngModel)]="row.lob" (ngModelChange)="onRowChange()" class="col-lob" />
+        </td>
+        <td>
+          <ng-container *ngIf="!row.isNew">{{ row.st }}</ng-container>
+          <input *ngIf="row.isNew" type="text" [(ngModel)]="row.st" (ngModelChange)="onRowChange()" class="col-st" />
+        </td>
+        <td>
+          <ng-container *ngIf="!row.isNew">{{ row.ext }}</ng-container>
+          <input *ngIf="row.isNew" type="text" [(ngModel)]="row.ext" (ngModelChange)="onRowChange()" class="col-comp" />
+        </td>
+        <td>
+          <ng-container *ngIf="!row.isNew">{{ row.sub || "-" }}</ng-container>
+          <input *ngIf="row.isNew" type="text" [(ngModel)]="row.sub" (ngModelChange)="onRowChange()" class="col-comp" />
+        </td>
+        <td class="text-right text-green font-bold">
+          <ng-container *ngIf="!row.isNew">
+            {{ (row.debit ?? 0) > 0 ? formatCurrency(row.debit) : "-" }}
+          </ng-container>
+          <input
+            *ngIf="row.isNew"
+            type="number"
+            [(ngModel)]="row.debit"
+            class="col-amount"
+            (change)="onRowAmountChange(row, 'debit')"
+          />
+        </td>
+        <td class="text-right text-red font-bold">
+          <ng-container *ngIf="!row.isNew">
+            {{ (row.credit ?? 0) > 0 ? formatCurrency(row.credit) : "-" }}
+          </ng-container>
+          <input
+            *ngIf="row.isNew"
+            type="number"
+            [(ngModel)]="row.credit"
+            class="col-amount"
+            (change)="onRowAmountChange(row, 'credit')"
+          />
+        </td>
+        <td class="text-center">
+          <button *ngIf="row.isNew" class="btn-table btn-table-danger delete-row-btn" (click)="removeRow(i)">
+            Delete
+          </button>
+          <span *ngIf="!row.isNew">-</span>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+<div class="flex-start mt-2">
+  <button class="btn btn-primary" (click)="addRow()">➕ Add Row</button>
+</div>

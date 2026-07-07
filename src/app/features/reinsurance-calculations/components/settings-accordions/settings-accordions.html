@@ -1,0 +1,252 @@
+<div class="settings-grid mb-4">
+  <!-- 1. Required Parameters Form -->
+  <div class="card settings-card">
+    <div
+      class="card-header accordion-header"
+      role="button"
+      tabindex="0"
+      (click)="toggleAccordion('parameters')"
+      (keydown.enter)="toggleAccordion('parameters')"
+      (keydown.space)="toggleAccordion('parameters'); $event.preventDefault()"
+    >
+      <h2>📝 Required Parameters ({{ selectedState }})</h2>
+      <span class="accordion-arrow" [style.transform]="parametersExpanded ? 'rotate(90deg)' : 'rotate(0deg)'">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <path d="M9 5l7 7-7 7" />
+        </svg>
+      </span>
+    </div>
+    @if (parametersExpanded) {
+      <div class="card-body">
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="rc-premiums-written">Premiums Written</label>
+            <input id="rc-premiums-written" type="number" [ngModel]="paramsForm.pw" class="form-control" readonly />
+          </div>
+          <div class="form-group">
+            <label for="rc-previous-unearned-premium-reserve">Previous Unearned Premium Reserve</label>
+            <input
+              id="rc-previous-unearned-premium-reserve"
+              type="number"
+              [ngModel]="paramsForm.prev_uep"
+              class="form-control"
+              readonly
+            />
+          </div>
+          <div class="form-group">
+            <label for="rc-current-unearned-premium-reserve">Current Unearned Premium Reserve</label>
+            <input
+              id="rc-current-unearned-premium-reserve"
+              type="number"
+              [ngModel]="paramsForm.curr_uep"
+              class="form-control"
+              readonly
+            />
+          </div>
+          <div class="form-group">
+            <label for="rc-previous-loss-reserves">Previous Loss Reserves</label>
+            <input
+              id="rc-previous-loss-reserves"
+              type="number"
+              [ngModel]="paramsForm.prev_loss_reserves"
+              class="form-control"
+              readonly
+            />
+          </div>
+          <div class="form-group">
+            <label for="rc-previous-loss-ibnr-reserves">Previous Loss IBNR Reserves</label>
+            <input
+              id="rc-previous-loss-ibnr-reserves"
+              type="number"
+              [ngModel]="paramsForm.loss_ibnr"
+              class="form-control"
+              readonly
+            />
+          </div>
+          <div class="form-group">
+            <label for="rc-previous-lae-ibnr-reserves-dcc">Previous LAE IBNR Reserves - DCC</label>
+            <input
+              id="rc-previous-lae-ibnr-reserves-dcc"
+              type="number"
+              [ngModel]="paramsForm.lae_ibnr_dcc"
+              class="form-control"
+              readonly
+            />
+          </div>
+          <div class="form-group">
+            <label for="rc-previous-lae-ibnr-reserves-aoe">Previous LAE IBNR Reserves - AOE</label>
+            <input
+              id="rc-previous-lae-ibnr-reserves-aoe"
+              type="number"
+              [ngModel]="paramsForm.lae_ibnr_aoe"
+              class="form-control"
+              readonly
+            />
+          </div>
+          <div class="form-group">
+            <label for="rc-previous-lae-reserves-dcc">Previous LAE Reserves - DCC</label>
+            <input
+              id="rc-previous-lae-reserves-dcc"
+              type="number"
+              [ngModel]="paramsForm.prev_lae_reserves_dcc"
+              class="form-control"
+              readonly
+            />
+          </div>
+          <div class="form-group">
+            <label for="rc-previous-lae-reserves-aoe">Previous LAE Reserves - AOE</label>
+            <input
+              id="rc-previous-lae-reserves-aoe"
+              type="number"
+              [ngModel]="paramsForm.prev_lae_reserves_aoe"
+              class="form-control"
+              readonly
+            />
+          </div>
+          <div class="form-group">
+            <label for="rc-previous-ulae-ibnr-reserves">Previous ULAE IBNR Reserves</label>
+            <input
+              id="rc-previous-ulae-ibnr-reserves"
+              type="number"
+              [ngModel]="paramsForm.ulae_ibnr"
+              class="form-control"
+              readonly
+            />
+          </div>
+        </div>
+      </div>
+    }
+  </div>
+
+  <!-- 2. Actuarial Rates Form -->
+  <div class="card settings-card">
+    <div
+      class="card-header accordion-header"
+      role="button"
+      tabindex="0"
+      (click)="toggleAccordion('rates')"
+      (keydown.enter)="toggleAccordion('rates')"
+      (keydown.space)="toggleAccordion('rates'); $event.preventDefault()"
+    >
+      <h2>📊 Actuarial Rates & Commissions (%)</h2>
+      <span class="accordion-arrow" [style.transform]="ratesExpanded ? 'rotate(90deg)' : 'rotate(0deg)'">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <path d="M9 5l7 7-7 7" />
+        </svg>
+      </span>
+    </div>
+    @if (ratesExpanded) {
+      <div class="card-body">
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="rc-quota-share">Quota Share (%)</label>
+            <input id="rc-quota-share" type="number" [ngModel]="ratesForm.qs" class="form-control" readonly />
+          </div>
+          <div class="form-group">
+            <label for="rc-ceding-fee">Ceding Fee (%)</label>
+            <input id="rc-ceding-fee" type="number" [ngModel]="ratesForm.cf" class="form-control" readonly />
+          </div>
+          <div class="form-group">
+            <label for="rc-ceding-commission">Ceding Commission (%)</label>
+            <input id="rc-ceding-commission" type="number" [ngModel]="ratesForm.comm" class="form-control" readonly />
+          </div>
+          <div class="form-group">
+            <label for="rc-ulae-rate">ULAE Rate (%)</label>
+            <input id="rc-ulae-rate" type="number" [ngModel]="ratesForm.ulae" class="form-control" readonly />
+          </div>
+          <div class="form-group">
+            <label for="rc-boards-charge">Boards Charge (%)</label>
+            <input
+              id="rc-boards-charge"
+              type="number"
+              [ngModel]="ratesForm.boards_charge"
+              class="form-control"
+              readonly
+            />
+          </div>
+          <div class="form-group">
+            <label for="rc-loss-ratio-cap">Loss Ratio Cap (%)</label>
+            <input
+              id="rc-loss-ratio-cap"
+              type="number"
+              [ngModel]="ratesForm.loss_ratio_cap"
+              class="form-control"
+              readonly
+            />
+          </div>
+          <div class="form-group">
+            <label for="rc-loss-pick">Loss Pick (%)</label>
+            <input id="rc-loss-pick" type="number" [ngModel]="ratesForm.loss_pick" class="form-control" readonly />
+          </div>
+          <div class="form-group">
+            <label for="rc-lae-dcc">LAE DCC (%)</label>
+            <input id="rc-lae-dcc" type="number" [ngModel]="ratesForm.lae_dcc" class="form-control" readonly />
+          </div>
+          <div class="form-group">
+            <label for="rc-lae-aoe">LAE AOE (%)</label>
+            <input id="rc-lae-aoe" type="number" [ngModel]="ratesForm.lae_aoe" class="form-control" readonly />
+          </div>
+        </div>
+      </div>
+    }
+  </div>
+
+  <!-- 3. GL Account Segment Mappings Form -->
+  <div class="card settings-card">
+    <div
+      class="card-header accordion-header"
+      role="button"
+      tabindex="0"
+      (click)="toggleAccordion('mappings')"
+      (keydown.enter)="toggleAccordion('mappings')"
+      (keydown.space)="toggleAccordion('mappings'); $event.preventDefault()"
+    >
+      <h2>💼 GL Segment Mappings</h2>
+      <span class="accordion-arrow" [style.transform]="mappingsExpanded ? 'rotate(90deg)' : 'rotate(0deg)'">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <path d="M9 5l7 7-7 7" />
+        </svg>
+      </span>
+    </div>
+    @if (mappingsExpanded) {
+      <div class="card-body">
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="rc-company-comp">Company (Comp)</label>
+            <input id="rc-company-comp" type="text" [ngModel]="mappingsForm.comp" class="form-control" readonly />
+          </div>
+          <div class="form-group">
+            <label for="rc-cost-center-cc">Cost Center (CC)</label>
+            <input id="rc-cost-center-cc" type="text" [ngModel]="mappingsForm.cc" class="form-control" readonly />
+          </div>
+          <div class="form-group">
+            <label for="rc-mga-code">MGA Code</label>
+            <input id="rc-mga-code" type="text" [ngModel]="mappingsForm.mga" class="form-control" readonly />
+          </div>
+          <div class="form-group">
+            <label for="rc-lob-code">LOB Code</label>
+            <input id="rc-lob-code" type="text" [ngModel]="mappingsForm.lob" class="form-control" readonly />
+          </div>
+          <div class="form-group">
+            <label for="rc-extension-ext">Extension (Ext)</label>
+            <input id="rc-extension-ext" type="text" [ngModel]="mappingsForm.ext" class="form-control" readonly />
+          </div>
+          <div class="form-group">
+            <label for="rc-subledger-sub">Subledger (Sub)</label>
+            <input id="rc-subledger-sub" type="text" [ngModel]="mappingsForm.sub" class="form-control" readonly />
+          </div>
+          <div class="form-group">
+            <label for="rc-line-description-suffix">Line Description Suffix</label>
+            <input
+              id="rc-line-description-suffix"
+              type="text"
+              [ngModel]="mappingsForm.line_desc_suffix"
+              class="form-control"
+              readonly
+            />
+          </div>
+        </div>
+      </div>
+    }
+  </div>
+</div>
