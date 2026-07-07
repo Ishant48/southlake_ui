@@ -183,7 +183,6 @@ export class JournalEntriesComponent implements OnInit {
   // Batch register data
   batches: JournalEntryBatch[] = [];
   showAddBatchModal = false;
-  newBatchNumber = '';
   submittingBatch = false;
 
   // Batch details view data
@@ -378,7 +377,6 @@ export class JournalEntriesComponent implements OnInit {
   }
 
   openAddBatch(): void {
-    this.newBatchNumber = '';
     this.showAddBatchModal = true;
   }
 

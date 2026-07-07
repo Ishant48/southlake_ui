@@ -47,7 +47,6 @@ export class ChartOfAccountsComponent implements OnInit {
   filteredSubCoas: TreeAccount[] = []; // Filtered list passed to AG Grid
   loading = false;
   searchTerm: string = '';
-  Math = Math; // To use Math.ceil in template if needed
 
   // AG Grid Properties
   gridOptions: GridOptions = this.agGridConfig.getDefaultGridOptions();
@@ -113,10 +112,6 @@ export class ChartOfAccountsComponent implements OnInit {
   typeFilter: string = 'all';
   earningAccountCode: number | null = null;
 
-  // Pagination
-  pageSize = 25;
-  currentPage = 1;
-
   // Notes Modal
   showNotesModal = false;
   notesModalTitle = '';
@@ -176,7 +171,6 @@ export class ChartOfAccountsComponent implements OnInit {
           this.rootParents = this.subCoas.filter(a => a.is_parent);
           this.applyTypeFilter();
 
-          this.currentPage = 1;
           this.loading = false;
           this.cdr.markForCheck();
         },
@@ -194,8 +188,6 @@ export class ChartOfAccountsComponent implements OnInit {
       componentParent: this,
     });
   }
-
-  applyFilter() {}
 
   buildTreeList(accounts: ChartOfAccount[]): TreeAccount[] {
     const rootCodes = [110000, 210000, 310000, 410000, 510000];
@@ -304,7 +296,6 @@ export class ChartOfAccountsComponent implements OnInit {
   onTypeFilter(type: string): void {
     this.typeFilter = type;
     this.applyTypeFilter();
-    this.currentPage = 1;
     this.cdr.markForCheck();
   }
 

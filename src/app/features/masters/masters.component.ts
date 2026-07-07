@@ -453,13 +453,6 @@ export class MastersComponent implements OnInit {
     '2030',
   ];
 
-  onItdMonthYearChange(): void {
-    const monthObj = this.monthsList.find(m => m.value === this.itdSelectedMonth);
-    const monthLabel = monthObj ? monthObj.label : 'December';
-    this.itdForm.month_key = `${this.itdSelectedYear}-${this.itdSelectedMonth}`;
-    this.itdForm.month_label = `${monthLabel} ${this.itdSelectedYear}`;
-  }
-
   // Treaty Modal
   showTreatyModal = false;
   treatyModalTitle = '';
@@ -2326,24 +2319,6 @@ export class MastersComponent implements OnInit {
         this.cdr.markForCheck();
       },
     });
-  }
-
-  addCarrierRow(): void {
-    if (!this.treatyForm.carriers) {
-      this.treatyForm.carriers = [];
-    }
-    this.treatyForm.carriers.push({
-      risk_company_id: '',
-      retention_pct: 100,
-    });
-    this.cdr.markForCheck();
-  }
-
-  removeCarrierRow(index: number): void {
-    if (this.treatyForm.carriers) {
-      this.treatyForm.carriers.splice(index, 1);
-    }
-    this.cdr.markForCheck();
   }
 
   deleteTreaty(treaty: Treaty): void {

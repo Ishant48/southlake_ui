@@ -6,7 +6,7 @@ import { ReinsuranceApi } from './services/reinsurance-api';
 import { ToastService } from '../../shared/components/toast/toast.service';
 import { MastersApi } from '../masters/services/masters-api';
 import { ConfirmDialogComponent } from '../../shared/components/confirm-dialog/confirm-dialog.component';
-import { StateExhibit, Workbook } from './models/reinsurance.model';
+import { Workbook } from './models/reinsurance.model';
 import { TreatyState } from '../masters/models/master.model';
 
 import { SettingsAccordions } from './components/settings-accordions/settings-accordions';
@@ -79,7 +79,6 @@ export class ReinsuranceCalculationsComponent implements OnInit {
   ratesForm: ReinsuranceRatesForm = {};
   mappingsForm: ReinsuranceMappingsForm = {};
   paramsForm: Partial<ReinsuranceParamsForm> = {};
-  currentStateExhibitObj: StateExhibit | null = null;
 
   ngOnInit(): void {
     this.loadWorkbooks();
@@ -233,7 +232,6 @@ export class ReinsuranceCalculationsComponent implements OnInit {
     const exhibits = this.selectedWorkbook?.state_exhibits ?? this.selectedWorkbook?.stateExhibits;
     const curEx = exhibits?.find(e => (e.state_code ?? e.stateCode) === this.selectedState);
     if (curEx) {
-      this.currentStateExhibitObj = curEx;
       this.paramsForm = {
         pw: this.tupleValue(curEx.pw, 1),
         prev_uep: this.tupleValue(curEx.uep, 0),
@@ -301,125 +299,6 @@ export class ReinsuranceCalculationsComponent implements OnInit {
 
   private tupleValue(arr: unknown, index: number): number {
     return Array.isArray(arr) ? Number(arr[index] ?? 0) : 0;
-  }
-
-  private getArr(arr: unknown): number[] {
-    return Array.isArray(arr) ? [...(arr as number[])] : [0, 0, 0];
-  }
-
-  saveParams(): void {
-    if (!this.selectedWorkbookId || !this.selectedState) return;
-    this.loading = true;
-
-    const exhibits = this.selectedWorkbook?.state_exhibits ?? this.selectedWorkbook?.stateExhibits;
-    const curEx: StateExhibit =
-      exhibits?.find(e => (e.state_code ?? e.stateCode) === this.selectedState) ?? {};
-
-    const pw = this.getArr(curEx.pw);
-    pw[1] = Number(this.paramsForm.pw ?? 0);
-    pw[2] = Number(pw[0] ?? 0) + pw[1];
-
-    const uep = this.getArr(curEx.uep);
-    uep[0] = Number(this.paramsForm.prev_uep ?? 0);
-    uep[1] = Number(this.paramsForm.curr_uep ?? 0);
-    uep[2] = uep[0] + uep[1];
-
-    const loss_reserves = this.getArr(curEx.loss_reserves);
-    loss_reserves[0] = Number(this.paramsForm.prev_loss_reserves ?? 0);
-    loss_reserves[1] = Number(loss_reserves[1] ?? 0);
-    loss_reserves[2] = loss_reserves[0] + loss_reserves[1];
-
-    const lu = this.getArr(curEx['lu']);
-    lu[0] = Number(this.paramsForm.prev_loss_reserves ?? 0);
-    lu[1] = Number(lu[1] ?? 0);
-    lu[2] = lu[0] + lu[1];
-
-    const loss_ibnr = this.getArr(curEx.loss_ibnr);
-    loss_ibnr[0] = Number(this.paramsForm.loss_ibnr ?? 0);
-    loss_ibnr[1] = Number(loss_ibnr[1] ?? 0);
-    loss_ibnr[2] = loss_ibnr[0] + loss_ibnr[1];
-
-    const lae_ibnr_dcc = this.getArr(curEx.lae_ibnr_dcc);
-    lae_ibnr_dcc[0] = Number(this.paramsForm.lae_ibnr_dcc ?? 0);
-    lae_ibnr_dcc[1] = Number(lae_ibnr_dcc[1] ?? 0);
-    lae_ibnr_dcc[2] = lae_ibnr_dcc[0] + lae_ibnr_dcc[1];
-
-    const lae_ibnr_aoe = this.getArr(curEx.lae_ibnr_aoe);
-    lae_ibnr_aoe[0] = Number(this.paramsForm.lae_ibnr_aoe ?? 0);
-    lae_ibnr_aoe[1] = Number(lae_ibnr_aoe[1] ?? 0);
-    lae_ibnr_aoe[2] = lae_ibnr_aoe[0] + lae_ibnr_aoe[1];
-
-    const lae_reserves_dcc = this.getArr(curEx.lae_reserves_dcc);
-    lae_reserves_dcc[0] = Number(this.paramsForm.prev_lae_reserves_dcc ?? 0);
-    lae_reserves_dcc[1] = Number(lae_reserves_dcc[1] ?? 0);
-    lae_reserves_dcc[2] = lae_reserves_dcc[0] + lae_reserves_dcc[1];
-
-    const lae_reserves_aoe = this.getArr(curEx.lae_reserves_aoe);
-    lae_reserves_aoe[0] = Number(this.paramsForm.prev_lae_reserves_aoe ?? 0);
-    lae_reserves_aoe[1] = Number(lae_reserves_aoe[1] ?? 0);
-    lae_reserves_aoe[2] = lae_reserves_aoe[0] + lae_reserves_aoe[1];
-
-    const ulae_ibnr = this.getArr(curEx.ulae_ibnr);
-    ulae_ibnr[0] = Number(this.paramsForm.ulae_ibnr ?? 0);
-    ulae_ibnr[1] = Number(ulae_ibnr[1] ?? 0);
-    ulae_ibnr[2] = ulae_ibnr[0] + ulae_ibnr[1];
-
-    const exData = {
-      pw,
-      uep,
-      loss_reserves,
-      lu,
-      loss_ibnr,
-      lae_reserves_dcc,
-      lae_reserves_aoe,
-      lae_ibnr_dcc,
-      lae_ibnr_aoe,
-      ulae_ibnr,
-    };
-
-    this.service.updateExhibit(this.selectedWorkbookId, this.selectedState, exData).subscribe({
-      next: () => {
-        this.toast.success('Required parameters updated successfully');
-        this.onWorkbookChange();
-      },
-      error: () => {
-        this.toast.error('Failed to update parameters');
-        this.loading = false;
-        this.cdr.markForCheck();
-      },
-    });
-  }
-
-  saveRates(): void {
-    if (!this.selectedWorkbookId) return;
-    this.loading = true;
-    this.service.updateRates(this.selectedWorkbookId, this.ratesForm).subscribe({
-      next: () => {
-        this.toast.success('Rates updated successfully');
-        this.onWorkbookChange();
-      },
-      error: () => {
-        this.toast.error('Failed to update rates');
-        this.loading = false;
-        this.cdr.markForCheck();
-      },
-    });
-  }
-
-  saveMappings(): void {
-    if (!this.selectedWorkbookId) return;
-    this.loading = true;
-    this.service.updateMappings(this.selectedWorkbookId, this.mappingsForm).subscribe({
-      next: () => {
-        this.toast.success('Mappings updated successfully');
-        this.onWorkbookChange();
-      },
-      error: () => {
-        this.toast.error('Failed to update mappings');
-        this.loading = false;
-        this.cdr.markForCheck();
-      },
-    });
   }
 
   saveCashParams(): void {
