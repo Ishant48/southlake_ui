@@ -1,5 +1,5 @@
-import { Component, inject, OnInit, ViewChild, ChangeDetectorRef } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
+import { Component, ChangeDetectorRef, inject, OnInit, ViewChild } from '@angular/core';
+import { ActivatedRoute, Router, Params } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { TreatiesTab } from './components/treaties-tab/treaties-tab';
 import { MgasTab } from './components/mgas-tab/mgas-tab';
@@ -45,11 +45,13 @@ export class MastersComponent implements OnInit {
   @ViewChild(SimpleMasterTab) simpleMasterTab?: SimpleMasterTab;
 
   ngOnInit(): void {
-    this.route.queryParams.subscribe(params => {
-      const tab = params['tab'] as MasterTab;
-      this.currentTab = tab && Object.values(MasterTab).includes(tab) ? tab : MasterTab.Treaties;
-      this.cdr.detectChanges();
-    });
+    this.route.queryParams.subscribe(params => this.syncTabFromUrl(params));
+  }
+
+  private syncTabFromUrl(params: Params): void {
+    const tab = params['tab'] as MasterTab;
+    this.currentTab = tab && Object.values(MasterTab).includes(tab) ? tab : MasterTab.Treaties;
+    this.cdr.markForCheck();
   }
 
   selectTab(tab: MasterTab): void {

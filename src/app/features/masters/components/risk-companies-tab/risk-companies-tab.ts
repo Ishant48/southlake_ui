@@ -128,6 +128,7 @@ export class RiskCompaniesTab implements OnInit {
     this.modalTitle = 'Add Risk Company';
     this.form = createBlankRiskCompanyForm();
     this.showModal = true;
+    this.cdr.detectChanges();
   }
 
   openRiskCompanyEdit(rc: RiskCompany): void {
