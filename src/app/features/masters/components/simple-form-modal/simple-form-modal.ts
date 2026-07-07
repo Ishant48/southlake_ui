@@ -1,67 +1,30 @@
-import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges } from '@angular/core';
+import {
+  Component,
+  Input,
+  Output,
+  EventEmitter,
+  OnChanges,
+  SimpleChanges,
+  inject,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { DropdownSearchComponent } from '../../../../shared/components/dropdown-search/dropdown-search.component';
 import { LineOfBusiness, CobMaster } from '../../models/master.model';
+import { SimpleForm, SimpleFormModel } from '../../forms/simple-form';
+import { SimpleMode, SimpleFormValue, createBlankSimpleForm } from '../../models/simple-form.model';
 
-export enum SimpleMode {
-  Lob = 'lob',
-  Cob = 'cob',
-  Reinsurer = 'reinsurer',
-  Broker = 'broker',
-  Product = 'product',
-  DocumentType = 'document-type',
-  SequencePrefixCounter = 'sequence-prefix-counter',
-}
-
-export interface SimpleFormValue {
-  id?: string;
-  code: string;
-  name: string;
-  is_active: boolean;
-  description: string;
-  type: string;
-  taxable: boolean;
-  priority: number;
-  fully_earned: boolean;
-  contact_name?: string;
-  contact_email?: string;
-  contact_phone?: string;
-  lob_id?: string;
-  cob_id?: string;
-  prefix?: string;
-  next_value?: number;
-  padding_width?: number;
-}
-
-export function createBlankSimpleForm(): SimpleFormValue {
-  return {
-    code: '',
-    name: '',
-    is_active: true,
-    description: '',
-    type: '',
-    taxable: false,
-    priority: 1,
-    fully_earned: false,
-    contact_name: '',
-    contact_email: '',
-    contact_phone: '',
-    lob_id: '',
-    cob_id: '',
-    prefix: '',
-    next_value: 1,
-    padding_width: 4,
-  };
-}
+export { SimpleMode, SimpleFormValue, createBlankSimpleForm } from '../../models/simple-form.model';
 
 @Component({
   selector: 'app-simple-form-modal',
-  imports: [CommonModule, FormsModule, DropdownSearchComponent],
+  imports: [CommonModule, ReactiveFormsModule, DropdownSearchComponent],
   templateUrl: './simple-form-modal.html',
   styleUrl: './simple-form-modal.scss',
 })
 export class SimpleFormModal implements OnChanges {
+  private simpleFormService = inject(SimpleForm);
+
   protected readonly SimpleMode = SimpleMode;
 
   @Input() open = false;
@@ -80,27 +43,40 @@ export class SimpleFormModal implements OnChanges {
   @Output() closed = new EventEmitter<void>();
   @Output() save = new EventEmitter<SimpleFormValue>();
 
-  formValue: SimpleFormValue = createBlankSimpleForm();
+  form: FormGroup<SimpleFormModel> = this.simpleFormService.createForm();
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['model']) {
-      this.formValue = { ...this.model };
+      this.simpleFormService.patchForm(this.form, this.model);
+    }
+    if (changes['mode'] || changes['isEditMode']) {
+      const isProduct = this.mode === SimpleMode.Product;
+      if (this.isEditMode || isProduct) {
+        this.form.controls.code.disable();
+      } else {
+        this.form.controls.code.enable();
+      }
+      if (isProduct) {
+        this.form.controls.name.disable();
+      } else {
+        this.form.controls.name.enable();
+      }
     }
   }
 
   onProductLobCobChange(): void {
-    const selectedLob = this.lobOptions.find(l => l.id === this.formValue.lob_id);
-    const selectedCob = this.cobOptions.find(c => c.id === this.formValue.cob_id);
+    const selectedLob = this.lobOptions.find(l => l.id === this.form.controls.lob_id.value);
+    const selectedCob = this.cobOptions.find(c => c.id === this.form.controls.cob_id.value);
 
     const lobCode = selectedLob ? selectedLob.lob_code : '';
     const cobCode = selectedCob ? selectedCob.cob_code : '';
 
     if (lobCode && cobCode) {
-      this.formValue.code = `${lobCode}-${cobCode}`;
-      this.formValue.name = `${selectedLob?.name} - ${selectedCob?.name}`;
+      this.form.controls.code.setValue(`${lobCode}-${cobCode}`);
+      this.form.controls.name.setValue(`${selectedLob?.name} - ${selectedCob?.name}`);
     } else {
-      this.formValue.code = '';
-      this.formValue.name = '';
+      this.form.controls.code.setValue('');
+      this.form.controls.name.setValue('');
     }
   }
 
@@ -109,6 +85,10 @@ export class SimpleFormModal implements OnChanges {
   }
 
   submit(): void {
-    this.save.emit(this.formValue);
+    if (this.form.invalid) {
+      this.form.markAllAsTouched();
+      return;
+    }
+    this.save.emit(this.simpleFormService.toFormValue(this.form));
   }
 }

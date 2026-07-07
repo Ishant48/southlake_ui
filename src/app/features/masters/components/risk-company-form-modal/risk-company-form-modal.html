@@ -12,43 +12,26 @@
         </button>
       </div>
 
-      <form (submit)="submit()" class="panel-body scrollable-body">
+      <form [formGroup]="form" (ngSubmit)="submit()" class="panel-body scrollable-body">
         <div class="form-section-title no-top-margin">Names Info</div>
         <div class="form-row">
           <div class="form-field">
             <label for="rc-companyid" class="form-label">Company ID</label>
             <input
               id="rc-companyid"
-              [(ngModel)]="formValue.company_id"
-              name="companyId"
+              formControlName="company_id"
               type="number"
               placeholder="e.g. 283"
               class="form-input"
-              [disabled]="isEditMode"
             />
           </div>
           <div class="form-field">
             <label for="rc-idname" class="form-label">ID Name</label>
-            <input
-              id="rc-idname"
-              [(ngModel)]="formValue.id_name"
-              name="idName"
-              type="text"
-              placeholder="ID Name"
-              class="form-input"
-            />
+            <input id="rc-idname" formControlName="id_name" type="text" placeholder="ID Name" class="form-input" />
           </div>
           <div class="form-field">
             <label for="rc-name" class="form-label">Name *</label>
-            <input
-              id="rc-name"
-              [(ngModel)]="formValue.name"
-              name="name"
-              type="text"
-              required
-              placeholder="Name"
-              class="form-input"
-            />
+            <input id="rc-name" formControlName="name" type="text" placeholder="Name" class="form-input" />
           </div>
         </div>
 
@@ -56,36 +39,15 @@
         <div class="form-row">
           <div class="form-field">
             <label for="rc-address" class="form-label">Address 1</label>
-            <input
-              id="rc-address"
-              [(ngModel)]="formValue.address"
-              name="address"
-              type="text"
-              placeholder="Address 1"
-              class="form-input"
-            />
+            <input id="rc-address" formControlName="address" type="text" placeholder="Address 1" class="form-input" />
           </div>
           <div class="form-field">
             <label for="rc-zip" class="form-label">Zip</label>
-            <input
-              id="rc-zip"
-              [(ngModel)]="formValue.zip"
-              name="zip"
-              type="text"
-              placeholder="Zip"
-              class="form-input"
-            />
+            <input id="rc-zip" formControlName="zip" type="text" placeholder="Zip" class="form-input" />
           </div>
           <div class="form-field">
             <label for="rc-city" class="form-label">City</label>
-            <input
-              id="rc-city"
-              [(ngModel)]="formValue.city"
-              name="city"
-              type="text"
-              placeholder="City"
-              class="form-input"
-            />
+            <input id="rc-city" formControlName="city" type="text" placeholder="City" class="form-input" />
           </div>
           <div class="form-field">
             <label for="rc-state" class="form-label">State</label>
@@ -95,7 +57,8 @@
               bindValue="state_abbr"
               placeholder="Select state"
               [itemLabelFn]="stateAbbrLabelFn"
-              [(selectedValue)]="formValue.state"
+              [selectedValue]="form.controls.state.value"
+              (selectedValueChange)="form.controls.state.setValue($any($event))"
             ></app-dropdown-search>
           </div>
         </div>
@@ -103,30 +66,17 @@
         <div class="form-row form-row-spaced">
           <div class="form-field">
             <label for="rc-phone" class="form-label">Phone</label>
-            <input
-              id="rc-phone"
-              [(ngModel)]="formValue.phone"
-              name="phone"
-              type="text"
-              placeholder="Phone"
-              class="form-input"
-            />
+            <input id="rc-phone" formControlName="phone" type="text" placeholder="Phone" class="form-input" />
           </div>
           <div class="form-field">
             <span class="form-label">Admitted</span>
             <div class="radio-group">
               <label>
-                <input
-                  id="rc-isadmitted"
-                  type="radio"
-                  [value]="true"
-                  [(ngModel)]="formValue.is_admitted"
-                  name="isAdmitted"
-                />
+                <input id="rc-isadmitted" type="radio" [value]="true" formControlName="is_admitted" />
                 Yes
               </label>
               <label>
-                <input type="radio" [value]="false" [(ngModel)]="formValue.is_admitted" name="isAdmitted" />
+                <input type="radio" [value]="false" formControlName="is_admitted" />
                 No
               </label>
             </div>

@@ -8,22 +8,19 @@ import { MastersGrid } from './components/masters-grid/masters-grid';
 import { NotesModal } from '../../shared/components/notes-modal/notes-modal';
 import { DocumentDrawer, DrawerDocument } from './components/document-drawer/document-drawer';
 import { StateFormModal } from './components/state-form-modal/state-form-modal';
-import {
-  GlMappingFormModal,
-  GlMappingFormValue,
-} from './components/gl-mapping-form-modal/gl-mapping-form-modal';
+import { GlMappingFormModal } from './components/gl-mapping-form-modal/gl-mapping-form-modal';
 import { LockPeriodModal } from './components/lock-period-modal/lock-period-modal';
-import {
-  RiskCompanyFormModal,
-  RiskCompanyFormValue,
-} from './components/risk-company-form-modal/risk-company-form-modal';
+import { RiskCompanyFormModal } from './components/risk-company-form-modal/risk-company-form-modal';
 import { ItdFormModal, ItdFormValue } from './components/itd-form-modal/itd-form-modal';
 import {
   SimpleFormModal,
   SimpleFormValue,
   SimpleMode,
 } from './components/simple-form-modal/simple-form-modal';
-import { MgaFormModal, MgaFormValue } from './components/mga-form-modal/mga-form-modal';
+import { MgaFormModal } from './components/mga-form-modal/mga-form-modal';
+import { GlMappingFormValue } from './models/gl-mapping-form.model';
+import { RiskCompanyFormValue } from './models/risk-company-form.model';
+import { MgaFormValue } from './models/mga-form.model';
 import { TreatyFormModal, TreatySaveEvent } from './components/treaty-form-modal/treaty-form-modal';
 import { StatusBadgeCell } from '../../shared/components/grid-renderers/status-badge-cell/status-badge-cell';
 import { StatesApi } from './services/states-api';

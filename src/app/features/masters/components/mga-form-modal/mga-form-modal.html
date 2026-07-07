@@ -12,7 +12,7 @@
         </button>
       </div>
 
-      <form (submit)="submit()" class="panel-body scrollable-body">
+      <form [formGroup]="form" (ngSubmit)="submit()" class="panel-body scrollable-body">
         <!-- Names Info -->
         <div class="form-section-title no-top-margin">Names Info</div>
         <div class="form-row">
@@ -20,8 +20,7 @@
             <label for="mga-companyid" class="form-label">Company ID</label>
             <input
               id="mga-companyid"
-              [(ngModel)]="formValue.company_id"
-              name="companyId"
+              formControlName="company_id"
               type="number"
               placeholder="e.g. 597"
               class="form-input"
@@ -29,23 +28,14 @@
           </div>
           <div class="form-field">
             <label for="mga-idname" class="form-label">ID Name</label>
-            <input
-              id="mga-idname"
-              [(ngModel)]="formValue.id_name"
-              name="idName"
-              type="text"
-              placeholder="ID Name"
-              class="form-input"
-            />
+            <input id="mga-idname" formControlName="id_name" type="text" placeholder="ID Name" class="form-input" />
           </div>
           <div class="form-field">
             <label for="mga-name" class="form-label">Name *</label>
             <input
               id="mga-name"
-              [(ngModel)]="formValue.name"
-              name="mgaName"
+              formControlName="name"
               type="text"
-              required
               placeholder="e.g. Southlake Underwriters"
               class="form-input"
             />
@@ -54,23 +44,14 @@
         <div class="form-row">
           <div class="form-field">
             <label for="mga-code" class="form-label">MGA Code *</label>
-            <input
-              id="mga-code"
-              [(ngModel)]="formValue.mga_code"
-              name="mgaCode"
-              type="text"
-              required
-              placeholder="e.g. MGA-100"
-              [disabled]="isEditMode"
-              class="form-input"
-            />
+            <input id="mga-code" formControlName="mga_code" type="text" placeholder="e.g. MGA-100" class="form-input" />
           </div>
           <div class="form-field flex-2"></div>
         </div>
 
         <!-- Other Names -->
         <div class="form-section-title">Other Names</div>
-        @for (row of formValue.other_names; track $index) {
+        @for (row of form.controls.other_names.value; track $index) {
           <div class="form-row other-name-row">
             <div class="form-field">
               <label for="mga-othername-state-{{ $index }}" class="form-label">State</label>
@@ -80,15 +61,16 @@
                 bindValue="state_abbr"
                 placeholder="Select state"
                 [itemLabelFn]="stateAbbrLabelFn"
-                [(selectedValue)]="row.state"
+                [selectedValue]="row.state"
+                (selectedValueChange)="updateOtherNameState($index, $event)"
               ></app-dropdown-search>
             </div>
             <div class="form-field">
               <label for="mga-othername-displayname-{{ $index }}" class="form-label">Display Name</label>
               <input
                 id="mga-othername-displayname-{{ $index }}"
-                [(ngModel)]="row.displayName"
-                name="otherDisplayName_{{ $index }}"
+                [value]="row.displayName"
+                (input)="updateOtherNameDisplayName($index, $event)"
                 type="text"
                 placeholder="Display Name"
                 class="form-input"
@@ -116,8 +98,7 @@
             <label for="mga-address" class="form-label">Address</label>
             <input
               id="mga-address"
-              [(ngModel)]="formValue.address"
-              name="address"
+              formControlName="address"
               type="text"
               placeholder="123 Main St"
               class="form-input"
@@ -125,28 +106,14 @@
           </div>
           <div class="form-field">
             <label for="mga-zip" class="form-label">Zip</label>
-            <input
-              id="mga-zip"
-              [(ngModel)]="formValue.zip"
-              name="zip"
-              type="text"
-              placeholder="12345"
-              class="form-input"
-            />
+            <input id="mga-zip" formControlName="zip" type="text" placeholder="12345" class="form-input" />
           </div>
         </div>
 
         <div class="form-row">
           <div class="form-field">
             <label for="mga-city" class="form-label">City</label>
-            <input
-              id="mga-city"
-              [(ngModel)]="formValue.city"
-              name="city"
-              type="text"
-              placeholder="City"
-              class="form-input"
-            />
+            <input id="mga-city" formControlName="city" type="text" placeholder="City" class="form-input" />
           </div>
           <div class="form-field">
             <label for="mga-state" class="form-label">State</label>
@@ -156,19 +123,13 @@
               bindValue="state_abbr"
               placeholder="Select state"
               [itemLabelFn]="stateAbbrLabelFn"
-              [(selectedValue)]="formValue.state"
+              [selectedValue]="form.controls.state.value"
+              (selectedValueChange)="setStateValue($event)"
             ></app-dropdown-search>
           </div>
           <div class="form-field">
             <label for="mga-phone" class="form-label">Phone</label>
-            <input
-              id="mga-phone"
-              [(ngModel)]="formValue.phone"
-              name="phone"
-              type="text"
-              placeholder="555-0199"
-              class="form-input"
-            />
+            <input id="mga-phone" formControlName="phone" type="text" placeholder="555-0199" class="form-input" />
           </div>
         </div>
 
@@ -177,30 +138,18 @@
             <label for="mga-openitem" class="form-label">Open Item</label>
             <div class="radio-group">
               <label>
-                <input
-                  id="mga-openitem"
-                  type="radio"
-                  [value]="true"
-                  [(ngModel)]="formValue.open_item"
-                  name="openItem"
-                />
+                <input id="mga-openitem" type="radio" [value]="true" formControlName="open_item" />
                 Yes
               </label>
               <label>
-                <input type="radio" [value]="false" [(ngModel)]="formValue.open_item" name="openItem" />
+                <input type="radio" [value]="false" formControlName="open_item" />
                 No
               </label>
             </div>
           </div>
           <div class="form-field">
             <label for="mga-opstartdate" class="form-label">Op Start Date</label>
-            <input
-              id="mga-opstartdate"
-              [(ngModel)]="formValue.op_start_date"
-              name="opStartDate"
-              type="date"
-              class="form-input"
-            />
+            <input id="mga-opstartdate" formControlName="op_start_date" type="date" class="form-input" />
           </div>
         </div>
 
@@ -209,8 +158,7 @@
             <label for="mga-naicscode" class="form-label">NAICS Code</label>
             <input
               id="mga-naicscode"
-              [(ngModel)]="formValue.naics_code"
-              name="naicsCode"
+              formControlName="naics_code"
               type="text"
               placeholder="e.g. 524126"
               class="form-input"
@@ -220,8 +168,7 @@
             <label for="mga-contactname" class="form-label">Contact Name</label>
             <input
               id="mga-contactname"
-              [(ngModel)]="formValue.contact_name"
-              name="contactName"
+              formControlName="contact_name"
               type="text"
               placeholder="Contact Name"
               class="form-input"
@@ -234,8 +181,7 @@
             <label for="mga-contactemail" class="form-label">Contact Email</label>
             <input
               id="mga-contactemail"
-              [(ngModel)]="formValue.contact_email"
-              name="contactEmail"
+              formControlName="contact_email"
               type="email"
               placeholder="contact@email.com"
               class="form-input"
@@ -245,8 +191,7 @@
             <label for="mga-contactphone" class="form-label">Contact Phone</label>
             <input
               id="mga-contactphone"
-              [(ngModel)]="formValue.contact_phone"
-              name="contactPhone"
+              formControlName="contact_phone"
               type="text"
               placeholder="Phone Number"
               class="form-input"
@@ -257,7 +202,7 @@
         <div class="form-row">
           <div class="form-field">
             <div class="form-checkbox-field active-status-checkbox">
-              <input [(ngModel)]="formValue.is_active" name="isActive" type="checkbox" id="mgaIsActive" />
+              <input formControlName="is_active" type="checkbox" id="mgaIsActive" />
               <label for="mgaIsActive" class="checkbox-label">Active Status</label>
             </div>
           </div>

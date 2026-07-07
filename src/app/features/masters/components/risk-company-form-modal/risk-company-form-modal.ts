@@ -1,49 +1,31 @@
-import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges } from '@angular/core';
+import {
+  Component,
+  Input,
+  Output,
+  EventEmitter,
+  OnChanges,
+  SimpleChanges,
+  inject,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { DropdownSearchComponent } from '../../../../shared/components/dropdown-search/dropdown-search.component';
 import { StateMaster } from '../../models/master.model';
-
-export interface RiskCompanyFormValue {
-  id?: string;
-  risk_company_id: string;
-  company_id: number | null;
-  id_name: string;
-  name: string;
-  phone: string;
-  is_admitted: boolean;
-  state: string;
-  address: string;
-  zip: string;
-  city: string;
-  notes: string;
-  is_active: boolean;
-}
-
-export function createBlankRiskCompanyForm(): RiskCompanyFormValue {
-  return {
-    risk_company_id: '',
-    company_id: null,
-    id_name: '',
-    name: '',
-    phone: '',
-    is_admitted: true,
-    state: '',
-    address: '',
-    zip: '',
-    city: '',
-    notes: '',
-    is_active: true,
-  };
-}
+import { RiskCompanyForm, RiskCompanyFormModel } from '../../forms/risk-company-form';
+import {
+  RiskCompanyFormValue,
+  createBlankRiskCompanyForm,
+} from '../../models/risk-company-form.model';
 
 @Component({
   selector: 'app-risk-company-form-modal',
-  imports: [CommonModule, FormsModule, DropdownSearchComponent],
+  imports: [CommonModule, ReactiveFormsModule, DropdownSearchComponent],
   templateUrl: './risk-company-form-modal.html',
   styleUrl: './risk-company-form-modal.scss',
 })
 export class RiskCompanyFormModal implements OnChanges {
+  private riskCompanyForm = inject(RiskCompanyForm);
+
   @Input() open = false;
   @Input() title = '';
   @Input() model: RiskCompanyFormValue = createBlankRiskCompanyForm();
@@ -56,11 +38,18 @@ export class RiskCompanyFormModal implements OnChanges {
   @Output() closed = new EventEmitter<void>();
   @Output() save = new EventEmitter<RiskCompanyFormValue>();
 
-  formValue: RiskCompanyFormValue = createBlankRiskCompanyForm();
+  form: FormGroup<RiskCompanyFormModel> = this.riskCompanyForm.createForm();
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['model']) {
-      this.formValue = { ...this.model };
+      this.riskCompanyForm.patchForm(this.form, this.model);
+    }
+    if (changes['isEditMode']) {
+      if (this.isEditMode) {
+        this.form.controls.company_id.disable();
+      } else {
+        this.form.controls.company_id.enable();
+      }
     }
   }
 
@@ -69,6 +58,10 @@ export class RiskCompanyFormModal implements OnChanges {
   }
 
   submit(): void {
-    this.save.emit(this.formValue);
+    if (this.form.invalid) {
+      this.form.markAllAsTouched();
+      return;
+    }
+    this.save.emit(this.riskCompanyForm.toFormValue(this.form));
   }
 }

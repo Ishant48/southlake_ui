@@ -1,26 +1,28 @@
-import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges } from '@angular/core';
+import {
+  Component,
+  Input,
+  Output,
+  EventEmitter,
+  OnChanges,
+  SimpleChanges,
+  inject,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { DropdownSearchComponent } from '../../../../shared/components/dropdown-search/dropdown-search.component';
 import { ChartOfAccount } from '../../../../core/models/chart-of-account.model';
-
-export interface GlMappingFormValue {
-  id?: string;
-  coa_id?: string;
-  type?: string;
-}
-
-export function createBlankGlMappingForm(): GlMappingFormValue {
-  return { coa_id: '', type: '' };
-}
+import { GlMappingForm, GlMappingFormModel } from '../../forms/gl-mapping-form';
+import { GlMappingFormValue, createBlankGlMappingForm } from '../../models/gl-mapping-form.model';
 
 @Component({
   selector: 'app-gl-mapping-form-modal',
-  imports: [CommonModule, FormsModule, DropdownSearchComponent],
+  imports: [CommonModule, ReactiveFormsModule, DropdownSearchComponent],
   templateUrl: './gl-mapping-form-modal.html',
   styleUrl: './gl-mapping-form-modal.scss',
 })
 export class GlMappingFormModal implements OnChanges {
+  private glMappingForm = inject(GlMappingForm);
+
   @Input() open = false;
   @Input() title = '';
   @Input() model: GlMappingFormValue = createBlankGlMappingForm();
@@ -35,11 +37,11 @@ export class GlMappingFormModal implements OnChanges {
   @Output() closed = new EventEmitter<void>();
   @Output() save = new EventEmitter<GlMappingFormValue>();
 
-  formValue: GlMappingFormValue = createBlankGlMappingForm();
+  form: FormGroup<GlMappingFormModel> = this.glMappingForm.createForm();
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['model']) {
-      this.formValue = { ...this.model };
+      this.glMappingForm.patchForm(this.form, this.model);
     }
   }
 
@@ -47,7 +49,19 @@ export class GlMappingFormModal implements OnChanges {
     this.closed.emit();
   }
 
+  onCoaIdChange(value: unknown): void {
+    this.form.controls.coa_id.setValue((value as string) ?? '');
+  }
+
+  onTypeChange(value: unknown): void {
+    this.form.controls.type.setValue((value as string) ?? '');
+  }
+
   submit(): void {
-    this.save.emit(this.formValue);
+    if (this.form.invalid) {
+      this.form.markAllAsTouched();
+      return;
+    }
+    this.save.emit(this.glMappingForm.toFormValue(this.form));
   }
 }
