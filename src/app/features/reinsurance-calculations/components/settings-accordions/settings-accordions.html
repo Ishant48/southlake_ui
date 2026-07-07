@@ -5,9 +5,9 @@
       class="card-header accordion-header"
       role="button"
       tabindex="0"
-      (click)="toggleAccordion('parameters')"
-      (keydown.enter)="toggleAccordion('parameters')"
-      (keydown.space)="toggleAccordion('parameters'); $event.preventDefault()"
+      (click)="toggleAccordion(SettingsAccordionSection.Parameters)"
+      (keydown.enter)="toggleAccordion(SettingsAccordionSection.Parameters)"
+      (keydown.space)="toggleAccordion(SettingsAccordionSection.Parameters); $event.preventDefault()"
     >
       <h2>📝 Required Parameters ({{ selectedState }})</h2>
       <span class="accordion-arrow" [style.transform]="parametersExpanded ? 'rotate(90deg)' : 'rotate(0deg)'">
@@ -124,9 +124,9 @@
       class="card-header accordion-header"
       role="button"
       tabindex="0"
-      (click)="toggleAccordion('rates')"
-      (keydown.enter)="toggleAccordion('rates')"
-      (keydown.space)="toggleAccordion('rates'); $event.preventDefault()"
+      (click)="toggleAccordion(SettingsAccordionSection.Rates)"
+      (keydown.enter)="toggleAccordion(SettingsAccordionSection.Rates)"
+      (keydown.space)="toggleAccordion(SettingsAccordionSection.Rates); $event.preventDefault()"
     >
       <h2>📊 Actuarial Rates & Commissions (%)</h2>
       <span class="accordion-arrow" [style.transform]="ratesExpanded ? 'rotate(90deg)' : 'rotate(0deg)'">
@@ -197,9 +197,9 @@
       class="card-header accordion-header"
       role="button"
       tabindex="0"
-      (click)="toggleAccordion('mappings')"
-      (keydown.enter)="toggleAccordion('mappings')"
-      (keydown.space)="toggleAccordion('mappings'); $event.preventDefault()"
+      (click)="toggleAccordion(SettingsAccordionSection.Mappings)"
+      (keydown.enter)="toggleAccordion(SettingsAccordionSection.Mappings)"
+      (keydown.space)="toggleAccordion(SettingsAccordionSection.Mappings); $event.preventDefault()"
     >
       <h2>💼 GL Segment Mappings</h2>
       <span class="accordion-arrow" [style.transform]="mappingsExpanded ? 'rotate(90deg)' : 'rotate(0deg)'">

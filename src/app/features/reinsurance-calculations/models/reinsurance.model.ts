@@ -1,3 +1,9 @@
+export enum ReinsuranceTab {
+  Statement = 'statement',
+  Glje = 'glje',
+  Cash = 'cash',
+}
+
 // Reinsurance workbooks carry a large, evolving set of program-specific
 // spreadsheet fields (exhibits, rates, mappings, cash-settlement figures).
 // The known top-level shape is typed explicitly; the index signature covers

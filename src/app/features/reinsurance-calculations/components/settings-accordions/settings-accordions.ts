@@ -39,6 +39,12 @@ export interface ReinsuranceMappingsForm {
   [key: string]: unknown;
 }
 
+export enum SettingsAccordionSection {
+  Parameters = 'parameters',
+  Rates = 'rates',
+  Mappings = 'mappings',
+}
+
 @Component({
   selector: 'app-settings-accordions',
   imports: [CommonModule, FormsModule],
@@ -46,6 +52,8 @@ export interface ReinsuranceMappingsForm {
   styleUrl: './settings-accordions.scss',
 })
 export class SettingsAccordions {
+  protected readonly SettingsAccordionSection = SettingsAccordionSection;
+
   @Input() selectedState = '';
   @Input() paramsForm: Partial<ReinsuranceParamsForm> = {};
   @Input() ratesForm: ReinsuranceRatesForm = {};
@@ -55,12 +63,12 @@ export class SettingsAccordions {
   ratesExpanded = false;
   mappingsExpanded = false;
 
-  toggleAccordion(section: 'parameters' | 'rates' | 'mappings'): void {
-    if (section === 'parameters') {
+  toggleAccordion(section: SettingsAccordionSection): void {
+    if (section === SettingsAccordionSection.Parameters) {
       this.parametersExpanded = !this.parametersExpanded;
-    } else if (section === 'rates') {
+    } else if (section === SettingsAccordionSection.Rates) {
       this.ratesExpanded = !this.ratesExpanded;
-    } else if (section === 'mappings') {
+    } else if (section === SettingsAccordionSection.Mappings) {
       this.mappingsExpanded = !this.mappingsExpanded;
     }
   }

@@ -76,13 +76,25 @@
     <!-- Main outputs tabs panel -->
     <main class="main-workspace card w-full">
       <div class="tabs-header">
-        <button class="tab-btn" [class.active]="activeTab === 'statement'" (click)="setTab('statement')">
+        <button
+          class="tab-btn"
+          [class.active]="activeTab === ReinsuranceTab.Statement"
+          (click)="setTab(ReinsuranceTab.Statement)"
+        >
           📊 Reinsurance Statement
         </button>
-        <button class="tab-btn" [class.active]="activeTab === 'glje'" (click)="setTab('glje')">
+        <button
+          class="tab-btn"
+          [class.active]="activeTab === ReinsuranceTab.Glje"
+          (click)="setTab(ReinsuranceTab.Glje)"
+        >
           💼 GL Journal Entries
         </button>
-        <button class="tab-btn" [class.active]="activeTab === 'cash'" (click)="setTab('cash')">
+        <button
+          class="tab-btn"
+          [class.active]="activeTab === ReinsuranceTab.Cash"
+          (click)="setTab(ReinsuranceTab.Cash)"
+        >
           💰 Cash Settlement
         </button>
       </div>
@@ -96,11 +108,11 @@
         </div>
 
         <!-- 1. Reinsurance Statement Tab -->
-        <app-statement-tab *ngIf="activeTab === 'statement'" [rows]="statementRows"></app-statement-tab>
+        <app-statement-tab *ngIf="activeTab === ReinsuranceTab.Statement" [rows]="statementRows"></app-statement-tab>
 
         <!-- 2. GL Journal Entries Tab -->
         <app-glje-tab
-          *ngIf="activeTab === 'glje'"
+          *ngIf="activeTab === ReinsuranceTab.Glje"
           [rows]="gljeRows"
           [rowDefaults]="gljeRowDefaults"
           [selectedState]="selectedState"
@@ -112,7 +124,7 @@
 
         <!-- 3. Cash Settlement Tab -->
         <app-cash-settlement-tab
-          *ngIf="activeTab === 'cash' && cashSettlement"
+          *ngIf="activeTab === ReinsuranceTab.Cash && cashSettlement"
           [cashSettlement]="cashSettlement"
           (save)="onSaveCashParams($event)"
         ></app-cash-settlement-tab>

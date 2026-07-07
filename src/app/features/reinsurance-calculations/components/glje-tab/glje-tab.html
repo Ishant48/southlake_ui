@@ -88,7 +88,7 @@
             type="number"
             [(ngModel)]="row.debit"
             class="col-amount"
-            (change)="onRowAmountChange(row, 'debit')"
+            (change)="onRowAmountChange(row, GljeAmountField.Debit)"
           />
         </td>
         <td class="text-right text-red font-bold">
@@ -100,7 +100,7 @@
             type="number"
             [(ngModel)]="row.credit"
             class="col-amount"
-            (change)="onRowAmountChange(row, 'credit')"
+            (change)="onRowAmountChange(row, GljeAmountField.Credit)"
           />
         </td>
         <td class="text-center">
