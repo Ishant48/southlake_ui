@@ -1,27 +1,26 @@
-import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges } from '@angular/core';
+import {
+  Component,
+  Input,
+  Output,
+  EventEmitter,
+  OnChanges,
+  SimpleChanges,
+  inject,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
-
-export interface StateFormValue {
-  id?: string;
-  state_code: number | null;
-  state_abbr: string;
-  name: string;
-  notes: string;
-  is_active: boolean;
-}
-
-export function createBlankStateForm(): StateFormValue {
-  return { state_code: null, state_abbr: '', name: '', notes: '', is_active: true };
-}
+import { FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { StateForm, StateFormModel } from '../../forms/state-form';
+import { StateFormValue, createBlankStateForm } from '../../models/state-form.model';
 
 @Component({
   selector: 'app-state-form-modal',
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, ReactiveFormsModule],
   templateUrl: './state-form-modal.html',
   styleUrl: './state-form-modal.scss',
 })
 export class StateFormModal implements OnChanges {
+  private stateForm = inject(StateForm);
+
   @Input() open = false;
   @Input() title = '';
   @Input() model: StateFormValue = createBlankStateForm();
@@ -31,11 +30,15 @@ export class StateFormModal implements OnChanges {
   @Output() closed = new EventEmitter<void>();
   @Output() save = new EventEmitter<StateFormValue>();
 
-  formValue: StateFormValue = createBlankStateForm();
+  form: FormGroup<StateFormModel> = this.stateForm.createForm();
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['model']) {
-      this.formValue = { ...this.model };
+      this.stateForm.patchForm(this.form, this.model);
+    }
+    if (changes['isEditMode']) {
+      const identityFields = [this.form.controls.state_code, this.form.controls.state_abbr];
+      identityFields.forEach(control => (this.isEditMode ? control.disable() : control.enable()));
     }
   }
 
@@ -44,6 +47,10 @@ export class StateFormModal implements OnChanges {
   }
 
   submit(): void {
-    this.save.emit(this.formValue);
+    if (this.form.invalid) {
+      this.form.markAllAsTouched();
+      return;
+    }
+    this.save.emit(this.stateForm.toFormValue(this.form));
   }
 }

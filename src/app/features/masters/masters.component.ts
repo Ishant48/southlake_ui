@@ -7,7 +7,7 @@ import { AgGridConfigService } from '../../core/services/ag-grid-config.service'
 import { MastersGrid } from './components/masters-grid/masters-grid';
 import { NotesModal } from '../../shared/components/notes-modal/notes-modal';
 import { DocumentDrawer, DrawerDocument } from './components/document-drawer/document-drawer';
-import { StateFormModal, StateFormValue } from './components/state-form-modal/state-form-modal';
+import { StateFormModal } from './components/state-form-modal/state-form-modal';
 import {
   GlMappingFormModal,
   GlMappingFormValue,
@@ -64,6 +64,7 @@ import {
   DocumentMode,
 } from './models/master-tab.model';
 import { ItdExhibit, ItdForm, ItdStateOption } from './models/itd.model';
+import { StateFormValue, createBlankStateForm } from './models/state-form.model';
 import { HttpErrorLike } from '../../core/models/http-error.model';
 import { ActiveStatusFilter } from '../../core/models/active-status-filter.model';
 import { GlMappingsState } from './services/gl-mappings-state';
@@ -277,14 +278,7 @@ export class MastersComponent implements OnInit {
   // State Modal
   showStateModal = false;
   stateModalTitle = '';
-  stateForm: {
-    id?: string;
-    state_code: number | null;
-    state_abbr: string;
-    name: string;
-    notes: string;
-    is_active: boolean;
-  } = { state_code: null, state_abbr: '', name: '', notes: '', is_active: true };
+  stateForm: StateFormValue = createBlankStateForm();
 
   // Risk Company Modal
   showRiskCompanyModal = false;
@@ -1048,7 +1042,7 @@ export class MastersComponent implements OnInit {
   openStateAdd(): void {
     this.isEditMode = false;
     this.stateModalTitle = 'Add State';
-    this.stateForm = { state_code: null, state_abbr: '', name: '', notes: '', is_active: true };
+    this.stateForm = createBlankStateForm();
     this.showStateModal = true;
   }
 

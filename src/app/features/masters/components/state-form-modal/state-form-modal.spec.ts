@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-
-import { StateFormModal, StateFormValue } from './state-form-modal';
+import { StateFormModal } from './state-form-modal';
+import { StateFormValue } from '../../models/state-form.model';
 
 describe('StateFormModal', () => {
   let component: StateFormModal;
@@ -35,7 +35,7 @@ describe('StateFormModal', () => {
     expect((fixture.nativeElement as HTMLElement).querySelector('.modal-overlay')).toBeNull();
   });
 
-  it('copies the model input into local formValue on change', () => {
+  it('patches the form from the model input on change', () => {
     component.model = sampleState;
     component.ngOnChanges({
       model: {
@@ -45,11 +45,10 @@ describe('StateFormModal', () => {
         isFirstChange: () => true,
       },
     });
-    expect(component.formValue).toEqual(sampleState);
-    expect(component.formValue).not.toBe(sampleState);
+    expect(component.form.getRawValue()).toEqual(sampleState);
   });
 
-  it('emits save with the current form value', () => {
+  it('emits save with the current form value when valid', () => {
     component.model = sampleState;
     component.ngOnChanges({
       model: {
@@ -65,6 +64,38 @@ describe('StateFormModal', () => {
     component.submit();
 
     expect(saveSpy).toHaveBeenCalledWith(sampleState);
+  });
+
+  it('does not emit save when the form is invalid', () => {
+    component.model = { ...sampleState, name: '' };
+    component.ngOnChanges({
+      model: {
+        currentValue: component.model,
+        previousValue: undefined,
+        firstChange: true,
+        isFirstChange: () => true,
+      },
+    });
+    const saveSpy = vi.fn();
+    component.save.subscribe(saveSpy);
+
+    component.submit();
+
+    expect(saveSpy).not.toHaveBeenCalled();
+  });
+
+  it('disables identity fields in edit mode', () => {
+    component.isEditMode = true;
+    component.ngOnChanges({
+      isEditMode: {
+        currentValue: true,
+        previousValue: false,
+        firstChange: true,
+        isFirstChange: () => true,
+      },
+    });
+    expect(component.form.controls.state_code.disabled).toBe(true);
+    expect(component.form.controls.state_abbr.disabled).toBe(true);
   });
 
   it('emits closed when the close button is clicked', () => {

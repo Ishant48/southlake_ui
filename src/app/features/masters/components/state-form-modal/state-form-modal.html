@@ -12,18 +12,15 @@
         </button>
       </div>
 
-      <form (submit)="submit()" class="panel-body">
+      <form [formGroup]="form" (ngSubmit)="submit()" class="panel-body">
         <div class="form-row">
           <div class="form-field">
             <label for="m-statecode" class="form-label">State Code (Numeric) *</label>
             <input
               id="m-statecode"
-              [(ngModel)]="formValue.state_code"
-              name="stateCode"
+              formControlName="state_code"
               type="number"
-              required
               placeholder="e.g. 48"
-              [disabled]="isEditMode"
               class="form-input"
             />
           </div>
@@ -31,13 +28,10 @@
             <label for="m-stateabbr" class="form-label">State Abbr (2 Letters) *</label>
             <input
               id="m-stateabbr"
-              [(ngModel)]="formValue.state_abbr"
-              name="stateAbbr"
+              formControlName="state_abbr"
               type="text"
               maxlength="2"
-              required
               placeholder="e.g. TX"
-              [disabled]="isEditMode"
               class="form-input"
             />
           </div>
@@ -46,15 +40,7 @@
         <div class="form-row form-row-spaced">
           <div class="form-field">
             <label for="m-statename" class="form-label">State Name *</label>
-            <input
-              id="m-statename"
-              [(ngModel)]="formValue.name"
-              name="stateName"
-              type="text"
-              required
-              placeholder="e.g. Texas"
-              class="form-input"
-            />
+            <input id="m-statename" formControlName="name" type="text" placeholder="e.g. Texas" class="form-input" />
           </div>
         </div>
 
@@ -63,8 +49,7 @@
             <label for="m-notes" class="form-label">Notes</label>
             <textarea
               id="m-notes"
-              [(ngModel)]="formValue.notes"
-              name="notes"
+              formControlName="notes"
               placeholder="Enter notes here..."
               class="form-input notes-textarea"
             ></textarea>
@@ -73,7 +58,7 @@
 
         <div class="form-field form-field-spaced">
           <div class="form-checkbox-field">
-            <input [(ngModel)]="formValue.is_active" name="isActive" type="checkbox" id="stateIsActive" />
+            <input formControlName="is_active" type="checkbox" id="stateIsActive" />
             <label for="stateIsActive" class="checkbox-label">Active Status</label>
           </div>
         </div>
