@@ -3,7 +3,7 @@ import { Injectable, signal } from '@angular/core';
 @Injectable({
   providedIn: 'root',
 })
-export class SidebarService {
+export class SidebarState {
   isCollapsed = signal(false);
 
   toggle(): void {

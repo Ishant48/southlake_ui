@@ -1,6 +1,6 @@
 import { Component, inject, HostListener } from '@angular/core';
 import { AuthService } from '../../core/services/auth.service';
-import { SidebarService } from '../../core/services/sidebar.service';
+import { SidebarState } from '../state/sidebar.state';
 
 @Component({
   selector: 'app-header',
@@ -11,7 +11,7 @@ import { SidebarService } from '../../core/services/sidebar.service';
 })
 export class HeaderComponent {
   private auth = inject(AuthService);
-  sidebarService = inject(SidebarService);
+  sidebarService = inject(SidebarState);
   dropdownOpen = false;
 
   get displayName(): string {

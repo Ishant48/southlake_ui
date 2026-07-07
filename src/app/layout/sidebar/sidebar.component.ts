@@ -2,7 +2,7 @@ import { Component, inject, OnInit, HostListener } from '@angular/core';
 import { RouterLink, RouterLinkActive, Router, NavigationEnd } from '@angular/router';
 import { filter } from 'rxjs/operators';
 import { AuthService } from '../../core/services/auth.service';
-import { SidebarService } from '../../core/services/sidebar.service';
+import { SidebarState } from '../state/sidebar.state';
 
 @Component({
   selector: 'app-sidebar',
@@ -14,7 +14,7 @@ import { SidebarService } from '../../core/services/sidebar.service';
 export class SidebarComponent implements OnInit {
   private router = inject(Router);
   private authService = inject(AuthService);
-  sidebarService = inject(SidebarService);
+  sidebarService = inject(SidebarState);
 
   dashboardExpanded = true;
   accountingExpanded = false;
