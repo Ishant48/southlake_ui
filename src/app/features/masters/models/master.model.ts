@@ -183,6 +183,7 @@ export interface Treaty {
   ulae_type?: string | null;
   ulae_basis?: string | null;
   ulae_flat_amount?: number | null;
+  treaty_type?: string | null;
   created_at?: string;
   updated_at?: string | null;
   treaty_states?: TreatyState[];
