@@ -6,6 +6,7 @@ export interface ActionButtonConfig {
   label: string;
   action: string;
   danger?: boolean;
+  disabled?: boolean;
 }
 
 export interface ActionButtonsCellRendererParams extends ICellRendererParams {
@@ -37,7 +38,7 @@ export class ActionButtonsCell implements ICellRendererAngularComp {
   }
 
   isIconOnly(action: string): boolean {
-    return ['uploadExcel', 'uploadItd', 'manualItd', 'edit', 'delete'].includes(action);
+    return ['uploadExcel', 'uploadItd', 'manualItd', 'edit', 'delete', 'view'].includes(action);
   }
 
   onClick(action: string, event: Event): void {

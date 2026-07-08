@@ -15,6 +15,7 @@ export class SimpleForm {
       taxable: new FormControl(false, { nonNullable: true }),
       priority: new FormControl(1, { nonNullable: true }),
       fully_earned: new FormControl(false, { nonNullable: true }),
+      asl_code: new FormControl('', { nonNullable: true }),
       contact_name: new FormControl('', { nonNullable: true }),
       contact_email: new FormControl('', { nonNullable: true, validators: [Validators.email] }),
       contact_phone: new FormControl('', {
@@ -49,6 +50,7 @@ export interface SimpleFormModel {
   taxable: FormControl<boolean>;
   priority: FormControl<number>;
   fully_earned: FormControl<boolean>;
+  asl_code: FormControl<string>;
   contact_name: FormControl<string>;
   contact_email: FormControl<string>;
   contact_phone: FormControl<string>;

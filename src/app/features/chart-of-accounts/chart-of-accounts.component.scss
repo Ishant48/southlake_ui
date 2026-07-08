@@ -3,13 +3,6 @@
   --primary-dark: var(--navy-hover);
 }
 
-.btn-primary {
-  background: var(--navy) !important;
-  &:hover:not(:disabled) {
-    background: var(--navy-hover) !important;
-  }
-}
-
 .coa-page {
   animation: fadeIn 0.4s ease-out;
 }

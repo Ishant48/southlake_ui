@@ -81,14 +81,7 @@
           [class.active]="activeTab === ReinsuranceTab.Statement"
           (click)="setTab(ReinsuranceTab.Statement)"
         >
-          📊 Reinsurance Statement
-        </button>
-        <button
-          class="tab-btn"
-          [class.active]="activeTab === ReinsuranceTab.Glje"
-          (click)="setTab(ReinsuranceTab.Glje)"
-        >
-          💼 GL Journal Entries
+          📊 Base sheet
         </button>
         <button
           class="tab-btn"
@@ -96,6 +89,13 @@
           (click)="setTab(ReinsuranceTab.Cash)"
         >
           💰 Cash Settlement
+        </button>
+        <button
+          class="tab-btn"
+          [class.active]="activeTab === ReinsuranceTab.Glje"
+          (click)="setTab(ReinsuranceTab.Glje)"
+        >
+          💼 GL Journal Entries
         </button>
       </div>
 

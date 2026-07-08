@@ -26,6 +26,8 @@ export class GlMappingFormModal implements OnChanges {
   @Input() open = false;
   @Input() title = '';
   @Input() model: GlMappingFormValue = createBlankGlMappingForm();
+  @Input() isEditMode = false;
+  @Input() isViewMode = false;
   @Input() submitting = false;
   @Input() coaOptions: ChartOfAccount[] = [];
   @Input() typeOptions: { id: string; name: string }[] = [];
@@ -43,6 +45,11 @@ export class GlMappingFormModal implements OnChanges {
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['model']) {
       this.glMappingForm.patchForm(this.form, this.model);
+    }
+    if (changes['isViewMode']) {
+      if (this.isViewMode) {
+        this.form.disable();
+      }
     }
   }
 

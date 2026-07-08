@@ -25,6 +25,7 @@ export class StateFormModal implements OnChanges {
   @Input() title = '';
   @Input() model: StateFormValue = createBlankStateForm();
   @Input() isEditMode = false;
+  @Input() isViewMode = false;
   @Input() submitting = false;
 
   @Output() closed = new EventEmitter<void>();
@@ -37,7 +38,12 @@ export class StateFormModal implements OnChanges {
     if (changes['model']) {
       this.stateForm.patchForm(this.form, this.model);
     }
-    if (changes['isEditMode']) {
+    if (changes['isViewMode']) {
+      if (this.isViewMode) {
+        this.form.disable();
+      }
+    }
+    if (changes['isEditMode'] && !this.isViewMode) {
       const identityFields = [this.form.controls.state_code, this.form.controls.state_abbr];
       identityFields.forEach(control => (this.isEditMode ? control.disable() : control.enable()));
     }

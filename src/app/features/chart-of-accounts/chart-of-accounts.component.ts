@@ -9,8 +9,11 @@ import { ToastService } from '../../shared/components/toast/toast.service';
 import { ConfirmDialogComponent } from '../../shared/components/confirm-dialog/confirm-dialog.component';
 import { environment } from '../../../environments/environment';
 
+import { DocumentType } from '../masters/models/master.model';
+import { DocumentTypesApi } from '../masters/services/document-types-api';
+
 import { AgGridAngular } from 'ag-grid-angular';
-import { ColDef, GridOptions, GridReadyEvent } from 'ag-grid-community';
+import { ColDef, GridOptions } from 'ag-grid-community';
 import { AgGridConfigService } from '../../core/services/ag-grid-config.service';
 
 import {
@@ -41,6 +44,7 @@ import { NotesModal } from '../../shared/components/notes-modal/notes-modal';
 })
 export class ChartOfAccountsComponent implements OnInit {
   private service = inject(ChartOfAccountsApi);
+  private documentTypesApi = inject(DocumentTypesApi);
   private toast = inject(ToastService);
   private agGridConfig = inject(AgGridConfigService);
   private cdr = inject(ChangeDetectorRef);
@@ -49,11 +53,15 @@ export class ChartOfAccountsComponent implements OnInit {
   rootParents: TreeAccount[] = []; // Predefined 5 roots
   subCoas: TreeAccount[] = []; // List of COAs (roots and subs) displayed in table
   filteredSubCoas: TreeAccount[] = []; // Filtered list passed to AG Grid
+  documentTypesOptions: DocumentType[] = [];
   loading = false;
   searchTerm: string = '';
 
   // AG Grid Properties
-  gridOptions: GridOptions = this.agGridConfig.getDefaultGridOptions();
+  gridOptions: GridOptions = {
+    ...this.agGridConfig.getDefaultGridOptions(),
+    context: { componentParent: this },
+  };
   columnDefs: ColDef[] = [
     {
       headerName: 'COA TYPE',
@@ -155,6 +163,10 @@ export class ChartOfAccountsComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadAccounts();
+    this.documentTypesApi.getDocumentTypes(undefined, true).subscribe(res => {
+      this.documentTypesOptions = res;
+      this.cdr.markForCheck();
+    });
   }
 
   loadAccounts(): void {
@@ -186,13 +198,6 @@ export class ChartOfAccountsComponent implements OnInit {
           this.cdr.markForCheck();
         },
       });
-  }
-
-  onGridReady(params: GridReadyEvent) {
-    // Provide component reference to custom renderers so they can call modals
-    params.api.setGridOption('context', {
-      componentParent: this,
-    });
   }
 
   buildTreeList(accounts: ChartOfAccount[]): TreeAccount[] {
@@ -504,7 +509,10 @@ export class ChartOfAccountsComponent implements OnInit {
   loadDocuments(coaId: string): void {
     this.service.getAccount(coaId).subscribe({
       next: res => {
-        this.documents = res.documents || [];
+        // The backend might return soft-deleted documents, filter them out
+        this.documents = (res.documents || []).filter(
+          d => !(d as ChartOfAccountDocument & { is_deleted?: boolean }).is_deleted,
+        );
         this.cdr.markForCheck();
       },
       error: () => {
@@ -520,19 +528,17 @@ export class ChartOfAccountsComponent implements OnInit {
     this.documents = [];
   }
 
-  onFileSelected(event: Event): void {
-    const input = event.target as HTMLInputElement;
-    const file = input.files?.[0];
-    if (!file || !this.selectedAccount) return;
+  onFileSelected(payload: { file: File; documentType: string }): void {
+    const { file, documentType } = payload;
+    if (!file || !this.selectedAccount || !documentType) return;
 
     const accountId = this.selectedAccount.id;
     this.uploadingDoc = true;
-    this.service.uploadDocument(accountId, file).subscribe({
+    this.service.uploadDocument(accountId, file, documentType).subscribe({
       next: () => {
         this.toast.success('Document uploaded successfully');
         this.loadDocuments(accountId);
         this.uploadingDoc = false;
-        input.value = '';
         this.cdr.markForCheck();
       },
       error: err => {
@@ -557,6 +563,7 @@ export class ChartOfAccountsComponent implements OnInit {
       this.service.deleteDocument(doc.id).subscribe({
         next: () => {
           this.toast.success('Document deleted successfully');
+          this.documents = this.documents.filter(d => d.id !== doc.id);
           if (this.selectedAccount) {
             this.loadDocuments(this.selectedAccount.id);
           }

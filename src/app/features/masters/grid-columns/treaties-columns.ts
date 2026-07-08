@@ -45,6 +45,7 @@ export function buildTreatiesColumnDefs(ctx: TreatiesTab): ColDef[] {
           }
           btns.push({ label: 'Upload ITD', action: 'uploadItd' });
           btns.push({ label: 'Manual ITD', action: 'manualItd' });
+          btns.push({ label: 'View Treaty', action: 'view' });
           btns.push({ label: 'Edit', action: 'edit' });
           btns.push({ label: 'Delete', action: 'delete', danger: true });
           return btns;
@@ -53,6 +54,7 @@ export function buildTreatiesColumnDefs(ctx: TreatiesTab): ColDef[] {
           if (action === 'uploadExcel') ctx.triggerTreatyMonthlyUpload(data);
           if (action === 'uploadItd') ctx.triggerTreatyITDUpload(data);
           if (action === 'manualItd') ctx.openAddItdModal(data);
+          if (action === 'view') ctx.openTreatyView(data);
           if (action === 'edit') ctx.openTreatyEdit(data);
           if (action === 'delete') ctx.deleteTreaty(data);
         },

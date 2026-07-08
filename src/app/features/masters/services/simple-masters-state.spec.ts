@@ -1,3 +1,4 @@
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
@@ -32,6 +33,7 @@ describe('SimpleMastersState', () => {
     expect(state.getMasterLabel(SimpleMode.SequencePrefixCounter)).toBe(
       'Sequence Prefix & Counter',
     );
+    expect(state.getMasterLabel(SimpleMode.TreatyType)).toBe('Treaty Type');
   });
 
   it('loads a list from the LOBs endpoint and caches it', () => {
@@ -41,6 +43,15 @@ describe('SimpleMastersState', () => {
 
     expect(state.lobs).toEqual([{ id: 'l-1', name: 'Auto', lob_code: 'AUTO' }]);
     expect(state.getList(SimpleMode.Lob)).toBe(state.lobs);
+  });
+
+  it('loads a list from the treaty-types endpoint and caches it', () => {
+    state.load(SimpleMode.TreatyType, 'Quota', true).subscribe();
+    const req = httpMock.expectOne(r => r.url === `${environment.apiUrl}/masters/treaty-types`);
+    req.flush([{ id: 'tt-1', name: 'Quota Share', type_code: 'QS' }]);
+
+    expect(state.treatyTypes).toEqual([{ id: 'tt-1', name: 'Quota Share', type_code: 'QS' }]);
+    expect(state.getList(SimpleMode.TreatyType)).toBe(state.treatyTypes);
   });
 
   it('creates a new record when saving in add mode', () => {

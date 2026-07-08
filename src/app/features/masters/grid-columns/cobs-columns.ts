@@ -8,6 +8,7 @@ import { SimpleMode } from '../components/simple-form-modal/simple-form-modal';
 export function buildCobsColumnDefs(ctx: SimpleMasterTab, statusCol: ColDef): ColDef[] {
   return [
     { headerName: 'CLASS CODE', field: 'cob_code', flex: 1, minWidth: 100, maxWidth: 120 },
+    { headerName: 'ASL CODE', field: 'asl_code', flex: 1, minWidth: 100, maxWidth: 120 },
     {
       headerName: 'CLASS NAME',
       valueGetter: p => p.data.name,
@@ -43,17 +44,19 @@ export function buildCobsColumnDefs(ctx: SimpleMasterTab, statusCol: ColDef): Co
       cellRendererParams: {
         buttons: [
           { label: 'Edit', action: 'edit' },
+          { label: 'View Class of Business', action: 'view' },
           { label: 'Delete', action: 'delete', danger: true },
         ],
         onClick: (action: string, data: CobMaster) => {
           if (action === 'edit') ctx.openSimpleEdit(SimpleMode.Cob, data);
+          if (action === 'view') ctx.openSimpleView(SimpleMode.Cob, data);
           if (action === 'delete') ctx.deleteSimple(SimpleMode.Cob, data);
         },
       },
       flex: 0,
-      width: 160,
-      minWidth: 160,
-      maxWidth: 160,
+      width: 200,
+      minWidth: 200,
+      maxWidth: 200,
     },
   ];
 }

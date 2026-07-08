@@ -18,8 +18,18 @@
 
       <div class="panel-body">
         <div class="upload-section">
+          <span class="upload-label">Document Type</span>
+          <select class="form-input doc-type-select" [(ngModel)]="selectedDocType">
+            <option value="">-- Select Document Type --</option>
+            @for (type of documentTypesOptions; track type.id) {
+              <option [value]="type.code">{{ type.name }}</option>
+            }
+          </select>
+        </div>
+
+        <div class="upload-section">
           <span class="upload-label">Attach File</span>
-          <label class="btn-primary upload-btn">
+          <label class="btn-primary upload-btn" [class.upload-btn-disabled]="!selectedDocType">
             @if (uploadingDoc) {
               <span class="spinner btn-spinner upload-spinner"></span>
               <span>Uploading...</span>
@@ -41,7 +51,7 @@
             }
             <input
               type="file"
-              [disabled]="uploadingDoc"
+              [disabled]="uploadingDoc || !selectedDocType"
               (change)="onFileInputChange($event)"
               class="hidden-file-input"
             />

@@ -41,6 +41,7 @@ export class GlMappingsTab implements OnInit {
   showModal = false;
   modalTitle = 'Add GL Mapping';
   isEditMode = false;
+  isViewMode = false;
   submitting = false;
   form: GlMappingFormValue = createBlankGlMappingForm();
 
@@ -96,8 +97,23 @@ export class GlMappingsTab implements OnInit {
     });
   }
 
+  openGlMappingView(mapping: GlMapping): void {
+    this.isEditMode = false;
+    this.isViewMode = true;
+    this.modalTitle = 'View GL Mapping';
+    this.form = {
+      id: mapping.id,
+      coa_id: mapping.coa_id,
+      type: mapping.type,
+    };
+    this.loadCoaOptions();
+    this.showModal = true;
+    this.cdr.markForCheck();
+  }
+
   openGlMappingAdd(): void {
     this.isEditMode = false;
+    this.isViewMode = false;
     this.modalTitle = 'Add GL Mapping';
     this.form = createBlankGlMappingForm();
     this.loadCoaOptions();
@@ -107,6 +123,7 @@ export class GlMappingsTab implements OnInit {
 
   openGlMappingEdit(mapping: GlMapping): void {
     this.isEditMode = true;
+    this.isViewMode = false;
     this.modalTitle = 'Edit GL Mapping';
     this.form = {
       id: mapping.id,
@@ -138,6 +155,7 @@ export class GlMappingsTab implements OnInit {
       next: () => {
         this.toast.success(`GL Mapping ${isUpdate ? 'updated' : 'created'} successfully`);
         this.showModal = false;
+        this.isViewMode = false;
         this.submitting = false;
         this.load();
       },
@@ -152,7 +170,11 @@ export class GlMappingsTab implements OnInit {
   }
 
   deleteGlMapping(mapping: GlMapping): void {
-    this.confirmOpen = true;
+    this.confirmTitle = 'Delete GL Mapping';
+    const coaDesc = mapping.coa
+      ? `${mapping.coa.account_code} - ${mapping.coa.description}`
+      : mapping.coa_id || 'GL Mapping';
+    this.confirmMessage = `Are you sure you want to delete the GL Mapping for "${coaDesc}" (${mapping.type})? This action cannot be undone.`;
     this.pendingAction = () => {
       this.glMappingsState.delete(mapping.id).subscribe({
         next: () => {

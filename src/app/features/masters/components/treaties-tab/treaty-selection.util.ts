@@ -14,6 +14,7 @@ export function buildBlankTreatyForm(mgaId?: string): TreatyEditState {
     form: {
       treaty_code: '',
       name: '',
+      treaty_type: 'Quota Share',
       mga_id: mgaId ?? '',
       reinsurer_id: null,
       risk_company_id: null,
@@ -69,6 +70,7 @@ export function buildTreatyEditState(treaty: Treaty): TreatyEditState {
       reinsurer_id: tr.reinsurer_id,
       cession_pct: tr.cession_pct,
       state_id: tr.state_id ?? null,
+      state_ids: tr.state_ids ?? (tr.state_id ? [tr.state_id] : []),
       broker_id: tr.broker_id ?? null,
       broker_comm_type: tr.broker_comm_type ?? null,
     }));
@@ -78,6 +80,7 @@ export function buildTreatyEditState(treaty: Treaty): TreatyEditState {
         reinsurer_id: treaty.reinsurer_id,
         cession_pct: treaty.reinsurer_cession_pct ?? 100,
         state_id: null,
+        state_ids: [],
         broker_id: null,
         broker_comm_type: null,
       },
@@ -88,6 +91,7 @@ export function buildTreatyEditState(treaty: Treaty): TreatyEditState {
     id: treaty.id,
     treaty_code: treaty.treaty_code,
     name: treaty.name,
+    treaty_type: treaty.treaty_type,
     mga_id: treaty.mga_id,
     reinsurer_id: treaty.reinsurer_id,
     risk_company_id: treaty.risk_company_id,
@@ -149,7 +153,8 @@ export function buildTreatyPayload(
     .map(r => ({
       reinsurer_id: r.reinsurer_id,
       cession_pct: r.cession_pct,
-      state_id: r.state_id ?? null,
+      state_id: r.state_ids && r.state_ids.length > 0 ? r.state_ids[0] : null,
+      state_ids: r.state_ids ?? [],
       broker_id: r.broker_id ?? null,
       broker_comm_type: r.broker_comm_type ?? null,
     }));

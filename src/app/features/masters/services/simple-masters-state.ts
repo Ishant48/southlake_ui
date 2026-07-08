@@ -8,6 +8,7 @@ import { BrokersApi } from './brokers-api';
 import { ProductsApi } from './products-api';
 import { DocumentTypesApi } from './document-types-api';
 import { SequencePrefixCountersApi } from './sequence-prefix-counters-api';
+import { TreatyTypesApi } from './treaty-types-api';
 import { SimpleMode, SimpleFormValue } from '../components/simple-form-modal/simple-form-modal';
 import { SimpleEditableItem } from '../models/master-tab.model';
 import {
@@ -17,6 +18,7 @@ import {
   SimpleMasterRecord,
   DocumentType,
   SequencePrefixCounter,
+  TreatyTypeMaster,
 } from '../models/master.model';
 
 const MASTER_LABELS: Record<SimpleMode, string> = {
@@ -27,6 +29,7 @@ const MASTER_LABELS: Record<SimpleMode, string> = {
   [SimpleMode.Product]: 'Product',
   [SimpleMode.DocumentType]: 'Document Type',
   [SimpleMode.SequencePrefixCounter]: 'Sequence Prefix & Counter',
+  [SimpleMode.TreatyType]: 'Treaty Type',
 };
 
 const CODE_KEYS: Record<SimpleMode, string> = {
@@ -37,6 +40,7 @@ const CODE_KEYS: Record<SimpleMode, string> = {
   [SimpleMode.Product]: 'product_id',
   [SimpleMode.DocumentType]: 'code',
   [SimpleMode.SequencePrefixCounter]: 'code',
+  [SimpleMode.TreatyType]: 'type_code',
 };
 
 @Injectable({ providedIn: 'root' })
@@ -48,6 +52,7 @@ export class SimpleMastersState {
   private productsApi = inject(ProductsApi);
   private documentTypesApi = inject(DocumentTypesApi);
   private sequencePrefixCountersApi = inject(SequencePrefixCountersApi);
+  private treatyTypesApi = inject(TreatyTypesApi);
 
   lobs: LineOfBusiness[] = [];
   cobs: CobMaster[] = [];
@@ -56,6 +61,7 @@ export class SimpleMastersState {
   products: SimpleMasterRecord[] = [];
   documentTypes: DocumentType[] = [];
   sequencePrefixCounters: SequencePrefixCounter[] = [];
+  treatyTypes: TreatyTypeMaster[] = [];
 
   getMasterLabel(mode: SimpleMode): string {
     return MASTER_LABELS[mode];
@@ -77,6 +83,8 @@ export class SimpleMastersState {
         return this.documentTypes;
       case SimpleMode.SequencePrefixCounter:
         return this.sequencePrefixCounters;
+      case SimpleMode.TreatyType:
+        return this.treatyTypes;
     }
   }
 
@@ -104,6 +112,9 @@ export class SimpleMastersState {
       case SimpleMode.SequencePrefixCounter:
         request = this.sequencePrefixCountersApi.getSequencePrefixCounters(search, active);
         break;
+      case SimpleMode.TreatyType:
+        request = this.treatyTypesApi.getTreatyTypes(search, active);
+        break;
     }
     return request.pipe(map(res => this.assignList(mode, res)));
   }
@@ -116,12 +127,20 @@ export class SimpleMastersState {
       is_active: formValue.is_active,
     };
 
-    if (mode === SimpleMode.Lob || mode === SimpleMode.Cob) {
+    if (mode === SimpleMode.Lob || mode === SimpleMode.Cob || mode === SimpleMode.TreatyType) {
       payload['description'] = formValue.description || null;
-      payload['type'] = mode === SimpleMode.Cob ? formValue.type || null : null;
-      payload['taxable'] = formValue.taxable || false;
-      payload['priority'] = Number(formValue.priority || 1);
-      payload['fully_earned'] = formValue.fully_earned || false;
+      if (mode === SimpleMode.Cob) {
+        payload['type'] = formValue.type || null;
+        payload['taxable'] = formValue.taxable || false;
+        payload['priority'] = Number(formValue.priority || 1);
+        payload['fully_earned'] = formValue.fully_earned || false;
+        // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- '' should be sent as null, not an empty string
+        payload['asl_code'] = formValue.asl_code || null;
+      } else if (mode === SimpleMode.Lob) {
+        payload['taxable'] = formValue.taxable || false;
+        payload['priority'] = Number(formValue.priority || 1);
+        payload['fully_earned'] = formValue.fully_earned || false;
+      }
     } else if (mode === SimpleMode.Broker) {
       // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- '' should be sent as null, not an empty string
       payload['contact_name'] = formValue.contact_name || null;
@@ -167,6 +186,8 @@ export class SimpleMastersState {
         return this.documentTypesApi.deleteDocumentType(id);
       case SimpleMode.SequencePrefixCounter:
         return this.sequencePrefixCountersApi.deleteSequencePrefixCounter(id);
+      case SimpleMode.TreatyType:
+        return this.treatyTypesApi.deleteTreatyType(id);
     }
   }
 
@@ -188,6 +209,8 @@ export class SimpleMastersState {
         return this.sequencePrefixCountersApi.createSequencePrefixCounter(
           payload as Partial<SequencePrefixCounter>,
         );
+      case SimpleMode.TreatyType:
+        return this.treatyTypesApi.createTreatyType(payload as Partial<TreatyTypeMaster>);
     }
   }
 
@@ -214,6 +237,8 @@ export class SimpleMastersState {
           id,
           payload as Partial<SequencePrefixCounter>,
         );
+      case SimpleMode.TreatyType:
+        return this.treatyTypesApi.updateTreatyType(id, payload as Partial<TreatyTypeMaster>);
     }
   }
 
@@ -239,6 +264,9 @@ export class SimpleMastersState {
         break;
       case SimpleMode.SequencePrefixCounter:
         this.sequencePrefixCounters = res as SequencePrefixCounter[];
+        break;
+      case SimpleMode.TreatyType:
+        this.treatyTypes = res as TreatyTypeMaster[];
         break;
     }
     return res;

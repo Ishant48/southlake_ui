@@ -45,7 +45,6 @@ export interface MgaMaster {
   open_item?: boolean;
   op_start_date?: string | null;
   other_names?: { state: string; displayName: string }[] | null;
-  naics_code?: string | null;
   contact_name?: string | null;
   contact_email?: string | null;
   contact_phone?: string | null;
@@ -115,6 +114,7 @@ export interface CobMaster {
   taxable?: boolean;
   priority?: number;
   fully_earned?: boolean;
+  asl_code?: string | null;
   created_at?: string;
   updated_at?: string | null;
 }
@@ -182,6 +182,7 @@ export interface Treaty {
   ulae_type?: string | null;
   ulae_basis?: string | null;
   ulae_flat_amount?: number | null;
+  treaty_type?: string | null;
   created_at?: string;
   updated_at?: string | null;
   treaty_states?: TreatyState[];
@@ -208,6 +209,8 @@ export interface TreatyReinsurer {
   reinsurer?: ReinsurerCompany;
   cession_pct: number;
   state_id?: string | null;
+  state_ids?: string[] | null;
+  state?: StateMaster | null;
   broker_id?: string | null;
   broker_comm_type?: string | null;
 }
@@ -252,4 +255,16 @@ export interface SequencePrefixCounter {
   isActive?: boolean;
   createdAt?: string;
   updatedAt?: string | null;
+}
+
+export interface TreatyTypeMaster {
+  id?: string;
+  type_code: string;
+  typeCode?: string;
+  name: string;
+  description?: string | null;
+  is_active?: boolean;
+  isActive?: boolean;
+  created_at?: string;
+  updated_at?: string | null;
 }

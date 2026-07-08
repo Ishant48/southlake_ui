@@ -1,3 +1,4 @@
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { MgaFormModal } from './mga-form-modal';
@@ -12,7 +13,18 @@ describe('MgaFormModal', () => {
     id: 'mga-1',
     mga_code: 'MGA-100',
     name: 'Southlake Underwriters',
+    company_id: 123,
+    id_name: 'Southlake ID',
+    address: '123 Southlake Blvd',
+    zip: '76092',
+    city: 'Southlake',
+    state: 'TX',
+    phone: '817-555-0100',
+    op_start_date: '2026-01-01',
     other_names: [{ state: 'TX', displayName: 'Southlake TX' }],
+    contact_name: 'John Doe',
+    contact_email: 'john@doe.com',
+    contact_phone: '817-555-0101',
   };
 
   beforeEach(async () => {

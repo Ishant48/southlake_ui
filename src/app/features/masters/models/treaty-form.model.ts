@@ -20,6 +20,7 @@ export function createBlankTreatyForm(): TreatyFormShape {
   return {
     treaty_code: '',
     name: '',
+    treaty_type: 'Quota Share',
     mga_id: '',
     reinsurer_id: null,
     risk_company_id: null,

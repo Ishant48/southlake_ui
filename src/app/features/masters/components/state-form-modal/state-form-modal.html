@@ -86,15 +86,19 @@
       </form>
 
       <div class="panel-footer">
-        <button type="button" class="btn-ghost" (click)="close()">Cancel</button>
-        <button type="button" class="btn-primary" [disabled]="submitting" (click)="submit()">
-          @if (submitting) {
-            <span class="spinner btn-spinner save-spinner"></span>
-            <span>Saving...</span>
-          } @else {
-            <span>Save State</span>
-          }
-        </button>
+        @if (isViewMode) {
+          <button type="button" class="btn-primary" (click)="close()">Close</button>
+        } @else {
+          <button type="button" class="btn-ghost" (click)="close()">Cancel</button>
+          <button type="button" class="btn-primary" [disabled]="submitting" (click)="submit()">
+            @if (submitting) {
+              <span class="spinner btn-spinner save-spinner"></span>
+              <span>Saving...</span>
+            } @else {
+              <span>Save State</span>
+            }
+          </button>
+        }
       </div>
     </div>
   </div>

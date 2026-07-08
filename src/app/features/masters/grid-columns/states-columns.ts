@@ -16,20 +16,22 @@ export function buildStatesColumnDefs(ctx: StatesTab): ColDef[] {
         buttons: [
           { label: 'Document', action: 'doc' },
           { label: 'Notes', action: 'notes' },
+          { label: 'View State', action: 'view' },
           { label: 'Edit', action: 'edit' },
           { label: 'Delete', action: 'delete', danger: true },
         ],
         onClick: (action: string, data: StateMaster) => {
           if (action === 'doc') ctx.openDocModal(DocumentMode.State, data);
           if (action === 'notes') ctx.openNotesModal('State Notes: ' + data.name, data.notes);
+          if (action === 'view') ctx.openStateView(data);
           if (action === 'edit') ctx.openStateEdit(data);
           if (action === 'delete') ctx.deleteState(data);
         },
       },
       flex: 0,
-      width: 280,
-      minWidth: 280,
-      maxWidth: 280,
+      width: 320,
+      minWidth: 320,
+      maxWidth: 320,
     },
   ];
 }

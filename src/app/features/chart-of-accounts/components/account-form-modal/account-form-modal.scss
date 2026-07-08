@@ -8,20 +8,10 @@
   margin-top: 8px;
 }
 
-.checkbox-label {
+.checkbox-label,
+.radio-label {
   cursor: pointer;
   user-select: none;
-}
-
-.active-status-field {
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
-  padding-bottom: 4px;
-}
-
-.active-status-label {
-  margin-bottom: 6px;
 }
 
 .earning-account-field {

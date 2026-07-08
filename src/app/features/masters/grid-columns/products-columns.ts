@@ -4,6 +4,8 @@ import { ActionButtonsCell } from '../../../shared/components/grid-renderers/act
 import { SimpleMasterRecord } from '../models/master.model';
 import { SimpleMode } from '../components/simple-form-modal/simple-form-modal';
 
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/prefer-nullish-coalescing -- lob/cob shapes on a product row are loosely typed (see treaty-form-modal.ts), and empty-string names should also fall back to '-' */
+
 export function buildProductsColumnDefs(ctx: SimpleMasterTab, statusCol: ColDef): ColDef[] {
   return [
     { headerName: 'PRODUCT ID', field: 'product_id', flex: 1.5, minWidth: 120 },
@@ -40,17 +42,19 @@ export function buildProductsColumnDefs(ctx: SimpleMasterTab, statusCol: ColDef)
       cellRendererParams: {
         buttons: [
           { label: 'Edit', action: 'edit' },
+          { label: 'View Product', action: 'view' },
           { label: 'Delete', action: 'delete', danger: true },
         ],
         onClick: (action: string, data: SimpleMasterRecord) => {
           if (action === 'edit') ctx.openSimpleEdit(SimpleMode.Product, data);
+          if (action === 'view') ctx.openSimpleView(SimpleMode.Product, data);
           if (action === 'delete') ctx.deleteSimple(SimpleMode.Product, data);
         },
       },
       flex: 0,
-      width: 160,
-      minWidth: 160,
-      maxWidth: 160,
+      width: 200,
+      minWidth: 200,
+      maxWidth: 200,
     },
   ];
 }

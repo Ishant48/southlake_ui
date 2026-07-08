@@ -110,15 +110,8 @@
   }
 }
 
-.btn-confirm-danger {
-  background: var(--coral);
-}
-.btn-confirm-danger:hover {
-  background: var(--coral-hover);
-}
-.btn-confirm-warning {
-  background: var(--orange);
-}
+.btn-confirm-danger,
+.btn-confirm-warning,
 .btn-confirm-info {
-  background: var(--blue);
+  background: var(--navy);
 }

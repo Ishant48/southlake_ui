@@ -15,7 +15,6 @@ export interface MgaFormValue {
   open_item: boolean;
   op_start_date: string;
   other_names: { state: string; displayName: string }[];
-  naics_code?: string;
   contact_name?: string;
   contact_email?: string;
   contact_phone?: string;
@@ -38,7 +37,6 @@ export function createBlankMgaForm(): MgaFormValue {
     open_item: false,
     op_start_date: '',
     other_names: [],
-    naics_code: '',
     contact_name: '',
     contact_email: '',
     contact_phone: '',

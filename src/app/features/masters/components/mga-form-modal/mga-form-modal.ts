@@ -27,6 +27,7 @@ export class MgaFormModal implements OnChanges {
   @Input() title = '';
   @Input() model: MgaFormValue = createBlankMgaForm();
   @Input() isEditMode = false;
+  @Input() isViewMode = false;
   @Input() submitting = false;
   @Input() stateOptions: StateMaster[] = [];
   @Input() stateAbbrLabelFn: (item: StateMaster) => string = () => '';
@@ -47,6 +48,16 @@ export class MgaFormModal implements OnChanges {
         control.disable();
       } else {
         control.enable();
+      }
+    }
+    if (changes['isViewMode']) {
+      if (this.isViewMode) {
+        this.form.disable();
+      } else {
+        this.form.enable();
+        if (this.isEditMode) {
+          this.form.controls.mga_code.disable();
+        }
       }
     }
   }
@@ -82,6 +93,11 @@ export class MgaFormModal implements OnChanges {
 
   close(): void {
     this.closed.emit();
+  }
+
+  isInvalid(controlName: string): boolean {
+    const control = this.form.get(controlName);
+    return !!(control && control.invalid && control.touched);
   }
 
   submit(): void {

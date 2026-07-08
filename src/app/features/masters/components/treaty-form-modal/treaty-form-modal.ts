@@ -18,6 +18,7 @@ import {
   LineOfBusiness,
   CobMaster,
   SimpleMasterRecord,
+  TreatyTypeMaster,
 } from '../../models/master.model';
 import { TreatyForm, TreatyFormModel } from '../../forms/treaty-form';
 import {
@@ -42,6 +43,7 @@ export class TreatyFormModal implements OnChanges {
   @Input() title = '';
   @Input() model: TreatyFormShape = createBlankTreatyForm();
   @Input() isEditMode = false;
+  @Input() isViewMode = false;
   @Input() submitting = false;
   @Input() selectedStates: TreatySelectionMap = {};
   @Input() selectedLobs: TreatySelectionMap = {};
@@ -55,6 +57,7 @@ export class TreatyFormModal implements OnChanges {
   @Input() lobOptions: LineOfBusiness[] = [];
   @Input() cobOptions: CobMaster[] = [];
   @Input() productOptions: any[] = [];
+  @Input() treatyTypeOptions: TreatyTypeMaster[] = [];
 
   @Input() riskCompanyLabelFn: (item: RiskCompany) => string = () => '';
   @Input() reinsurerLabelFn: (item: ReinsurerCompany) => string = () => '';
@@ -63,6 +66,10 @@ export class TreatyFormModal implements OnChanges {
   @Input() mgaLabelFn: (item: MgaMaster) => string = () => '';
   @Input() lobLabelFn: (item: LineOfBusiness) => string = () => '';
   @Input() cobLabelFn: (item: CobMaster) => string = () => '';
+
+  treatyTypeLabelFn = (item: TreatyTypeMaster): string => {
+    return item ? `${item.name} (${item.type_code})` : '';
+  };
 
   productLabelFn = (item: any): string => {
     return item ? `${item.product_id} - ${item.name}` : '';
@@ -111,7 +118,12 @@ export class TreatyFormModal implements OnChanges {
     if (changes['selectedLobs'] || changes['selectedCobs'] || changes['productOptions']) {
       this.findMatchingProduct();
     }
-    if (changes['isEditMode']) {
+    if (changes['isViewMode']) {
+      if (this.isViewMode) {
+        this.form.disable();
+      }
+    }
+    if (changes['isEditMode'] && !this.isViewMode) {
       if (this.isEditMode) {
         this.form.controls.treaty_code.disable();
       } else {
@@ -207,11 +219,10 @@ export class TreatyFormModal implements OnChanges {
     this.form.controls.reinsurers.setValue(updated);
   }
 
-  updateReinsurerStateId(index: number, value: unknown): void {
+  updateReinsurerStateIds(index: number, value: unknown): void {
     const rows = this.form.controls.reinsurers.value;
-    const updated = rows.map((row, i) =>
-      i === index ? { ...row, state_id: value == null ? null : String(value) } : row,
-    );
+    const stateIds = Array.isArray(value) ? value : value == null ? [] : [String(value)];
+    const updated = rows.map((row, i) => (i === index ? { ...row, state_ids: stateIds } : row));
     this.form.controls.reinsurers.setValue(updated);
   }
 
@@ -304,6 +315,7 @@ export class TreatyFormModal implements OnChanges {
           reinsurer_id: '',
           cession_pct: 100,
           state_id: null,
+          state_ids: [],
           broker_id: null,
           broker_comm_type: null,
         },
@@ -320,6 +332,7 @@ export class TreatyFormModal implements OnChanges {
         reinsurer_id: '',
         cession_pct: Number(remaining.toFixed(2)),
         state_id: null,
+        state_ids: [],
         broker_id: null,
         broker_comm_type: null,
       },

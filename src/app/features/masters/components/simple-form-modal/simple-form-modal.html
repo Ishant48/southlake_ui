@@ -179,6 +179,16 @@
                   (selectedValueChange)="form.controls.type.setValue($any($event))"
                 ></app-dropdown-search>
               </div>
+              <div class="form-field">
+                <label for="m-asl-code" class="form-label">ASL Code</label>
+                <input
+                  id="m-asl-code"
+                  formControlName="asl_code"
+                  type="text"
+                  placeholder="e.g. 19.4"
+                  class="form-input"
+                />
+              </div>
             }
             <div class="form-field">
               <label for="m-priority-2" class="form-label">Priority</label>
@@ -214,7 +224,9 @@
               </div>
             </div>
           </div>
+        }
 
+        @if (mode === SimpleMode.Lob || mode === SimpleMode.Cob || mode === SimpleMode.TreatyType) {
           <div class="form-row form-row-spaced">
             <div class="form-field">
               <label for="m-description-3" class="form-label">Description</label>
@@ -273,15 +285,19 @@
       </form>
 
       <div class="panel-footer">
-        <button type="button" class="btn-ghost" (click)="close()">Cancel</button>
-        <button type="button" class="btn-primary" [disabled]="submitting" (click)="submit()">
-          @if (submitting) {
-            <span class="spinner btn-spinner save-spinner"></span>
-            <span>Saving...</span>
-          } @else {
-            <span>Save Entry</span>
-          }
-        </button>
+        @if (isViewMode) {
+          <button type="button" class="btn-primary" (click)="close()">Close</button>
+        } @else {
+          <button type="button" class="btn-ghost" (click)="close()">Cancel</button>
+          <button type="button" class="btn-primary" [disabled]="submitting" (click)="submit()">
+            @if (submitting) {
+              <span class="spinner btn-spinner save-spinner"></span>
+              <span>Saving...</span>
+            } @else {
+              <span>Save Entry</span>
+            }
+          </button>
+        }
       </div>
     </div>
   </div>

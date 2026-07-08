@@ -87,6 +87,7 @@
   [title]="treatyModalTitle"
   [model]="treatyForm.form"
   [isEditMode]="isEditMode"
+  [isViewMode]="isViewMode"
   [submitting]="submitting"
   [selectedStates]="treatyForm.selectedStates"
   [selectedLobs]="treatyForm.selectedLobs"
@@ -99,6 +100,7 @@
   [lobOptions]="treatyOptionsState.lobOptions"
   [cobOptions]="treatyOptionsState.cobOptions"
   [productOptions]="treatyOptionsState.productOptions"
+  [treatyTypeOptions]="treatyOptionsState.treatyTypeOptions"
   [riskCompanyLabelFn]="riskCompanyLabelFn"
   [reinsurerLabelFn]="reinsurerLabelFn"
   [stateLabelFn]="stateLabelFn"
@@ -106,7 +108,7 @@
   [mgaLabelFn]="mgaLabelFn"
   [lobLabelFn]="lobLabelFn"
   [cobLabelFn]="cobLabelFn"
-  (closed)="showTreatyModal = false"
+  (closed)="onModalClosed()"
   (save)="submitTreaty($event)"
 ></app-treaty-form-modal>
 

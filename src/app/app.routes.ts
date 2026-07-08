@@ -80,6 +80,7 @@ export const routes: Routes = [
             { module: 'product' },
             { module: 'masters_config' },
             { module: 'gl_mapping' },
+            { module: 'treaty_type' },
           ]),
         ],
         loadChildren: () => import('./features/masters/masters.routes').then(m => m.mastersRoutes),

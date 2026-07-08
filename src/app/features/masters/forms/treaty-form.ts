@@ -10,6 +10,7 @@ export class TreatyForm {
       id: new FormControl<string | null>(null),
       treaty_code: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
       name: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
+      treaty_type: new FormControl('Quota Share', { nonNullable: true }),
       mga_id: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
       reinsurer_id: new FormControl<string | null>(null),
       risk_company_id: new FormControl<string | null>(null),
@@ -65,6 +66,7 @@ export class TreatyForm {
       lae_aoe_pct: value.lae_aoe_pct ?? 0,
       carrier_retention_pct: value.carrier_retention_pct ?? 100,
       reinsurer_cession_pct: value.reinsurer_cession_pct ?? 0,
+      treaty_type: value.treaty_type ?? 'Quota Share',
       carriers: [...(value.carriers ?? [])],
       reinsurers: [...(value.reinsurers ?? [])],
     });
@@ -80,6 +82,7 @@ export interface TreatyFormModel {
   id: FormControl<string | null>;
   treaty_code: FormControl<string>;
   name: FormControl<string>;
+  treaty_type: FormControl<string>;
   mga_id: FormControl<string>;
   reinsurer_id: FormControl<string | null>;
   risk_company_id: FormControl<string | null>;

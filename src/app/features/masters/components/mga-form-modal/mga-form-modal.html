@@ -20,18 +20,32 @@
         <div class="form-section-title no-top-margin">Names Info</div>
         <div class="form-row">
           <div class="form-field">
-            <label for="mga-companyid" class="form-label">Company ID</label>
+            <label for="mga-companyid" class="form-label">Company ID *</label>
             <input
               id="mga-companyid"
               formControlName="company_id"
               type="number"
               placeholder="e.g. 597"
               class="form-input"
+              [class.input-error]="isInvalid('company_id')"
             />
+            @if (isInvalid("company_id")) {
+              <div class="field-error">Company ID is required</div>
+            }
           </div>
           <div class="form-field">
-            <label for="mga-idname" class="form-label">ID Name</label>
-            <input id="mga-idname" formControlName="id_name" type="text" placeholder="ID Name" class="form-input" />
+            <label for="mga-idname" class="form-label">ID Name *</label>
+            <input
+              id="mga-idname"
+              formControlName="id_name"
+              type="text"
+              placeholder="ID Name"
+              class="form-input"
+              [class.input-error]="isInvalid('id_name')"
+            />
+            @if (isInvalid("id_name")) {
+              <div class="field-error">ID Name is required</div>
+            }
           </div>
           <div class="form-field">
             <label for="mga-name" class="form-label">Name *</label>
@@ -41,10 +55,10 @@
               type="text"
               placeholder="e.g. Southlake Underwriters"
               class="form-input"
-              [class.input-error]="form.controls.name.invalid && form.controls.name.touched"
+              [class.input-error]="isInvalid('name')"
             />
-            @if (form.controls.name.invalid && form.controls.name.touched) {
-              <span class="field-error">Name is required.</span>
+            @if (isInvalid("name")) {
+              <div class="field-error">Name is required</div>
             }
           </div>
         </div>
@@ -57,10 +71,10 @@
               type="text"
               placeholder="e.g. MGA-100"
               class="form-input"
-              [class.input-error]="form.controls.mga_code.invalid && form.controls.mga_code.touched"
+              [class.input-error]="isInvalid('mga_code')"
             />
-            @if (form.controls.mga_code.invalid && form.controls.mga_code.touched) {
-              <span class="field-error">MGA Code is required.</span>
+            @if (isInvalid("mga_code")) {
+              <div class="field-error">MGA Code is required</div>
             }
           </div>
           <div class="form-field flex-2"></div>
@@ -93,47 +107,75 @@
                 class="form-input"
               />
             </div>
-            <div class="remove-row-btn-wrap">
-              <button
-                type="button"
-                class="btn-action-outline btn-action-danger-outline remove-row-btn"
-                (click)="removeOtherNameRow($index)"
-              >
-                Remove
-              </button>
-            </div>
+            @if (!isViewMode) {
+              <div class="remove-row-btn-wrap">
+                <button
+                  type="button"
+                  class="btn-action-outline btn-action-danger-outline remove-row-btn"
+                  (click)="removeOtherNameRow($index)"
+                >
+                  Remove
+                </button>
+              </div>
+            }
           </div>
         }
-        <div class="add-row-btn-wrap">
-          <button type="button" class="btn-action-outline" (click)="addOtherNameRow()">+ Add Other Name</button>
-        </div>
+        @if (!isViewMode) {
+          <div class="add-row-btn-wrap">
+            <button type="button" class="btn-action-outline" (click)="addOtherNameRow()">+ Add Other Name</button>
+          </div>
+        }
 
         <!-- Addresses & Other -->
         <div class="form-section-title">Addresses & Other</div>
         <div class="form-row">
           <div class="form-field flex-2">
-            <label for="mga-address" class="form-label">Address</label>
+            <label for="mga-address" class="form-label">Address *</label>
             <input
               id="mga-address"
               formControlName="address"
               type="text"
               placeholder="123 Main St"
               class="form-input"
+              [class.input-error]="isInvalid('address')"
             />
+            @if (isInvalid("address")) {
+              <div class="field-error">Address is required</div>
+            }
           </div>
           <div class="form-field">
-            <label for="mga-zip" class="form-label">Zip</label>
-            <input id="mga-zip" formControlName="zip" type="text" placeholder="12345" class="form-input" />
+            <label for="mga-zip" class="form-label">Zip *</label>
+            <input
+              id="mga-zip"
+              formControlName="zip"
+              type="text"
+              placeholder="12345"
+              class="form-input"
+              [class.input-error]="isInvalid('zip')"
+            />
+            @if (isInvalid("zip")) {
+              <div class="field-error">Zip is required</div>
+            }
           </div>
         </div>
 
         <div class="form-row">
           <div class="form-field">
-            <label for="mga-city" class="form-label">City</label>
-            <input id="mga-city" formControlName="city" type="text" placeholder="City" class="form-input" />
+            <label for="mga-city" class="form-label">City *</label>
+            <input
+              id="mga-city"
+              formControlName="city"
+              type="text"
+              placeholder="City"
+              class="form-input"
+              [class.input-error]="isInvalid('city')"
+            />
+            @if (isInvalid("city")) {
+              <div class="field-error">City is required</div>
+            }
           </div>
           <div class="form-field">
-            <label for="mga-state" class="form-label">State</label>
+            <label for="mga-state" class="form-label">State *</label>
             <app-dropdown-search
               [items]="stateOptions"
               [isMultiSelect]="false"
@@ -142,20 +184,30 @@
               [itemLabelFn]="stateAbbrLabelFn"
               [selectedValue]="form.controls.state.value"
               (selectedValueChange)="setStateValue($event)"
+              [class.input-error]="isInvalid('state')"
             ></app-dropdown-search>
+            @if (isInvalid("state")) {
+              <div class="field-error">State is required</div>
+            }
           </div>
           <div class="form-field">
-            <label for="mga-phone" class="form-label">Phone</label>
+            <label for="mga-phone" class="form-label">Phone *</label>
             <input
               id="mga-phone"
               formControlName="phone"
               type="text"
               placeholder="555-0199"
               class="form-input"
-              [class.input-error]="form.controls.phone.invalid && form.controls.phone.touched"
+              [class.input-error]="isInvalid('phone')"
             />
-            @if (form.controls.phone.invalid && form.controls.phone.touched) {
-              <span class="field-error">Phone can only contain digits, spaces, and + ( ) -.</span>
+            @if (isInvalid("phone")) {
+              <div class="field-error">
+                @if (form.controls.phone.errors?.["required"]) {
+                  Phone is required
+                } @else {
+                  Invalid phone format
+                }
+              </div>
             }
           </div>
         </div>
@@ -175,61 +227,76 @@
             </div>
           </div>
           <div class="form-field">
-            <label for="mga-opstartdate" class="form-label">Op Start Date</label>
-            <input id="mga-opstartdate" formControlName="op_start_date" type="date" class="form-input" />
+            <label for="mga-opstartdate" class="form-label">Op Start Date *</label>
+            <input
+              id="mga-opstartdate"
+              formControlName="op_start_date"
+              type="date"
+              class="form-input"
+              [class.input-error]="isInvalid('op_start_date')"
+            />
+            @if (isInvalid("op_start_date")) {
+              <div class="field-error">Op Start Date is required</div>
+            }
           </div>
         </div>
 
         <div class="form-row">
           <div class="form-field">
-            <label for="mga-naicscode" class="form-label">NAICS Code</label>
-            <input
-              id="mga-naicscode"
-              formControlName="naics_code"
-              type="text"
-              placeholder="e.g. 524126"
-              class="form-input"
-            />
-          </div>
-          <div class="form-field">
-            <label for="mga-contactname" class="form-label">Contact Name</label>
+            <label for="mga-contactname" class="form-label">Contact Name *</label>
             <input
               id="mga-contactname"
               formControlName="contact_name"
               type="text"
               placeholder="Contact Name"
               class="form-input"
+              [class.input-error]="isInvalid('contact_name')"
             />
+            @if (isInvalid("contact_name")) {
+              <div class="field-error">Contact Name is required</div>
+            }
           </div>
         </div>
 
         <div class="form-row">
           <div class="form-field">
-            <label for="mga-contactemail" class="form-label">Contact Email</label>
+            <label for="mga-contactemail" class="form-label">Contact Email *</label>
             <input
               id="mga-contactemail"
               formControlName="contact_email"
               type="email"
               placeholder="contact@email.com"
               class="form-input"
-              [class.input-error]="form.controls.contact_email.invalid && form.controls.contact_email.touched"
+              [class.input-error]="isInvalid('contact_email')"
             />
-            @if (form.controls.contact_email.invalid && form.controls.contact_email.touched) {
-              <span class="field-error">Enter a valid email address.</span>
+            @if (isInvalid("contact_email")) {
+              <div class="field-error">
+                @if (form.controls.contact_email.errors?.["required"]) {
+                  Contact Email is required
+                } @else {
+                  Invalid email format
+                }
+              </div>
             }
           </div>
           <div class="form-field">
-            <label for="mga-contactphone" class="form-label">Contact Phone</label>
+            <label for="mga-contactphone" class="form-label">Contact Phone *</label>
             <input
               id="mga-contactphone"
               formControlName="contact_phone"
               type="text"
               placeholder="Phone Number"
               class="form-input"
-              [class.input-error]="form.controls.contact_phone.invalid && form.controls.contact_phone.touched"
+              [class.input-error]="isInvalid('contact_phone')"
             />
-            @if (form.controls.contact_phone.invalid && form.controls.contact_phone.touched) {
-              <span class="field-error">Phone can only contain digits, spaces, and + ( ) -.</span>
+            @if (isInvalid("contact_phone")) {
+              <div class="field-error">
+                @if (form.controls.contact_phone.errors?.["required"]) {
+                  Contact Phone is required
+                } @else {
+                  Invalid phone format
+                }
+              </div>
             }
           </div>
         </div>
@@ -247,15 +314,19 @@
       </form>
 
       <div class="panel-footer">
-        <button type="button" class="btn-ghost" (click)="close()">Cancel</button>
-        <button type="button" class="btn-primary" [disabled]="submitting" (click)="submit()">
-          @if (submitting) {
-            <span class="spinner btn-spinner save-spinner"></span>
-            <span>Saving...</span>
-          } @else {
-            <span>Save MGA</span>
-          }
-        </button>
+        @if (isViewMode) {
+          <button type="button" class="btn-primary" (click)="close()">Close</button>
+        } @else {
+          <button type="button" class="btn-ghost" (click)="close()">Cancel</button>
+          <button type="button" class="btn-primary" [disabled]="submitting" (click)="submit()">
+            @if (submitting) {
+              <span class="spinner btn-spinner save-spinner"></span>
+              <span>Saving...</span>
+            } @else {
+              <span>Save MGA</span>
+            }
+          </button>
+        }
       </div>
     </div>
   </div>
