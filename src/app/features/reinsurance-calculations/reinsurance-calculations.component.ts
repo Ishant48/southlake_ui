@@ -106,7 +106,10 @@ export class ReinsuranceCalculationsComponent implements OnInit {
         this.workbooks = (res ?? []).filter(w => w.source !== 'ITD');
         this.loading = false;
         if (this.workbooks.length > 0) {
-          if (!this.selectedWorkbookId || !this.workbooks.some(w => w.id === this.selectedWorkbookId)) {
+          if (
+            !this.selectedWorkbookId ||
+            !this.workbooks.some(w => w.id === this.selectedWorkbookId)
+          ) {
             this.selectedWorkbookId = this.workbooks[0].id;
           }
           this.onWorkbookChange();
@@ -126,24 +129,29 @@ export class ReinsuranceCalculationsComponent implements OnInit {
 
   deleteWorkbook(): void {
     if (!this.selectedWorkbookId) return;
-    const confirmDelete = confirm(
-      'Are you sure you want to delete this workbook and all its state exhibits?',
-    );
-    if (!confirmDelete) return;
 
-    this.loading = true;
-    this.service.deleteWorkbook(this.selectedWorkbookId).subscribe({
-      next: () => {
-        this.toast.success('Workbook deleted successfully');
-        this.selectedWorkbookId = null;
-        this.loadWorkbooks();
-      },
-      error: () => {
-        this.toast.error('Failed to delete workbook');
-        this.loading = false;
-        this.cdr.markForCheck();
-      },
-    });
+    this.confirmTitle = 'Delete Workbook';
+    this.confirmMessage =
+      'Are you sure you want to delete this workbook and all its state exhibits?';
+    const id = this.selectedWorkbookId;
+    if (!id) return;
+    this.pendingAction = () => {
+      this.loading = true;
+      this.service.deleteWorkbook(id).subscribe({
+        next: () => {
+          this.toast.success('Workbook deleted successfully');
+          this.selectedWorkbookId = null;
+          this.loadWorkbooks();
+        },
+        error: () => {
+          this.toast.error('Failed to delete workbook');
+          this.loading = false;
+          this.cdr.markForCheck();
+        },
+      });
+    };
+    this.confirmOpen = true;
+    this.cdr.markForCheck();
   }
 
   onWorkbookChange(): void {
