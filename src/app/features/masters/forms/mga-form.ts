@@ -27,7 +27,6 @@ export class MgaForm {
       other_names: new FormControl<{ state: string; displayName: string }[]>([], {
         nonNullable: true,
       }),
-      naics_code: new FormControl('', { nonNullable: true }),
       contact_name: new FormControl('', { nonNullable: true }),
       contact_email: new FormControl('', { nonNullable: true, validators: [Validators.email] }),
       contact_phone: new FormControl('', {
@@ -41,7 +40,6 @@ export class MgaForm {
     form.patchValue({
       ...value,
       other_names: [...(value.other_names ?? [])],
-      naics_code: value.naics_code ?? '',
       contact_name: value.contact_name ?? '',
       contact_email: value.contact_email ?? '',
       contact_phone: value.contact_phone ?? '',
@@ -71,7 +69,6 @@ export interface MgaFormModel {
   open_item: FormControl<boolean>;
   op_start_date: FormControl<string>;
   other_names: FormControl<{ state: string; displayName: string }[]>;
-  naics_code: FormControl<string>;
   contact_name: FormControl<string>;
   contact_email: FormControl<string>;
   contact_phone: FormControl<string>;

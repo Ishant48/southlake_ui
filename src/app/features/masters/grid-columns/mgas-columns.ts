@@ -9,7 +9,6 @@ export function buildMgasColumnDefs(ctx: MgasTab, statusCol: ColDef): ColDef[] {
   return [
     { headerName: 'MGA CODE', field: 'mga_code', flex: 1, minWidth: 100, maxWidth: 120 },
     { headerName: 'MGA NAME', field: 'name', flex: 2, minWidth: 150 },
-    { headerName: 'NAICS CODE', field: 'naics_code', flex: 1.2, minWidth: 120 },
     {
       headerName: 'TAX PAYABLE IN-HOUSE',
       field: 'tax_payable_inhouse',

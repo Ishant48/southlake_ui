@@ -45,7 +45,6 @@ export interface MgaMaster {
   open_item?: boolean;
   op_start_date?: string | null;
   other_names?: { state: string; displayName: string }[] | null;
-  naics_code?: string | null;
   contact_name?: string | null;
   contact_email?: string | null;
   contact_phone?: string | null;
