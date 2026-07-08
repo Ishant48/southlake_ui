@@ -42,16 +42,18 @@ export class InvitePanelComponent implements OnChanges {
   });
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes['open'] && !this.open) {
-      this.form.reset({
-        email: '',
-        name: '',
-        role_id: '',
-        user_type: '',
-        department: '',
-        title: '',
-      });
+    if (changes['open'] && !changes['open'].firstChange) {
       this.errorMsg = '';
+      Promise.resolve().then(() => {
+        this.form.patchValue({
+          email: '',
+          name: '',
+          role_id: '',
+          user_type: '',
+          department: '',
+          title: '',
+        });
+      });
     }
   }
 

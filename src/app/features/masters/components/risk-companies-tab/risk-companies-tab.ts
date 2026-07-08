@@ -58,6 +58,7 @@ export class RiskCompaniesTab implements OnInit {
   showModal = false;
   modalTitle = '';
   isEditMode = false;
+  isViewMode = false;
   submitting = false;
   form: RiskCompanyFormValue = createBlankRiskCompanyForm();
 
@@ -125,6 +126,7 @@ export class RiskCompaniesTab implements OnInit {
 
   openRiskCompanyAdd(): void {
     this.isEditMode = false;
+    this.isViewMode = false;
     this.modalTitle = 'Add Risk Company';
     this.form = createBlankRiskCompanyForm();
     this.showModal = true;
@@ -133,6 +135,7 @@ export class RiskCompaniesTab implements OnInit {
 
   openRiskCompanyEdit(rc: RiskCompany): void {
     this.isEditMode = true;
+    this.isViewMode = false;
     this.modalTitle = `Edit Risk Company: ${rc.name}`;
     this.form = mapRiskCompanyToFormValue(rc);
     this.showModal = true;
@@ -190,7 +193,11 @@ export class RiskCompaniesTab implements OnInit {
   }
 
   viewPolicy(rc: RiskCompany): void {
-    this.toast.info(`View Policy clicked for risk company: ${rc.name}`);
+    this.isEditMode = false;
+    this.isViewMode = true;
+    this.modalTitle = `View Risk Company: ${rc.name}`;
+    this.form = mapRiskCompanyToFormValue(rc);
+    this.showModal = true;
   }
 
   openNotesModal(title: string, text: string | null | undefined): void {
