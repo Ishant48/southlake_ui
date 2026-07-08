@@ -75,59 +75,6 @@
   }
 }
 
-/* Common buttons styling */
-.btn-cancel {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  height: 38px;
-  padding: 0 20px;
-  border-radius: var(--radius);
-  border: 1.5px solid var(--gray-300);
-  background: var(--white);
-  color: var(--gray-700);
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all var(--transition);
-  text-decoration: none;
-  white-space: nowrap;
-
-  &:hover {
-    background: var(--gray-50);
-    border-color: var(--gray-400);
-    color: var(--gray-900);
-  }
-}
-
-.btn-save {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  height: 38px;
-  padding: 0 22px;
-  border-radius: var(--radius);
-  background: var(--coral);
-  color: var(--white);
-  border: none;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all var(--transition);
-  white-space: nowrap;
-
-  &:hover:not(:disabled) {
-    background: var(--coral-hover);
-    box-shadow: 0 4px 10px rgba(224, 84, 112, 0.25);
-  }
-
-  &:disabled {
-    background: #e2e8f0;
-    color: #94a3b8;
-    cursor: not-allowed;
-  }
-}
-
 /* Two-Column Grid Setup */
 .role-form-container {
   display: grid;
@@ -141,7 +88,8 @@
 }
 
 /* Card General Styling */
-.details-card, .permissions-card {
+.details-card,
+.permissions-card {
   background: var(--white);
   border-radius: var(--radius-lg);
   border: 1px solid var(--gray-200);
@@ -730,7 +678,9 @@
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* Error Banner styling */
@@ -746,4 +696,3 @@
   padding: 12px 16px;
   margin-top: 16px;
 }
-

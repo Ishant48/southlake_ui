@@ -11,10 +11,11 @@ export function buildProductsColumnDefs(ctx: SimpleMasterTab, statusCol: ColDef)
     {
       headerName: 'LOB',
       valueGetter: p => {
-        const lobs = p.data.lobs;
+        const lobs: { name?: string }[] = p.data.lobs;
         if (Array.isArray(lobs) && lobs.length > 0) {
-          return lobs.map((l: any) => l.name).join(', ');
+          return lobs.map(l => l.name).join(', ');
         }
+        // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- an empty name should also fall back to the placeholder
         return p.data.lob?.name || '-';
       },
       flex: 1.5,
@@ -23,10 +24,11 @@ export function buildProductsColumnDefs(ctx: SimpleMasterTab, statusCol: ColDef)
     {
       headerName: 'COB',
       valueGetter: p => {
-        const cobs = p.data.cobs;
+        const cobs: { name?: string }[] = p.data.cobs;
         if (Array.isArray(cobs) && cobs.length > 0) {
-          return cobs.map((c: any) => c.name).join(', ');
+          return cobs.map(c => c.name).join(', ');
         }
+        // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- an empty name should also fall back to the placeholder
         return p.data.cob?.name || '-';
       },
       flex: 1.5,

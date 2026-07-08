@@ -2,6 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { DocumentsModal } from './documents-modal';
 import { ChartOfAccountDocument } from '../../../../core/models/chart-of-account.model';
+import { describe, beforeEach, it, expect, vi } from 'vitest';
 
 describe('DocumentsModal', () => {
   let component: DocumentsModal;
@@ -62,7 +63,24 @@ describe('DocumentsModal', () => {
     expect(deleteSpy).toHaveBeenCalledWith(doc);
   });
 
-  it('emits fileSelected with the raw change event', () => {
+  it('emits fileSelected with the selected file and document type', () => {
+    component.open = true;
+    component.selectedDocType = 'INVOICE';
+    fixture.detectChanges();
+    const fileSelectedSpy = vi.fn();
+    component.fileSelected.subscribe(fileSelectedSpy);
+
+    const fileInput = (fixture.nativeElement as HTMLElement).querySelector(
+      'input[type="file"]',
+    ) as HTMLInputElement;
+    const file = new File(['content'], 'invoice.pdf', { type: 'application/pdf' });
+    Object.defineProperty(fileInput, 'files', { value: [file] });
+    fileInput.dispatchEvent(new Event('change'));
+
+    expect(fileSelectedSpy).toHaveBeenCalledWith({ file, documentType: 'INVOICE' });
+  });
+
+  it('does not emit fileSelected when no document type is selected', () => {
     component.open = true;
     fixture.detectChanges();
     const fileSelectedSpy = vi.fn();
@@ -71,9 +89,11 @@ describe('DocumentsModal', () => {
     const fileInput = (fixture.nativeElement as HTMLElement).querySelector(
       'input[type="file"]',
     ) as HTMLInputElement;
+    const file = new File(['content'], 'invoice.pdf', { type: 'application/pdf' });
+    Object.defineProperty(fileInput, 'files', { value: [file] });
     fileInput.dispatchEvent(new Event('change'));
 
-    expect(fileSelectedSpy).toHaveBeenCalled();
+    expect(fileSelectedSpy).not.toHaveBeenCalled();
   });
 
   it('emits closed when the close button is clicked', () => {

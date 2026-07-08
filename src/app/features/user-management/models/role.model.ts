@@ -14,7 +14,6 @@ export interface RoleDetail extends Role {
 }
 
 export interface CreateRolePayload {
-  name: string;
   label: string;
   color: string;
   description?: string;

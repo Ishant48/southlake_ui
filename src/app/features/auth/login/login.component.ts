@@ -141,7 +141,7 @@ export class LoginComponent implements OnInit, OnDestroy {
       next: res => {
         this.loading = false;
         this.auth.storeSession(res);
-        this.router.navigate(['/user-management/users']);
+        this.router.navigate(['/dashboard']);
         this.cdr.markForCheck();
       },
       error: err => {

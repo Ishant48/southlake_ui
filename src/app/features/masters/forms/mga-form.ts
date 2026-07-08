@@ -28,7 +28,10 @@ export class MgaForm {
         nonNullable: true,
       }),
       contact_name: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
-      contact_email: new FormControl('', { nonNullable: true, validators: [Validators.required, Validators.email] }),
+      contact_email: new FormControl('', {
+        nonNullable: true,
+        validators: [Validators.required, Validators.email],
+      }),
       contact_phone: new FormControl('', {
         nonNullable: true,
         validators: [Validators.required, Validators.pattern(/^[0-9+()\- ]*$/)],

@@ -17,10 +17,9 @@ interface AuthPermission {
 interface AuthUser {
   name?: string;
   email?: string;
-  role?: string | { name?: string };
+  role?: string | { name?: string; label?: string };
   is_super_admin?: boolean;
-  effective_permissions?: string[];
-  permissions?: (string | AuthPermission)[];
+  permissions?: AuthPermission[];
   [key: string]: unknown;
 }
 
@@ -45,7 +44,7 @@ export class AuthService {
         return res.json();
       })
       .then(ipData => {
-        if (ipData && ipData.ip) {
+        if (ipData?.ip) {
           const ipv4 = ipData.ip;
           // Resolve location for this IPv4
           fetch(`https://ipapi.co/${ipv4}/json/`)
@@ -55,6 +54,7 @@ export class AuthService {
             })
             .then(locData => {
               if (locData) {
+                // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- an empty string from the API should also fall back to the default
                 const locStr = `${locData.city || 'Delhi'}, ${locData.region ? locData.region + ', ' : ''}${locData.country_name || 'India'}`;
                 localStorage.setItem('sl_client_ip', ipv4);
                 localStorage.setItem('sl_client_location', locStr);
@@ -68,11 +68,15 @@ export class AuthService {
         }
       })
       .catch(err => {
-        console.warn('Failed to fetch client IPv4 via ipify, falling back to ipapi.co directly...', err);
+        console.warn(
+          'Failed to fetch client IPv4 via ipify, falling back to ipapi.co directly...',
+          err,
+        );
         fetch('https://ipapi.co/json/')
           .then(res => res.json())
           .then(data => {
-            if (data && data.ip) {
+            if (data?.ip) {
+              // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- an empty string from the API should also fall back to the default
               const locStr = `${data.city || 'Delhi'}, ${data.region ? data.region + ', ' : ''}${data.country_name || 'India'}`;
               localStorage.setItem('sl_client_ip', data.ip);
               localStorage.setItem('sl_client_location', locStr);
@@ -131,62 +135,27 @@ export class AuthService {
     const user = this.getCurrentUser();
     if (!user) return false;
 
-    // Super Admin has full access unconditionally
-    const roleName = typeof user.role === 'string' ? user.role : user.role?.name;
-    if (roleName === 'superadmin' || user.is_super_admin) {
+    // Super Admin has full access unconditionally, driven by the DB-backed flag only
+    if (user.is_super_admin) {
       return true;
     }
 
-    // 1-argument signature: checks user.effective_permissions or user.permissions for a direct action name
+    if (!user.permissions || !Array.isArray(user.permissions)) return false;
+
+    // 1-argument signature: checks user.permissions for a direct action name
     if (!action) {
-      if (user.effective_permissions && Array.isArray(user.effective_permissions)) {
-        return user.effective_permissions.includes(moduleOrPermission);
-      }
-      if (user.permissions && Array.isArray(user.permissions)) {
-        return (
-          user.permissions.includes(moduleOrPermission) ||
-          user.permissions.some(
-            (p: string | AuthPermission) =>
-              typeof p === 'object' && p.action === moduleOrPermission,
-          ) ||
-          user.permissions.some(
-            (p: string | AuthPermission) =>
-              typeof p === 'object' && `${p.module_id}.${p.action}` === moduleOrPermission,
-          )
-        );
-      }
-      return false;
+      return user.permissions.some(
+        (p: AuthPermission) =>
+          p.action === moduleOrPermission || `${p.module_id}.${p.action}` === moduleOrPermission,
+      );
     }
 
     // 2-argument signature: checks user.permissions for module/action pair
-    if (!user.permissions) return false;
-
-    // If permissions is an array of strings
-    if (Array.isArray(user.permissions) && typeof user.permissions[0] === 'string') {
-      return (
-        user.permissions.includes(`${moduleOrPermission}.${action}`) ||
-        user.permissions.includes(action)
-      );
-    }
-
-    // If permissions is an array of objects
-    if (Array.isArray(user.permissions)) {
-      const modulePerm = user.permissions.find(
-        (p: string | AuthPermission) => typeof p === 'object' && p.module_id === moduleOrPermission,
-      );
-      if (modulePerm && typeof modulePerm === 'object') {
-        return !!modulePerm[action];
-      }
-      // If it's flat permissions object array returned by akhil's service
-      return user.permissions.some(
-        (p: string | AuthPermission) =>
-          typeof p === 'object' &&
-          (p.action === `${moduleOrPermission}.${action}` ||
-            (p.module_id === moduleOrPermission && p.action === action)),
-      );
-    }
-
-    return false;
+    return user.permissions.some(
+      (p: AuthPermission) =>
+        p.action === `${moduleOrPermission}.${action}` ||
+        (p.module_id === moduleOrPermission && p.action === action),
+    );
   }
 
   logout(): void {

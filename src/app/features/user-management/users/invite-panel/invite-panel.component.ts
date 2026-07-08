@@ -7,10 +7,21 @@ import {
   OnChanges,
   SimpleChanges,
 } from '@angular/core';
-import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
+import {
+  ReactiveFormsModule,
+  FormBuilder,
+  Validators,
+  AbstractControl,
+  ValidationErrors,
+} from '@angular/forms';
 import { Role } from '../../models/role.model';
 import { UsersApi } from '../../services/users-api';
 import { ToastService } from '../../../../shared/components/toast/toast.service';
+
+function notBlankValidator(control: AbstractControl): ValidationErrors | null {
+  const value = control.value;
+  return typeof value === 'string' && value.trim().length === 0 ? { required: true } : null;
+}
 
 @Component({
   selector: 'app-invite-panel',
@@ -34,7 +45,7 @@ export class InvitePanelComponent implements OnChanges {
 
   form = this.fb.group({
     email: ['', [Validators.required, Validators.email]],
-    name: ['', Validators.required],
+    name: ['', [Validators.required, notBlankValidator]],
     role_id: ['', Validators.required],
     user_type: ['', Validators.required],
     department: [''],

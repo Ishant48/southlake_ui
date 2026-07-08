@@ -5,6 +5,7 @@ import { RiskCompaniesTab } from './risk-companies-tab';
 import { ToastService } from '../../../../shared/components/toast/toast.service';
 import { RiskCompany } from '../../models/master.model';
 import { environment } from '../../../../../environments/environment';
+import { describe, beforeEach, afterEach, it, expect, vi } from 'vitest';
 
 describe('RiskCompaniesTab', () => {
   let component: RiskCompaniesTab;
@@ -98,11 +99,12 @@ describe('RiskCompaniesTab', () => {
     expect(component.confirmMessage).toContain('Acme Risk Co');
   });
 
-  it('shows a toast when viewing a policy', () => {
-    const toast = TestBed.inject(ToastService);
-    const infoSpy = vi.spyOn(toast, 'info');
+  it('opens the view modal when viewing a policy', () => {
     component.viewPolicy(sample);
-    expect(infoSpy).toHaveBeenCalledWith('View Policy clicked for risk company: Acme Risk Co');
+    expect(component.isViewMode).toBe(true);
+    expect(component.isEditMode).toBe(false);
+    expect(component.showModal).toBe(true);
+    expect(component.modalTitle).toContain('Acme Risk Co');
   });
 
   it('opens the document drawer and loads documents for the selected item', () => {

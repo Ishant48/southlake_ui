@@ -16,8 +16,8 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const isPublicAuth = publicAuthPaths.some(p => req.url.includes(p));
   let cloned = req;
   const token = auth.getToken();
-  const clientIp = localStorage.getItem('sl_client_ip') || '';
-  const clientLocation = localStorage.getItem('sl_client_location') || '';
+  const clientIp = localStorage.getItem('sl_client_ip') ?? '';
+  const clientLocation = localStorage.getItem('sl_client_location') ?? '';
 
   const headers: Record<string, string> = {};
 

@@ -64,7 +64,7 @@ export const routes: Routes = [
         canActivate: [permissionGuard('master_data')],
         loadChildren: () => import('./features/masters/masters.routes').then(m => m.mastersRoutes),
       },
-      { path: '', redirectTo: 'user-management/users', pathMatch: 'full' },
+      { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
     ],
   },
   { path: '**', redirectTo: 'auth/login' },

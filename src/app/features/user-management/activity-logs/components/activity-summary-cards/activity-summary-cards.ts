@@ -1,5 +1,14 @@
 import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
 
+interface ActivitySummaryCard {
+  title: string;
+  value: string;
+  subtitle: string;
+  icon: string;
+  color: string;
+  bg: string;
+}
+
 @Component({
   selector: 'app-activity-summary-cards',
   standalone: true,
@@ -15,7 +24,7 @@ export class ActivitySummaryCardsComponent implements OnChanges {
     active_users: number;
   } | null = null;
 
-  cards: any[] = [];
+  cards: ActivitySummaryCard[] = [];
 
   constructor() {
     this.updateCards();
@@ -28,7 +37,7 @@ export class ActivitySummaryCardsComponent implements OnChanges {
   }
 
   private updateCards(): void {
-    const stats = this.stats || {
+    const stats = this.stats ?? {
       total: 0,
       successful: 0,
       failed: 0,

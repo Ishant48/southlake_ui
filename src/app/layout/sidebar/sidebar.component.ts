@@ -43,18 +43,9 @@ export class SidebarComponent implements OnInit {
     if (!user) return 'User';
     const roleObj = user.role;
     if (typeof roleObj === 'string') {
-      return roleObj === 'superadmin'
-        ? 'Super Administrator'
-        : roleObj === 'admin'
-          ? 'Administrator'
-          : roleObj;
+      return roleObj;
     }
-    const roleName = roleObj?.name ?? 'User';
-    return roleName === 'superadmin'
-      ? 'Super Administrator'
-      : roleName === 'admin'
-        ? 'Administrator'
-        : roleName;
+    return roleObj?.label ?? roleObj?.name ?? 'User';
   }
 
   get initials(): string {

@@ -14,7 +14,7 @@ import { ReinsuranceApi } from '../../../reinsurance-calculations/services/reins
 import { ToastService } from '../../../../shared/components/toast/toast.service';
 import { HttpErrorLike } from '../../../../core/models/http-error.model';
 import { Treaty } from '../../models/master.model';
-import { ItdFormValue } from '../../models/itd.model';
+import { ItdFormValue, ItdStateOption } from '../../models/itd.model';
 import {
   buildItdStatesList,
   buildBlankExhibits,
@@ -44,7 +44,7 @@ export class TreatyUploadsPanel {
   selectedTreatyForItd: Treaty | null = null;
   selectedTreatyForUpload: Treaty | null = null;
   itdForm: ItdFormValue = { program: '', month_key: '', month_label: '', exhibits: {} };
-  itdStatesList: any[] = [];
+  itdStatesList: ItdStateOption[] = [];
   itdSelectedMonth = '12';
   itdSelectedYear = '2025';
   readonly monthsList = ITD_MONTHS_LIST;

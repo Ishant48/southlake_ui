@@ -107,7 +107,6 @@ export class RolePermissionsModalComponent implements OnChanges {
   errorMsg = '';
 
   form = this.fb.group({
-    name: ['', Validators.required],
     label: ['', Validators.required],
     color: ['#e05470'],
     description: [''],
@@ -128,14 +127,13 @@ export class RolePermissionsModalComponent implements OnChanges {
 
         if (this.role) {
           this.form.patchValue({
-            name: this.role.name,
             label: this.role.label,
             color: this.role.color,
             description: this.role.description ?? '',
           });
           this.selectedIds = new Set(this.role.permissions.map(p => p.id));
         } else {
-          this.form.reset({ name: '', label: '', color: '#e05470', description: '' });
+          this.form.reset({ label: '', color: '#e05470', description: '' });
           this.selectedIds = new Set();
         }
 
@@ -175,7 +173,6 @@ export class RolePermissionsModalComponent implements OnChanges {
 
     const val = this.form.value;
     const payload: CreateRolePayload = {
-      name: val.name as string,
       label: val.label as string,
       color: val.color as string,
       description: val.description ?? undefined,

@@ -143,6 +143,7 @@ export class ActivityLogsComponent implements OnInit {
       {
         headerName: 'ENTITY',
         field: 'entity_type',
+        // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- an empty string should also fall back to the placeholder
         valueFormatter: params => params.value || '-',
         flex: 1,
         minWidth: 150,
@@ -150,6 +151,7 @@ export class ActivityLogsComponent implements OnInit {
       {
         headerName: 'DESCRIPTION',
         field: 'description',
+        // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- an empty string should also fall back to the placeholder
         valueFormatter: params => params.value || '-',
         flex: 2,
         minWidth: 200,
@@ -157,6 +159,7 @@ export class ActivityLogsComponent implements OnInit {
       {
         headerName: 'IP ADDRESS',
         field: 'ip_address',
+        // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- an empty string should also fall back to the placeholder
         valueFormatter: params => params.value || '-',
         cellClass: 'text-mono',
         flex: 1,
@@ -165,6 +168,7 @@ export class ActivityLogsComponent implements OnInit {
       {
         headerName: 'DEVICE / BROWSER',
         field: 'device',
+        // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- an empty string should also fall back to the placeholder
         valueGetter: params => `${params.data?.device || '-'} / ${params.data?.browser || '-'}`,
         flex: 1,
         minWidth: 180,
@@ -172,6 +176,7 @@ export class ActivityLogsComponent implements OnInit {
       {
         headerName: 'LOCATION',
         field: 'location',
+        // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- an empty string should also fall back to the placeholder
         valueFormatter: params => params.value || '-',
         flex: 1,
         minWidth: 150,
@@ -210,10 +215,15 @@ export class ActivityLogsComponent implements OnInit {
     this.logsService
       .getLogs({
         ...this.filter,
+        // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- an empty string filter value should also be omitted
         search: this.filter.search || undefined,
+        // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- an empty string filter value should also be omitted
         action: this.filter.action || undefined,
+        // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- an empty string filter value should also be omitted
         module_id: this.filter.module_id || undefined,
+        // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- an empty string filter value should also be omitted
         date_from: this.filter.date_from || undefined,
+        // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- an empty string filter value should also be omitted
         date_to: this.filter.date_to || undefined,
       })
       .subscribe({
@@ -244,7 +254,7 @@ export class ActivityLogsComponent implements OnInit {
     const ips = ['192.168.10.10', '192.168.10.24', '192.168.10.31', '103.48.211.102'];
 
     const random = (arr: string[]) => arr[Math.floor(Math.random() * arr.length)];
-    const isValValid = (val: any) => val && val !== '-' && val !== 'unknown';
+    const isValValid = (val: string | undefined) => val && val !== '-' && val !== 'unknown';
 
     // Weighted status logic
     const isError = log.action === 'delete' || Math.random() > 0.8;
@@ -258,9 +268,13 @@ export class ActivityLogsComponent implements OnInit {
       browser: isValValid(log.browser) ? log.browser : random(browsers),
       location: isValValid(log.location) ? log.location : random(locations),
       os: isValValid(log.os) ? log.os : random(osList),
-      session_id: isValValid(log.session_id) ? log.session_id : 'SES-' + Math.floor(10000 + Math.random() * 90000),
-      correlation_id: isValValid(log.correlation_id) ? log.correlation_id : 'COR-' + Math.floor(10000 + Math.random() * 90000) + '-T',
-      field_changes: log.field_changes || undefined,
+      session_id: isValValid(log.session_id)
+        ? log.session_id
+        : 'SES-' + Math.floor(10000 + Math.random() * 90000),
+      correlation_id: isValValid(log.correlation_id)
+        ? log.correlation_id
+        : 'COR-' + Math.floor(10000 + Math.random() * 90000) + '-T',
+      field_changes: log.field_changes ?? undefined,
     };
   }
 
@@ -280,10 +294,15 @@ export class ActivityLogsComponent implements OnInit {
   exportLogs(): void {
     this.logsService
       .exportLogs({
+        // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- an empty string filter value should also be omitted
         search: this.filter.search || undefined,
+        // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- an empty string filter value should also be omitted
         action: this.filter.action || undefined,
+        // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- an empty string filter value should also be omitted
         module_id: this.filter.module_id || undefined,
+        // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- an empty string filter value should also be omitted
         date_from: this.filter.date_from || undefined,
+        // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- an empty string filter value should also be omitted
         date_to: this.filter.date_to || undefined,
       })
       .subscribe({
@@ -328,7 +347,7 @@ export class ActivityLogsComponent implements OnInit {
       masters_config: 'Masters Configuration',
       database_seeder: 'Database Seeder',
     };
-    return MAP[moduleId] ?? (this.modules.find(m => m.id === moduleId)?.label ?? moduleId);
+    return MAP[moduleId] ?? this.modules.find(m => m.id === moduleId)?.label ?? moduleId;
   }
 
   formatDate(dateStr: string): string {

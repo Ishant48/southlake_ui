@@ -23,8 +23,8 @@ export interface SimpleFormValue {
   contact_name?: string;
   contact_email?: string;
   contact_phone?: string;
-  lob_id?: any;
-  cob_id?: any;
+  lob_id?: string | string[];
+  cob_id?: string | string[];
   prefix?: string;
   next_value?: number;
   padding_width?: number;
