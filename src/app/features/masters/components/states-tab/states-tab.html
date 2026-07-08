@@ -80,8 +80,9 @@
   [title]="modalTitle"
   [model]="form"
   [isEditMode]="isEditMode"
+  [isViewMode]="isViewMode"
   [submitting]="submitting"
-  (closed)="showModal = false"
+  (closed)="showModal = false; isViewMode = false"
   (save)="submitState($event)"
 ></app-state-form-modal>
 

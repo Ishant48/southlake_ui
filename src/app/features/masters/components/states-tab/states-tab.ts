@@ -49,6 +49,7 @@ export class StatesTab implements OnInit {
   showModal = false;
   modalTitle = '';
   isEditMode = false;
+  isViewMode = false;
   submitting = false;
   form: StateFormValue = createBlankStateForm();
 
@@ -115,14 +116,31 @@ export class StatesTab implements OnInit {
   // ==========================================
   openStateAdd(): void {
     this.isEditMode = false;
+    this.isViewMode = false;
     this.modalTitle = 'Add State';
     this.form = createBlankStateForm();
     this.showModal = true;
     this.cdr.detectChanges();
   }
 
+  openStateView(state: StateMaster): void {
+    this.isEditMode = false;
+    this.isViewMode = true;
+    this.modalTitle = `View State: ${state.name}`;
+    this.form = {
+      id: state.id,
+      state_code: state.state_code,
+      state_abbr: state.state_abbr,
+      name: state.name,
+      notes: state.notes ?? '',
+      is_active: state.is_active,
+    };
+    this.showModal = true;
+  }
+
   openStateEdit(state: StateMaster): void {
     this.isEditMode = true;
+    this.isViewMode = false;
     this.modalTitle = `Edit State: ${state.name}`;
     this.form = {
       id: state.id,
@@ -157,6 +175,7 @@ export class StatesTab implements OnInit {
       next: () => {
         this.toast.success('State saved successfully');
         this.showModal = false;
+        this.isViewMode = false;
         this.submitting = false;
         this.load();
       },

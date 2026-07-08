@@ -32,6 +32,7 @@ export class SimpleFormModal implements OnChanges {
   @Input() mode: SimpleMode = SimpleMode.Lob;
   @Input() model: SimpleFormValue = createBlankSimpleForm();
   @Input() isEditMode = false;
+  @Input() isViewMode = false;
   @Input() submitting = false;
   @Input() lobOptions: LineOfBusiness[] = [];
   @Input() cobOptions: CobMaster[] = [];
@@ -60,6 +61,16 @@ export class SimpleFormModal implements OnChanges {
         this.form.controls.code.enable();
       }
       this.form.controls.name.enable();
+    }
+    if (changes['isViewMode']) {
+      if (this.isViewMode) {
+        this.form.disable();
+      } else {
+        this.form.enable();
+        if (this.isEditMode) {
+          this.form.controls.code.disable();
+        }
+      }
     }
   }
 

@@ -42,17 +42,19 @@ export function buildLobsColumnDefs(ctx: SimpleMasterTab, statusCol: ColDef): Co
       cellRendererParams: {
         buttons: [
           { label: 'Edit', action: 'edit' },
+          { label: 'View LOB', action: 'view' },
           { label: 'Delete', action: 'delete', danger: true },
         ],
         onClick: (action: string, data: LineOfBusiness) => {
           if (action === 'edit') ctx.openSimpleEdit(SimpleMode.Lob, data);
+          if (action === 'view') ctx.openSimpleView(SimpleMode.Lob, data);
           if (action === 'delete') ctx.deleteSimple(SimpleMode.Lob, data);
         },
       },
       flex: 0,
-      width: 160,
-      minWidth: 160,
-      maxWidth: 160,
+      width: 200,
+      minWidth: 200,
+      maxWidth: 200,
     },
   ];
 }

@@ -16,17 +16,19 @@ export function buildDocumentTypesColumnDefs(ctx: SimpleMasterTab, statusCol: Co
       cellRendererParams: {
         buttons: [
           { label: 'Edit', action: 'edit' },
+          { label: 'View Document Type', action: 'view' },
           { label: 'Delete', action: 'delete', danger: true },
         ],
         onClick: (action: string, data: DocumentType) => {
           if (action === 'edit') ctx.openSimpleEdit(SimpleMode.DocumentType, data);
+          if (action === 'view') ctx.openSimpleView(SimpleMode.DocumentType, data);
           if (action === 'delete') ctx.deleteSimple(SimpleMode.DocumentType, data);
         },
       },
       flex: 0,
-      width: 160,
-      minWidth: 160,
-      maxWidth: 160,
+      width: 200,
+      minWidth: 200,
+      maxWidth: 200,
     },
   ];
 }

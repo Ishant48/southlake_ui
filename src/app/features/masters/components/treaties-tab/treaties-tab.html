@@ -87,6 +87,7 @@
   [title]="treatyModalTitle"
   [model]="treatyForm.form"
   [isEditMode]="isEditMode"
+  [isViewMode]="isViewMode"
   [submitting]="submitting"
   [selectedStates]="treatyForm.selectedStates"
   [selectedLobs]="treatyForm.selectedLobs"
@@ -106,7 +107,7 @@
   [mgaLabelFn]="mgaLabelFn"
   [lobLabelFn]="lobLabelFn"
   [cobLabelFn]="cobLabelFn"
-  (closed)="showTreatyModal = false"
+  (closed)="onModalClosed()"
   (save)="submitTreaty($event)"
 ></app-treaty-form-modal>
 

@@ -79,6 +79,7 @@ export class TreatiesTab implements OnInit {
   showTreatyModal = false;
   treatyModalTitle = '';
   isEditMode = false;
+  isViewMode = false;
   submitting = false;
   treatyForm: TreatyEditState = buildBlankTreatyForm();
 
@@ -142,8 +143,18 @@ export class TreatiesTab implements OnInit {
     downloadCsv(headers, rows, filename);
   }
 
+  openTreatyView(treaty: Treaty): void {
+    this.isEditMode = false;
+    this.isViewMode = true;
+    this.treatyModalTitle = `View Treaty: ${treaty.treaty_code}`;
+    this.treatyOptionsState.loadAll().subscribe(() => this.cdr.markForCheck());
+    this.treatyForm = buildTreatyEditState(treaty);
+    this.showTreatyModal = true;
+  }
+
   openTreatyAdd(mgaId?: string): void {
     this.isEditMode = false;
+    this.isViewMode = false;
     this.treatyModalTitle = 'Create Treaty';
     this.treatyOptionsState.loadAll().subscribe(() => this.cdr.markForCheck());
     this.treatyForm = buildBlankTreatyForm(mgaId);
@@ -152,10 +163,16 @@ export class TreatiesTab implements OnInit {
 
   openTreatyEdit(treaty: Treaty): void {
     this.isEditMode = true;
+    this.isViewMode = false;
     this.treatyModalTitle = `Edit Treaty: ${treaty.treaty_code}`;
     this.treatyOptionsState.loadAll().subscribe(() => this.cdr.markForCheck());
     this.treatyForm = buildTreatyEditState(treaty);
     this.showTreatyModal = true;
+  }
+
+  protected onModalClosed(): void {
+    this.showTreatyModal = false;
+    this.isViewMode = false;
   }
 
   submitTreaty(event: TreatySaveEvent): void {
@@ -184,6 +201,7 @@ export class TreatiesTab implements OnInit {
       next: () => {
         this.toast.success('Treaty saved successfully');
         this.showTreatyModal = false;
+        this.isViewMode = false;
         this.submitting = false;
         this.load();
       },

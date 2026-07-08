@@ -73,12 +73,14 @@
   [open]="showModal"
   [title]="modalTitle"
   [model]="form"
+  [isEditMode]="isEditMode"
+  [isViewMode]="isViewMode"
   [submitting]="submitting"
   [coaOptions]="glMappingsState.coaOptions"
   [typeOptions]="glMappingTypeOptionsList"
   [coaLabelFn]="coaLabelFn"
   [nameLabelFn]="nameLabelFn"
-  (closed)="showModal = false"
+  (closed)="showModal = false; isViewMode = false"
   (save)="submitGlMapping($event)"
 ></app-gl-mapping-form-modal>
 

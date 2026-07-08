@@ -26,12 +26,14 @@ export function buildMgasColumnDefs(ctx: MgasTab, statusCol: ColDef): ColDef[] {
           { label: 'Add Treaties', action: 'addTreaty' },
           { label: 'Document', action: 'doc' },
           { label: 'Edit', action: 'edit' },
+          { label: 'View MGA', action: 'view' },
           { label: 'Delete', action: 'delete', danger: true },
         ],
         onClick: (action: string, data: MgaMaster) => {
           if (action === 'addTreaty') ctx.openTreatyAdd(data.id);
           if (action === 'doc') ctx.openDocModal(DocumentMode.Mga, data);
           if (action === 'edit') ctx.openMgaEdit(data);
+          if (action === 'view') ctx.openMgaView(data);
           if (action === 'delete') ctx.deleteMga(data);
         },
       },
