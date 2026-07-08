@@ -3,6 +3,7 @@ import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { environment } from '../../../../environments/environment';
 import { UsersApi } from './users-api';
+import { describe, beforeEach, afterEach, it, expect } from 'vitest';
 
 describe('UsersApi', () => {
   let api: UsersApi;
@@ -44,6 +45,13 @@ describe('UsersApi', () => {
     const req = httpMock.expectOne(`${base}/u-1/deactivate`);
     expect(req.request.method).toBe('POST');
     req.flush({ message: 'ok' });
+  });
+
+  it('sends a password reset for a user', () => {
+    api.resetPassword('u-1').subscribe();
+    const req = httpMock.expectOne(`${base}/u-1/reset-password`);
+    expect(req.request.method).toBe('POST');
+    req.flush({ message: 'Password reset email sent to the user.' });
   });
 
   it('deactivates users in bulk', () => {

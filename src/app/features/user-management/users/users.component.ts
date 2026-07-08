@@ -10,7 +10,10 @@ import { ToastService } from '../../../shared/components/toast/toast.service';
 import { UsersTableComponent } from './users-table/users-table.component';
 import { InvitePanelComponent } from './invite-panel/invite-panel.component';
 import { UserDetailPanelComponent } from './user-detail-panel/user-detail-panel.component';
-import { ConfirmDialogComponent } from '../../../shared/components/confirm-dialog/confirm-dialog.component';
+import {
+  ConfirmDialogComponent,
+  ConfirmDialogType,
+} from '../../../shared/components/confirm-dialog/confirm-dialog.component';
 
 @Component({
   selector: 'app-users',
@@ -68,6 +71,8 @@ export class UsersComponent implements OnInit {
   confirmOpen = false;
   confirmTitle = '';
   confirmMessage = '';
+  confirmLabel = 'Confirm';
+  confirmType: ConfirmDialogType = ConfirmDialogType.Danger;
   pendingAction: (() => void) | null = null;
 
   viewDropdownOpen = false;
@@ -185,6 +190,8 @@ export class UsersComponent implements OnInit {
   onDeactivateUser(user: User): void {
     this.confirmTitle = 'Deactivate User';
     this.confirmMessage = `Are you sure you want to deactivate ${user.name}? They will lose access immediately.`;
+    this.confirmLabel = 'Deactivate';
+    this.confirmType = ConfirmDialogType.Danger;
     this.pendingAction = () => {
       this.usersService.deactivateUser(user.id).subscribe({
         next: () => {
@@ -194,6 +201,24 @@ export class UsersComponent implements OnInit {
         },
         error: err => {
           this.toast.error(err?.error?.message ?? 'Failed to deactivate user');
+        },
+      });
+    };
+    this.confirmOpen = true;
+  }
+
+  onResetPasswordUser(user: User): void {
+    this.confirmTitle = 'Reset Password';
+    this.confirmMessage = `This will email ${user.name} a link to set a new password. Continue?`;
+    this.confirmLabel = 'Send Email';
+    this.confirmType = ConfirmDialogType.Warning;
+    this.pendingAction = () => {
+      this.usersService.resetPassword(user.id).subscribe({
+        next: res => {
+          this.toast.success(res.message ?? 'Password reset email sent.');
+        },
+        error: err => {
+          this.toast.error(err?.error?.message ?? 'Failed to send password reset email');
         },
       });
     };
@@ -211,6 +236,8 @@ export class UsersComponent implements OnInit {
   openBulkDeactivate(): void {
     this.confirmTitle = 'Deactivate Selected Users';
     this.confirmMessage = `Deactivate ${this.selectedIds.length} selected user(s)? They will lose access immediately.`;
+    this.confirmLabel = 'Deactivate';
+    this.confirmType = ConfirmDialogType.Danger;
     this.pendingAction = () => {
       this.usersService.deactivateBulk(this.selectedIds).subscribe({
         next: res => {
