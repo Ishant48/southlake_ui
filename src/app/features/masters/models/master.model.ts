@@ -209,6 +209,8 @@ export interface TreatyReinsurer {
   reinsurer?: ReinsurerCompany;
   cession_pct: number;
   state_id?: string | null;
+  state_ids?: string[] | null;
+  state?: StateMaster | null;
   broker_id?: string | null;
   broker_comm_type?: string | null;
 }

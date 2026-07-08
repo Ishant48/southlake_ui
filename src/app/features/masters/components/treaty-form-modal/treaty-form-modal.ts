@@ -210,10 +210,11 @@ export class TreatyFormModal implements OnChanges {
     this.form.controls.reinsurers.setValue(updated);
   }
 
-  updateReinsurerStateId(index: number, value: unknown): void {
+  updateReinsurerStateIds(index: number, value: unknown): void {
     const rows = this.form.controls.reinsurers.value;
+    const stateIds = Array.isArray(value) ? value : (value == null ? [] : [String(value)]);
     const updated = rows.map((row, i) =>
-      i === index ? { ...row, state_id: value == null ? null : String(value) } : row,
+      i === index ? { ...row, state_ids: stateIds } : row,
     );
     this.form.controls.reinsurers.setValue(updated);
   }
@@ -300,7 +301,7 @@ export class TreatyFormModal implements OnChanges {
     const rows = this.form.controls.reinsurers.value;
     if (rows.length === 0) {
       this.form.controls.reinsurers.setValue([
-        { reinsurer_id: '', cession_pct: 100, state_id: null, broker_id: null, broker_comm_type: null },
+        { reinsurer_id: '', cession_pct: 100, state_id: null, state_ids: [], broker_id: null, broker_comm_type: null },
       ]);
       return;
     }
@@ -314,6 +315,7 @@ export class TreatyFormModal implements OnChanges {
         reinsurer_id: '',
         cession_pct: Number(remaining.toFixed(2)),
         state_id: null,
+        state_ids: [],
         broker_id: null,
         broker_comm_type: null,
       },

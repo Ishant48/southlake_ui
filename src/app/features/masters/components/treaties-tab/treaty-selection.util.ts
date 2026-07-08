@@ -70,6 +70,7 @@ export function buildTreatyEditState(treaty: Treaty): TreatyEditState {
       reinsurer_id: tr.reinsurer_id,
       cession_pct: tr.cession_pct,
       state_id: tr.state_id ?? null,
+      state_ids: tr.state_ids ?? (tr.state_id ? [tr.state_id] : []),
       broker_id: tr.broker_id ?? null,
       broker_comm_type: tr.broker_comm_type ?? null,
     }));
@@ -79,6 +80,7 @@ export function buildTreatyEditState(treaty: Treaty): TreatyEditState {
         reinsurer_id: treaty.reinsurer_id,
         cession_pct: treaty.reinsurer_cession_pct ?? 100,
         state_id: null,
+        state_ids: [],
         broker_id: null,
         broker_comm_type: null,
       },
@@ -151,7 +153,8 @@ export function buildTreatyPayload(
     .map(r => ({
       reinsurer_id: r.reinsurer_id,
       cession_pct: r.cession_pct,
-      state_id: r.state_id ?? null,
+      state_id: r.state_ids && r.state_ids.length > 0 ? r.state_ids[0] : null,
+      state_ids: r.state_ids || [],
       broker_id: r.broker_id ?? null,
       broker_comm_type: r.broker_comm_type ?? null,
     }));

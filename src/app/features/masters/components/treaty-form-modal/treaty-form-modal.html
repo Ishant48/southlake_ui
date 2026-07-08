@@ -100,26 +100,12 @@
               }
               <app-dropdown-search
                 [items]="stateOptions"
-                [isMultiSelect]="false"
+                [isMultiSelect]="true"
                 bindValue="id"
                 placeholder="All States"
                 [itemLabelFn]="stateLabelFn"
-                [selectedValue]="reinsurer.state_id"
-                (selectedValueChange)="updateReinsurerStateId(i, $event)"
-              ></app-dropdown-search>
-            </div>
-            <div class="form-field flex-1-5">
-              @if (i === 0) {
-                <label for="tr-reinsurer-broker-{{ i }}" class="form-label">Broker (Opt)</label>
-              }
-              <app-dropdown-search
-                [items]="brokerOptions"
-                [isMultiSelect]="false"
-                bindValue="id"
-                placeholder="None"
-                [itemLabelFn]="brokerLabelFn"
-                [selectedValue]="reinsurer.broker_id"
-                (selectedValueChange)="updateReinsurerBrokerId(i, $event)"
+                [selectedValue]="reinsurer.state_ids"
+                (selectedValueChange)="updateReinsurerStateIds(i, $event)"
               ></app-dropdown-search>
             </div>
             <div class="form-field flex-1-2">
@@ -136,6 +122,20 @@
                 <option value="flat">Flat</option>
                 <option value="percentage">Percentage</option>
               </select>
+            </div>
+            <div class="form-field flex-1-5">
+              @if (i === 0) {
+                <label for="tr-reinsurer-broker-{{ i }}" class="form-label">Broker (Opt)</label>
+              }
+              <app-dropdown-search
+                [items]="brokerOptions"
+                [isMultiSelect]="false"
+                bindValue="id"
+                placeholder="None"
+                [itemLabelFn]="brokerLabelFn"
+                [selectedValue]="reinsurer.broker_id"
+                (selectedValueChange)="updateReinsurerBrokerId(i, $event)"
+              ></app-dropdown-search>
             </div>
             <div class="form-field flex-1">
               @if (i === 0) {
