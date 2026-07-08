@@ -187,4 +187,23 @@ export class AuthService {
   fetchCurrentUser(): Observable<AuthUser> {
     return this.http.get<AuthUser>(`${environment.apiUrl}/auth/me`);
   }
+
+  requestPasswordReset(email: string): Observable<{ message: string }> {
+    return this.http.post<{ message: string }>(`${environment.apiUrl}/auth/forgot-password`, {
+      email,
+    });
+  }
+
+  validateResetToken(token: string): Observable<{ valid: boolean }> {
+    return this.http.get<{ valid: boolean }>(`${environment.apiUrl}/auth/reset-password/validate`, {
+      params: { token },
+    });
+  }
+
+  resetPassword(token: string, password: string): Observable<{ message: string }> {
+    return this.http.post<{ message: string }>(`${environment.apiUrl}/auth/reset-password`, {
+      token,
+      password,
+    });
+  }
 }
