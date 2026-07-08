@@ -140,7 +140,6 @@
         [gridOptions]="gridOptions"
         [rowData]="filteredSubCoas"
         [columnDefs]="columnDefs"
-        (gridReady)="onGridReady($event)"
       ></ag-grid-angular>
     }
   </div>
@@ -173,6 +172,7 @@
     [subtitle]="selectedAccount ? selectedAccount.account_code + ' - ' + selectedAccount.description : ''"
     [documents]="documents"
     [uploadingDoc]="uploadingDoc"
+    [documentTypesOptions]="documentTypesOptions"
     (closed)="closeDocModal()"
     (fileSelected)="onFileSelected($event)"
     (download)="downloadDoc($event)"

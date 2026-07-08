@@ -233,7 +233,7 @@
   height: 40px;
   padding: 0 18px;
   border-radius: var(--radius);
-  background: var(--coral);
+  background: var(--navy);
   border: none;
   color: #fff;
   font-size: 14px;
@@ -245,7 +245,7 @@
   white-space: nowrap;
 
   &:hover:not(:disabled) {
-    background: var(--coral-hover);
+    background: var(--navy-hover);
   }
 
   &:disabled {
@@ -382,7 +382,8 @@
   }
 }
 
-.form-checkbox-field {
+.form-checkbox-field,
+.form-radio-field {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -390,7 +391,8 @@
   font-weight: 500;
   color: var(--gray-700);
 
-  input[type="checkbox"] {
+  input[type="checkbox"],
+  input[type="radio"] {
     width: 16px;
     height: 16px;
     cursor: pointer;

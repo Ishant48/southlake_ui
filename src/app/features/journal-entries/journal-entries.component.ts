@@ -72,13 +72,12 @@ export class JournalEntriesComponent implements OnInit {
       cellRenderer: ActionButtonsCell,
       cellRendererParams: {
         buttons: (_data: JournalEntryBatch) => [
-          { label: 'Edit', action: 'edit' },
           { label: 'Journal Entry', action: 'je' },
           { label: 'Print Register', action: 'print' },
           { label: 'Delete', action: 'delete', danger: true },
         ],
         onClick: (action: string, data: JournalEntryBatch) => {
-          if (action === 'edit' || action === 'je') this.viewBatchDetails(data);
+          if (action === 'je') this.viewBatchDetails(data);
           if (action === 'delete') {
             // Because deleteBatch expects a mouse event to stop propagation, we simulate or bypass it
             this.confirm(
@@ -151,9 +150,17 @@ export class JournalEntriesComponent implements OnInit {
       headerName: 'ACTIONS',
       cellRenderer: ActionButtonsCell,
       cellRendererParams: {
-        buttons: () => [{ label: 'Edit', action: 'edit' }],
+        buttons: () => {
+          const isManualBatch = /^\d+$/.test(this.selectedBatch?.batch_number ?? '');
+          return [{ label: 'Edit', action: 'edit', disabled: !isManualBatch }];
+        },
         onClick: (action: string, data: JournalEntry) => {
-          if (action === 'edit') this.editJournalEntry(data);
+          if (action === 'edit') {
+            const isManualBatch = /^\d+$/.test(this.selectedBatch?.batch_number ?? '');
+            if (isManualBatch) {
+              this.editJournalEntry(data);
+            }
+          }
         },
       },
       flex: 0,

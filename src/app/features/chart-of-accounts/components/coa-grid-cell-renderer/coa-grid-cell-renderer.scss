@@ -122,14 +122,14 @@
 }
 
 .view-link {
-  color: var(--coral);
+  color: var(--navy);
   font-weight: 600;
   font-size: 13px;
   cursor: pointer;
   transition: color var(--transition);
 
   &:hover {
-    color: var(--coral-hover);
+    color: var(--navy-hover);
     text-decoration: underline;
   }
 }

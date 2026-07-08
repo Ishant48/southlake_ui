@@ -5,6 +5,7 @@
       [class.btn-action-danger-outline]="btn.danger"
       [class.btn-icon-only]="isIconOnly(btn.action)"
       [title]="btn.label"
+      [disabled]="btn.disabled"
       (click)="onClick(btn.action, $event)"
     >
       @if (btn.action === "uploadExcel") {

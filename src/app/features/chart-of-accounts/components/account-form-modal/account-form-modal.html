@@ -104,32 +104,33 @@
           <div class="form-field">
             <div class="form-label">Account Type</div>
             <div class="account-type-options">
-              <div class="form-checkbox-field">
+              <div class="form-radio-field">
                 <input
-                  type="checkbox"
+                  type="radio"
                   id="typeActual"
+                  name="accountType"
                   [checked]="!formValue.is_parent"
                   (change)="setAccountType(false)"
                   [disabled]="isViewMode"
                 />
-                <label for="typeActual" class="checkbox-label">Actual Account</label>
+                <label for="typeActual" class="radio-label">Actual Account</label>
               </div>
-              <div class="form-checkbox-field">
+              <div class="form-radio-field">
                 <input
-                  type="checkbox"
+                  type="radio"
                   id="typeSummary"
+                  name="accountType"
                   [checked]="formValue.is_parent"
                   (change)="setAccountType(true)"
                   [disabled]="isViewMode"
                 />
-                <label for="typeSummary" class="checkbox-label">Summary Account</label>
+                <label for="typeSummary" class="radio-label">Summary Account</label>
               </div>
             </div>
           </div>
 
-          <div class="form-field active-status-field">
-            <div class="form-label active-status-label">Active Status</div>
-            <label class="switch">
+          <div class="form-field" style="justify-content: flex-end; padding-bottom: 8px">
+            <div class="form-checkbox-field">
               <input
                 [(ngModel)]="formValue.is_active"
                 name="isActive"
@@ -137,8 +138,8 @@
                 id="isActive"
                 [disabled]="isViewMode"
               />
-              <span class="slider round"></span>
-            </label>
+              <label for="isActive" class="checkbox-label">Active Status</label>
+            </div>
           </div>
         </div>
 

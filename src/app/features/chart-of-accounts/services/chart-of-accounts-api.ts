@@ -37,9 +37,14 @@ export class ChartOfAccountsApi {
     return this.http.delete<void>(`${this.base}/${id}`);
   }
 
-  uploadDocument(coaId: string, file: File): Observable<ChartOfAccountDocument> {
+  uploadDocument(
+    coaId: string,
+    file: File,
+    documentType: string,
+  ): Observable<ChartOfAccountDocument> {
     const formData = new FormData();
     formData.append('file', file);
+    formData.append('document_type', documentType);
     return this.http.post<ChartOfAccountDocument>(`${this.base}/${coaId}/documents`, formData);
   }
 
