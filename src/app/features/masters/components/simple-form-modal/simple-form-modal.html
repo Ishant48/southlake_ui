@@ -148,6 +148,10 @@
                   (selectedValueChange)="form.controls.type.setValue($any($event))"
                 ></app-dropdown-search>
               </div>
+              <div class="form-field">
+                <label for="m-asl-code" class="form-label">ASL Code</label>
+                <input id="m-asl-code" formControlName="asl_code" type="text" placeholder="e.g. 19.4" class="form-input" />
+              </div>
             }
             <div class="form-field">
               <label for="m-priority-2" class="form-label">Priority</label>
@@ -183,7 +187,9 @@
               </div>
             </div>
           </div>
+        }
 
+        @if (mode === SimpleMode.Lob || mode === SimpleMode.Cob || mode === SimpleMode.TreatyType) {
           <div class="form-row form-row-spaced">
             <div class="form-field">
               <label for="m-description-3" class="form-label">Description</label>

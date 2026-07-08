@@ -12,6 +12,7 @@ import {
   DocumentType,
   SequencePrefixCounter,
   SimpleMasterRecord,
+  TreatyTypeMaster,
 } from './master.model';
 import { GlMapping } from './gl-mapping.model';
 
@@ -29,6 +30,7 @@ export enum MasterTab {
   LockedPeriods = 'locked-periods',
   DocumentTypes = 'document-types',
   SequencePrefixCounters = 'sequence-prefix-counters',
+  TreatyTypes = 'treaty-types',
 }
 
 export type MasterListItem =
@@ -42,7 +44,8 @@ export type MasterListItem =
   | GlMapping
   | SimpleMasterRecord
   | DocumentType
-  | SequencePrefixCounter;
+  | SequencePrefixCounter
+  | TreatyTypeMaster;
 
 export type SimpleEditableItem =
   | LineOfBusiness
@@ -50,7 +53,8 @@ export type SimpleEditableItem =
   | ReinsurerCompany
   | SimpleMasterRecord
   | DocumentType
-  | SequencePrefixCounter;
+  | SequencePrefixCounter
+  | TreatyTypeMaster;
 
 export type DocumentableMaster =
   | (MgaMaster & { documents: MgaDocument[] })

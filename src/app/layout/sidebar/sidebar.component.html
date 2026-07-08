@@ -424,6 +424,29 @@
               </svg>
               <span>Document Types</span>
             </a>
+            <a
+              class="nav-item sub-item"
+              routerLink="/masters"
+              [queryParams]="{ tab: 'treaty-types' }"
+              routerLinkActive="active"
+              [routerLinkActiveOptions]="{ queryParams: 'exact', exact: false }"
+            >
+              <svg
+                class="sub-nav-icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+                <line x1="9" y1="9" x2="15" y2="9" />
+                <line x1="9" y1="13" x2="15" y2="13" />
+                <line x1="9" y1="17" x2="13" y2="17" />
+              </svg>
+              <span>Treaty Types</span>
+            </a>
             @if (false) {
               <a
                 class="nav-item sub-item"

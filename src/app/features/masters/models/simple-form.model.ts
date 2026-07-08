@@ -6,6 +6,7 @@ export enum SimpleMode {
   Product = 'product',
   DocumentType = 'document-type',
   SequencePrefixCounter = 'sequence-prefix-counter',
+  TreatyType = 'treaty-type',
 }
 
 export interface SimpleFormValue {
@@ -18,6 +19,7 @@ export interface SimpleFormValue {
   taxable: boolean;
   priority: number;
   fully_earned: boolean;
+  asl_code?: string;
   contact_name?: string;
   contact_email?: string;
   contact_phone?: string;
@@ -38,6 +40,7 @@ export function createBlankSimpleForm(): SimpleFormValue {
     taxable: false,
     priority: 1,
     fully_earned: false,
+    asl_code: '',
     contact_name: '',
     contact_email: '',
     contact_phone: '',
