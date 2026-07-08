@@ -171,7 +171,20 @@
       }
 
       <!-- 3. Config Tools / Master Data collapsible -->
-      @if (hasPermission("master_data", "view")) {
+      @if (
+        hasPermission("treaty", "view") ||
+        hasPermission("mga", "view") ||
+        hasPermission("lob", "view") ||
+        hasPermission("cob", "view") ||
+        hasPermission("state", "view") ||
+        hasPermission("reinsurer", "view") ||
+        hasPermission("risk_company", "view") ||
+        hasPermission("broker", "view") ||
+        hasPermission("product", "view") ||
+        hasPermission("masters_config", "view") ||
+        hasPermission("treaty_type", "view") ||
+        hasPermission("gl_mapping", "view")
+      ) {
         <div class="nav-item-group" [class.expanded]="mastersExpanded">
           <a
             class="nav-item group-header"
@@ -522,7 +535,7 @@
       }
 
       <!-- 4. System Admin (collapsible, wrapping User Management) -->
-      @if (hasPermission("user_management", "view")) {
+      @if (hasPermission("user", "view") || hasPermission("role", "view") || hasPermission("activity_log", "view")) {
         <div class="nav-item-group" [class.expanded]="adminExpanded">
           <a
             class="nav-item group-header"

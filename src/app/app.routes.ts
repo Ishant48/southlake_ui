@@ -16,7 +16,7 @@ export const routes: Routes = [
     children: [
       {
         path: 'user-management',
-        canActivate: [permissionGuard('user_management')],
+        canActivate: [permissionGuard(['user', 'role', 'activity_log'])],
         loadChildren: () =>
           import('./features/user-management/user-management.routes').then(
             m => m.userManagementRoutes,
@@ -61,7 +61,22 @@ export const routes: Routes = [
       },
       {
         path: 'masters',
-        canActivate: [permissionGuard('master_data')],
+        canActivate: [
+          permissionGuard([
+            'treaty',
+            'mga',
+            'lob',
+            'cob',
+            'state',
+            'reinsurer',
+            'risk_company',
+            'broker',
+            'product',
+            'masters_config',
+            'treaty_type',
+            'gl_mapping',
+          ]),
+        ],
         loadChildren: () => import('./features/masters/masters.routes').then(m => m.mastersRoutes),
       },
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
