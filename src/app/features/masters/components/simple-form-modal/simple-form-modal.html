@@ -99,24 +99,24 @@
               <span class="form-label">Line of Business *</span>
               <app-dropdown-search
                 [items]="lobOptions"
-                [isMultiSelect]="false"
+                [isMultiSelect]="true"
                 bindValue="id"
-                placeholder="Select LOB"
+                placeholder="Select LOB(s)"
                 [itemLabelFn]="lobLabelFn"
-                [selectedValue]="form.controls.lob_id.value"
-                (selectedValueChange)="form.controls.lob_id.setValue($any($event)); onProductLobCobChange()"
+                [selectedValues]="selectedLobsDict"
+                (selectedValuesChange)="onLobsDictChange($event)"
               ></app-dropdown-search>
             </div>
             <div class="form-field">
               <label for="m-description" class="form-label">Class of Business *</label>
               <app-dropdown-search
                 [items]="cobOptions"
-                [isMultiSelect]="false"
+                [isMultiSelect]="true"
                 bindValue="id"
-                placeholder="Select COB"
+                placeholder="Select COB(s)"
                 [itemLabelFn]="cobLabelFn"
-                [selectedValue]="form.controls.cob_id.value"
-                (selectedValueChange)="form.controls.cob_id.setValue($any($event)); onProductLobCobChange()"
+                [selectedValues]="selectedCobsDict"
+                (selectedValuesChange)="onCobsDictChange($event)"
               ></app-dropdown-search>
             </div>
           </div>

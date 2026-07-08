@@ -15,12 +15,6 @@
     }
   </div>
 
-  <div class="tab-bar">
-    <a class="tab-link" routerLink="/user-management/users" routerLinkActive="active">Users</a>
-    <a class="tab-link" routerLink="/user-management/roles" routerLinkActive="active">Roles &amp; Permissions</a>
-    <a class="tab-link" routerLink="/user-management/activity-logs" routerLinkActive="active">Activity Logs</a>
-  </div>
-
   @if (loading) {
     <div class="loading-state">Loading roles...</div>
   } @else {
@@ -95,12 +89,6 @@
   }
 </div>
 
-<app-role-permissions-modal
-  [role]="editingRole"
-  [open]="modalOpen"
-  (closed)="modalOpen = false"
-  (saved)="onRoleSaved()"
-/>
 
 <app-confirm-dialog
   [open]="confirmOpen"

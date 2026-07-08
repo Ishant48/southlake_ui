@@ -56,8 +56,16 @@ export class JournalEntryFormView implements OnChanges {
     const todayStr = new Date().toISOString().split('T')[0];
     const prevRow = this.localEntries[this.localEntries.length - 1];
 
+    let maxJe = 0;
+    for (const r of this.localEntries) {
+      if (r.je_number && r.je_number > maxJe) {
+        maxJe = r.je_number;
+      }
+    }
+    const nextJe = maxJe > 0 ? maxJe + 1 : this.jeNumber;
+
     const newRowConfig = {
-      je_number: this.jeNumber,
+      je_number: nextJe,
       description: prevRow ? prevRow.description : '',
       coa_id: '',
       sub: prevRow ? prevRow.sub : '',
@@ -80,10 +88,25 @@ export class JournalEntryFormView implements OnChanges {
   }
 
   deleteRow(index: number): void {
-    if (this.localEntries.length > 1) {
-      this.localEntries.splice(index, 1);
-    } else {
-      this.localEntries[0] = this.createBlankRow();
+    const targetJeNumber = this.localEntries[index].je_number;
+    this.localEntries = this.localEntries.filter(r => r.je_number !== targetJeNumber);
+
+    if (this.localEntries.length === 0) {
+      const todayStr = new Date().toISOString().split('T')[0];
+      const newRowConfig = {
+        je_number: this.jeNumber,
+        description: '',
+        coa_id: '',
+        sub: '',
+        debit: null,
+        credit: null,
+        date: todayStr,
+        dp: '',
+        policy: '',
+        memo: '',
+      };
+      this.localEntries.push(this.createBlankRow(newRowConfig));
+      this.localEntries.push(this.createBlankRow(newRowConfig));
     }
   }
 

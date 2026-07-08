@@ -109,13 +109,15 @@
             <span class="info-label">Account Status</span>
             <div class="status-toggle-row">
               <app-user-status-badge [status]="editStatus" />
-              <button
-                class="toggle-btn"
-                [class.active]="editStatus === UserStatus.Active"
-                (click)="editStatus = editStatus === UserStatus.Active ? UserStatus.Inactive : UserStatus.Active"
-              >
-                {{ editStatus === UserStatus.Active ? "Deactivate" : "Activate" }}
-              </button>
+              @if (!isSuperAdmin()) {
+                <button
+                  class="toggle-btn"
+                  [class.active]="editStatus === UserStatus.Active"
+                  (click)="editStatus = editStatus === UserStatus.Active ? UserStatus.Inactive : UserStatus.Active"
+                >
+                  {{ editStatus === UserStatus.Active ? "Deactivate" : "Activate" }}
+                </button>
+              }
             </div>
           </div>
 
@@ -130,20 +132,20 @@
           @if (permsLoading) {
             <div class="loading-row">Loading permissions...</div>
           } @else {
-            @for (group of groupedPermissions; track group.moduleName) {
+            @for (group of parentModuleGroups; track group.name) {
               <div class="perm-module-group">
-                <div class="perm-module-title" [class.collapsed-border]="!isGroupExpanded(group.moduleName)">
+                <div class="perm-module-title" [class.collapsed-border]="!isGroupExpanded(group.name)">
                   <div
                     class="perm-module-header-left"
-                    (click)="toggleGroup(group.moduleName)"
+                    (click)="toggleGroup(group.name)"
                     tabindex="0"
                     role="button"
-                    (keydown.enter)="toggleGroup(group.moduleName)"
-                    (keydown.space)="toggleGroup(group.moduleName); $event.preventDefault()"
+                    (keydown.enter)="toggleGroup(group.name)"
+                    (keydown.space)="toggleGroup(group.name); $event.preventDefault()"
                   >
                     <svg
                       class="perm-chevron-icon"
-                      [class.collapsed]="!isGroupExpanded(group.moduleName)"
+                      [class.collapsed]="!isGroupExpanded(group.name)"
                       width="14"
                       height="14"
                       viewBox="0 0 24 24"
@@ -155,24 +157,58 @@
                     >
                       <polyline points="6 9 12 15 18 9" />
                     </svg>
-                    <span>{{ group.moduleName }}</span>
+                    <span>{{ group.name }}</span>
                   </div>
                   <button type="button" class="select-all-btn" (click)="toggleSelectAllGroup(group)">
                     {{ isAllSelected(group) ? "Deselect All" : "Select All" }}
                   </button>
                 </div>
-                @if (isGroupExpanded(group.moduleName)) {
-                  <div class="perm-list">
-                    @for (perm of group.permissions; track perm.id) {
-                      <label class="perm-item" [class.checked]="selectedIds.has(perm.id)">
-                        <input
-                          type="checkbox"
-                          [checked]="selectedIds.has(perm.id)"
-                          (change)="togglePermission(perm.id)"
-                        />
-                        <span class="perm-label">{{ perm.label }}</span>
-                        <span class="perm-action">{{ perm.action }}</span>
-                      </label>
+                
+                @if (isGroupExpanded(group.name)) {
+                  <div class="perm-submodules-list" style="display: flex; flex-direction: column; gap: 12px; padding: 12px; background: var(--gray-50);">
+                    @for (sub of group.subModules; track sub.name) {
+                      <div class="perm-submodule-item" style="border: 1px solid var(--gray-200); border-radius: 6px; overflow: hidden; background: var(--white);">
+                        <div class="perm-submodule-header" style="display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; background: var(--white); border-bottom: 1px solid var(--gray-100);">
+                          <div style="display: flex; align-items: center; gap: 8px;">
+                            <button type="button" (click)="toggleSubModule(sub.name)" style="background: none; border: none; color: var(--gray-400); cursor: pointer; padding: 2px; display: flex; align-items: center;">
+                              <svg
+                                [style.transform]="isSubModuleExpanded(sub.name) ? 'rotate(90deg)' : 'none'"
+                                style="transition: transform 0.2s;"
+                                width="12"
+                                height="12"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="3"
+                              >
+                                <polyline points="9 18 15 12 9 6" />
+                              </svg>
+                            </button>
+                            <span style="font-size: 13px; font-weight: 700; color: var(--gray-700); cursor: pointer;" (click)="toggleSubModule(sub.name)">{{ sub.name }}</span>
+                          </div>
+                          <button type="button" class="select-all-btn" style="font-size: 11px; font-weight: 700; color: var(--navy); border: none; background: none; cursor: pointer;" (click)="toggleSelectAllSubModule(sub)">
+                            {{ isSubModuleAllSelected(sub) ? "Deselect All" : "Select All" }}
+                          </button>
+                        </div>
+                        
+                        @if (isSubModuleExpanded(sub.name)) {
+                          <div class="perm-list" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); padding: 12px; gap: 8px;">
+                            @for (perm of sub.permissions; track perm.id) {
+                              <label class="perm-item" [class.checked]="selectedIds.has(perm.id)" style="display: flex; flex-direction: column; gap: 2px; padding: 6px 8px; border: 1px solid var(--gray-150); border-radius: 4px; cursor: pointer; transition: all var(--transition);">
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                  <input
+                                    type="checkbox"
+                                    [checked]="selectedIds.has(perm.id)"
+                                    (change)="togglePermission(perm.id)"
+                                  />
+                                  <span class="perm-label" style="font-size: 12.5px; font-weight: 600; color: var(--gray-800);">{{ perm.label }}</span>
+                                </div>
+                                <span class="perm-action" style="font-size: 10px; color: var(--gray-400); margin-left: 22px; font-family: monospace;">{{ perm.action }}</span>
+                              </label>
+                            }
+                          </div>
+                        }
+                      </div>
                     }
                   </div>
                 }

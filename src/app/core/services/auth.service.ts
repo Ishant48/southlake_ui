@@ -29,6 +29,59 @@ export class AuthService {
   private http = inject(HttpClient);
   private router = inject(Router);
 
+  constructor() {
+    this.resolveClientMetadata();
+  }
+
+  private resolveClientMetadata(): void {
+    const savedIp = localStorage.getItem('sl_client_ip');
+    // If we have a saved IP and it is not an IPv6 address (contains no ':'), we can use it
+    if (savedIp && !savedIp.includes(':')) return;
+
+    // Fetch public IPv4 address first (ipify always resolves to IPv4)
+    fetch('https://api.ipify.org?format=json')
+      .then(res => {
+        if (!res.ok) throw new Error('ipify request failed');
+        return res.json();
+      })
+      .then(ipData => {
+        if (ipData && ipData.ip) {
+          const ipv4 = ipData.ip;
+          // Resolve location for this IPv4
+          fetch(`https://ipapi.co/${ipv4}/json/`)
+            .then(res => {
+              if (!res.ok) throw new Error('ipapi request failed');
+              return res.json();
+            })
+            .then(locData => {
+              if (locData) {
+                const locStr = `${locData.city || 'Delhi'}, ${locData.region ? locData.region + ', ' : ''}${locData.country_name || 'India'}`;
+                localStorage.setItem('sl_client_ip', ipv4);
+                localStorage.setItem('sl_client_location', locStr);
+              }
+            })
+            .catch(err => {
+              console.warn('Failed to resolve location from ipapi.co, using defaults', err);
+              localStorage.setItem('sl_client_ip', ipv4);
+              localStorage.setItem('sl_client_location', 'Delhi, India');
+            });
+        }
+      })
+      .catch(err => {
+        console.warn('Failed to fetch client IPv4 via ipify, falling back to ipapi.co directly...', err);
+        fetch('https://ipapi.co/json/')
+          .then(res => res.json())
+          .then(data => {
+            if (data && data.ip) {
+              const locStr = `${data.city || 'Delhi'}, ${data.region ? data.region + ', ' : ''}${data.country_name || 'India'}`;
+              localStorage.setItem('sl_client_ip', data.ip);
+              localStorage.setItem('sl_client_location', locStr);
+            }
+          })
+          .catch(() => {});
+      });
+  }
+
   login(email: string, password: string): Observable<{ message: string }> {
     return this.http.post<{ message: string }>(`${environment.apiUrl}/auth/login`, {
       email,

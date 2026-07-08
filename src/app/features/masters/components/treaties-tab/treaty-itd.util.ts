@@ -10,10 +10,7 @@ export function buildItdStatesList(treaty: Treaty): ItdStateOption[] {
     })
     .filter((s: ItdStateOption) => s.code);
 
-  return [
-    { code: 'TOTAL', label: 'TOTAL' },
-    ...states.filter(s => s.code !== 'TOTAL').sort((a, b) => a.label.localeCompare(b.label)),
-  ];
+  return states.filter(s => s.code !== 'TOTAL').sort((a, b) => a.label.localeCompare(b.label));
 }
 
 export function buildBlankExhibit(): ItdExhibit {
@@ -71,8 +68,28 @@ export function buildManualItdPayload(formValue: {
   month_label: string;
   exhibits: Record<string, ItdExhibit>;
 }): { program: string; monthKey: string; monthLabel: string; exhibits: unknown[] } {
-  const exhibitsArray = Object.keys(formValue.exhibits).map(code => {
+  const nonTotalStates = Object.keys(formValue.exhibits).filter(code => code !== 'TOTAL');
+  const totalExhibit: ItdExhibit = buildBlankExhibit();
+
+  for (const code of nonTotalStates) {
     const ex = formValue.exhibits[code];
+    totalExhibit.uep += Number(ex.uep ?? 0);
+    totalExhibit.loss_reserves += Number(ex.loss_reserves ?? 0);
+    totalExhibit.loss_ibnr += Number(ex.loss_ibnr ?? 0);
+    totalExhibit.lae_reserves_dcc += Number(ex.lae_reserves_dcc ?? 0);
+    totalExhibit.lae_ibnr_dcc += Number(ex.lae_ibnr_dcc ?? 0);
+    totalExhibit.lae_reserves_aoe += Number(ex.lae_reserves_aoe ?? 0);
+    totalExhibit.lae_ibnr_aoe += Number(ex.lae_ibnr_aoe ?? 0);
+    totalExhibit.ulae_ibnr += Number(ex.ulae_ibnr ?? 0);
+  }
+
+  const exhibitsRecord: Record<string, ItdExhibit> = {
+    ...formValue.exhibits,
+    TOTAL: totalExhibit,
+  };
+
+  const exhibitsArray = Object.keys(exhibitsRecord).map(code => {
+    const ex = exhibitsRecord[code];
     return {
       state_code: code,
       stateCode: code,

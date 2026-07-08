@@ -1,6 +1,5 @@
 import { Component, inject, OnInit, ChangeDetectorRef, HostListener } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { RouterLink, RouterLinkActive } from '@angular/router';
 import { debounceTime, distinctUntilChanged, Subject } from 'rxjs';
 import { User, UserStats, PendingInvite, PanelMode } from '../models/user.model';
 import { Role } from '../models/role.model';
@@ -18,8 +17,6 @@ import { ConfirmDialogComponent } from '../../../shared/components/confirm-dialo
   standalone: true,
   imports: [
     FormsModule,
-    RouterLink,
-    RouterLinkActive,
     UsersTableComponent,
     InvitePanelComponent,
     UserDetailPanelComponent,

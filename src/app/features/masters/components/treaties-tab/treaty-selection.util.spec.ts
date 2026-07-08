@@ -1,3 +1,4 @@
+import { describe, it, expect } from 'vitest';
 import {
   buildBlankTreatyForm,
   buildTreatyEditState,
@@ -32,7 +33,15 @@ describe('treaty-selection.util', () => {
     );
 
     expect(form.carriers).toEqual([{ risk_company_id: 'rc-1', retention_pct: 80 }]);
-    expect(form.reinsurers).toEqual([{ reinsurer_id: 're-1', cession_pct: 50 }]);
+    expect(form.reinsurers).toEqual([
+      {
+        reinsurer_id: 're-1',
+        cession_pct: 50,
+        state_id: null,
+        broker_id: null,
+        broker_comm_type: null,
+      },
+    ]);
     expect(selectedStates).toEqual({ 's-1': true });
     expect(selectedLobs).toEqual({ 'l-1': true });
     expect(selectedCobs).toEqual({ 'c-1': true });

@@ -28,7 +28,7 @@
   height: 40px;
   padding: 0 18px;
   border-radius: var(--radius);
-  background: var(--coral);
+  background: var(--navy);
   border: none;
   color: #fff;
   font-size: 14px;
@@ -38,7 +38,7 @@
   white-space: nowrap;
 
   &:hover {
-    background: var(--coral-hover);
+    background: var(--navy-hover);
   }
 }
 
@@ -273,6 +273,7 @@
   text-transform: uppercase;
   letter-spacing: 0.04em;
   border-bottom: 1.5px solid var(--gray-200);
+  background: var(--gray-100);
 }
 
 .data-table td {

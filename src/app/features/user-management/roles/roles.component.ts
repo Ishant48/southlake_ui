@@ -1,16 +1,15 @@
 import { Component, inject, OnInit, ChangeDetectorRef } from '@angular/core';
-import { RouterLink, RouterLinkActive } from '@angular/router';
-import { Role, RoleDetail } from '../models/role.model';
+import { Router } from '@angular/router';
+import { Role } from '../models/role.model';
 import { AuthService } from '../../../core/services/auth.service';
 import { RolesApi } from '../services/roles-api';
 import { ToastService } from '../../../shared/components/toast/toast.service';
-import { RolePermissionsModalComponent } from './role-permissions-modal/role-permissions-modal.component';
 import { ConfirmDialogComponent } from '../../../shared/components/confirm-dialog/confirm-dialog.component';
 
 @Component({
   selector: 'app-roles',
   standalone: true,
-  imports: [RouterLink, RouterLinkActive, RolePermissionsModalComponent, ConfirmDialogComponent],
+  imports: [ConfirmDialogComponent],
   templateUrl: './roles.component.html',
   styleUrl: './roles.component.scss',
 })
@@ -19,6 +18,7 @@ export class RolesComponent implements OnInit {
   private rolesService = inject(RolesApi);
   private toast = inject(ToastService);
   private cdr = inject(ChangeDetectorRef);
+  private router = inject(Router);
 
   roles: Role[] = [];
   loading = false;
@@ -26,8 +26,6 @@ export class RolesComponent implements OnInit {
   hasPermission(permission: string): boolean {
     return this.authService.hasPermission(permission);
   }
-  modalOpen = false;
-  editingRole: RoleDetail | null = null;
 
   confirmOpen = false;
   confirmMessage = '';
@@ -72,29 +70,11 @@ export class RolesComponent implements OnInit {
   }
 
   openCreateModal(): void {
-    this.editingRole = null;
-    this.modalOpen = true;
+    this.router.navigate(['/user-management/roles/create']);
   }
 
   openEditModal(role: Role): void {
-    this.loading = true;
-    this.rolesService.getRole(role.id).subscribe({
-      next: detail => {
-        this.editingRole = detail;
-        this.loading = false;
-        this.modalOpen = true;
-        this.cdr.markForCheck();
-      },
-      error: () => {
-        this.loading = false;
-        this.toast.error('Failed to load role details');
-        this.cdr.markForCheck();
-      },
-    });
-  }
-
-  onRoleSaved(): void {
-    this.loadRoles();
+    this.router.navigate(['/user-management/roles/edit', role.id]);
   }
 
   onDeleteRole(role: Role): void {

@@ -52,6 +52,7 @@ export class TreatyFormModal implements OnChanges {
   @Input() stateOptions: StateMaster[] = [];
   @Input() lobOptions: LineOfBusiness[] = [];
   @Input() cobOptions: CobMaster[] = [];
+  @Input() productOptions: any[] = [];
 
   @Input() riskCompanyLabelFn: (item: RiskCompany) => string = () => '';
   @Input() reinsurerLabelFn: (item: ReinsurerCompany) => string = () => '';
@@ -61,6 +62,27 @@ export class TreatyFormModal implements OnChanges {
   @Input() lobLabelFn: (item: LineOfBusiness) => string = () => '';
   @Input() cobLabelFn: (item: CobMaster) => string = () => '';
 
+  productLabelFn = (item: any): string => {
+    return item ? `${item.product_id} - ${item.name}` : '';
+  };
+
+  reinsurerOrRiskCompanyLabelFn = (item: any): string => {
+    if (!item) return '';
+    if ('reinsurer_company_id' in item) {
+      return `${item.name} (${item.reinsurer_company_id}) [Reinsurer]`;
+    }
+    if ('risk_company_id' in item) {
+      return `${item.name} (${item.risk_company_id}) [Risk Company]`;
+    }
+    return item.name || '';
+  };
+
+  get combinedReinsurerAndRiskCompanyOptions(): any[] {
+    const reinsurers = this.reinsurerOptions || [];
+    const riskCos = this.riskCompanyOptions || [];
+    return [...reinsurers, ...riskCos];
+  }
+
   @Output() closed = new EventEmitter<void>();
   @Output() save = new EventEmitter<TreatySaveEvent>();
 
@@ -68,6 +90,7 @@ export class TreatyFormModal implements OnChanges {
   formSelectedStates: TreatySelectionMap = {};
   formSelectedLobs: TreatySelectionMap = {};
   formSelectedCobs: TreatySelectionMap = {};
+  selectedProductId: string | null = null;
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['model']) {
@@ -82,6 +105,9 @@ export class TreatyFormModal implements OnChanges {
     if (changes['selectedCobs']) {
       this.formSelectedCobs = { ...this.selectedCobs };
     }
+    if (changes['selectedLobs'] || changes['selectedCobs'] || changes['productOptions']) {
+      this.findMatchingProduct();
+    }
     if (changes['isEditMode']) {
       if (this.isEditMode) {
         this.form.controls.treaty_code.disable();
@@ -89,6 +115,70 @@ export class TreatyFormModal implements OnChanges {
         this.form.controls.treaty_code.enable();
       }
     }
+  }
+
+  findMatchingProduct(): void {
+    if (!this.productOptions || this.productOptions.length === 0) return;
+    const selectedLobIds = Object.keys(this.formSelectedLobs).filter(id => this.formSelectedLobs[id]);
+    const selectedCobIds = Object.keys(this.formSelectedCobs).filter(id => this.formSelectedCobs[id]);
+
+    if (selectedLobIds.length === 0 && selectedCobIds.length === 0) {
+      this.selectedProductId = '';
+      return;
+    }
+
+    const bestProduct = this.productOptions.find(p => {
+      const pLobIds = (p.lobs || []).map((l: any) => l.id);
+      const pCobIds = (p.cobs || []).map((c: any) => c.id);
+      const hasAllLobs = pLobIds.length > 0 && pLobIds.every((id: string) => selectedLobIds.includes(id));
+      const hasAllCobs = pCobIds.length > 0 && pCobIds.every((id: string) => selectedCobIds.includes(id));
+      return hasAllLobs && hasAllCobs;
+    });
+
+    if (bestProduct) {
+      this.selectedProductId = bestProduct.id;
+    } else {
+      const fallbackProduct = this.productOptions.find(p => {
+        const pLobIds = (p.lobs || []).map((l: any) => l.id);
+        return pLobIds.some((id: string) => selectedLobIds.includes(id));
+      });
+      this.selectedProductId = fallbackProduct ? fallbackProduct.id : '';
+    }
+  }
+
+  onProductChange(productId: unknown): void {
+    const id = productId == null ? '' : String(productId);
+    this.selectedProductId = id;
+
+    const selectedProduct = this.productOptions.find(p => p.id === id);
+    if (selectedProduct) {
+      this.formSelectedLobs = {};
+      this.formSelectedCobs = {};
+
+      (selectedProduct.lobs || []).forEach((l: any) => {
+        this.formSelectedLobs[l.id] = true;
+      });
+      (selectedProduct.cobs || []).forEach((c: any) => {
+        this.formSelectedCobs[c.id] = true;
+      });
+    } else {
+      this.formSelectedLobs = {};
+      this.formSelectedCobs = {};
+    }
+  }
+
+  getSelectedProductLobs(): string {
+    const selectedProduct = this.productOptions.find(p => p.id === this.selectedProductId);
+    if (!selectedProduct) return 'No Product Selected';
+    const names = (selectedProduct.lobs || []).map((l: any) => l.name);
+    return names.length > 0 ? names.join(', ') : 'No LOBs configured';
+  }
+
+  getSelectedProductCobs(): string {
+    const selectedProduct = this.productOptions.find(p => p.id === this.selectedProductId);
+    if (!selectedProduct) return 'No Product Selected';
+    const names = (selectedProduct.cobs || []).map((c: any) => c.name);
+    return names.length > 0 ? names.join(', ') : 'No COBs configured';
   }
 
   updateCarrierRiskCompanyId(value: unknown): void {
@@ -124,16 +214,98 @@ export class TreatyFormModal implements OnChanges {
     this.form.controls.reinsurers.setValue(updated);
   }
 
-  updateReinsurerCessionPct(index: number, event: Event): void {
-    const value = Number((event.target as HTMLInputElement).value);
+  updateReinsurerBrokerCommType(index: number, event: Event): void {
+    const value = (event.target as HTMLSelectElement).value;
     const rows = this.form.controls.reinsurers.value;
-    const updated = rows.map((row, i) => (i === index ? { ...row, cession_pct: value } : row));
+    const updated = rows.map((row, i) =>
+      i === index ? { ...row, broker_comm_type: value || null } : row,
+    );
     this.form.controls.reinsurers.setValue(updated);
+  }
+
+  updateReinsurerCessionPct(index: number, event: Event): void {
+    let value = Number((event.target as HTMLInputElement).value);
+    value = Math.max(0, Math.min(100, value));
+    value = Number(value.toFixed(2));
+
+    const rows = this.form.controls.reinsurers.value;
+    const updated = this.autoBalanceReinsurers(rows, index, value);
+    this.form.controls.reinsurers.setValue(updated);
+  }
+
+  private autoBalanceReinsurers(rows: any[], editedIndex: number, newValue: number): any[] {
+    const n = rows.length;
+    if (n <= 1) {
+      return rows.map((row, i) => i === editedIndex ? { ...row, cession_pct: newValue } : row);
+    }
+
+    let updatedRows = [...rows];
+    updatedRows[editedIndex] = { ...rows[editedIndex], cession_pct: newValue };
+
+    const isLast = editedIndex === n - 1;
+    const otherIndices = isLast
+      ? Array.from({ length: n - 1 }, (_, i) => i)
+      : Array.from({ length: n - 1 - editedIndex }, (_, i) => editedIndex + 1 + i);
+
+    const precedingSum = isLast
+      ? 0
+      : rows.slice(0, editedIndex).reduce((acc, r) => acc + (r.cession_pct || 0), 0);
+
+    const targetOtherSum = 100 - precedingSum - newValue;
+    const currentOtherSum = otherIndices.reduce((acc, idx) => acc + (rows[idx].cession_pct || 0), 0);
+
+    let distributedSum = 0;
+    if (currentOtherSum > 0) {
+      otherIndices.forEach((idx, i) => {
+        const row = rows[idx];
+        let share = 0;
+        if (i === otherIndices.length - 1) {
+          share = targetOtherSum - distributedSum;
+        } else {
+          share = Number(((row.cession_pct || 0) / currentOtherSum * targetOtherSum).toFixed(2));
+          distributedSum += share;
+        }
+        updatedRows[idx] = { ...row, cession_pct: Math.max(0, Number(share.toFixed(2))) };
+      });
+    } else {
+      otherIndices.forEach((idx, i) => {
+        const row = rows[idx];
+        let share = 0;
+        if (i === otherIndices.length - 1) {
+          share = targetOtherSum - distributedSum;
+        } else {
+          share = Number((targetOtherSum / otherIndices.length).toFixed(2));
+          distributedSum += share;
+        }
+        updatedRows[idx] = { ...row, cession_pct: Math.max(0, Number(share.toFixed(2))) };
+      });
+    }
+
+    return updatedRows;
   }
 
   addReinsurerRow(): void {
     const rows = this.form.controls.reinsurers.value;
-    this.form.controls.reinsurers.setValue([...rows, { reinsurer_id: '', cession_pct: 0 }]);
+    if (rows.length === 0) {
+      this.form.controls.reinsurers.setValue([
+        { reinsurer_id: '', cession_pct: 100, state_id: null, broker_id: null, broker_comm_type: null },
+      ]);
+      return;
+    }
+
+    const sum = rows.reduce((acc, r) => acc + (r.cession_pct || 0), 0);
+    const remaining = Math.max(0, 100 - sum);
+
+    this.form.controls.reinsurers.setValue([
+      ...rows,
+      {
+        reinsurer_id: '',
+        cession_pct: Number(remaining.toFixed(2)),
+        state_id: null,
+        broker_id: null,
+        broker_comm_type: null,
+      },
+    ]);
   }
 
   removeReinsurerRow(index: number): void {

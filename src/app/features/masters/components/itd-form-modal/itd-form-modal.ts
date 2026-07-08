@@ -34,7 +34,7 @@ export class ItdFormModal implements OnChanges {
   @Output() save = new EventEmitter<ItdFormValue>();
 
   form: FormGroup<ItdFormModel> = this.itdForm.createForm();
-  selectedStateCode = 'TOTAL';
+  selectedStateCode = '';
   selectedMonth = '12';
   selectedYear = '2025';
 
@@ -49,7 +49,7 @@ export class ItdFormModal implements OnChanges {
       this.selectedYear = this.initialYear;
     }
     if (changes['itdStatesList']) {
-      this.selectedStateCode = 'TOTAL';
+      this.selectedStateCode = this.itdStatesList[0]?.code || '';
     }
   }
 

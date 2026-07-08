@@ -43,7 +43,14 @@ export class InvitePanelComponent implements OnChanges {
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['open'] && !this.open) {
-      this.form.reset();
+      this.form.reset({
+        email: '',
+        name: '',
+        role_id: '',
+        user_type: '',
+        department: '',
+        title: '',
+      });
       this.errorMsg = '';
     }
   }
@@ -77,7 +84,14 @@ export class InvitePanelComponent implements OnChanges {
         next: () => {
           this.loading = false;
           this.toast.success(`Invitation sent to ${val.email}`);
-          this.form.reset();
+          this.form.reset({
+            email: '',
+            name: '',
+            role_id: '',
+            user_type: '',
+            department: '',
+            title: '',
+          });
           this.invited.emit();
           this.closed.emit();
         },

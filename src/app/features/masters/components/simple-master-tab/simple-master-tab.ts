@@ -35,11 +35,8 @@ const ADD_LABELS: Record<SimpleMode, string> = {
 };
 
 const SIMPLE_TYPE_OPTIONS = [
-  { id: 'Property', name: 'Property' },
-  { id: 'Liability', name: 'Liability' },
-  { id: 'Automobile', name: 'Automobile' },
-  { id: 'Workers Comp', name: 'Workers Comp' },
-  { id: 'Other', name: 'Other' },
+  { id: 'Fee', name: 'Fee' },
+  { id: 'Premium', name: 'Premium' },
 ];
 
 @Component({
@@ -172,7 +169,8 @@ export class SimpleMasterTab implements OnInit {
       code: (rec['code'] ??
         rec['lob_code'] ??
         rec['cob_code'] ??
-        rec['reinsurer_company_id']) as string,
+        rec['reinsurer_company_id'] ??
+        rec['product_id']) as string,
       name: item.name ?? '',
       is_active: item.is_active ?? false,
       description: (rec['description'] as string) ?? '',
@@ -183,8 +181,12 @@ export class SimpleMasterTab implements OnInit {
       contact_name: (rec['contactName'] as string) ?? '',
       contact_email: (rec['contactEmail'] as string) ?? '',
       contact_phone: (rec['contactPhone'] as string) ?? '',
-      lob_id: (rec['lob_id'] as string) ?? '',
-      cob_id: (rec['cob_id'] as string) ?? '',
+      lob_id: mode === SimpleMode.Product
+        ? (rec['lob_id'] ? (typeof rec['lob_id'] === 'string' ? rec['lob_id'].split(',') : rec['lob_id']) : [])
+        : (rec['lob_id'] as string) ?? '',
+      cob_id: mode === SimpleMode.Product
+        ? (rec['cob_id'] ? (typeof rec['cob_id'] === 'string' ? rec['cob_id'].split(',') : rec['cob_id']) : [])
+        : (rec['cob_id'] as string) ?? '',
       prefix: (rec['prefix'] as string) ?? '',
       next_value: (rec['next_value'] ?? rec['nextValue']) as number,
       padding_width: (rec['padding_width'] ?? rec['paddingWidth']) as number,

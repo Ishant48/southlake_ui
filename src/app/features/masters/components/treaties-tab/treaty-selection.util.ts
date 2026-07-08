@@ -68,10 +68,19 @@ export function buildTreatyEditState(treaty: Treaty): TreatyEditState {
     reinsurers = treaty.treaty_reinsurers.map(tr => ({
       reinsurer_id: tr.reinsurer_id,
       cession_pct: tr.cession_pct,
+      state_id: tr.state_id ?? null,
+      broker_id: tr.broker_id ?? null,
+      broker_comm_type: tr.broker_comm_type ?? null,
     }));
   } else if (treaty.reinsurer_id) {
     reinsurers = [
-      { reinsurer_id: treaty.reinsurer_id, cession_pct: treaty.reinsurer_cession_pct ?? 100 },
+      {
+        reinsurer_id: treaty.reinsurer_id,
+        cession_pct: treaty.reinsurer_cession_pct ?? 100,
+        state_id: null,
+        broker_id: null,
+        broker_comm_type: null,
+      },
     ];
   }
 
@@ -135,7 +144,15 @@ export function buildTreatyPayload(
   const selectedCobIds = Object.keys(selectedCobs).filter(cobId => selectedCobs[cobId]);
   const lobs = selectedLobIds.map(lobId => ({ lob_id: lobId, cob_ids: selectedCobIds }));
   const carriers = (form.carriers || []).filter(c => c.risk_company_id);
-  const reinsurers = (form.reinsurers || []).filter(r => r.reinsurer_id);
+  const reinsurers = (form.reinsurers || [])
+    .filter(r => r.reinsurer_id)
+    .map(r => ({
+      reinsurer_id: r.reinsurer_id,
+      cession_pct: r.cession_pct,
+      state_id: r.state_id ?? null,
+      broker_id: r.broker_id ?? null,
+      broker_comm_type: r.broker_comm_type ?? null,
+    }));
   const mga_ids = form.mga_id ? [form.mga_id] : [];
 
   return {

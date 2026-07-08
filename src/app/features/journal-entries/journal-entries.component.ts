@@ -88,7 +88,7 @@ export class JournalEntriesComponent implements OnInit {
                 this.service.deleteBatch(data.id).subscribe({
                   next: () => {
                     this.toast.success(`Batch ${data.batch_number} deleted successfully`);
-                    this.loadBatches();
+                    this.loadInitialData();
                   },
                   error: () => this.toast.error('Failed to delete batch'),
                 });
@@ -168,9 +168,13 @@ export class JournalEntriesComponent implements OnInit {
   currentView: 'list' | 'detail' | 'form' = 'list';
   isEditingForm = false;
 
+  getCurrentPeriodString(): string {
+    return new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+  }
+
   // Filters & Headers
-  periods = ['June 2026', 'May 2026', 'April 2026'];
-  selectedPeriod = 'June 2026';
+  periods: string[] = [this.getCurrentPeriodString()];
+  selectedPeriod = this.getCurrentPeriodString();
   agentsList: string[] = ['Futuristic Underwriters LLC'];
   selectedAgent = 'Futuristic Underwriters LLC';
   selectedState = 'all';
@@ -245,25 +249,21 @@ export class JournalEntriesComponent implements OnInit {
       next: batches => {
         if (batches.length > 0) {
           const uniquePeriods = Array.from(new Set(batches.map(b => b.period)));
-          // Filter to only allow Jan, Feb, and March 2026
-          const allowedPeriods = ['January 2026', 'February 2026', 'March 2026'];
-          const filteredPeriods = uniquePeriods.filter(p => allowedPeriods.includes(p));
 
           // Sort chronologically (newest first)
-          this.periods = filteredPeriods.sort((a, b) => {
+          this.periods = uniquePeriods.sort((a, b) => {
             const dateA = new Date('1 ' + a);
             const dateB = new Date('1 ' + b);
             return dateB.getTime() - dateA.getTime();
           });
 
-          // If no matching periods found from DB, fallback to allowed so dropdown isn't empty
-          if (this.periods.length === 0) {
-            this.periods = allowedPeriods.reverse();
-          }
-
           if (!this.periods.includes(this.selectedPeriod)) {
             this.selectedPeriod = this.periods[0];
           }
+        } else {
+          const current = this.getCurrentPeriodString();
+          this.periods = [current];
+          this.selectedPeriod = current;
         }
 
         // 2. Fetch active MGAs

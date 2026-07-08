@@ -28,7 +28,7 @@
   height: 40px;
   padding: 0 18px;
   border-radius: var(--radius);
-  background: var(--coral);
+  background: var(--navy);
   border: none;
   color: #fff;
   font-size: 14px;
@@ -38,7 +38,7 @@
   white-space: nowrap;
 
   &:hover {
-    background: var(--coral-hover);
+    background: var(--navy-hover);
   }
 }
 

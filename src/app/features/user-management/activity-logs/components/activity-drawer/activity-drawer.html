@@ -27,7 +27,7 @@
             <span class="action-badge" 
                   [style.background]="getActionStyle(log.action).bg" 
                   [style.color]="getActionStyle(log.action).text">
-              {{ log.action }}
+              {{ formatAction(log.action) }}
             </span>
             <span class="status-badge" 
                   [style.background]="getStatusStyle(log.status).bg" 
@@ -45,7 +45,7 @@
           <div class="info-grid">
             <div class="info-item">
               <span class="info-label">Module</span>
-              <span class="info-value">{{ log.module_id || '-' }}</span>
+              <span class="info-value">{{ formatModule(log.module_id) }}</span>
             </div>
             <div class="info-item">
               <span class="info-label">Entity</span>

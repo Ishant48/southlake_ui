@@ -6,19 +6,29 @@ import { SimpleMode } from '../components/simple-form-modal/simple-form-modal';
 
 export function buildProductsColumnDefs(ctx: SimpleMasterTab, statusCol: ColDef): ColDef[] {
   return [
-    { headerName: 'PRODUCT ID', field: 'productId', flex: 1.5, minWidth: 120 },
+    { headerName: 'PRODUCT ID', field: 'product_id', flex: 1.5, minWidth: 120 },
     { headerName: 'NAME', field: 'name', flex: 2, minWidth: 150 },
     {
       headerName: 'LOB',
-      // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- an empty string should also fall back to the placeholder/default shown here
-      valueGetter: p => p.data.lob?.name || '-',
+      valueGetter: p => {
+        const lobs = p.data.lobs;
+        if (Array.isArray(lobs) && lobs.length > 0) {
+          return lobs.map((l: any) => l.name).join(', ');
+        }
+        return p.data.lob?.name || '-';
+      },
       flex: 1.5,
       minWidth: 120,
     },
     {
       headerName: 'COB',
-      // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- an empty string should also fall back to the placeholder/default shown here
-      valueGetter: p => p.data.cob?.name || '-',
+      valueGetter: p => {
+        const cobs = p.data.cobs;
+        if (Array.isArray(cobs) && cobs.length > 0) {
+          return cobs.map((c: any) => c.name).join(', ');
+        }
+        return p.data.cob?.name || '-';
+      },
       flex: 1.5,
       minWidth: 120,
     },

@@ -1,3 +1,4 @@
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { TreatyFormModal } from './treaty-form-modal';
@@ -23,7 +24,15 @@ describe('TreatyFormModal', () => {
     lae_dcc_pct: 0,
     lae_aoe_pct: 0,
     carriers: [{ risk_company_id: 'rc-1', retention_pct: 100 }],
-    reinsurers: [{ reinsurer_id: 're-1', cession_pct: 50 }],
+    reinsurers: [
+      {
+        reinsurer_id: 're-1',
+        cession_pct: 50,
+        state_id: null,
+        broker_id: null,
+        broker_comm_type: null,
+      },
+    ],
   };
 
   beforeEach(async () => {
@@ -84,14 +93,103 @@ describe('TreatyFormModal', () => {
 
     component.addReinsurerRow();
     expect(component.form.controls.reinsurers.value).toEqual([
-      { reinsurer_id: '', cession_pct: 0 },
+      {
+        reinsurer_id: '',
+        cession_pct: 100,
+        state_id: null,
+        broker_id: null,
+        broker_comm_type: null,
+      },
     ]);
 
     component.addReinsurerRow();
-    expect(component.form.controls.reinsurers.value.length).toBe(2);
+    expect(component.form.controls.reinsurers.value).toEqual([
+      {
+        reinsurer_id: '',
+        cession_pct: 100,
+        state_id: null,
+        broker_id: null,
+        broker_comm_type: null,
+      },
+      {
+        reinsurer_id: '',
+        cession_pct: 0,
+        state_id: null,
+        broker_id: null,
+        broker_comm_type: null,
+      },
+    ]);
+
+    component.updateReinsurerCessionPct(0, { target: { value: '80' } } as unknown as Event);
+    expect(component.form.controls.reinsurers.value).toEqual([
+      {
+        reinsurer_id: '',
+        cession_pct: 80,
+        state_id: null,
+        broker_id: null,
+        broker_comm_type: null,
+      },
+      {
+        reinsurer_id: '',
+        cession_pct: 20,
+        state_id: null,
+        broker_id: null,
+        broker_comm_type: null,
+      },
+    ]);
+
+    component.addReinsurerRow();
+    expect(component.form.controls.reinsurers.value).toEqual([
+      {
+        reinsurer_id: '',
+        cession_pct: 80,
+        state_id: null,
+        broker_id: null,
+        broker_comm_type: null,
+      },
+      {
+        reinsurer_id: '',
+        cession_pct: 20,
+        state_id: null,
+        broker_id: null,
+        broker_comm_type: null,
+      },
+      {
+        reinsurer_id: '',
+        cession_pct: 0,
+        state_id: null,
+        broker_id: null,
+        broker_comm_type: null,
+      },
+    ]);
+
+    component.updateReinsurerCessionPct(1, { target: { value: '10' } } as unknown as Event);
+    expect(component.form.controls.reinsurers.value).toEqual([
+      {
+        reinsurer_id: '',
+        cession_pct: 80,
+        state_id: null,
+        broker_id: null,
+        broker_comm_type: null,
+      },
+      {
+        reinsurer_id: '',
+        cession_pct: 10,
+        state_id: null,
+        broker_id: null,
+        broker_comm_type: null,
+      },
+      {
+        reinsurer_id: '',
+        cession_pct: 10,
+        state_id: null,
+        broker_id: null,
+        broker_comm_type: null,
+      },
+    ]);
 
     component.removeReinsurerRow(0);
-    expect(component.form.controls.reinsurers.value.length).toBe(1);
+    expect(component.form.controls.reinsurers.value.length).toBe(2);
   });
 
   it('emits save with the form value and selection maps when valid', () => {

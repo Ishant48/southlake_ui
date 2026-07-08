@@ -1,3 +1,4 @@
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { ItdFormModal } from './itd-form-modal';
@@ -22,7 +23,7 @@ describe('ItdFormModal', () => {
     program: 'Program A',
     month_key: '2025-12',
     month_label: 'December 2025',
-    exhibits: { TOTAL: { ...blankExhibit } },
+    exhibits: { TX: { ...blankExhibit } },
   };
 
   beforeEach(async () => {
@@ -83,6 +84,7 @@ describe('ItdFormModal', () => {
   });
 
   it('updates only the targeted exhibit field for the selected state', () => {
+    component.itdStatesList = [{ code: 'TX', label: 'TX' }];
     component.model = sample;
     component.ngOnChanges({
       model: {
@@ -92,12 +94,12 @@ describe('ItdFormModal', () => {
         isFirstChange: () => true,
       },
     });
-    component.selectedStateCode = 'TOTAL';
+    component.selectedStateCode = 'TX';
 
-    component.updateExhibitField('TOTAL', 'loss_reserves', 500);
+    component.updateExhibitField('TX', 'loss_reserves', 500);
 
-    expect(component.form.controls.exhibits.value['TOTAL'].loss_reserves).toBe(500);
-    expect(component.form.controls.exhibits.value['TOTAL'].uep).toBe(0);
+    expect(component.form.controls.exhibits.value['TX'].loss_reserves).toBe(500);
+    expect(component.form.controls.exhibits.value['TX'].uep).toBe(0);
   });
 
   it('emits save with the current form value when valid', () => {

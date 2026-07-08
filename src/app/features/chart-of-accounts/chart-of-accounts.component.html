@@ -68,6 +68,7 @@
         class="btn-action-outline"
         (click)="exportToExcel()"
         style="
+          margin-left: auto;
           height: 38px;
           padding: 0 14px;
           display: inline-flex;
@@ -131,15 +132,17 @@
     }
 
     <!-- Grouped COA Table -->
-    <ag-grid-angular
-      class="ag-theme-alpine"
-      style="display: block; width: 100%"
-      [domLayout]="'autoHeight'"
-      [gridOptions]="gridOptions"
-      [rowData]="filteredSubCoas"
-      [columnDefs]="columnDefs"
-      (gridReady)="onGridReady($event)"
-    ></ag-grid-angular>
+    @if (subCoas.length > 0) {
+      <ag-grid-angular
+        class="ag-theme-alpine"
+        style="display: block; width: 100%"
+        [domLayout]="'autoHeight'"
+        [gridOptions]="gridOptions"
+        [rowData]="filteredSubCoas"
+        [columnDefs]="columnDefs"
+        (gridReady)="onGridReady($event)"
+      ></ag-grid-angular>
+    }
   </div>
 
   <!-- ADD / EDIT ACCOUNT MODAL -->

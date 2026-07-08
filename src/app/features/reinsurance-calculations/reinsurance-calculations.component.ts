@@ -86,15 +86,33 @@ export class ReinsuranceCalculationsComponent implements OnInit {
     this.loadWorkbooks();
   }
 
+  clearCalculationsData(): void {
+    this.selectedWorkbook = null;
+    this.statementRows = [];
+    this.gljeRows = [];
+    this.cashSettlement = null;
+    this.states = ['TOTAL'];
+    this.selectedState = 'TOTAL';
+    this.isPosted = false;
+    this.ratesForm = {};
+    this.mappingsForm = {};
+    this.paramsForm = {};
+  }
+
   loadWorkbooks(): void {
     this.loading = true;
     this.service.getWorkbooks().subscribe({
       next: res => {
         this.workbooks = (res ?? []).filter(w => w.source !== 'ITD');
         this.loading = false;
-        if (this.workbooks.length > 0 && !this.selectedWorkbookId) {
-          this.selectedWorkbookId = this.workbooks[0].id;
+        if (this.workbooks.length > 0) {
+          if (!this.selectedWorkbookId || !this.workbooks.some(w => w.id === this.selectedWorkbookId)) {
+            this.selectedWorkbookId = this.workbooks[0].id;
+          }
           this.onWorkbookChange();
+        } else {
+          this.selectedWorkbookId = null;
+          this.clearCalculationsData();
         }
         this.cdr.markForCheck();
       },
@@ -118,7 +136,6 @@ export class ReinsuranceCalculationsComponent implements OnInit {
       next: () => {
         this.toast.success('Workbook deleted successfully');
         this.selectedWorkbookId = null;
-        this.selectedWorkbook = null;
         this.loadWorkbooks();
       },
       error: () => {

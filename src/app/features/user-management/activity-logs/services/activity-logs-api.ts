@@ -31,4 +31,20 @@ export class ActivityLogsApi {
     if (filter.date_to) params = params.set('date_to', filter.date_to);
     return this.http.get(`${this.base}/export`, { params, responseType: 'blob' });
   }
+
+  getStats(): Observable<{
+    total: number;
+    successful: number;
+    failed: number;
+    critical: number;
+    active_users: number;
+  }> {
+    return this.http.get<{
+      total: number;
+      successful: number;
+      failed: number;
+      critical: number;
+      active_users: number;
+    }>(`${this.base}/stats`);
+  }
 }

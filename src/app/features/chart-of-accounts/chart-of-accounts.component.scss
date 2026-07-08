@@ -1,6 +1,13 @@
 :host {
-  --primary: var(--coral);
-  --primary-dark: var(--coral-hover);
+  --primary: var(--navy);
+  --primary-dark: var(--navy-hover);
+}
+
+.btn-primary {
+  background: var(--navy) !important;
+  &:hover:not(:disabled) {
+    background: var(--navy-hover) !important;
+  }
 }
 
 .coa-page {

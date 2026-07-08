@@ -135,7 +135,8 @@ export class UsersTableComponent implements OnInit {
             const btns: ActionButtonConfig[] = [{ label: 'View', action: 'view' }];
             if (this.hasPermission('user.edit')) {
               btns.push({ label: 'Edit', action: 'edit' });
-              if (data.status !== 'inactive') {
+              const isSuperAdmin = !!(data.is_super_admin || data.email === 'admin@southlake.com');
+              if (data.status !== 'inactive' && !isSuperAdmin) {
                 btns.push({ label: 'Deactivate', action: 'deactivate', danger: true });
               }
             }

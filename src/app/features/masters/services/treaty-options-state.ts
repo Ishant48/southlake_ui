@@ -9,6 +9,7 @@ import { LobsApi } from './lobs-api';
 import { CobsApi } from './cobs-api';
 import { StatesApi } from './states-api';
 import { BrokersApi } from './brokers-api';
+import { ProductsApi } from './products-api';
 import {
   MgaMaster,
   ReinsurerCompany,
@@ -28,6 +29,7 @@ export class TreatyOptionsState {
   private cobsApi = inject(CobsApi);
   private statesApi = inject(StatesApi);
   private brokersApi = inject(BrokersApi);
+  private productsApi = inject(ProductsApi);
 
   mgaOptions: MgaMaster[] = [];
   reinsurerOptions: ReinsurerCompany[] = [];
@@ -36,6 +38,7 @@ export class TreatyOptionsState {
   lobOptions: LineOfBusiness[] = [];
   cobOptions: CobMaster[] = [];
   brokerOptions: SimpleMasterRecord[] = [];
+  productOptions: any[] = [];
 
   loadMgaOptions(): Observable<MgaMaster[]> {
     return this.mgasApi.getMgas(undefined, true).pipe(tap(res => (this.mgaOptions = res)));
@@ -54,6 +57,7 @@ export class TreatyOptionsState {
       this.cobsApi.getCobs(undefined, true).pipe(tap(res => (this.cobOptions = res))),
       this.statesApi.getStates(undefined, true).pipe(tap(res => (this.stateOptions = res))),
       this.brokersApi.getBrokers(undefined, true).pipe(tap(res => (this.brokerOptions = res))),
+      this.productsApi.getProducts(undefined, true).pipe(tap(res => (this.productOptions = res))),
     ]);
   }
 }

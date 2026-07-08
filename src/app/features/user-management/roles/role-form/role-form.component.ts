@@ -1,67 +1,102 @@
-import {
-  Component,
-  Input,
-  Output,
-  EventEmitter,
-  inject,
-  OnChanges,
-  SimpleChanges,
-  ChangeDetectorRef,
-} from '@angular/core';
-import { FormsModule } from '@angular/forms';
-import { User, UserStatus, PanelMode, UserDetailTab } from '../../models/user.model';
+import { Component, inject, OnInit, ChangeDetectorRef } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
+import { Router, ActivatedRoute, RouterLink } from '@angular/router';
+import { RoleDetail, CreateRolePayload } from '../../models/role.model';
 import { Permission } from '../../models/permission.model';
-import { AuthService } from '../../../../core/services/auth.service';
-import { UsersApi } from '../../services/users-api';
+import { RolesApi } from '../../services/roles-api';
 import { PermissionsApi } from '../../services/permissions-api';
 import { ToastService } from '../../../../shared/components/toast/toast.service';
-import { UserStatusBadgeComponent } from '../user-status-badge/user-status-badge.component';
 
-import { Role } from '../../models/role.model';
-
-interface UpdateUserProfilePayload {
-  status?: UserStatus;
-  name?: string;
-  role_id?: string;
-  department?: string | null;
-  title?: string | null;
-  initials?: string | null;
-}
+const COLOR_SWATCHES = ['#e05470', '#0d1b4b', '#2e7d32', '#1565c0', '#e65100', '#7c3aed'];
 
 @Component({
-  selector: 'app-user-detail-panel',
+  selector: 'app-role-form',
   standalone: true,
-  imports: [FormsModule, UserStatusBadgeComponent],
-  templateUrl: './user-detail-panel.component.html',
-  styleUrl: './user-detail-panel.component.scss',
+  imports: [CommonModule, ReactiveFormsModule, RouterLink],
+  templateUrl: './role-form.component.html',
+  styleUrl: './role-form.component.scss',
 })
-export class UserDetailPanelComponent implements OnChanges {
-  protected readonly UserStatus = UserStatus;
-  protected readonly UserDetailTab = UserDetailTab;
-  protected readonly PanelMode = PanelMode;
-
-  @Input() user: User | null = null;
-  @Input() open = false;
-  @Input() roles: Role[] = [];
-  @Input() mode: PanelMode = PanelMode.View;
-  @Output() closed = new EventEmitter<void>();
-  @Output() updated = new EventEmitter<User>();
-
-  private authService = inject(AuthService);
-  private usersService = inject(UsersApi);
+export class RoleFormComponent implements OnInit {
+  private fb = inject(FormBuilder);
+  private router = inject(Router);
+  private route = inject(ActivatedRoute);
+  private rolesService = inject(RolesApi);
   private permissionsService = inject(PermissionsApi);
   private toast = inject(ToastService);
   private cdr = inject(ChangeDetectorRef);
 
-  activeTab: UserDetailTab = UserDetailTab.Profile;
-  editStatus: UserStatus = UserStatus.Active;
-  editName = '';
-  editRoleId = '';
-  editDepartment = '';
-  editTitle = '';
+  roleId: string | null = null;
+  role: RoleDetail | null = null;
+  isEditMode = false;
+  loading = false;
+  saving = false;
+  errorMsg = '';
 
   allPermissions: Permission[] = [];
   selectedIds = new Set<string>();
+  expandedGroups = new Set<string>();
+  expandedSubModules = new Set<string>();
+  searchTerm = '';
+  swatches = COLOR_SWATCHES;
+
+  form = this.fb.group({
+    name: ['', [Validators.required, Validators.pattern(/^[a-z0-9_]+$/)]],
+    label: ['', Validators.required],
+    color: ['#e05470'],
+    description: [''],
+  });
+
+  ngOnInit(): void {
+    this.roleId = this.route.snapshot.paramMap.get('id');
+    this.isEditMode = !!this.roleId;
+    this.loadData();
+  }
+
+  loadData(): void {
+    this.loading = true;
+    this.permissionsService.getPermissions().subscribe({
+      next: perms => {
+        this.allPermissions = perms;
+        if (this.isEditMode && this.roleId) {
+          this.rolesService.getRole(this.roleId).subscribe({
+            next: detail => {
+              this.role = detail;
+              this.form.patchValue({
+                name: detail.name,
+                label: detail.label,
+                color: detail.color,
+                description: detail.description ?? '',
+              });
+              // System roles cannot change their system name
+              if (detail.is_system) {
+                this.form.get('name')?.disable();
+              }
+              this.selectedIds = new Set(detail.permissions.map(p => p.id));
+              this.loading = false;
+              // Expand all groups by default in edit mode to review configured permissions
+              this.expandAll();
+              this.cdr.markForCheck();
+            },
+            error: () => {
+              this.loading = false;
+              this.toast.error('Failed to load role details');
+              this.router.navigate(['/user-management/roles']);
+              this.cdr.markForCheck();
+            },
+          });
+        } else {
+          this.loading = false;
+          this.cdr.markForCheck();
+        }
+      },
+      error: () => {
+        this.loading = false;
+        this.toast.error('Failed to load permissions');
+        this.cdr.markForCheck();
+      },
+    });
+  }
 
   get parentModuleGroups(): {
     name: string;
@@ -341,8 +376,38 @@ export class UserDetailPanelComponent implements OnChanges {
     ];
   }
 
-  expandedGroups = new Set<string>();
-  expandedSubModules = new Set<string>();
+  get filteredParentModuleGroups() {
+    const search = this.searchTerm.trim().toLowerCase();
+    const groups = this.parentModuleGroups;
+    if (!search) return groups;
+
+    return groups
+      .map(group => {
+        const filteredSubs = group.subModules
+          .map(sub => {
+            const matchesSub = sub.name.toLowerCase().includes(search);
+            const filteredPerms = sub.permissions.filter(p =>
+              matchesSub ||
+              p.label.toLowerCase().includes(search) ||
+              p.action.toLowerCase().includes(search)
+            );
+            return { ...sub, permissions: filteredPerms };
+          })
+          .filter(sub => sub.permissions.length > 0);
+
+        const allFilteredPerms = filteredSubs.reduce<Permission[]>(
+          (acc, sub) => [...acc, ...sub.permissions],
+          []
+        );
+
+        return {
+          ...group,
+          permissions: allFilteredPerms,
+          subModules: filteredSubs,
+        };
+      })
+      .filter(group => group.permissions.length > 0);
+  }
 
   toggleGroup(groupName: string): void {
     if (this.expandedGroups.has(groupName)) {
@@ -353,7 +418,46 @@ export class UserDetailPanelComponent implements OnChanges {
   }
 
   isGroupExpanded(groupName: string): boolean {
+    if (this.searchTerm.trim()) {
+      return true; // Auto-expand when searching
+    }
     return this.expandedGroups.has(groupName);
+  }
+
+  isGroupAllSelected(group: { name: string; permissions: Permission[] }): boolean {
+    if (!group.permissions.length) return false;
+    return group.permissions.every(perm => this.selectedIds.has(perm.id));
+  }
+
+  toggleSelectAllGroup(group: { name: string; permissions: Permission[] }): void {
+    const allSelected = this.isGroupAllSelected(group);
+    for (const perm of group.permissions) {
+      if (allSelected) {
+        this.selectedIds.delete(perm.id);
+      } else {
+        this.selectedIds.add(perm.id);
+      }
+    }
+  }
+
+  getGroupSelectedCount(group: { name: string; permissions: Permission[] }): number {
+    return group.permissions.filter(p => this.selectedIds.has(p.id)).length;
+  }
+
+  isAllGlobalSelected(): boolean {
+    if (!this.allPermissions.length) return false;
+    return this.allPermissions.every(p => this.selectedIds.has(p.id));
+  }
+
+  toggleSelectAllGlobal(): void {
+    const allSelected = this.isAllGlobalSelected();
+    if (allSelected) {
+      this.selectedIds.clear();
+    } else {
+      for (const p of this.allPermissions) {
+        this.selectedIds.add(p.id);
+      }
+    }
   }
 
   toggleSubModule(subName: string): void {
@@ -365,6 +469,9 @@ export class UserDetailPanelComponent implements OnChanges {
   }
 
   isSubModuleExpanded(subName: string): boolean {
+    if (this.searchTerm.trim()) {
+      return true; // Auto-expand when searching
+    }
     return this.expandedSubModules.has(subName);
   }
 
@@ -384,89 +491,24 @@ export class UserDetailPanelComponent implements OnChanges {
     }
   }
 
-  isAllSelected(group: { name: string; permissions: Permission[] }): boolean {
-    if (!group.permissions.length) return false;
-    return group.permissions.every(perm => this.selectedIds.has(perm.id));
+  getSubModuleSelectedCount(sub: { name: string; permissions: Permission[] }): number {
+    return sub.permissions.filter(p => this.selectedIds.has(p.id)).length;
   }
 
-  toggleSelectAllGroup(group: { name: string; permissions: Permission[] }): void {
-    const allSelected = this.isAllSelected(group);
-    for (const perm of group.permissions) {
-      if (allSelected) {
-        this.selectedIds.delete(perm.id);
-      } else {
-        this.selectedIds.add(perm.id);
+  expandAll(): void {
+    this.expandedGroups = new Set(this.parentModuleGroups.map(g => g.name));
+    const subs = [];
+    for (const g of this.parentModuleGroups) {
+      for (const s of g.subModules) {
+        subs.push(s.name);
       }
     }
-  }
-  permsLoading = false;
-  permsError = '';
-
-  savingProfile = false;
-  savingPerms = false;
-  profileError = '';
-
-  hasPermission(permission: string): boolean {
-    return this.authService.hasPermission(permission);
+    this.expandedSubModules = new Set(subs);
   }
 
-  isSuperAdmin(): boolean {
-    if (!this.user) return false;
-    return !!(this.user.is_super_admin || this.user.email === 'admin@southlake.com');
-  }
-
-  ngOnChanges(changes: SimpleChanges): void {
-    if (changes['user'] && this.user) {
-      this.editStatus = this.user.status;
-      this.editName = this.user.name;
-      this.editRoleId = this.user.role?.id ?? '';
-      this.editDepartment = this.user.department ?? '';
-      this.editTitle = this.user.title ?? '';
-      this.activeTab = UserDetailTab.Profile;
-      this.profileError = '';
-    }
-    if (changes['open'] && !this.open) {
-      this.allPermissions = [];
-      this.selectedIds = new Set();
-      this.permsError = '';
-      this.profileError = '';
-    }
-  }
-
-  loadPermissionsTab(): void {
-    this.activeTab = UserDetailTab.Permissions;
-    this.permsLoading = true;
-    this.permissionsService.getPermissions().subscribe({
-      next: perms => {
-        this.allPermissions = perms;
-        if (this.user) {
-          this.usersService.getUserPermissions(this.user.id).subscribe({
-            next: userPerms => {
-              this.selectedIds = new Set(userPerms.map(p => p.id));
-              this.permsLoading = false;
-              this.cdr.markForCheck();
-            },
-            error: () => {
-              this.selectedIds = new Set();
-              this.permsLoading = false;
-              this.toast.error('Failed to load user permissions');
-              this.cdr.markForCheck();
-            },
-          });
-        } else {
-          this.selectedIds = new Set();
-          this.permsLoading = false;
-          this.cdr.markForCheck();
-        }
-      },
-      error: () => {
-        this.allPermissions = [];
-        this.selectedIds = new Set();
-        this.permsLoading = false;
-        this.toast.error('Failed to load permission definitions');
-        this.cdr.markForCheck();
-      },
-    });
+  collapseAll(): void {
+    this.expandedGroups.clear();
+    this.expandedSubModules.clear();
   }
 
   togglePermission(id: string): void {
@@ -477,103 +519,62 @@ export class UserDetailPanelComponent implements OnChanges {
     }
   }
 
-  saveProfile(): void {
-    if (!this.user || this.savingProfile) return;
-    this.savingProfile = true;
-    this.profileError = '';
-
-    const payload: UpdateUserProfilePayload = {
-      status: this.editStatus !== this.user.status ? this.editStatus : undefined,
-      name: this.editName !== this.user.name ? this.editName : undefined,
-      department: this.editDepartment !== this.user.department ? this.editDepartment : undefined,
-      title: this.editTitle !== this.user.title ? this.editTitle : undefined,
-    };
-
-    if (this.mode === PanelMode.Edit) {
-      payload.name = this.editName;
-      payload.role_id = this.editRoleId;
-      payload.department = this.editDepartment || null;
-      payload.title = this.editTitle || null;
-      // Generate initials
-      let initials = '';
-      const parts = this.editName.trim().split(/\s+/);
-      if (parts.length > 1) {
-        initials = parts
-          .map(p => p[0])
-          .join('')
-          .slice(0, 4)
-          .toUpperCase();
-      } else if (parts.length === 1 && parts[0]) {
-        initials = parts[0].slice(0, 2).toUpperCase();
-      }
-      payload.initials = initials || null;
-    }
-
-    this.usersService.updateUser(this.user.id, payload as Partial<User>).subscribe({
-      next: updated => {
-        this.savingProfile = false;
-        this.toast.success('User updated successfully');
-        this.updated.emit(updated);
-        this.closed.emit();
-        this.cdr.markForCheck();
-      },
-      error: err => {
-        this.savingProfile = false;
-        this.profileError = err?.error?.message ?? 'Failed to update user.';
-        this.cdr.markForCheck();
-      },
-    });
+  isInvalid(field: string): boolean {
+    const ctrl = this.form.get(field);
+    return !!(ctrl?.invalid && ctrl?.touched);
   }
 
-  savePermissions(): void {
-    if (!this.user || this.savingPerms) return;
-    this.savingPerms = true;
-    this.permsError = '';
-    this.usersService.updateUserPermissions(this.user.id, Array.from(this.selectedIds)).subscribe({
+  get footerMessage(): string {
+    const nameVal = this.form.get('name')?.value;
+    const labelVal = this.form.get('label')?.value;
+    const hasName = !!(nameVal && nameVal.trim());
+    const hasLabel = !!(labelVal && labelVal.trim());
+    const hasPermissions = this.selectedIds.size > 0;
+
+    if ((!hasName || !hasLabel) && !hasPermissions) {
+      return 'Enter a role name and select at least one permission to continue.';
+    } else if (!hasName || !hasLabel) {
+      return 'Enter a role name and display label to continue.';
+    } else if (!hasPermissions) {
+      return 'Select at least one permission to continue.';
+    }
+    return '';
+  }
+
+  get isFormValid(): boolean {
+    return this.form.valid && this.selectedIds.size > 0;
+  }
+
+  onSave(): void {
+    this.form.markAllAsTouched();
+    if (!this.isFormValid || this.saving) return;
+    this.saving = true;
+    this.errorMsg = '';
+
+    const val = this.form.getRawValue(); // use getRawValue in case name is disabled
+    const payload: CreateRolePayload = {
+      name: val.name as string,
+      label: val.label as string,
+      color: val.color as string,
+      description: val.description ?? undefined,
+      permissions: Array.from(this.selectedIds),
+    };
+
+    const obs = this.isEditMode && this.roleId
+      ? this.rolesService.updateRole(this.roleId, payload)
+      : this.rolesService.createRole(payload);
+
+    obs.subscribe({
       next: () => {
-        this.savingPerms = false;
-        this.toast.success('Permissions updated');
-        this.cdr.markForCheck();
+        this.saving = false;
+        this.toast.success(this.isEditMode ? 'Role updated' : 'Role created');
+        this.router.navigate(['/user-management/roles']);
       },
       error: err => {
-        this.savingPerms = false;
-        this.permsError = err?.error?.message ?? 'Failed to save permissions.';
+        this.saving = false;
+        this.errorMsg = err?.error?.message ?? 'Failed to save role.';
         this.cdr.markForCheck();
       },
     });
-  }
-
-  closePanel(): void {
-    this.closed.emit();
-  }
-
-  hexToRgba(hex: string, alpha: number): string {
-    const r = parseInt(hex.slice(1, 3), 16);
-    const g = parseInt(hex.slice(3, 5), 16);
-    const b = parseInt(hex.slice(5, 7), 16);
-    return `rgba(${r},${g},${b},${alpha})`;
-  }
-
-  formatDate(dateStr?: string): string {
-    if (!dateStr) return 'N/A';
-    try {
-      return new Date(dateStr).toLocaleDateString('en-US', {
-        month: 'short',
-        day: 'numeric',
-        year: 'numeric',
-      });
-    } catch {
-      return dateStr;
-    }
-  }
-
-  formatUserType(type: string): string {
-    const map: Record<string, string> = {
-      staff: 'Staff',
-      mga_user: 'MGA User',
-      broker_user: 'Broker User',
-      customer_user: 'Customer',
-    };
-    return map[type] ?? type;
   }
 }

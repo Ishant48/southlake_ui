@@ -21,8 +21,8 @@ export interface SimpleFormValue {
   contact_name?: string;
   contact_email?: string;
   contact_phone?: string;
-  lob_id?: string;
-  cob_id?: string;
+  lob_id?: any;
+  cob_id?: any;
   prefix?: string;
   next_value?: number;
   padding_width?: number;

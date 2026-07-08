@@ -44,7 +44,7 @@ export class TreatyUploadsPanel {
   selectedTreatyForItd: Treaty | null = null;
   selectedTreatyForUpload: Treaty | null = null;
   itdForm: ItdFormValue = { program: '', month_key: '', month_label: '', exhibits: {} };
-  itdStatesList = [{ code: 'TOTAL', label: 'TOTAL' }];
+  itdStatesList: any[] = [];
   itdSelectedMonth = '12';
   itdSelectedYear = '2025';
   readonly monthsList = ITD_MONTHS_LIST;

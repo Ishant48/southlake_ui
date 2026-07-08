@@ -70,14 +70,14 @@
           <div class="form-row reinsurer-row">
             <div class="form-field flex-2">
               @if (i === 0) {
-                <span class="form-label">Reinsurer Company</span>
+                <span class="form-label">Reinsurer / Risk Company</span>
               }
               <app-dropdown-search
-                [items]="reinsurerOptions"
+                [items]="combinedReinsurerAndRiskCompanyOptions"
                 [isMultiSelect]="false"
                 bindValue="id"
-                placeholder="Select Reinsurer"
-                [itemLabelFn]="reinsurerLabelFn"
+                placeholder="Select Reinsurer / Risk Company"
+                [itemLabelFn]="reinsurerOrRiskCompanyLabelFn"
                 [selectedValue]="reinsurer.reinsurer_id"
                 (selectedValueChange)="updateReinsurerReinsurerId(i, $event)"
               ></app-dropdown-search>
@@ -109,6 +109,21 @@
                 [selectedValue]="reinsurer.broker_id"
                 (selectedValueChange)="updateReinsurerBrokerId(i, $event)"
               ></app-dropdown-search>
+            </div>
+            <div class="form-field flex-1-2">
+              @if (i === 0) {
+                <label for="tr-reinsurer-broker-comm-type-{{ i }}" class="form-label">Comm Type</label>
+              }
+              <select
+                id="tr-reinsurer-broker-comm-type-{{ i }}"
+                [value]="reinsurer.broker_comm_type || ''"
+                (change)="updateReinsurerBrokerCommType(i, $event)"
+                class="form-input"
+              >
+                <option value="">None</option>
+                <option value="flat">Flat</option>
+                <option value="percentage">Percentage</option>
+              </select>
             </div>
             <div class="form-field flex-1">
               @if (i === 0) {
@@ -372,28 +387,35 @@
           ></app-dropdown-search>
         </div>
 
-        <h4 class="section-heading">Authorized Lines of Business (LOBs)</h4>
+        <h4 class="section-heading">Authorized Product</h4>
         <div class="field-block">
           <app-dropdown-search
-            [items]="lobOptions"
-            [isMultiSelect]="true"
+            [items]="productOptions"
+            [isMultiSelect]="false"
             bindValue="id"
-            placeholder="Select Lines of Business"
-            [itemLabelFn]="lobLabelFn"
-            [(selectedValues)]="formSelectedLobs"
+            placeholder="Select Product"
+            [itemLabelFn]="productLabelFn"
+            [selectedValue]="selectedProductId"
+            (selectedValueChange)="onProductChange($event)"
           ></app-dropdown-search>
         </div>
 
-        <h4 class="section-heading">Authorized Classes of Business (COBs)</h4>
-        <div class="field-block">
-          <app-dropdown-search
-            [items]="cobOptions"
-            [isMultiSelect]="true"
-            bindValue="id"
-            placeholder="Select Classes of Business"
-            [itemLabelFn]="cobLabelFn"
-            [(selectedValues)]="formSelectedCobs"
-          ></app-dropdown-search>
+        <div class="form-row" style="margin-top: 15px;">
+          <div class="form-field">
+            <span class="form-label">Authorized Lines of Business (LOBs) - from Product</span>
+            <div class="form-input" style="height: auto; min-height: 38px; line-height: 1.5; padding: 8px 12px; background: var(--gray-50); border: 1.5px solid var(--gray-200); color: var(--gray-700);">
+              {{ getSelectedProductLobs() }}
+            </div>
+          </div>
+        </div>
+
+        <div class="form-row" style="margin-top: 15px;">
+          <div class="form-field">
+            <span class="form-label">Authorized Classes of Business (COBs) - from Product</span>
+            <div class="form-input" style="height: auto; min-height: 38px; line-height: 1.5; padding: 8px 12px; background: var(--gray-50); border: 1.5px solid var(--gray-200); color: var(--gray-700);">
+              {{ getSelectedProductCobs() }}
+            </div>
+          </div>
         </div>
       </form>
 

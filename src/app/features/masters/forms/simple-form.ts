@@ -18,8 +18,8 @@ export class SimpleForm {
       contact_name: new FormControl('', { nonNullable: true }),
       contact_email: new FormControl('', { nonNullable: true }),
       contact_phone: new FormControl('', { nonNullable: true }),
-      lob_id: new FormControl('', { nonNullable: true }),
-      cob_id: new FormControl('', { nonNullable: true }),
+      lob_id: new FormControl<any>(''),
+      cob_id: new FormControl<any>(''),
       prefix: new FormControl('', { nonNullable: true }),
       next_value: new FormControl(1, { nonNullable: true }),
       padding_width: new FormControl(4, { nonNullable: true }),
@@ -49,8 +49,8 @@ export interface SimpleFormModel {
   contact_name: FormControl<string>;
   contact_email: FormControl<string>;
   contact_phone: FormControl<string>;
-  lob_id: FormControl<string>;
-  cob_id: FormControl<string>;
+  lob_id: FormControl<any>;
+  cob_id: FormControl<any>;
   prefix: FormControl<string>;
   next_value: FormControl<number>;
   padding_width: FormControl<number>;

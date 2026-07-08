@@ -1,0 +1,292 @@
+<div class="role-form-page">
+  <!-- Top Navigation & Title Bar -->
+  <div class="page-header-bar">
+    <div class="header-left">
+      <a routerLink="/user-management/roles" class="btn-back" aria-label="Go back to roles">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="15 18 9 12 15 6" />
+        </svg>
+      </a>
+      <div class="title-breadcrumb-wrap">
+        <span class="breadcrumb-text">User Management / Roles & Permissions</span>
+        <h1 class="page-title-text">{{ isEditMode ? 'Edit Role' : 'Create Role' }}</h1>
+      </div>
+    </div>
+    <div class="header-right">
+      <a routerLink="/user-management/roles" class="btn-cancel">Cancel</a>
+      <button class="btn-save" [disabled]="saving || !isFormValid || loading" (click)="onSave()">
+        {{ saving ? 'Saving...' : 'Save Role' }}
+      </button>
+    </div>
+  </div>
+
+  @if (loading) {
+    <div class="loading-container">
+      <div class="spinner"></div>
+      <p>Loading role configuration...</p>
+    </div>
+  } @else {
+    <div class="role-form-container">
+      <!-- Left Column: Role Details -->
+      <div class="form-column-left">
+        <div class="details-card">
+          <div class="card-header">
+            <h2 class="card-title">Role Details</h2>
+            <p class="card-subtitle">Basic information about this role.</p>
+          </div>
+
+          <form [formGroup]="form" novalidate class="details-form">
+            <div class="form-field">
+              <label class="form-label" for="role-name-input">Role Name *</label>
+              <input
+                id="role-name-input"
+                type="text"
+                class="form-input"
+                formControlName="name"
+                placeholder="e.g. underwriter"
+                [class.input-error]="isInvalid('name')"
+              />
+              <span class="help-text">System identifier — lowercase, no spaces.</span>
+              @if (isInvalid('name')) {
+                <span class="field-error">
+                  @if (form.get('name')?.errors?.['required']) {
+                    Required
+                  } @else if (form.get('name')?.errors?.['pattern']) {
+                    Only lowercase letters, numbers, and underscores allowed
+                  }
+                </span>
+              }
+            </div>
+
+            <div class="form-field">
+              <label class="form-label" for="role-label-input">Display Name *</label>
+              <input
+                id="role-label-input"
+                type="text"
+                class="form-input"
+                formControlName="label"
+                placeholder="e.g. Underwriter"
+                [class.input-error]="isInvalid('label')"
+              />
+              <span class="help-text">Shown to users throughout the app.</span>
+              @if (isInvalid('label')) {
+                <span class="field-error">Required</span>
+              }
+            </div>
+
+
+
+            <div class="form-field">
+              <label class="form-label" for="role-description-input">Description</label>
+              <textarea
+                id="role-description-input"
+                class="form-input form-textarea"
+                formControlName="description"
+                placeholder="Describe this role's responsibilities..."
+                rows="4"
+              ></textarea>
+            </div>
+          </form>
+
+          <div class="permissions-counter-section">
+            <span class="counter-label">Permissions selected</span>
+            <span class="counter-value">{{ selectedIds.size }} / {{ allPermissions.length }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Column: Module Permissions -->
+      <div class="form-column-right">
+        <div class="permissions-card">
+          <div class="card-header">
+            <h2 class="card-title">Module Permissions</h2>
+            <p class="card-subtitle">Choose what this role can access across the system.</p>
+          </div>
+
+          <!-- Search Input -->
+          <div class="search-box-wrap">
+            <svg class="search-box-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <circle cx="11" cy="11" r="8" />
+              <line x1="21" y1="21" x2="16.65" y2="16.65" />
+            </svg>
+            <input
+              type="text"
+              class="search-box-input"
+              placeholder="Search modules or permissions..."
+              [value]="searchTerm"
+              (input)="searchTerm = $any($event.target).value"
+            />
+          </div>
+
+          <!-- Permissions Subheader -->
+          <div class="permissions-control-toolbar">
+            <span class="modules-info-text">
+              {{ filteredParentModuleGroups.length }} modules - {{ selectedIds.size }} of {{ allPermissions.length }} permissions selected
+            </span>
+            <div class="toolbar-buttons">
+              <button type="button" class="btn-text btn-select-all" (click)="toggleSelectAllGlobal()">
+                {{ isAllGlobalSelected() ? 'Deselect All' : 'Select All' }}
+              </button>
+              <span class="btn-divider">|</span>
+              <button type="button" class="btn-text" (click)="expandAll()">Expand All</button>
+              <span class="btn-divider">|</span>
+              <button type="button" class="btn-text" (click)="collapseAll()">Collapse All</button>
+            </div>
+          </div>
+
+          <!-- Modules Accordions List -->
+          <div class="modules-accordion-list">
+            @for (group of filteredParentModuleGroups; track group.name) {
+              <div class="accordion-item" [class.item-expanded]="isGroupExpanded(group.name)">
+                <div class="accordion-header">
+                  <div class="header-left-side">
+                    <!-- Toggle Group Expansion Chevron -->
+                    <button type="button" class="btn-chevron" (click)="toggleGroup(group.name)" [attr.aria-expanded]="isGroupExpanded(group.name)">
+                      <svg
+                        class="chevron-icon"
+                        [class.icon-rotated]="isGroupExpanded(group.name)"
+                        width="16"
+                        height="16"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2.5"
+                      >
+                        <polyline points="9 18 15 12 9 6" />
+                      </svg>
+                    </button>
+                    <!-- Module Select Checkbox -->
+                    <label class="checkbox-container">
+                      <input
+                        type="checkbox"
+                        [checked]="isGroupAllSelected(group)"
+                        (change)="toggleSelectAllGroup(group)"
+                      />
+                      <span class="checkbox-checkmark"></span>
+                    </label>
+
+                    <!-- Group Icon -->
+                    @if (group.icon === 'grid') {
+                      <svg class="module-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                        <rect x="3" y="3" width="7" height="7" rx="1.5" />
+                        <rect x="14" y="3" width="7" height="7" rx="1.5" />
+                        <rect x="14" y="14" width="7" height="7" rx="1.5" />
+                        <rect x="3" y="14" width="7" height="7" rx="1.5" />
+                      </svg>
+                    } @else if (group.icon === 'file') {
+                      <svg class="module-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                        <polyline points="14 2 14 8 20 8" />
+                      </svg>
+                    } @else if (group.icon === 'home') {
+                      <svg class="module-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+                        <polyline points="9 22 9 12 15 12 15 22" />
+                      </svg>
+                    } @else if (group.icon === 'admin') {
+                      <svg class="module-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                        <circle cx="12" cy="12" r="3" />
+                        <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" />
+                      </svg>
+                    }
+
+                    <span class="module-title-text" (click)="toggleGroup(group.name)">{{ group.name }}</span>
+                  </div>
+                  <div class="header-right-side" (click)="toggleGroup(group.name)">
+                    <span class="fraction-text">{{ getGroupSelectedCount(group) }} / {{ group.permissions.length }}</span>
+                  </div>
+                </div>
+
+                @if (isGroupExpanded(group.name)) {
+                  <div class="accordion-content">
+                    <div class="submodules-list">
+                      @for (sub of group.subModules; track sub.name) {
+                        <div class="submodule-item" [class.sub-expanded]="isSubModuleExpanded(sub.name)">
+                          <div class="submodule-header">
+                            <div class="sub-header-left">
+                              <!-- Chevron -->
+                              <button type="button" class="btn-sub-chevron" (click)="toggleSubModule(sub.name)">
+                                <svg
+                                  class="sub-chevron-icon"
+                                  [class.icon-rotated]="isSubModuleExpanded(sub.name)"
+                                  width="14"
+                                  height="14"
+                                  viewBox="0 0 24 24"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  stroke-width="2.5"
+                                >
+                                  <polyline points="9 18 15 12 9 6" />
+                                </svg>
+                              </button>
+                              <!-- Checkbox -->
+                              <label class="checkbox-container">
+                                <input
+                                  type="checkbox"
+                                  [checked]="isSubModuleAllSelected(sub)"
+                                  (change)="toggleSelectAllSubModule(sub)"
+                                />
+                                <span class="checkbox-checkmark"></span>
+                              </label>
+                              <span class="submodule-title-text" (click)="toggleSubModule(sub.name)">{{ sub.name }}</span>
+                            </div>
+                            <div class="sub-header-right" (click)="toggleSubModule(sub.name)">
+                              <span class="sub-fraction-text">{{ getSubModuleSelectedCount(sub) }} / {{ sub.permissions.length }}</span>
+                            </div>
+                          </div>
+
+                          @if (isSubModuleExpanded(sub.name)) {
+                            <div class="submodule-content">
+                              <div class="permissions-sublist">
+                                @for (perm of sub.permissions; track perm.id) {
+                                  <div class="permission-row" [class.row-selected]="selectedIds.has(perm.id)">
+                                    <label class="permission-checkbox-label">
+                                      <input
+                                        type="checkbox"
+                                        [checked]="selectedIds.has(perm.id)"
+                                        (change)="togglePermission(perm.id)"
+                                      />
+                                      <div class="permission-label-wrap">
+                                        <span class="perm-title">{{ perm.label }}</span>
+                                        <span class="perm-key">{{ perm.action }}</span>
+                                      </div>
+                                    </label>
+                                  </div>
+                                }
+                              </div>
+                            </div>
+                          }
+                        </div>
+                      }
+                    </div>
+                  </div>
+                }
+              </div>
+            } @empty {
+              <div class="empty-results">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="11" cy="11" r="8" />
+                  <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                </svg>
+                <p>No modules or permissions matches "{{ searchTerm }}"</p>
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Error Banner if API Fails -->
+  @if (errorMsg) {
+    <div class="error-banner">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <circle cx="12" cy="12" r="10" />
+        <line x1="12" y1="8" x2="12" y2="12" />
+        <line x1="12" y1="16" x2="12.01" y2="16" />
+      </svg>
+      <span>{{ errorMsg }}</span>
+    </div>
+  }
+
+</div>

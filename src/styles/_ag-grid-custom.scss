@@ -3,7 +3,7 @@
 
 /* Custom styling to match Southlake UI tables */
 .ag-theme-alpine {
-  --ag-header-background-color: #ffffff;
+  --ag-header-background-color: #f2f4f7;
   --ag-header-foreground-color: #475569;
   --ag-row-border-color: rgba(0, 0, 0, 0.04) !important;
   --ag-row-hover-color: #f8fafc;
@@ -38,13 +38,16 @@
 
   .ag-header {
     border-bottom: 1.5px solid rgba(0, 0, 0, 0.06) !important;
-    background-color: #ffffff !important;
+    background-color: #f2f4f7 !important;
   }
 
   .ag-header-cell {
     border-right: 1px solid rgba(0, 0, 0, 0.04) !important;
     &:last-child {
       border-right: none !important;
+    }
+    &:first-child {
+      padding-left: 20px !important;
     }
   }
 
@@ -75,6 +78,9 @@
     border-right: 1px solid rgba(0, 0, 0, 0.04) !important;
     &:last-child {
       border-right: none !important;
+    }
+    &:first-child {
+      padding-left: 20px !important;
     }
   }
 

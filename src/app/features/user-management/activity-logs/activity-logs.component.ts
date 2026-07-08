@@ -1,7 +1,6 @@
 import { Component, inject, OnInit, ChangeDetectorRef, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterLink, RouterLinkActive } from '@angular/router';
 import { ActivityLog, ActivityLogsFilter } from './models/activity-log.model';
 import { Module } from '../models/permission.model';
 import { AuthService } from '../../../core/services/auth.service';
@@ -29,8 +28,6 @@ import { StatusBadgeRenderer } from './components/renderers/status-badge-cell';
   imports: [
     CommonModule,
     FormsModule,
-    RouterLink,
-    RouterLinkActive,
     AgGridAngular,
     ActivityHeaderComponent,
     ActivitySummaryCardsComponent,
@@ -54,6 +51,14 @@ export class ActivityLogsComponent implements OnInit {
   loading = false;
   modules: Module[] = [];
   skeletonRows = [1, 2, 3, 4, 5, 6, 7];
+
+  stats: {
+    total: number;
+    successful: number;
+    failed: number;
+    critical: number;
+    active_users: number;
+  } | null = null;
 
   gridOptions!: GridOptions;
   columnDefs: ColDef[] = [];
@@ -92,6 +97,16 @@ export class ActivityLogsComponent implements OnInit {
     this.setupGrid();
     this.loadLogs();
     this.loadModules();
+    this.loadStats();
+  }
+
+  loadStats(): void {
+    this.logsService.getStats().subscribe({
+      next: res => {
+        this.stats = res;
+        this.cdr.markForCheck();
+      },
+    });
   }
 
   setupGrid(): void {
@@ -120,14 +135,14 @@ export class ActivityLogsComponent implements OnInit {
       },
       {
         headerName: 'MODULE',
-        field: 'moduleId',
+        field: 'module_id',
         valueFormatter: params => this.formatModule(params.value),
         flex: 1,
         minWidth: 150,
       },
       {
         headerName: 'ENTITY',
-        field: 'entityType',
+        field: 'entity_type',
         valueFormatter: params => params.value || '-',
         flex: 1,
         minWidth: 150,
@@ -141,7 +156,7 @@ export class ActivityLogsComponent implements OnInit {
       },
       {
         headerName: 'IP ADDRESS',
-        field: 'ipAddress',
+        field: 'ip_address',
         valueFormatter: params => params.value || '-',
         cellClass: 'text-mono',
         flex: 1,
@@ -163,7 +178,7 @@ export class ActivityLogsComponent implements OnInit {
       },
       {
         headerName: 'DATE & TIME',
-        field: 'createdAt',
+        field: 'created_at',
         valueFormatter: params => this.formatDate(params.value),
         flex: 1,
         minWidth: 160,
@@ -210,6 +225,7 @@ export class ActivityLogsComponent implements OnInit {
           this.totalPages = result.total_pages;
           this.currentPage = result.page;
           this.loading = false;
+          this.loadStats();
           this.cdr.markForCheck();
         },
         error: () => {
@@ -225,29 +241,26 @@ export class ActivityLogsComponent implements OnInit {
     const browsers = ['Chrome 114', 'Safari 16', 'Firefox 112', 'Edge 113'];
     const locations = ['New York, US', 'London, UK', 'Mumbai, IN', 'Sydney, AU'];
     const osList = ['Windows 11', 'macOS 13', 'iOS 16', 'Android 13'];
+    const ips = ['192.168.10.10', '192.168.10.24', '192.168.10.31', '103.48.211.102'];
 
     const random = (arr: string[]) => arr[Math.floor(Math.random() * arr.length)];
+    const isValValid = (val: any) => val && val !== '-' && val !== 'unknown';
 
     // Weighted status logic
     const isError = log.action === 'delete' || Math.random() > 0.8;
-    const status = isError ? (Math.random() > 0.5 ? 'Failed' : 'Critical') : 'Success';
+    const fallbackStatus = isError ? (Math.random() > 0.5 ? 'Failed' : 'Critical') : 'Success';
 
     return {
       ...log,
-      status: status,
-      device: random(devices),
-      browser: random(browsers),
-      location: random(locations),
-      os: random(osList),
-      session_id: 'sess_' + Math.random().toString(36).substr(2, 9),
-      correlation_id: 'req_' + Math.random().toString(36).substr(2, 9),
-      field_changes:
-        Math.random() > 0.5
-          ? [
-              { field: 'Status', old_value: 'Draft', new_value: 'Published' },
-              { field: 'Assigned To', old_value: 'Unassigned', new_value: 'John Doe' },
-            ]
-          : undefined,
+      ip_address: isValValid(log.ip_address) ? log.ip_address : random(ips),
+      status: isValValid(log.status) ? log.status : fallbackStatus,
+      device: isValValid(log.device) ? log.device : random(devices),
+      browser: isValValid(log.browser) ? log.browser : random(browsers),
+      location: isValValid(log.location) ? log.location : random(locations),
+      os: isValValid(log.os) ? log.os : random(osList),
+      session_id: isValValid(log.session_id) ? log.session_id : 'SES-' + Math.floor(10000 + Math.random() * 90000),
+      correlation_id: isValValid(log.correlation_id) ? log.correlation_id : 'COR-' + Math.floor(10000 + Math.random() * 90000) + '-T',
+      field_changes: log.field_changes || undefined,
     };
   }
 
@@ -291,8 +304,31 @@ export class ActivityLogsComponent implements OnInit {
 
   formatModule(moduleId?: string): string {
     if (!moduleId) return '-';
-    const mod = this.modules.find(m => m.id === moduleId);
-    return mod?.label ?? moduleId;
+    const MAP: Record<string, string> = {
+      reports: 'Dashboard',
+      user: 'Users',
+      role: 'Roles & Permissions',
+      permission: 'Roles & Permissions',
+      user_management: 'Users',
+      activity_log: 'Activity Logs',
+      chart_of_accounts: 'Chart of Accounts',
+      gl_mapping: 'GL Mappings',
+      journal_entry: 'Journal Entries',
+      workbook: 'Premium & Claims Exhibits',
+      test_balance: 'Test Balance',
+      treaty: 'Treaties',
+      mga: 'MGAs',
+      lob: 'Lines of Business',
+      cob: 'Classes of Business',
+      state: 'States',
+      reinsurer: 'Reinsurers',
+      risk_company: 'Risk Companies',
+      broker: 'Brokers',
+      product: 'Products',
+      masters_config: 'Masters Configuration',
+      database_seeder: 'Database Seeder',
+    };
+    return MAP[moduleId] ?? (this.modules.find(m => m.id === moduleId)?.label ?? moduleId);
   }
 
   formatDate(dateStr: string): string {

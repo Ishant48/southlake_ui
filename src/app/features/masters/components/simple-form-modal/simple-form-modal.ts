@@ -45,9 +45,13 @@ export class SimpleFormModal implements OnChanges {
 
   form: FormGroup<SimpleFormModel> = this.simpleFormService.createForm();
 
+  selectedLobsDict: { [key: string]: boolean } = {};
+  selectedCobsDict: { [key: string]: boolean } = {};
+
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['model']) {
       this.simpleFormService.patchForm(this.form, this.model);
+      this.syncFormToDicts();
     }
     if (changes['mode'] || changes['isEditMode']) {
       if (this.isEditMode) {
@@ -59,20 +63,49 @@ export class SimpleFormModal implements OnChanges {
     }
   }
 
-  onProductLobCobChange(): void {
-    const selectedLob = this.lobOptions.find(l => l.id === this.form.controls.lob_id.value);
-    const selectedCob = this.cobOptions.find(c => c.id === this.form.controls.cob_id.value);
+  syncFormToDicts(): void {
+    const lobs = this.form.controls.lob_id.value;
+    const cobs = this.form.controls.cob_id.value;
 
-    const lobCode = selectedLob ? selectedLob.lob_code : '';
-    const cobCode = selectedCob ? selectedCob.cob_code : '';
-
-    if (lobCode && cobCode) {
-      this.form.controls.code.setValue(`${lobCode}-${cobCode}`);
-      this.form.controls.name.setValue(`${selectedLob?.name} - ${selectedCob?.name}`);
-    } else {
-      this.form.controls.code.setValue('');
-      this.form.controls.name.setValue('');
+    const lobDict: { [key: string]: boolean } = {};
+    if (Array.isArray(lobs)) {
+      lobs.forEach(id => {
+        if (id) lobDict[id] = true;
+      });
+    } else if (typeof lobs === 'string' && lobs) {
+      lobs.split(',').forEach(id => {
+        if (id) lobDict[id] = true;
+      });
     }
+    this.selectedLobsDict = lobDict;
+
+    const cobDict: { [key: string]: boolean } = {};
+    if (Array.isArray(cobs)) {
+      cobs.forEach(id => {
+        if (id) cobDict[id] = true;
+      });
+    } else if (typeof cobs === 'string' && cobs) {
+      cobs.split(',').forEach(id => {
+        if (id) cobDict[id] = true;
+      });
+    }
+    this.selectedCobsDict = cobDict;
+  }
+
+  onLobsDictChange(dict: { [key: string]: boolean }): void {
+    this.selectedLobsDict = dict;
+    const activeIds = Object.keys(dict).filter(key => dict[key]);
+    this.form.controls.lob_id.setValue(activeIds);
+  }
+
+  onCobsDictChange(dict: { [key: string]: boolean }): void {
+    this.selectedCobsDict = dict;
+    const activeIds = Object.keys(dict).filter(key => dict[key]);
+    this.form.controls.cob_id.setValue(activeIds);
+  }
+
+  onProductLobCobChange(): void {
+    // Disabled auto-fill to allow manual entry of Product ID and Product Name
   }
 
   close(): void {
