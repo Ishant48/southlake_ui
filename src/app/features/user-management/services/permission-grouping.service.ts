@@ -19,13 +19,13 @@ const GENERAL_GROUP_NAME = 'General';
 @Injectable({ providedIn: 'root' })
 export class PermissionGroupingService {
   buildGroups(modules: Module[], permissions: Permission[]): PermissionGroup[] {
-    const activeModules = modules.filter(m => m.isActive !== false);
+    const activeModules = modules.filter(m => m.is_active !== false);
     const byId = new Map(activeModules.map(m => [m.id, m]));
     const childrenOf = new Map<string, Module[]>();
     const topLevel: Module[] = [];
 
     for (const mod of activeModules) {
-      const parentId = mod.parentModuleId;
+      const parentId = mod.parent_module_id;
       if (parentId && byId.has(parentId)) {
         const siblings = childrenOf.get(parentId) ?? [];
         siblings.push(mod);
@@ -35,7 +35,7 @@ export class PermissionGroupingService {
       }
     }
 
-    topLevel.sort((a, b) => a.sortOrder - b.sortOrder);
+    topLevel.sort((a, b) => a.sort_order - b.sort_order);
 
     const matchedPermissionIds = new Set<string>();
     const groups: PermissionGroup[] = topLevel.map((mod, index) => {
@@ -78,8 +78,8 @@ export class PermissionGroupingService {
   ): PermissionSubModule[] {
     const children = (childrenOf.get(mod.id) ?? [])
       .slice()
-      .sort((a, b) => a.sortOrder - b.sortOrder);
-    const isHeaderOnly = !mod.route && !mod.permissionAction && children.length > 0;
+      .sort((a, b) => a.sort_order - b.sort_order);
+    const isHeaderOnly = !mod.route && children.length > 0;
 
     if (isHeaderOnly) {
       return children.flatMap(child =>
@@ -87,9 +87,9 @@ export class PermissionGroupingService {
       );
     }
 
-    const matched = mod.permissionAction
-      ? permissions.filter(p => p.action === mod.permissionAction)
-      : [];
+    // Permissions belong to a module by action prefix (e.g. "mga.view" -> module "mga").
+    // `permission_action` is a separate override used only for sidebar view-gating, not grouping.
+    const matched = permissions.filter(p => p.action.split('.')[0] === mod.id);
     matched.forEach(p => matchedIds.add(p.id));
     matched.sort((a, b) => a.label.localeCompare(b.label));
 

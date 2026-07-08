@@ -15,53 +15,64 @@ describe('PermissionGroupingService', () => {
     return {
       id: 'mod',
       label: 'Module',
-      isActive: true,
+      is_active: true,
       route: null,
-      sortOrder: 0,
-      parentModuleId: null,
-      permissionAction: null,
+      sort_order: 0,
+      parent_module_id: null,
+      permission_action: null,
       ...overrides,
     };
   }
 
-  it('matches permissions to their owning module via exact permissionAction match', () => {
-    const modules: Module[] = [
-      makeModule({ id: 'users', label: 'Users', route: '/users', permissionAction: 'user.view' }),
+  it('matches permissions to their owning module by action prefix against module id', () => {
+    const modules: Module[] = [makeModule({ id: 'user', label: 'Users', route: '/users' })];
+    const permissions: Permission[] = [
+      { id: 'p1', action: 'user.view', label: 'View Users' },
+      { id: 'p2', action: 'user.create', label: 'Create Users' },
     ];
-    const permissions: Permission[] = [{ id: 'p1', action: 'user.view', label: 'View Users' }];
 
     const groups = service.buildGroups(modules, permissions);
     expect(groups).toHaveLength(1);
     expect(groups[0].name).toBe('Users');
-    expect(groups[0].permissions).toEqual([{ id: 'p1', action: 'user.view', label: 'View Users' }]);
+    expect(groups[0].permissions.map(p => p.id).sort()).toEqual(['p1', 'p2']);
   });
 
-  it('does not match permissions by prefix guessing', () => {
-    const modules: Module[] = [
-      makeModule({
-        id: 'treaties',
-        label: 'Treaties',
-        route: '/treaties',
-        permissionAction: 'treaty.view',
-      }),
-    ];
-    const permissions: Permission[] = [
-      { id: 'p1', action: 'treaty.create', label: 'Create Treaties' },
-    ];
+  it('does not match a permission whose prefix belongs to a different module', () => {
+    const modules: Module[] = [makeModule({ id: 'treaty', label: 'Treaties', route: '/treaties' })];
+    const permissions: Permission[] = [{ id: 'p1', action: 'mga.create', label: 'Create MGAs' }];
 
     const groups = service.buildGroups(modules, permissions);
     expect(groups[0].permissions).toEqual([]);
   });
 
-  it('treats parent-only modules (no route/permissionAction, has children) as non-selectable headers, not leaves', () => {
+  it('ignores permission_action for matrix grouping (it only gates sidebar view visibility)', () => {
+    // 'role' module in real seed data has permission_action='role.manage', but the matrix must
+    // still show every role.* permission (view/create/edit/delete/manage), not just 'role.manage'.
     const modules: Module[] = [
-      makeModule({ id: 'parent', label: 'Config Tools', route: null, permissionAction: null }),
       makeModule({
-        id: 'child',
+        id: 'role',
+        label: 'Roles',
+        route: '/user-management/roles',
+        permission_action: 'role.manage',
+      }),
+    ];
+    const permissions: Permission[] = [
+      { id: 'p1', action: 'role.view', label: 'View Roles' },
+      { id: 'p2', action: 'role.manage', label: 'Manage Roles' },
+    ];
+
+    const groups = service.buildGroups(modules, permissions);
+    expect(groups[0].permissions.map(p => p.id).sort()).toEqual(['p1', 'p2']);
+  });
+
+  it('treats parent-only modules (no route, has children) as non-selectable headers, not leaves', () => {
+    const modules: Module[] = [
+      makeModule({ id: 'parent', label: 'Config Tools', route: null }),
+      makeModule({
+        id: 'treaty',
         label: 'Treaties',
         route: '/treaties',
-        permissionAction: 'treaty.view',
-        parentModuleId: 'parent',
+        parent_module_id: 'parent',
       }),
     ];
     const permissions: Permission[] = [{ id: 'p1', action: 'treaty.view', label: 'View Treaties' }];
@@ -74,15 +85,9 @@ describe('PermissionGroupingService', () => {
     expect(groups[0].subModules.map(s => s.name)).not.toContain('Config Tools');
   });
 
-  it('excludes modules where isActive is false', () => {
+  it('excludes modules where is_active is false', () => {
     const modules: Module[] = [
-      makeModule({
-        id: 'inactive',
-        label: 'Retired',
-        route: '/retired',
-        permissionAction: 'retired.view',
-        isActive: false,
-      }),
+      makeModule({ id: 'retired', label: 'Retired', route: '/retired', is_active: false }),
     ];
     const permissions: Permission[] = [{ id: 'p1', action: 'retired.view', label: 'View Retired' }];
 
@@ -95,9 +100,7 @@ describe('PermissionGroupingService', () => {
   });
 
   it('puts an orphan permission with no matching module into a General bucket', () => {
-    const modules: Module[] = [
-      makeModule({ id: 'users', label: 'Users', route: '/users', permissionAction: 'user.view' }),
-    ];
+    const modules: Module[] = [makeModule({ id: 'user', label: 'Users', route: '/users' })];
     const permissions: Permission[] = [
       { id: 'p1', action: 'user.view', label: 'View Users' },
       { id: 'p2', action: 'mystery.action', label: 'Mystery Action' },
@@ -112,9 +115,7 @@ describe('PermissionGroupingService', () => {
   });
 
   it('does not create a General bucket when there are no orphan permissions', () => {
-    const modules: Module[] = [
-      makeModule({ id: 'users', label: 'Users', route: '/users', permissionAction: 'user.view' }),
-    ];
+    const modules: Module[] = [makeModule({ id: 'user', label: 'Users', route: '/users' })];
     const permissions: Permission[] = [{ id: 'p1', action: 'user.view', label: 'View Users' }];
 
     const groups = service.buildGroups(modules, permissions);

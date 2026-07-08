@@ -7,11 +7,11 @@ export interface Permission {
 export interface Module {
   id: string;
   label: string;
-  isActive: boolean;
+  is_active: boolean;
   route: string | null;
-  sortOrder: number;
-  parentModuleId: string | null;
-  permissionAction: string | null;
+  sort_order: number;
+  parent_module_id: string | null;
+  permission_action: string | null;
 }
 
 export enum PermissionActionKey {
