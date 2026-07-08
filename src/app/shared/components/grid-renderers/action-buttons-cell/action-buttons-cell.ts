@@ -6,6 +6,7 @@ export interface ActionButtonConfig {
   label: string;
   action: string;
   danger?: boolean;
+  disabled?: boolean;
 }
 
 export interface ActionButtonsCellRendererParams extends ICellRendererParams {
