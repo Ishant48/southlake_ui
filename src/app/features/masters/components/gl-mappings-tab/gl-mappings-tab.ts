@@ -170,7 +170,9 @@ export class GlMappingsTab implements OnInit {
   }
 
   deleteGlMapping(mapping: GlMapping): void {
-    this.confirmOpen = true;
+    this.confirmTitle = 'Delete GL Mapping';
+    const coaDesc = mapping.coa ? `${mapping.coa.account_code} - ${mapping.coa.description}` : (mapping.coa_id || 'GL Mapping');
+    this.confirmMessage = `Are you sure you want to delete the GL Mapping for "${coaDesc}" (${mapping.type})? This action cannot be undone.`;
     this.pendingAction = () => {
       this.glMappingsState.delete(mapping.id).subscribe({
         next: () => {

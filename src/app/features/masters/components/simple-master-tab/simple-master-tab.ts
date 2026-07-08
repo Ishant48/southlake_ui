@@ -177,6 +177,7 @@ export class SimpleMasterTab implements OnInit {
         rec['lob_code'] ??
         rec['cob_code'] ??
         rec['reinsurer_company_id'] ??
+        rec['broker_code'] ??
         rec['product_id']) as string,
       name: item.name ?? '',
       is_active: item.is_active ?? false,
@@ -212,6 +213,7 @@ export class SimpleMasterTab implements OnInit {
         rec['lob_code'] ??
         rec['cob_code'] ??
         rec['reinsurer_company_id'] ??
+        rec['broker_code'] ??
         rec['product_id']) as string,
       name: item.name ?? '',
       is_active: item.is_active ?? false,
