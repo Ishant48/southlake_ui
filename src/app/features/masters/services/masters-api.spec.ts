@@ -78,9 +78,9 @@ describe('MastersApi', () => {
     req.flush(null);
   });
 
-  it('creates a sequence prefix counter', () => {
-    const payload = { code: 'SEQ1' };
-    api.createSequencePrefixCounter(payload).subscribe();
+  it('creates a sequence prefix master', () => {
+    const payload = { sequence_type: 'SEQ1' };
+    api.createSequencePrefixMaster(payload).subscribe();
     const req = httpMock.expectOne(`${base}/sequence-prefix-counters`);
     expect(req.request.method).toBe('POST');
     req.flush({});

@@ -95,6 +95,7 @@ export class RolesComponent implements OnInit {
 
   onRoleSaved(): void {
     this.loadRoles();
+    this.authService.refreshPermissions().subscribe();
   }
 
   onDeleteRole(role: Role): void {

@@ -11,8 +11,8 @@ describe('TreatyFormModal', () => {
     id: 'treaty-1',
     treaty_code: 'TR-100',
     name: 'Casualty QS',
-    carriers: [{ risk_company_id: 'rc-1', retention_pct: 100 }],
-    reinsurers: [{ reinsurer_id: 're-1', cession_pct: 50 }],
+    carriers: [{ carrier_id: 'rc-1', pct: 100 }],
+    reinsurers: [{ reinsurer_id: 're-1', quota_share: 50 }],
   };
 
   beforeEach(async () => {
@@ -64,7 +64,7 @@ describe('TreatyFormModal', () => {
     component.formValue = { ...createBlankTreatyForm(), reinsurers: [] };
 
     component.addReinsurerRow();
-    expect(component.formValue.reinsurers).toEqual([{ reinsurer_id: '', cession_pct: 0 }]);
+    expect(component.formValue.reinsurers).toEqual([{ reinsurer_id: '', quota_share: 0 }]);
 
     component.addReinsurerRow();
     expect(component.formValue.reinsurers.length).toBe(2);
@@ -76,8 +76,7 @@ describe('TreatyFormModal', () => {
   it('emits save with the form value and selection maps', () => {
     component.formValue = { ...sample };
     component.formSelectedStates = { s1: true };
-    component.formSelectedLobs = { l1: true };
-    component.formSelectedCobs = { c1: true };
+    component.formSelectedProducts = { p1: true };
     const saveSpy = vi.fn();
     component.save.subscribe(saveSpy);
 
@@ -86,8 +85,7 @@ describe('TreatyFormModal', () => {
     expect(saveSpy).toHaveBeenCalledWith({
       form: component.formValue,
       selectedStates: { s1: true },
-      selectedLobs: { l1: true },
-      selectedCobs: { c1: true },
+      selectedProducts: { p1: true },
     });
   });
 

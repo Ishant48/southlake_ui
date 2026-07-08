@@ -19,9 +19,9 @@ import {
   RiskCompanyFormValue,
 } from './components/risk-company-form-modal/risk-company-form-modal';
 import { ItdFormModal, ItdFormValue } from './components/itd-form-modal/itd-form-modal';
-import { SimpleFormModal, SimpleFormValue } from './components/simple-form-modal/simple-form-modal';
-import { MgaFormModal, MgaFormValue } from './components/mga-form-modal/mga-form-modal';
-import { TreatyFormModal, TreatySaveEvent } from './components/treaty-form-modal/treaty-form-modal';
+import { SimpleFormModal, SimpleFormValue, createBlankSimpleForm } from './components/simple-form-modal/simple-form-modal';
+import { MgaFormModal, MgaFormValue, createBlankMgaForm } from './components/mga-form-modal/mga-form-modal';
+import { TreatyFormModal, TreatyFormShape, TreatySaveEvent, createBlankTreatyForm } from './components/treaty-form-modal/treaty-form-modal';
 import {
   ActionButtonConfig,
   ActionButtonsCell,
@@ -43,11 +43,11 @@ import {
   CobMaster,
   Treaty,
   TreatyState,
-  TreatyLob,
-  TreatyCarrier,
+  TreatyProduct,
   TreatyReinsurer,
   DocumentType,
-  SequencePrefixCounter,
+  SequencePrefixMaster,
+  TreatyTypeMaster,
   SimpleMasterRecord,
 } from './models/master.model';
 
@@ -109,7 +109,8 @@ type SimpleEditableItem =
   | ReinsurerCompany
   | SimpleMasterRecord
   | DocumentType
-  | SequencePrefixCounter;
+  | SequencePrefixMaster
+  | TreatyTypeMaster;
 
 type MasterListItem =
   | Treaty
@@ -122,7 +123,8 @@ type MasterListItem =
   | GlMapping
   | SimpleMasterRecord
   | DocumentType
-  | SequencePrefixCounter;
+  | SequencePrefixMaster
+  | TreatyTypeMaster;
 import { GlMappingsApi } from './services/gl-mappings-api';
 import { ChartOfAccountsApi } from '../chart-of-accounts/services/chart-of-accounts-api';
 import { GlMapping } from './models/gl-mapping.model';
@@ -142,7 +144,8 @@ type MasterTab =
   | 'products'
   | 'locked-periods'
   | 'document-types'
-  | 'sequence-prefix-counters';
+  | 'sequence-prefix-counters'
+  | 'treaty-types';
 
 @Component({
   selector: 'app-masters',
@@ -179,6 +182,8 @@ export class MastersComponent implements OnInit {
   cobLabelFn = (item: CobMaster) => (item ? `${item.name} (${item.cob_code})` : '');
   coaLabelFn = (item: ChartOfAccount) => (item ? `${item.account_code} - ${item.description}` : '');
   nameLabelFn = (item: { id: string; name: string }) => (item ? item.name : '');
+  productLabelFn = (item: SimpleMasterRecord) => item.name ?? '';
+  treatyTypeLabelFn = (item: SimpleMasterRecord) => item.name ?? '';
 
   simpleFormTypeOptions = [
     { id: 'Property', name: 'Property' },
@@ -239,7 +244,8 @@ export class MastersComponent implements OnInit {
   products: SimpleMasterRecord[] = [];
   lockedPeriods: SimpleMasterRecord[] = [];
   documentTypes: DocumentType[] = [];
-  sequencePrefixCounters: SequencePrefixCounter[] = [];
+  sequencePrefixMasters: SequencePrefixMaster[] = [];
+  treatyTypes: TreatyTypeMaster[] = [];
 
   // Pagination
   pageSize = 25;
@@ -255,93 +261,18 @@ export class MastersComponent implements OnInit {
     | 'broker'
     | 'product'
     | 'document-type'
-    | 'sequence-prefix-counter' = 'lob';
+    | 'sequence-prefix-counter'
+    | 'treaty-type' = 'lob';
   isEditMode = false;
   submitting = false;
 
   // Simple Form Binding
-  simpleForm: {
-    id?: string;
-    code: string;
-    name: string;
-    is_active: boolean;
-    description: string;
-    type: string;
-    taxable: boolean;
-    priority: number;
-    fully_earned: boolean;
-    contact_name?: string;
-    contact_email?: string;
-    contact_phone?: string;
-    lob_id?: string;
-    cob_id?: string;
-    prefix?: string;
-    next_value?: number;
-    padding_width?: number;
-  } = {
-    code: '',
-    name: '',
-    is_active: true,
-    description: '',
-    type: '',
-    taxable: false,
-    priority: 1,
-    fully_earned: false,
-    contact_name: '',
-    contact_email: '',
-    contact_phone: '',
-    lob_id: '',
-    cob_id: '',
-    prefix: '',
-    next_value: 1,
-    padding_width: 4,
-  };
+  simpleForm: SimpleFormValue = createBlankSimpleForm();
 
   // MGA Modal
   showMgaModal = false;
   mgaModalTitle = '';
-  mgaForm: {
-    id?: string;
-    mga_code: string;
-    name: string;
-    tax_payable_inhouse: boolean;
-    ledger_amount: number;
-    is_active: boolean;
-    company_id: number | null;
-    id_name: string;
-    address: string;
-    zip: string;
-    city: string;
-    state: string;
-    phone: string;
-    open_item: boolean;
-    op_start_date: string;
-    other_names: { state: string; displayName: string }[];
-    naics_code?: string;
-    contact_name?: string;
-    contact_email?: string;
-    contact_phone?: string;
-  } = {
-    mga_code: '',
-    name: '',
-    tax_payable_inhouse: false,
-    ledger_amount: 0,
-    is_active: true,
-    company_id: null,
-    id_name: '',
-    address: '',
-    zip: '',
-    city: '',
-    state: '',
-    phone: '',
-    open_item: false,
-    op_start_date: '',
-    other_names: [],
-    naics_code: '',
-    contact_name: '',
-    contact_email: '',
-    contact_phone: '',
-  };
+  mgaForm: MgaFormValue = createBlankMgaForm();
 
   // State Modal
   showStateModal = false;
@@ -456,35 +387,7 @@ export class MastersComponent implements OnInit {
   // Treaty Modal
   showTreatyModal = false;
   treatyModalTitle = '';
-  treatyForm: Partial<Treaty> & {
-    state_ids: string[];
-    lobs: { lob_id: string; cob_ids: string[] }[];
-    carriers: TreatyCarrier[];
-    reinsurers: TreatyReinsurer[];
-  } = {
-    treaty_code: '',
-    name: '',
-    mga_id: '',
-    reinsurer_id: null,
-    risk_company_id: null,
-    effective_date: '',
-    expiration_date: '',
-    qs_pct: 0,
-    cf_pct: 0,
-    comm_pct: 0,
-    bb_pct: 0,
-    ulae_pct: 0,
-    xol_pct: 0,
-    lr_cap_pct: 0,
-    ibnr_pct: 0,
-    carrier_retention_pct: 100,
-    reinsurer_cession_pct: 0,
-    is_active: true,
-    state_ids: [],
-    lobs: [],
-    carriers: [],
-    reinsurers: [],
-  };
+  treatyForm: TreatyFormShape = createBlankTreatyForm();
 
   // Treaty dropdown options
   mgaOptions: MgaMaster[] = [];
@@ -493,17 +396,14 @@ export class MastersComponent implements OnInit {
   stateOptions: StateMaster[] = [];
   lobOptions: LineOfBusiness[] = [];
   cobOptions: CobMaster[] = [];
-  brokerOptions: SimpleMasterRecord[] = [];
-  brokerLabelFn = (item: SimpleMasterRecord) => item.name ?? '';
   showLockPeriodModal = false;
   newPeriodToLock = '';
 
   // Treaty UI selectors
   treatySelectedStates: { [stateId: string]: boolean } = {};
-  treatySelectedMgas: { [mgaId: string]: boolean } = {};
-  treatySelectedLobs: { [lobId: string]: boolean } = {};
-  treatySelectedCobs: { [cobId: string]: boolean } = {};
-  treatyLobCobs: { [lobId: string]: { [cobId: string]: boolean } } = {};
+  treatySelectedProducts: { [productId: string]: boolean } = {};
+  productOptions: SimpleMasterRecord[] = [];
+  treatyTypeOptions: SimpleMasterRecord[] = [];
 
   // Confirm dialog control
   confirmOpen = false;
@@ -536,6 +436,7 @@ export class MastersComponent implements OnInit {
           'locked-periods',
           'document-types',
           'sequence-prefix-counters',
+          'treaty-types',
         ].includes(tab)
       ) {
         this.currentTab = tab;
@@ -760,14 +661,28 @@ export class MastersComponent implements OnInit {
         });
         break;
       case 'sequence-prefix-counters':
-        this.service.getSequencePrefixCounters(search, active).subscribe({
+        this.service.getSequencePrefixMasters(search, active).subscribe({
           next: res => {
-            this.sequencePrefixCounters = res;
+            this.sequencePrefixMasters = res;
             this.loading = false;
             this.cdr.markForCheck();
           },
           error: () => {
-            this.toast.error('Failed to load Sequence Prefix & Counters');
+            this.toast.error('Failed to load Sequence Prefix Masters');
+            this.loading = false;
+            this.cdr.markForCheck();
+          },
+        });
+        break;
+      case 'treaty-types':
+        this.service.getTreatyTypes(search, active).subscribe({
+          next: res => {
+            this.treatyTypes = res;
+            this.loading = false;
+            this.cdr.markForCheck();
+          },
+          error: () => {
+            this.toast.error('Failed to load Treaty Types');
             this.loading = false;
             this.cdr.markForCheck();
           },
@@ -824,7 +739,9 @@ export class MastersComponent implements OnInit {
       case 'document-types':
         return this.documentTypes;
       case 'sequence-prefix-counters':
-        return this.sequencePrefixCounters;
+        return this.sequencePrefixMasters;
+      case 'treaty-types':
+        return this.treatyTypes;
       default:
         return [];
     }
@@ -880,8 +797,8 @@ export class MastersComponent implements OnInit {
             minWidth: 120,
           },
           {
-            headerName: 'LOBS (COBS)',
-            valueGetter: p => this.getLobsListDisplay(p.data?.treaty_lobs),
+            headerName: 'PRODUCTS',
+            valueGetter: p => this.getProductsListDisplay(p.data?.treaty_products),
             flex: 2,
             minWidth: 150,
           },
@@ -920,14 +837,7 @@ export class MastersComponent implements OnInit {
         return [
           { headerName: 'MGA CODE', field: 'mga_code', flex: 1, minWidth: 100, maxWidth: 120 },
           { headerName: 'MGA NAME', field: 'name', flex: 2, minWidth: 150 },
-          { headerName: 'NAICS CODE', field: 'naics_code', flex: 1.2, minWidth: 120 },
-          {
-            headerName: 'TAX PAYABLE IN-HOUSE',
-            field: 'tax_payable_inhouse',
-            cellRenderer: StatusBadgeCell,
-            flex: 1.5,
-            minWidth: 150,
-          },
+          { headerName: 'LEDGER AMOUNT', field: 'ledger_amount', flex: 1.2, minWidth: 120 },
           statusCol,
           {
             headerName: 'ACTIONS',
@@ -1202,11 +1112,11 @@ export class MastersComponent implements OnInit {
 
       case 'brokers':
         return [
-          { headerName: 'BROKER CODE', field: 'brokerCode', flex: 1.5, minWidth: 120 },
+          { headerName: 'BROKER CODE', field: 'broker_code', flex: 1.5, minWidth: 120 },
           { headerName: 'NAME', field: 'name', flex: 2, minWidth: 150 },
-          { headerName: 'CONTACT NAME', field: 'contactName', flex: 1.5, minWidth: 120 },
-          { headerName: 'EMAIL', field: 'contactEmail', flex: 2, minWidth: 150 },
-          { headerName: 'PHONE', field: 'contactPhone', flex: 1.5, minWidth: 120 },
+          { headerName: 'CONTACT NAME', field: 'contact_name', flex: 1.5, minWidth: 120 },
+          { headerName: 'EMAIL', field: 'contact_email', flex: 2, minWidth: 150 },
+          { headerName: 'PHONE', field: 'contact_phone', flex: 1.5, minWidth: 120 },
           statusCol,
           {
             headerName: 'ACTIONS',
@@ -1230,22 +1140,8 @@ export class MastersComponent implements OnInit {
 
       case 'products':
         return [
-          { headerName: 'PRODUCT ID', field: 'productId', flex: 1.5, minWidth: 120 },
+          { headerName: 'PRODUCT CODE', field: 'product_code', flex: 1.5, minWidth: 120 },
           { headerName: 'NAME', field: 'name', flex: 2, minWidth: 150 },
-          {
-            headerName: 'LOB',
-            // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- an empty string should also fall back to the placeholder/default shown here
-            valueGetter: p => p.data.lob?.name || '-',
-            flex: 1.5,
-            minWidth: 120,
-          },
-          {
-            headerName: 'COB',
-            // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- an empty string should also fall back to the placeholder/default shown here
-            valueGetter: p => p.data.cob?.name || '-',
-            flex: 1.5,
-            minWidth: 120,
-          },
           { headerName: 'DESCRIPTION', field: 'description', flex: 2.5, minWidth: 180 },
           statusCol,
           {
@@ -1318,7 +1214,7 @@ export class MastersComponent implements OnInit {
 
       case 'document-types':
         return [
-          { headerName: 'CODE', field: 'code', flex: 1.5, minWidth: 120 },
+          { headerName: 'TYPE CODE', field: 'type_code', flex: 1.5, minWidth: 120 },
           { headerName: 'NAME', field: 'name', flex: 2, minWidth: 150 },
           { headerName: 'DESCRIPTION', field: 'description', flex: 3, minWidth: 200 },
           statusCol,
@@ -1344,23 +1240,11 @@ export class MastersComponent implements OnInit {
 
       case 'sequence-prefix-counters':
         return [
-          { headerName: 'CODE', field: 'code', flex: 1.5, minWidth: 120 },
+          { headerName: 'SEQUENCE TYPE', field: 'sequence_type', flex: 1.5, minWidth: 120 },
           { headerName: 'NAME', field: 'name', flex: 2, minWidth: 150 },
           { headerName: 'PREFIX', field: 'prefix', flex: 1, minWidth: 100 },
-          {
-            headerName: 'NEXT VALUE',
-            valueGetter: p =>
-              p.data.next_value !== undefined ? p.data.next_value : p.data.nextValue,
-            flex: 1,
-            minWidth: 100,
-          },
-          {
-            headerName: 'PADDING WIDTH',
-            valueGetter: p =>
-              p.data.padding_width !== undefined ? p.data.padding_width : p.data.paddingWidth,
-            flex: 1,
-            minWidth: 100,
-          },
+          { headerName: 'NEXT NUMBER', field: 'next_number', flex: 1, minWidth: 100 },
+          { headerName: 'SEQ START', field: 'seq_start', flex: 1, minWidth: 80 },
           { headerName: 'DESCRIPTION', field: 'description', flex: 2.5, minWidth: 180 },
           statusCol,
           {
@@ -1371,9 +1255,35 @@ export class MastersComponent implements OnInit {
                 { label: 'Edit', action: 'edit' },
                 { label: 'Delete', action: 'delete', danger: true },
               ],
-              onClick: (action: string, data: SequencePrefixCounter) => {
+              onClick: (action: string, data: SequencePrefixMaster) => {
                 if (action === 'edit') this.openSimpleEdit('sequence-prefix-counter', data);
                 if (action === 'delete') this.deleteSimple('sequence-prefix-counter', data);
+              },
+            },
+            flex: 0,
+            width: 160,
+            minWidth: 160,
+            maxWidth: 160,
+          },
+        ];
+
+      case 'treaty-types':
+        return [
+          { headerName: 'TYPE CODE', field: 'type_code', flex: 1.5, minWidth: 120 },
+          { headerName: 'NAME', field: 'name', flex: 2, minWidth: 150 },
+          { headerName: 'DESCRIPTION', field: 'description', flex: 3, minWidth: 200 },
+          statusCol,
+          {
+            headerName: 'ACTIONS',
+            cellRenderer: ActionButtonsCell,
+            cellRendererParams: {
+              buttons: [
+                { label: 'Edit', action: 'edit' },
+                { label: 'Delete', action: 'delete', danger: true },
+              ],
+              onClick: (action: string, data: TreatyTypeMaster) => {
+                if (action === 'edit') this.openSimpleEdit('treaty-type', data);
+                if (action === 'delete') this.deleteSimple('treaty-type', data);
               },
             },
             flex: 0,
@@ -1395,24 +1305,7 @@ export class MastersComponent implements OnInit {
     this.simpleMode = mode;
     this.isEditMode = false;
     this.simpleModalTitle = `Add New ${this.getMasterLabel(mode)}`;
-    this.simpleForm = {
-      code: '',
-      name: '',
-      is_active: true,
-      description: '',
-      type: '',
-      taxable: false,
-      priority: 1,
-      fully_earned: false,
-      contact_name: '',
-      contact_email: '',
-      contact_phone: '',
-      lob_id: '',
-      cob_id: '',
-      prefix: '',
-      next_value: 1,
-      padding_width: 4,
-    };
+    this.simpleForm = createBlankSimpleForm();
     this.showSimpleModal = true;
   }
 
@@ -1428,7 +1321,9 @@ export class MastersComponent implements OnInit {
         (rec['cob_code'] as string) ||
         (rec['reinsurer_company_id'] as string) ||
         (rec['broker_code'] as string) ||
-        (rec['product_id'] as string) ||
+        (rec['product_code'] as string) ||
+        (rec['type_code'] as string) ||
+        (rec['sequence_type'] as string) ||
         (rec['code'] as string) ||
         '',
       name: rec['name'] as string,
@@ -1438,20 +1333,17 @@ export class MastersComponent implements OnInit {
       taxable: (rec['taxable'] as boolean) || false,
       priority: (rec['priority'] as number) || 1,
       fully_earned: (rec['fully_earned'] as boolean) || false,
-      contact_name: (rec['contact_name'] as string) || (rec['contactName'] as string) || '',
-      contact_email: (rec['contact_email'] as string) || (rec['contactEmail'] as string) || '',
-      contact_phone: (rec['contact_phone'] as string) || (rec['contactPhone'] as string) || '',
-      lob_id: (rec['lob_id'] as string) || (rec['lobId'] as string) || '',
-      cob_id: (rec['cob_id'] as string) || (rec['cobId'] as string) || '',
+      contact_name: (rec['contact_name'] as string) || '',
+      contact_email: (rec['contact_email'] as string) || '',
+      contact_phone: (rec['contact_phone'] as string) || '',
       prefix: (rec['prefix'] as string) || '',
-      next_value:
-        rec['next_value'] !== undefined
-          ? (rec['next_value'] as number)
-          : (rec['nextValue'] as number) || 1,
-      padding_width:
-        rec['padding_width'] !== undefined
-          ? (rec['padding_width'] as number)
-          : (rec['paddingWidth'] as number) || 4,
+      prefix_connector: (rec['prefix_connector'] as string) || '',
+      seq_start: (rec['seq_start'] as number) ?? 1,
+      next_number: rec['next_number'] !== undefined ? (rec['next_number'] as number) : 1,
+      suffix: (rec['suffix'] as string) || '',
+      suffix_connector: (rec['suffix_connector'] as string) || '',
+      lob_ids: (rec['lob_ids'] as string[]) || [],
+      cob_ids: (rec['cob_ids'] as string[]) || [],
     };
     this.showSimpleModal = true;
   }
@@ -1485,17 +1377,23 @@ export class MastersComponent implements OnInit {
       // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- '' should be sent as null, not an empty string
       payload['contact_phone'] = this.simpleForm.contact_phone || null;
     } else if (this.simpleMode === 'product') {
+      // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- '' should be sent as null
       payload['description'] = this.simpleForm.description || null;
-      // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- '' should be sent as null, not an empty string
-      payload['lob_id'] = this.simpleForm.lob_id || null;
-      // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- '' should be sent as null, not an empty string
-      payload['cob_id'] = this.simpleForm.cob_id || null;
+      payload['lob_ids'] = this.simpleForm.lob_ids ?? [];
+      payload['cob_ids'] = this.simpleForm.cob_ids ?? [];
     } else if (this.simpleMode === 'sequence-prefix-counter') {
+      // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- '' should be sent as null
       payload['description'] = this.simpleForm.description || null;
       // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- '' should be sent as null, not an empty string
       payload['prefix'] = this.simpleForm.prefix || null;
-      payload['next_value'] = Number(this.simpleForm.next_value ?? 1);
-      payload['padding_width'] = Number(this.simpleForm.padding_width ?? 4);
+      // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- '' should be sent as null, not an empty string
+      payload['prefix_connector'] = this.simpleForm.prefix_connector || null;
+      payload['seq_start'] = Number(this.simpleForm.seq_start ?? 1);
+      payload['next_number'] = Number(this.simpleForm.next_number ?? 1);
+      // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- '' should be sent as null, not an empty string
+      payload['suffix'] = this.simpleForm.suffix || null;
+      // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- '' should be sent as null, not an empty string
+      payload['suffix_connector'] = this.simpleForm.suffix_connector || null;
     }
 
     let request!: Observable<unknown>;
@@ -1522,10 +1420,13 @@ export class MastersComponent implements OnInit {
           request = this.service.updateDocumentType(id, payload as Partial<DocumentType>);
           break;
         case 'sequence-prefix-counter':
-          request = this.service.updateSequencePrefixCounter(
+          request = this.service.updateSequencePrefixMaster(
             id,
-            payload as Partial<SequencePrefixCounter>,
+            payload as Partial<SequencePrefixMaster>,
           );
+          break;
+        case 'treaty-type':
+          request = this.service.updateTreatyType(id, payload as Partial<TreatyTypeMaster>);
           break;
       }
     } else {
@@ -1549,9 +1450,12 @@ export class MastersComponent implements OnInit {
           request = this.service.createDocumentType(payload as Partial<DocumentType>);
           break;
         case 'sequence-prefix-counter':
-          request = this.service.createSequencePrefixCounter(
-            payload as Partial<SequencePrefixCounter>,
+          request = this.service.createSequencePrefixMaster(
+            payload as Partial<SequencePrefixMaster>,
           );
+          break;
+        case 'treaty-type':
+          request = this.service.createTreatyType(payload as Partial<TreatyTypeMaster>);
           break;
       }
     }
@@ -1599,7 +1503,10 @@ export class MastersComponent implements OnInit {
           request = this.service.deleteDocumentType(id);
           break;
         case 'sequence-prefix-counter':
-          request = this.service.deleteSequencePrefixCounter(id);
+          request = this.service.deleteSequencePrefixMaster(id);
+          break;
+        case 'treaty-type':
+          request = this.service.deleteTreatyType(id);
           break;
       }
       request.subscribe({
@@ -1623,23 +1530,7 @@ export class MastersComponent implements OnInit {
     this.isEditMode = false;
     this.mgaModalTitle = 'Add MGA';
     this.loadTreatyOptions();
-    this.mgaForm = {
-      mga_code: '',
-      name: '',
-      tax_payable_inhouse: false,
-      ledger_amount: 0,
-      is_active: true,
-      company_id: null,
-      id_name: '',
-      address: '',
-      zip: '',
-      city: '',
-      state: '',
-      phone: '',
-      open_item: false,
-      op_start_date: '',
-      other_names: [],
-    };
+    this.mgaForm = createBlankMgaForm();
     this.showMgaModal = true;
   }
 
@@ -1651,9 +1542,8 @@ export class MastersComponent implements OnInit {
       id: mga.id,
       mga_code: mga.mga_code,
       name: mga.name,
-      tax_payable_inhouse: mga.tax_payable_inhouse,
-      ledger_amount: mga.ledger_amount ?? 0,
       is_active: mga.is_active,
+      ledger_amount: mga.ledger_amount ?? 0,
       company_id: mga.company_id ? Number(mga.company_id) : null,
       id_name: mga.id_name ?? '',
       address: mga.address ?? '',
@@ -1663,7 +1553,6 @@ export class MastersComponent implements OnInit {
       phone: mga.phone ?? '',
       open_item: mga.open_item ?? false,
       op_start_date: mga.op_start_date ? mga.op_start_date.substring(0, 10) : '',
-      other_names: mga.other_names ? JSON.parse(JSON.stringify(mga.other_names)) : [],
     };
     this.showMgaModal = true;
   }
@@ -1677,13 +1566,19 @@ export class MastersComponent implements OnInit {
     this.submitting = true;
 
     const payload = {
-      ...this.mgaForm,
+      mga_code: this.mgaForm.mga_code,
+      name: this.mgaForm.name,
+      is_active: this.mgaForm.is_active,
       ledger_amount: Number(this.mgaForm.ledger_amount || 0),
       company_id: this.mgaForm.company_id ? Number(this.mgaForm.company_id) : null,
-      other_names:
-        this.mgaForm.other_names && this.mgaForm.other_names.length > 0
-          ? this.mgaForm.other_names
-          : null,
+      id_name: this.mgaForm.id_name || null,
+      address: this.mgaForm.address || null,
+      zip: this.mgaForm.zip || null,
+      city: this.mgaForm.city || null,
+      state: this.mgaForm.state || null,
+      phone: this.mgaForm.phone || null,
+      open_item: this.mgaForm.open_item,
+      op_start_date: this.mgaForm.op_start_date || null,
     };
 
     if (this.isEditMode) {
@@ -2092,8 +1987,12 @@ export class MastersComponent implements OnInit {
       this.stateOptions = res;
       this.cdr.markForCheck();
     });
-    this.service.getBrokers(undefined, true).subscribe(res => {
-      this.brokerOptions = res;
+    this.service.getProducts(undefined, true).subscribe(res => {
+      this.productOptions = res;
+      this.cdr.markForCheck();
+    });
+    this.service.getTreatyTypes(undefined, true).subscribe(res => {
+      this.treatyTypeOptions = res;
       this.cdr.markForCheck();
     });
   }
@@ -2103,41 +2002,13 @@ export class MastersComponent implements OnInit {
     this.treatyModalTitle = 'Create Treaty';
     this.loadTreatyOptions();
 
-    this.treatyForm = {
-      treaty_code: '',
-      name: '',
-      mga_id: mgaId ?? '',
-      reinsurer_id: null,
-      risk_company_id: null,
-      effective_date: '',
-      expiration_date: '',
-      qs_pct: 0,
-      cf_pct: 0,
-      comm_pct: 0,
-      bb_pct: 0,
-      ulae_pct: 0,
-      xol_pct: 0,
-      lr_cap_pct: 0,
-      ibnr_pct: 0,
-      lae_dcc_pct: 0,
-      lae_aoe_pct: 0,
-      carrier_retention_pct: 100,
-      reinsurer_cession_pct: 0,
-      is_active: true,
-      state_ids: [],
-      lobs: [],
-      carriers: [{ risk_company_id: '', retention_pct: 100 }],
-      reinsurers: [],
-    };
+    this.treatyForm = createBlankTreatyForm();
+    if (mgaId) {
+      this.treatyForm.mga_id = mgaId;
+    }
 
     this.treatySelectedStates = {};
-    this.treatySelectedMgas = {};
-    if (mgaId) {
-      this.treatySelectedMgas[mgaId] = true;
-    }
-    this.treatySelectedLobs = {};
-    this.treatySelectedCobs = {};
-    this.treatyLobCobs = {};
+    this.treatySelectedProducts = {};
     this.showTreatyModal = true;
   }
 
@@ -2146,48 +2017,18 @@ export class MastersComponent implements OnInit {
     this.treatyModalTitle = `Edit Treaty: ${treaty.treaty_code}`;
     this.loadTreatyOptions();
 
-    let carriers: TreatyCarrier[] = [];
-    if (treaty.treaty_carriers && treaty.treaty_carriers.length > 0) {
-      carriers = [
-        {
-          risk_company_id: treaty.treaty_carriers[0].risk_company_id,
-          retention_pct: treaty.treaty_carriers[0].retention_pct,
-        },
-      ];
-    } else if (treaty.risk_company_id) {
-      carriers = [
-        {
-          risk_company_id: treaty.risk_company_id,
-          retention_pct: treaty.carrier_retention_pct ?? 100,
-        },
-      ];
-    } else {
-      carriers = [
-        {
-          risk_company_id: '',
-          retention_pct: 100,
-        },
-      ];
-    }
-
-    let reinsurers: TreatyReinsurer[] = [];
-    if (treaty.treaty_reinsurers && treaty.treaty_reinsurers.length > 0) {
-      reinsurers = treaty.treaty_reinsurers.map(tr => ({
-        reinsurer_id: tr.reinsurer_id,
-        cession_pct: tr.cession_pct,
-      }));
-    } else if (treaty.reinsurer_id) {
-      reinsurers = [
-        { reinsurer_id: treaty.reinsurer_id, cession_pct: treaty.reinsurer_cession_pct ?? 100 },
-      ];
-    }
+    const reinsurers: TreatyReinsurer[] = treaty.treaty_reinsurers
+      ? treaty.treaty_reinsurers.map(tr => ({
+          reinsurer_id: tr.reinsurer_id,
+          quota_share: tr.quota_share,
+        }))
+      : [];
 
     this.treatyForm = {
       id: treaty.id,
       treaty_code: treaty.treaty_code,
       name: treaty.name,
       mga_id: treaty.mga_id,
-      reinsurer_id: treaty.reinsurer_id,
       risk_company_id: treaty.risk_company_id,
       effective_date: treaty.effective_date
         ? new Date(treaty.effective_date).toISOString().slice(0, 10)
@@ -2205,12 +2046,14 @@ export class MastersComponent implements OnInit {
       ibnr_pct: treaty.ibnr_pct,
       lae_dcc_pct: treaty.lae_dcc_pct,
       lae_aoe_pct: treaty.lae_aoe_pct,
-      carrier_retention_pct: treaty.carrier_retention_pct,
-      reinsurer_cession_pct: treaty.reinsurer_cession_pct,
-      is_active: treaty.is_active,
+      treaty_type_id: treaty.treaty_type_id,
+      carrier_allocation_type: treaty.carrier_allocation_type,
+      ulae_type: treaty.ulae_type,
+      ulae_basis: treaty.ulae_basis,
+      ulae_flat_amount: treaty.ulae_flat_amount,
       state_ids: [],
-      lobs: [],
-      carriers,
+      products: [],
+      carriers: [],
       reinsurers,
     };
 
@@ -2222,28 +2065,10 @@ export class MastersComponent implements OnInit {
       });
     }
 
-    this.treatySelectedMgas = {};
-    if (treaty.treaty_mgas && treaty.treaty_mgas.length > 0) {
-      treaty.treaty_mgas.forEach(tm => {
-        this.treatySelectedMgas[tm.mga_id] = true;
-      });
-    } else if (treaty.mga_id) {
-      this.treatySelectedMgas[treaty.mga_id] = true;
-    }
-
-    this.treatySelectedLobs = {};
-    this.treatySelectedCobs = {};
-    this.treatyLobCobs = {};
-    if (treaty.treaty_lobs) {
-      treaty.treaty_lobs.forEach(tl => {
-        this.treatySelectedLobs[tl.lob_id] = true;
-        this.treatyLobCobs[tl.lob_id] = {};
-        if (tl.treaty_lob_cobs) {
-          tl.treaty_lob_cobs.forEach(tlc => {
-            this.treatyLobCobs[tl.lob_id][tlc.cob_id] = true;
-            this.treatySelectedCobs[tlc.cob_id] = true;
-          });
-        }
+    this.treatySelectedProducts = {};
+    if (treaty.treaty_products) {
+      treaty.treaty_products.forEach(tp => {
+        this.treatySelectedProducts[tp.product_id] = true;
       });
     }
 
@@ -2253,50 +2078,53 @@ export class MastersComponent implements OnInit {
   submitTreaty(event: TreatySaveEvent): void {
     this.treatyForm = event.form;
     this.treatySelectedStates = event.selectedStates;
-    this.treatySelectedLobs = event.selectedLobs;
-    this.treatySelectedCobs = event.selectedCobs;
+    this.treatySelectedProducts = event.selectedProducts;
 
     if (!this.treatyForm.treaty_code || !this.treatyForm.name || !this.treatyForm.mga_id) {
       this.toast.error('Treaty Code, Name and MGA Underwriter are required');
       return;
     }
     this.submitting = true;
-    const mga_ids = [this.treatyForm.mga_id];
 
     // Build state_ids
     const state_ids = Object.keys(this.treatySelectedStates).filter(
       k => this.treatySelectedStates[k],
     );
 
-    // Build lobs structure
-    const selectedLobIds = Object.keys(this.treatySelectedLobs).filter(
-      lobId => this.treatySelectedLobs[lobId],
-    );
-    const selectedCobIds = Object.keys(this.treatySelectedCobs).filter(
-      cobId => this.treatySelectedCobs[cobId],
-    );
+    // Build products from selection
+    const products = Object.keys(this.treatySelectedProducts)
+      .filter(k => this.treatySelectedProducts[k])
+      .map(product_id => ({ product_id }));
 
-    const lobs = selectedLobIds.map(lobId => {
-      return {
-        lob_id: lobId,
-        cob_ids: selectedCobIds,
-      };
-    });
-
-    const carriers = (this.treatyForm.carriers || []).filter(c => c.risk_company_id);
     const reinsurers = (this.treatyForm.reinsurers || []).filter(r => r.reinsurer_id);
 
     const payload = {
-      ...this.treatyForm,
-      mga_id: mga_ids[0],
-      mga_ids,
-      // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- '' should be sent as null, not an empty string
+      treaty_code: this.treatyForm.treaty_code,
+      name: this.treatyForm.name,
+      mga_id: this.treatyForm.mga_id,
+      risk_company_id: this.treatyForm.risk_company_id,
       effective_date: this.treatyForm.effective_date || null,
-      // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- '' should be sent as null, not an empty string
       expiration_date: this.treatyForm.expiration_date || null,
+      qs_pct: this.treatyForm.qs_pct,
+      cf_pct: this.treatyForm.cf_pct,
+      comm_pct: this.treatyForm.comm_pct,
+      bb_pct: this.treatyForm.bb_pct,
+      ulae_pct: this.treatyForm.ulae_pct,
+      xol_pct: this.treatyForm.xol_pct,
+      lr_cap_pct: this.treatyForm.lr_cap_pct,
+      ibnr_pct: this.treatyForm.ibnr_pct,
+      lae_dcc_pct: this.treatyForm.lae_dcc_pct,
+      lae_aoe_pct: this.treatyForm.lae_aoe_pct,
+      // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- '' should be sent as null
+      treaty_type_id: this.treatyForm.treaty_type_id || null,
+      // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- '' should be sent as null
+      carrier_allocation_type: this.treatyForm.carrier_allocation_type || null,
+      ulae_type: this.treatyForm.ulae_type,
+      // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- '' should be sent as null
+      ulae_basis: this.treatyForm.ulae_basis || null,
+      ulae_flat_amount: this.treatyForm.ulae_flat_amount,
       state_ids,
-      lobs,
-      carriers,
+      products,
       reinsurers,
     };
 
@@ -2351,16 +2179,8 @@ export class MastersComponent implements OnInit {
   }
 
   getCarriersListDisplay(treaty: Treaty): string {
-    if (treaty.treaty_carriers && treaty.treaty_carriers.length > 0) {
-      return (
-        treaty.treaty_carriers
-          // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- an empty string should also fall back to the placeholder/default shown here
-          .map(tc => `${tc.risk_company?.name || 'Unknown'} (${tc.retention_pct}%)`)
-          .join(', ')
-      );
-    }
     if (treaty.risk_company) {
-      return `${treaty.risk_company.name} (${treaty.carrier_retention_pct ?? 100}%)`;
+      return treaty.risk_company.name;
     }
     return '-';
   }
@@ -2375,17 +2195,10 @@ export class MastersComponent implements OnInit {
     return codes.join(', ');
   }
 
-  getLobsListDisplay(lobs?: TreatyLob[]): string {
-    if (!lobs || lobs.length === 0) return '-';
-    return lobs
-      .map(l => {
-        const lobName = l.lob?.lob_code;
-        const cobs = l.treaty_lob_cobs
-          ?.map(c => c.cob?.cob_code)
-          .filter(Boolean)
-          .join('/');
-        return cobs ? `${lobName} (${cobs})` : lobName;
-      })
+  getProductsListDisplay(products?: TreatyProduct[]): string {
+    if (!products || products.length === 0) return '-';
+    return products
+      .map(p => p.product?.name ?? p.product_id)
       .filter(Boolean)
       .join(', ');
   }
@@ -2427,6 +2240,8 @@ export class MastersComponent implements OnInit {
         return 'Document Type';
       case 'sequence-prefix-counter':
         return 'Sequence Prefix & Counter';
+      case 'treaty-type':
+        return 'Treaty Type';
       default:
         return 'Master';
     }
@@ -2444,6 +2259,16 @@ export class MastersComponent implements OnInit {
         return 'reinsurer_company_id';
       case 'risk-company':
         return 'risk_company_id';
+      case 'broker':
+        return 'broker_code';
+      case 'product':
+        return 'product_code';
+      case 'document-type':
+        return 'type_code';
+      case 'sequence-prefix-counter':
+        return 'sequence_type';
+      case 'treaty-type':
+        return 'type_code';
       default:
         return 'code';
     }
@@ -2456,7 +2281,7 @@ export class MastersComponent implements OnInit {
 
     switch (this.currentTab) {
       case 'treaties':
-        headers = ['Code', 'Treaty Name', 'MGA', 'Risk Company', 'States', 'LOBs (COBs)', 'Status'];
+        headers = ['Code', 'Treaty Name', 'MGA', 'Risk Company', 'States', 'Products', 'Status'];
         rows = this.treaties.map(t => [
           t.treaty_code,
           t.name,
@@ -2464,18 +2289,17 @@ export class MastersComponent implements OnInit {
           // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- an empty string should also fall back to the placeholder/default shown here
           t.risk_company?.name || '-',
           this.getStatesListDisplay(t.treaty_states),
-          this.getLobsListDisplay(t.treaty_lobs),
+          this.getProductsListDisplay(t.treaty_products),
           t.is_active ? 'Active' : 'Inactive',
         ]);
         filename = 'treaties.csv';
         break;
 
       case 'mgas':
-        headers = ['MGA Code', 'MGA Name', 'Tax Payable In-house', 'Ledger Amount', 'Status'];
+        headers = ['MGA Code', 'MGA Name', 'Ledger Amount', 'Status'];
         rows = this.mgas.map(m => [
           m.mga_code,
           m.name,
-          m.tax_payable_inhouse ? 'Yes' : 'No',
           m.ledger_amount !== undefined ? `$${m.ledger_amount.toFixed(2)}` : '$0.00',
           m.is_active ? 'Active' : 'Inactive',
         ]);
@@ -2593,41 +2417,53 @@ export class MastersComponent implements OnInit {
         break;
 
       case 'document-types':
-        headers = ['Code', 'Name', 'Description', 'Status'];
+        headers = ['Type Code', 'Name', 'Description', 'Status'];
         rows = this.documentTypes.map(d => [
-          d.code,
+          d.type_code,
           d.name,
           // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- an empty string should also fall back to the placeholder/default shown here
           d.description || '-',
-          d.isActive ? 'Active' : 'Inactive',
+          d.is_active ? 'Active' : 'Inactive',
         ]);
         filename = 'document_types.csv';
         break;
 
       case 'sequence-prefix-counters':
         headers = [
-          'Code',
+          'Sequence Type',
           'Name',
           'Prefix',
-          'Next Value',
-          'Padding Width',
+          'Next Number',
+          'Seq Start',
           'Description',
           'Status',
         ];
-        rows = this.sequencePrefixCounters.map(s => [
-          s.code,
+        rows = this.sequencePrefixMasters.map(s => [
+          s.sequence_type,
           s.name,
           // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- an empty string should also fall back to the placeholder/default shown here
           s.prefix || '-',
           // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- an empty string should also fall back to the placeholder/default shown here
-          s.next_value !== undefined ? s.next_value : s.nextValue || 1,
+          s.next_number !== undefined ? s.next_number : 1,
           // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- an empty string should also fall back to the placeholder/default shown here
-          s.padding_width !== undefined ? s.padding_width : s.paddingWidth || 4,
+          s.seq_start !== undefined ? s.seq_start : 1,
           // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- an empty string should also fall back to the placeholder/default shown here
           s.description || '-',
-          s.isActive ? 'Active' : 'Inactive',
+          s.is_active ? 'Active' : 'Inactive',
         ]);
-        filename = 'sequence_prefix_counters.csv';
+        filename = 'sequence_prefix_masters.csv';
+        break;
+
+      case 'treaty-types':
+        headers = ['Type Code', 'Name', 'Description', 'Status'];
+        rows = this.treatyTypes.map(t => [
+          t.type_code,
+          t.name,
+          // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- an empty string should also fall back to the placeholder/default shown here
+          t.description || '-',
+          t.is_active ? 'Active' : 'Inactive',
+        ]);
+        filename = 'treaty_types.csv';
         break;
     }
 

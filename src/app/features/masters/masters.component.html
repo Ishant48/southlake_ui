@@ -22,7 +22,8 @@
         currentTab === "brokers" ||
         currentTab === "products" ||
         currentTab === "document-types" ||
-        currentTab === "sequence-prefix-counters"
+        currentTab === "sequence-prefix-counters" ||
+        currentTab === "treaty-types"
       ) {
         <button
           class="btn-primary"
@@ -40,7 +41,9 @@
                         ? 'product'
                         : currentTab === 'document-types'
                           ? 'document-type'
-                          : 'sequence-prefix-counter'
+                          : currentTab === 'sequence-prefix-counters'
+                            ? 'sequence-prefix-counter'
+                            : 'treaty-type'
             )
           "
         >
@@ -58,7 +61,9 @@
                       ? "Product"
                       : currentTab === "document-types"
                         ? "Document Type"
-                        : "Sequence Counter"
+                        : currentTab === "sequence-prefix-counters"
+                          ? "Sequence Counter"
+                          : "Treaty Type"
           }}
         </button>
       } @else if (currentTab === "locked-periods") {
@@ -98,6 +103,9 @@
       (click)="selectTab('sequence-prefix-counters')"
     >
       Sequence Counters
+    </button>
+    <button class="tab-link" [class.active]="currentTab === 'treaty-types'" (click)="selectTab('treaty-types')">
+      Treaty Types
     </button>
     <button class="tab-link" [class.active]="currentTab === 'gl-mappings'" (click)="selectTab('gl-mappings')">
       GL Map
@@ -216,8 +224,6 @@
     [model]="mgaForm"
     [isEditMode]="isEditMode"
     [submitting]="submitting"
-    [stateOptions]="stateOptions"
-    [stateAbbrLabelFn]="stateAbbrLabelFn"
     (closed)="showMgaModal = false"
     (save)="submitMga($event)"
   ></app-mga-form-modal>
@@ -275,22 +281,19 @@
     [isEditMode]="isEditMode"
     [submitting]="submitting"
     [selectedStates]="treatySelectedStates"
-    [selectedLobs]="treatySelectedLobs"
-    [selectedCobs]="treatySelectedCobs"
+    [selectedProducts]="treatySelectedProducts"
     [riskCompanyOptions]="riskCompanyOptions"
     [reinsurerOptions]="reinsurerOptions"
-    [brokerOptions]="brokerOptions"
     [mgaOptions]="mgaOptions"
     [stateOptions]="stateOptions"
-    [lobOptions]="lobOptions"
-    [cobOptions]="cobOptions"
+    [productOptions]="productOptions"
+    [treatyTypeOptions]="treatyTypeOptions"
     [riskCompanyLabelFn]="riskCompanyLabelFn"
     [reinsurerLabelFn]="reinsurerLabelFn"
     [stateLabelFn]="stateLabelFn"
-    [brokerLabelFn]="brokerLabelFn"
     [mgaLabelFn]="mgaLabelFn"
-    [lobLabelFn]="lobLabelFn"
-    [cobLabelFn]="cobLabelFn"
+    [productLabelFn]="productLabelFn"
+    [treatyTypeLabelFn]="treatyTypeLabelFn"
     (closed)="showTreatyModal = false"
     (save)="submitTreaty($event)"
   ></app-treaty-form-modal>

@@ -11,7 +11,6 @@ describe('MgaFormModal', () => {
     id: 'mga-1',
     mga_code: 'MGA-100',
     name: 'Southlake Underwriters',
-    other_names: [{ state: 'TX', displayName: 'Southlake TX' }],
   };
 
   beforeEach(async () => {
@@ -34,7 +33,7 @@ describe('MgaFormModal', () => {
     expect((fixture.nativeElement as HTMLElement).querySelector('.modal-overlay')).toBeNull();
   });
 
-  it('copies the model into local formValue on change, cloning other_names', () => {
+  it('copies the model into local formValue on change', () => {
     component.model = sample;
     component.ngOnChanges({
       model: {
@@ -45,20 +44,6 @@ describe('MgaFormModal', () => {
       },
     });
     expect(component.formValue).toEqual(sample);
-    expect(component.formValue.other_names).not.toBe(sample.other_names);
-  });
-
-  it('adds and removes other-name rows', () => {
-    component.formValue = { ...createBlankMgaForm(), other_names: [] };
-
-    component.addOtherNameRow();
-    expect(component.formValue.other_names).toEqual([{ state: '', displayName: '' }]);
-
-    component.addOtherNameRow();
-    expect(component.formValue.other_names.length).toBe(2);
-
-    component.removeOtherNameRow(0);
-    expect(component.formValue.other_names.length).toBe(1);
   });
 
   it('emits save with the current form value', () => {

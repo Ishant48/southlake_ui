@@ -1,8 +1,9 @@
-import { Component, inject, OnInit, HostListener } from '@angular/core';
+import { Component, inject, OnInit, HostListener, computed } from '@angular/core';
 import { RouterLink, RouterLinkActive, Router, NavigationEnd } from '@angular/router';
 import { filter } from 'rxjs/operators';
 import { AuthService } from '../../core/services/auth.service';
 import { SidebarState } from '../state/sidebar.state';
+import { SIDEBAR_CONFIG, SidebarSection } from './sidebar.config';
 
 @Component({
   selector: 'app-sidebar',
@@ -16,10 +17,26 @@ export class SidebarComponent implements OnInit {
   private authService = inject(AuthService);
   sidebarService = inject(SidebarState);
 
-  dashboardExpanded = true;
-  accountingExpanded = false;
-  adminExpanded = false;
-  mastersExpanded = false;
+  readonly config = SIDEBAR_CONFIG;
+
+  readonly visibleSections = computed(() => {
+    const perms = this.authService.permissions();
+    return this.config
+      .map(section => ({
+        ...section,
+        visibleItems: section.items.filter(item =>
+          !item.permission || perms.includes(`${item.permission.module}.${item.permission.action}`)
+        ),
+      }))
+      .filter(section => section.visibleItems.length > 0);
+  });
+
+  sectionExpanded: Record<string, boolean> = {
+    dashboard: true,
+    accounting: false,
+    admin: false,
+    masters: false,
+  };
 
   @HostListener('window:resize')
   onResize() {
@@ -66,10 +83,6 @@ export class SidebarComponent implements OnInit {
     return name.substring(0, 2).toUpperCase();
   }
 
-  hasPermission(module: string, action: string): boolean {
-    return this.authService.hasPermission(module, action);
-  }
-
   ngOnInit(): void {
     this.checkScreenSize();
     this.checkActiveRoute(this.router.url);
@@ -82,7 +95,7 @@ export class SidebarComponent implements OnInit {
 
   private checkActiveRoute(url: string): void {
     if (url.includes('/dashboard')) {
-      this.dashboardExpanded = true;
+      this.sectionExpanded['dashboard'] = true;
     }
     if (
       url.includes('/chart-of-accounts') ||
@@ -90,54 +103,24 @@ export class SidebarComponent implements OnInit {
       url.includes('/test-balance') ||
       url.includes('/reinsurance-calculations')
     ) {
-      this.accountingExpanded = true;
+      this.sectionExpanded['accounting'] = true;
     }
     if (url.includes('/user-management')) {
-      this.adminExpanded = true;
+      this.sectionExpanded['admin'] = true;
     }
     if (url.includes('/masters')) {
-      this.mastersExpanded = true;
+      this.sectionExpanded['masters'] = true;
     }
   }
 
-  toggleDashboard(event: Event): void {
+  toggleSection(section: SidebarSection, event: Event): void {
     event.preventDefault();
     if (this.sidebarService.isCollapsed()) {
       this.sidebarService.isCollapsed.set(false);
-      this.dashboardExpanded = true;
+      this.sectionExpanded[section.key] = true;
       return;
     }
-    this.dashboardExpanded = !this.dashboardExpanded;
-  }
-
-  toggleAccounting(event: Event): void {
-    event.preventDefault();
-    if (this.sidebarService.isCollapsed()) {
-      this.sidebarService.isCollapsed.set(false);
-      this.accountingExpanded = true;
-      return;
-    }
-    this.accountingExpanded = !this.accountingExpanded;
-  }
-
-  toggleAdmin(event: Event): void {
-    event.preventDefault();
-    if (this.sidebarService.isCollapsed()) {
-      this.sidebarService.isCollapsed.set(false);
-      this.adminExpanded = true;
-      return;
-    }
-    this.adminExpanded = !this.adminExpanded;
-  }
-
-  toggleMasters(event: Event): void {
-    event.preventDefault();
-    if (this.sidebarService.isCollapsed()) {
-      this.sidebarService.isCollapsed.set(false);
-      this.mastersExpanded = true;
-      return;
-    }
-    this.mastersExpanded = !this.mastersExpanded;
+    this.sectionExpanded[section.key] = !this.sectionExpanded[section.key];
   }
 
   signOut(event: Event): void {

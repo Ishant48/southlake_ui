@@ -1,7 +1,6 @@
 @if (open) {
-  <!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events, @angular-eslint/template/interactive-supports-focus -- backdrop click-to-dismiss, not an interactive control; keyboard dismissal is handled via Escape at the dialog level -->
   <div class="modal-overlay" (click)="$event.target === $event.currentTarget && close()">
-    <div class="modal-box treaty-modal">
+    <div class="modal-box coa-modal">
       <div class="panel-header">
         <h3 class="panel-title">{{ title }}</h3>
         <button class="panel-close" (click)="close()" aria-label="Close modal">
@@ -13,256 +12,145 @@
       </div>
 
       <form (submit)="submit()" class="panel-body scrollable-body">
-        <!-- Names Info -->
-        <div class="form-section-title no-top-margin">Names Info</div>
-        <div class="form-row">
-          <div class="form-field">
-            <label for="mga-companyid" class="form-label">Company ID</label>
-            <input
-              id="mga-companyid"
-              [(ngModel)]="formValue.company_id"
-              name="companyId"
-              type="number"
-              placeholder="e.g. 597"
-              class="form-input"
-            />
-          </div>
-          <div class="form-field">
-            <label for="mga-idname" class="form-label">ID Name</label>
-            <input
-              id="mga-idname"
-              [(ngModel)]="formValue.id_name"
-              name="idName"
-              type="text"
-              placeholder="ID Name"
-              class="form-input"
-            />
-          </div>
-          <div class="form-field">
-            <label for="mga-name" class="form-label">Name *</label>
-            <input
-              id="mga-name"
-              [(ngModel)]="formValue.name"
-              name="mgaName"
-              type="text"
-              required
-              placeholder="e.g. Southlake Underwriters"
-              class="form-input"
-            />
-          </div>
-        </div>
         <div class="form-row">
           <div class="form-field">
             <label for="mga-code" class="form-label">MGA Code *</label>
             <input
               id="mga-code"
               [(ngModel)]="formValue.mga_code"
-              name="mgaCode"
+              name="code"
               type="text"
               required
-              placeholder="e.g. MGA-100"
+              placeholder="e.g. MGA-001"
               [disabled]="isEditMode"
               class="form-input"
             />
           </div>
-          <div class="form-field flex-2"></div>
-        </div>
-
-        <!-- Other Names -->
-        <div class="form-section-title">Other Names</div>
-        @for (row of formValue.other_names; track $index) {
-          <div class="form-row other-name-row">
-            <div class="form-field">
-              <label for="mga-othername-state-{{ $index }}" class="form-label">State</label>
-              <app-dropdown-search
-                [items]="stateOptions"
-                [isMultiSelect]="false"
-                bindValue="state_abbr"
-                placeholder="Select state"
-                [itemLabelFn]="stateAbbrLabelFn"
-                [(selectedValue)]="row.state"
-              ></app-dropdown-search>
-            </div>
-            <div class="form-field">
-              <label for="mga-othername-displayname-{{ $index }}" class="form-label">Display Name</label>
-              <input
-                id="mga-othername-displayname-{{ $index }}"
-                [(ngModel)]="row.displayName"
-                name="otherDisplayName_{{ $index }}"
-                type="text"
-                placeholder="Display Name"
-                class="form-input"
-              />
-            </div>
-            <div class="remove-row-btn-wrap">
-              <button
-                type="button"
-                class="btn-action-outline btn-action-danger-outline remove-row-btn"
-                (click)="removeOtherNameRow($index)"
-              >
-                Remove
-              </button>
-            </div>
-          </div>
-        }
-        <div class="add-row-btn-wrap">
-          <button type="button" class="btn-action-outline" (click)="addOtherNameRow()">+ Add Other Name</button>
-        </div>
-
-        <!-- Addresses & Other -->
-        <div class="form-section-title">Addresses & Other</div>
-        <div class="form-row">
-          <div class="form-field flex-2">
-            <label for="mga-address" class="form-label">Address</label>
+          <div class="form-field">
+            <label for="mga-name" class="form-label">MGA Name *</label>
             <input
-              id="mga-address"
+              id="mga-name"
+              [(ngModel)]="formValue.name"
+              name="name"
+              type="text"
+              required
+              placeholder="e.g. ABC Underwriting"
+              class="form-input"
+            />
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-field">
+            <label class="form-label">Address</label>
+            <input
               [(ngModel)]="formValue.address"
               name="address"
               type="text"
-              placeholder="123 Main St"
               class="form-input"
+              placeholder="Address"
             />
           </div>
           <div class="form-field">
-            <label for="mga-zip" class="form-label">Zip</label>
+            <label class="form-label">City</label>
             <input
-              id="mga-zip"
-              [(ngModel)]="formValue.zip"
-              name="zip"
-              type="text"
-              placeholder="12345"
-              class="form-input"
-            />
-          </div>
-        </div>
-
-        <div class="form-row">
-          <div class="form-field">
-            <label for="mga-city" class="form-label">City</label>
-            <input
-              id="mga-city"
               [(ngModel)]="formValue.city"
               name="city"
               type="text"
+              class="form-input"
               placeholder="City"
-              class="form-input"
-            />
-          </div>
-          <div class="form-field">
-            <label for="mga-state" class="form-label">State</label>
-            <app-dropdown-search
-              [items]="stateOptions"
-              [isMultiSelect]="false"
-              bindValue="state_abbr"
-              placeholder="Select state"
-              [itemLabelFn]="stateAbbrLabelFn"
-              [(selectedValue)]="formValue.state"
-            ></app-dropdown-search>
-          </div>
-          <div class="form-field">
-            <label for="mga-phone" class="form-label">Phone</label>
-            <input
-              id="mga-phone"
-              [(ngModel)]="formValue.phone"
-              name="phone"
-              type="text"
-              placeholder="555-0199"
-              class="form-input"
             />
           </div>
         </div>
 
         <div class="form-row">
           <div class="form-field">
-            <label for="mga-openitem" class="form-label">Open Item</label>
-            <div class="radio-group">
-              <label>
-                <input
-                  id="mga-openitem"
-                  type="radio"
-                  [value]="true"
-                  [(ngModel)]="formValue.open_item"
-                  name="openItem"
-                />
-                Yes
-              </label>
-              <label>
-                <input type="radio" [value]="false" [(ngModel)]="formValue.open_item" name="openItem" />
-                No
-              </label>
-            </div>
+            <label class="form-label">State</label>
+            <input
+              [(ngModel)]="formValue.state"
+              name="state"
+              type="text"
+              class="form-input"
+              placeholder="State"
+            />
           </div>
           <div class="form-field">
-            <label for="mga-opstartdate" class="form-label">Op Start Date</label>
+            <label class="form-label">Zip Code</label>
             <input
-              id="mga-opstartdate"
+              [(ngModel)]="formValue.zip"
+              name="zip"
+              type="text"
+              class="form-input"
+              placeholder="Zip"
+            />
+          </div>
+          <div class="form-field">
+            <label class="form-label">Phone</label>
+            <input
+              [(ngModel)]="formValue.phone"
+              name="phone"
+              type="text"
+              class="form-input"
+              placeholder="Phone"
+            />
+          </div>
+        </div>
+
+        <h4 class="section-heading">Configuration</h4>
+
+        <div class="form-row">
+          <div class="form-field">
+            <label class="form-label">ID Name</label>
+            <input
+              [(ngModel)]="formValue.id_name"
+              name="idName"
+              type="text"
+              class="form-input"
+              placeholder="ID Name"
+            />
+          </div>
+          <div class="form-field">
+            <label class="form-label">Company ID</label>
+            <input
+              [(ngModel)]="formValue.company_id"
+              name="companyId"
+              type="number"
+              class="form-input"
+              placeholder="Company ID"
+            />
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-field">
+            <label class="form-label">Ledger Amount</label>
+            <input
+              [(ngModel)]="formValue.ledger_amount"
+              name="ledgerAmount"
+              type="number"
+              step="0.01"
+              class="form-input"
+              placeholder="0.00"
+            />
+          </div>
+          <div class="form-field">
+            <label class="form-label">Open Item</label>
+            <input
+              [(ngModel)]="formValue.open_item"
+              name="openItem"
+              type="checkbox"
+              class="form-checkbox"
+            />
+          </div>
+          <div class="form-field">
+            <label class="form-label">Op Start Date</label>
+            <input
               [(ngModel)]="formValue.op_start_date"
               name="opStartDate"
               type="date"
               class="form-input"
             />
           </div>
-        </div>
-
-        <div class="form-row">
-          <div class="form-field">
-            <label for="mga-naicscode" class="form-label">NAICS Code</label>
-            <input
-              id="mga-naicscode"
-              [(ngModel)]="formValue.naics_code"
-              name="naicsCode"
-              type="text"
-              placeholder="e.g. 524126"
-              class="form-input"
-            />
-          </div>
-          <div class="form-field">
-            <label for="mga-contactname" class="form-label">Contact Name</label>
-            <input
-              id="mga-contactname"
-              [(ngModel)]="formValue.contact_name"
-              name="contactName"
-              type="text"
-              placeholder="Contact Name"
-              class="form-input"
-            />
-          </div>
-        </div>
-
-        <div class="form-row">
-          <div class="form-field">
-            <label for="mga-contactemail" class="form-label">Contact Email</label>
-            <input
-              id="mga-contactemail"
-              [(ngModel)]="formValue.contact_email"
-              name="contactEmail"
-              type="email"
-              placeholder="contact@email.com"
-              class="form-input"
-            />
-          </div>
-          <div class="form-field">
-            <label for="mga-contactphone" class="form-label">Contact Phone</label>
-            <input
-              id="mga-contactphone"
-              [(ngModel)]="formValue.contact_phone"
-              name="contactPhone"
-              type="text"
-              placeholder="Phone Number"
-              class="form-input"
-            />
-          </div>
-        </div>
-
-        <div class="form-row">
-          <div class="form-field">
-            <div class="form-checkbox-field active-status-checkbox">
-              <input [(ngModel)]="formValue.is_active" name="isActive" type="checkbox" id="mgaIsActive" />
-              <label for="mgaIsActive" class="checkbox-label">Active Status</label>
-            </div>
-          </div>
-          <div class="form-field"></div>
-          <div class="form-field"></div>
         </div>
       </form>
 

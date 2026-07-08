@@ -102,7 +102,14 @@
           <div class="status-section">
             <span class="info-label">Account Status</span>
             <div class="status-toggle-row">
-              <app-user-status-badge [status]="editStatus" />
+              @if (mode === "edit" && !isSelf) {
+                <select class="form-input" [(ngModel)]="editStatus">
+                  <option value="active">Active</option>
+                  <option value="inactive">Inactive</option>
+                </select>
+              } @else {
+                <app-user-status-badge [status]="editStatus" />
+              }
             </div>
           </div>
 

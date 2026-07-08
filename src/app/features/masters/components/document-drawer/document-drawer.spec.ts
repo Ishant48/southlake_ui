@@ -51,10 +51,8 @@ describe('DocumentDrawer', () => {
     expect(text).toContain('Invoice');
   });
 
-  it('docTypeLabel falls back to the camelCase field', () => {
-    expect(
-      component.docTypeLabel({ ...doc, document_type: undefined, documentType: 'Contract' }),
-    ).toBe('Contract');
+  it('docTypeLabel returns undefined when document_type is missing', () => {
+    expect(component.docTypeLabel({ ...doc, document_type: undefined })).toBeUndefined();
   });
 
   it('emits fileSelected with the file and selected document type', () => {

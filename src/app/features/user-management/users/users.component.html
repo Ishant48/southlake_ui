@@ -154,6 +154,14 @@
         </select>
       </div>
       <div class="top-right">
+        @if (selectedIds.length > 0 && hasPermission("user.edit")) {
+          <button class="btn-action" (click)="openBulkActivate()">
+            <span>Activate ({{ selectedIds.length }})</span>
+          </button>
+          <button class="btn-action btn-action-danger" (click)="openBulkDeactivate()">
+            <span>Deactivate ({{ selectedIds.length }})</span>
+          </button>
+        }
         @if (hasPermission("user.create")) {
           <button class="btn-add-user" (click)="invitePanelOpen = true">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
@@ -179,9 +187,11 @@
     <app-users-table
       [users]="users"
       [loading]="loading"
+      [currentUserId]="currentUserId"
       (viewUser)="onViewUser($event)"
       (editUser)="onEditUser($event)"
       (deactivateUser)="onDeactivateUser($event)"
+      (activateUser)="onActivateUser($event)"
       (selectionChanged)="onSelectionChanged($event)"
     />
 
@@ -268,8 +278,8 @@
   [open]="confirmOpen"
   [title]="confirmTitle"
   [message]="confirmMessage"
-  confirmLabel="Deactivate"
-  type="danger"
+  [confirmLabel]="confirmLabel"
+  [type]="confirmLabel === 'Deactivate' ? 'danger' : 'info'"
   (confirmed)="onConfirmed()"
   (cancelled)="confirmOpen = false"
 />

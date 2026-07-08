@@ -14,7 +14,8 @@ import {
   CobMaster,
   Treaty,
   DocumentType,
-  SequencePrefixCounter,
+  SequencePrefixMaster,
+  TreatyTypeMaster,
   SimpleMasterRecord,
 } from '../models/master.model';
 
@@ -23,7 +24,6 @@ export class MastersApi {
   private http = inject(HttpClient);
   private base = `${environment.apiUrl}/masters`;
 
-  // Helper to build params
   private buildParams(search?: string, isActive?: boolean): HttpParams {
     let params = new HttpParams();
     if (search) params = params.set('search', search);
@@ -54,11 +54,11 @@ export class MastersApi {
   uploadStateDocument(
     stateId: string,
     file: File,
-    documentType: string,
+    documentTypeId: string,
   ): Observable<StateDocument> {
     const formData = new FormData();
     formData.append('file', file);
-    formData.append('document_type', documentType);
+    formData.append('document_type', documentTypeId);
     return this.http.post<StateDocument>(`${this.base}/states/${stateId}/documents`, formData);
   }
   deleteStateDocument(docId: string): Observable<void> {
@@ -85,10 +85,10 @@ export class MastersApi {
   deleteMga(id: string): Observable<void> {
     return this.http.delete<void>(`${this.base}/mgas/${id}`);
   }
-  uploadMgaDocument(mgaId: string, file: File, documentType: string): Observable<MgaDocument> {
+  uploadMgaDocument(mgaId: string, file: File, documentTypeId: string): Observable<MgaDocument> {
     const formData = new FormData();
     formData.append('file', file);
-    formData.append('document_type', documentType);
+    formData.append('document_type', documentTypeId);
     return this.http.post<MgaDocument>(`${this.base}/mgas/${mgaId}/documents`, formData);
   }
   deleteMgaDocument(docId: string): Observable<void> {
@@ -138,11 +138,11 @@ export class MastersApi {
   uploadRiskCompanyDocument(
     riskCompanyId: string,
     file: File,
-    documentType: string,
+    documentTypeId: string,
   ): Observable<RiskCompanyDocument> {
     const formData = new FormData();
     formData.append('file', file);
-    formData.append('document_type', documentType);
+    formData.append('document_type', documentTypeId);
     return this.http.post<RiskCompanyDocument>(
       `${this.base}/risk-companies/${riskCompanyId}/documents`,
       formData,
@@ -202,7 +202,7 @@ export class MastersApi {
   createTreaty(
     payload: Partial<Treaty> & {
       state_ids?: string[];
-      lobs?: { lob_id: string; cob_ids: string[] }[];
+      products?: { product_id: string }[];
     },
   ): Observable<Treaty> {
     return this.http.post<Treaty>(`${this.base}/treaties`, payload);
@@ -211,7 +211,7 @@ export class MastersApi {
     id: string,
     payload: Partial<Treaty> & {
       state_ids?: string[];
-      lobs?: { lob_id: string; cob_ids: string[] }[];
+      products?: { product_id: string }[];
     },
   ): Observable<Treaty> {
     return this.http.patch<Treaty>(`${`${this.base}/treaties`}/${id}`, payload);
@@ -298,29 +298,47 @@ export class MastersApi {
   // ==========================================
   // SEQUENCE PREFIX & COUNTERS MASTER API
   // ==========================================
-  getSequencePrefixCounters(
+  getSequencePrefixMasters(
     search?: string,
     isActive?: boolean,
-  ): Observable<SequencePrefixCounter[]> {
-    return this.http.get<SequencePrefixCounter[]>(`${this.base}/sequence-prefix-counters`, {
+  ): Observable<SequencePrefixMaster[]> {
+    return this.http.get<SequencePrefixMaster[]>(`${this.base}/sequence-prefix-counters`, {
       params: this.buildParams(search, isActive),
     });
   }
-  createSequencePrefixCounter(
-    payload: Partial<SequencePrefixCounter>,
-  ): Observable<SequencePrefixCounter> {
-    return this.http.post<SequencePrefixCounter>(`${this.base}/sequence-prefix-counters`, payload);
+  createSequencePrefixMaster(
+    payload: Partial<SequencePrefixMaster>,
+  ): Observable<SequencePrefixMaster> {
+    return this.http.post<SequencePrefixMaster>(`${this.base}/sequence-prefix-counters`, payload);
   }
-  updateSequencePrefixCounter(
+  updateSequencePrefixMaster(
     id: string,
-    payload: Partial<SequencePrefixCounter>,
-  ): Observable<SequencePrefixCounter> {
-    return this.http.patch<SequencePrefixCounter>(
+    payload: Partial<SequencePrefixMaster>,
+  ): Observable<SequencePrefixMaster> {
+    return this.http.patch<SequencePrefixMaster>(
       `${this.base}/sequence-prefix-counters/${id}`,
       payload,
     );
   }
-  deleteSequencePrefixCounter(id: string): Observable<void> {
+  deleteSequencePrefixMaster(id: string): Observable<void> {
     return this.http.delete<void>(`${this.base}/sequence-prefix-counters/${id}`);
+  }
+
+  // ==========================================
+  // TREATY TYPE MASTER API
+  // ==========================================
+  getTreatyTypes(search?: string, isActive?: boolean): Observable<TreatyTypeMaster[]> {
+    return this.http.get<TreatyTypeMaster[]>(`${this.base}/treaty-types`, {
+      params: this.buildParams(search, isActive),
+    });
+  }
+  createTreatyType(payload: Partial<TreatyTypeMaster>): Observable<TreatyTypeMaster> {
+    return this.http.post<TreatyTypeMaster>(`${this.base}/treaty-types`, payload);
+  }
+  updateTreatyType(id: string, payload: Partial<TreatyTypeMaster>): Observable<TreatyTypeMaster> {
+    return this.http.patch<TreatyTypeMaster>(`${this.base}/treaty-types/${id}`, payload);
+  }
+  deleteTreatyType(id: string): Observable<void> {
+    return this.http.delete<void>(`${this.base}/treaty-types/${id}`);
   }
 }

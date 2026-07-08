@@ -43,25 +43,42 @@
           </div>
         </div>
 
+        <div class="form-row">
+          <div class="form-field">
+            <label class="form-label">Treaty Type</label>
+            <app-dropdown-search
+              [items]="treatyTypeOptions"
+              [isMultiSelect]="false"
+              bindValue="id"
+              placeholder="Select Treaty Type"
+              [itemLabelFn]="treatyTypeLabelFn"
+              [(selectedValue)]="formValue.treaty_type_id"
+            ></app-dropdown-search>
+          </div>
+          <div class="form-field">
+            <label for="tr-carrier-allocation" class="form-label">Carrier Allocation Type</label>
+            <select id="tr-carrier-allocation" [(ngModel)]="formValue.carrier_allocation_type" name="carrierAllocation" class="form-input">
+              <option value="">None</option>
+              <option value="pro_rata">Pro Rata</option>
+              <option value="per_state">Per State</option>
+            </select>
+          </div>
+        </div>
+
         <h4 class="section-heading">
-          <span>Carrier Company (Risk Company)</span>
+          <span>Risk Company (Primary Carrier) *</span>
         </h4>
 
-        @if (formValue.carriers && formValue.carriers[0]) {
-          <div class="form-row carrier-row">
-            <div class="form-field flex-1">
-              <span class="form-label">Carrier Company *</span>
-              <app-dropdown-search
-                [items]="riskCompanyOptions"
-                [isMultiSelect]="false"
-                bindValue="id"
-                placeholder="Select Carrier"
-                [itemLabelFn]="riskCompanyLabelFn"
-                [(selectedValue)]="formValue.carriers[0].risk_company_id"
-              ></app-dropdown-search>
-            </div>
-          </div>
-        }
+        <div class="field-block">
+          <app-dropdown-search
+            [items]="riskCompanyOptions"
+            [isMultiSelect]="false"
+            bindValue="id"
+            placeholder="Select Risk Company"
+            [itemLabelFn]="riskCompanyLabelFn"
+            [(selectedValue)]="formValue.risk_company_id"
+          ></app-dropdown-search>
+        </div>
 
         <h4 class="section-heading section-heading-with-action">
           <span>Reinsurer Companies & Quota Share %</span>
@@ -85,40 +102,14 @@
                 [(selectedValue)]="reinsurer.reinsurer_id"
               ></app-dropdown-search>
             </div>
-            <div class="form-field flex-1-5">
-              @if (i === 0) {
-                <span class="form-label">Specific State (Opt)</span>
-              }
-              <app-dropdown-search
-                [items]="stateOptions"
-                [isMultiSelect]="false"
-                bindValue="id"
-                placeholder="All States"
-                [itemLabelFn]="stateLabelFn"
-                [(selectedValue)]="reinsurer.state_id"
-              ></app-dropdown-search>
-            </div>
-            <div class="form-field flex-1-5">
-              @if (i === 0) {
-                <label for="tr-reinsurer-broker-{{ i }}" class="form-label">Broker (Opt)</label>
-              }
-              <app-dropdown-search
-                [items]="brokerOptions"
-                [isMultiSelect]="false"
-                bindValue="id"
-                placeholder="None"
-                [itemLabelFn]="brokerLabelFn"
-                [(selectedValue)]="reinsurer.broker_id"
-              ></app-dropdown-search>
-            </div>
             <div class="form-field flex-1">
               @if (i === 0) {
-                <label for="tr-reinsurer-cession-pct-{{ i }}" class="form-label">Quota Share %</label>
+                <label for="tr-reinsurer-quota-share-{{ i }}" class="form-label">Quota Share %</label>
               }
               <input
-                id="tr-reinsurer-cession-pct-{{ i }}"
-                [(ngModel)]="reinsurer.cession_pct"
-                [name]="'reinsurerCes_' + i"
+                id="tr-reinsurer-quota-share-{{ i }}"
+                [(ngModel)]="reinsurer.quota_share"
+                [name]="'reinsurerQs_' + i"
                 type="number"
                 step="0.01"
                 class="form-input"
@@ -152,7 +143,6 @@
             placeholder="Select MGA Underwriter"
             [itemLabelFn]="mgaLabelFn"
             [(selectedValue)]="formValue.mga_id"
-            [disabled]="isEditMode || !!formValue.mga_id"
           ></app-dropdown-search>
         </div>
 
@@ -178,54 +168,6 @@
               name="expDate"
               type="date"
               class="form-input"
-            />
-          </div>
-        </div>
-
-        <h4 class="section-heading">Sequence Prefix & Counters</h4>
-        <div class="form-row">
-          <div class="form-field">
-            <label for="tr-policyseqprefix" class="form-label">Policy Seq Prefix</label>
-            <input
-              id="tr-policyseqprefix"
-              [(ngModel)]="formValue.policy_seq_prefix"
-              name="policySeqPrefix"
-              type="text"
-              class="form-input"
-              placeholder="e.g. POL"
-            />
-          </div>
-          <div class="form-field">
-            <label for="tr-policyseqstart" class="form-label">Policy Seq Start</label>
-            <input
-              id="tr-policyseqstart"
-              [(ngModel)]="formValue.policy_seq_start"
-              name="policySeqStart"
-              type="number"
-              class="form-input"
-              placeholder="1"
-            />
-          </div>
-          <div class="form-field">
-            <label for="tr-claimseqprefix" class="form-label">Claim Seq Prefix</label>
-            <input
-              id="tr-claimseqprefix"
-              [(ngModel)]="formValue.claim_seq_prefix"
-              name="claimSeqPrefix"
-              type="text"
-              class="form-input"
-              placeholder="e.g. CLM"
-            />
-          </div>
-          <div class="form-field">
-            <label for="tr-claimseqstart" class="form-label">Claim Seq Start</label>
-            <input
-              id="tr-claimseqstart"
-              [(ngModel)]="formValue.claim_seq_start"
-              name="claimSeqStart"
-              type="number"
-              class="form-input"
-              placeholder="1"
             />
           </div>
         </div>
@@ -399,27 +341,15 @@
           ></app-dropdown-search>
         </div>
 
-        <h4 class="section-heading">Authorized Lines of Business (LOBs)</h4>
+        <h4 class="section-heading">Products</h4>
         <div class="field-block">
           <app-dropdown-search
-            [items]="lobOptions"
+            [items]="productOptions"
             [isMultiSelect]="true"
             bindValue="id"
-            placeholder="Select Lines of Business"
-            [itemLabelFn]="lobLabelFn"
-            [(selectedValues)]="formSelectedLobs"
-          ></app-dropdown-search>
-        </div>
-
-        <h4 class="section-heading">Authorized Classes of Business (COBs)</h4>
-        <div class="field-block">
-          <app-dropdown-search
-            [items]="cobOptions"
-            [isMultiSelect]="true"
-            bindValue="id"
-            placeholder="Select Classes of Business"
-            [itemLabelFn]="cobLabelFn"
-            [(selectedValues)]="formSelectedCobs"
+            placeholder="Select Products"
+            [itemLabelFn]="productLabelFn"
+            [(selectedValues)]="formSelectedProducts"
           ></app-dropdown-search>
         </div>
       </form>

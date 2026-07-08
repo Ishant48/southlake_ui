@@ -38,6 +38,14 @@ export class UsersApi {
     return this.http.patch<User>(`${this.base}/${id}`, payload);
   }
 
+  updateUserStatus(id: string, status: 'active' | 'inactive'): Observable<User> {
+    return this.http.patch<User>(`${this.base}/${id}/status`, { status });
+  }
+
+  activateUser(id: string): Observable<User> {
+    return this.updateUserStatus(id, 'active');
+  }
+
   deactivateUser(id: string): Observable<{ message: string }> {
     return this.http.post<{ message: string }>(`${this.base}/${id}/deactivate`, {});
   }

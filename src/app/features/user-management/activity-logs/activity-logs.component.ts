@@ -108,14 +108,14 @@ export class ActivityLogsComponent implements OnInit {
       },
       {
         headerName: 'MODULE',
-        field: 'moduleId',
+        field: 'module_id',
         valueFormatter: params => this.formatModule(params.value),
         flex: 1,
         minWidth: 150,
       },
       {
         headerName: 'ENTITY',
-        field: 'entityType',
+        field: 'entity_type',
         // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- '' is a valid falsy value that should also render as '-'
         valueFormatter: params => params.value || '-',
         flex: 1,
@@ -131,7 +131,7 @@ export class ActivityLogsComponent implements OnInit {
       },
       {
         headerName: 'IP ADDRESS',
-        field: 'ipAddress',
+        field: 'ip_address',
         // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- '' is a valid falsy value that should also render as '-'
         valueFormatter: params => params.value || '-',
         cellClass: 'text-mono',
@@ -140,7 +140,7 @@ export class ActivityLogsComponent implements OnInit {
       },
       {
         headerName: 'DATE / TIME',
-        field: 'createdAt',
+        field: 'created_at',
         valueFormatter: params => this.formatDate(params.value),
         flex: 1,
         minWidth: 160,

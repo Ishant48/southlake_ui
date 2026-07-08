@@ -22,7 +22,7 @@
             <select [(ngModel)]="selectedDocType" class="form-control doc-type-select">
               <option value="">-- Select Document Type --</option>
               @for (dt of documentTypesOptions; track dt.id) {
-                <option [value]="dt.code">{{ dt.name }}</option>
+                <option [value]="dt.type_code">{{ dt.name }}</option>
               }
             </select>
           </div>

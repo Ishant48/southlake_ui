@@ -1,7 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { SimpleFormModal, SimpleFormValue, createBlankSimpleForm } from './simple-form-modal';
-import { LineOfBusiness, CobMaster } from '../../models/master.model';
 
 describe('SimpleFormModal', () => {
   let component: SimpleFormModal;
@@ -48,32 +47,21 @@ describe('SimpleFormModal', () => {
     expect(component.formValue).not.toBe(sample);
   });
 
-  it('derives product code/name from the selected LOB and COB', () => {
-    const lob: LineOfBusiness = { id: 'l1', lob_code: 'AUTO', name: 'Auto', is_active: true };
-    const cob: CobMaster = { id: 'c1', cob_code: 'PHYS', name: 'Physical Damage', is_active: true };
-    component.lobOptions = [lob];
-    component.cobOptions = [cob];
-    component.formValue = { ...createBlankSimpleForm(), lob_id: 'l1', cob_id: 'c1' };
-
-    component.onProductLobCobChange();
-
-    expect(component.formValue.code).toBe('AUTO-PHYS');
-    expect(component.formValue.name).toBe('Auto - Physical Damage');
-  });
-
-  it('clears product code/name when LOB or COB is unselected', () => {
-    component.lobOptions = [];
-    component.cobOptions = [];
-    component.formValue = {
-      ...createBlankSimpleForm(),
-      code: 'AUTO-PHYS',
-      name: 'Auto - Physical Damage',
-    };
-
-    component.onProductLobCobChange();
-
-    expect(component.formValue.code).toBe('');
-    expect(component.formValue.name).toBe('');
+  it('initializes lob_ids and cob_ids from model with selection map', () => {
+    const model: SimpleFormValue = { ...createBlankSimpleForm(), lob_ids: ['l1', 'l2'], cob_ids: ['c1'] };
+    component.model = model;
+    component.ngOnChanges({
+      model: {
+        currentValue: model,
+        previousValue: undefined,
+        firstChange: true,
+        isFirstChange: () => true,
+      },
+    });
+    expect(component.formValue.lob_ids).toEqual(['l1', 'l2']);
+    expect(component.formValue.cob_ids).toEqual(['c1']);
+    expect(component.formSelectedLobIds).toEqual({ l1: true, l2: true });
+    expect(component.formSelectedCobIds).toEqual({ c1: true });
   });
 
   it('emits save with the current form value', () => {

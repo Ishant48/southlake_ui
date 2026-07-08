@@ -1,7 +1,7 @@
-import { Injectable, inject } from '@angular/core';
+import { Injectable, inject, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
-import { Observable } from 'rxjs';
+import { Observable, tap } from 'rxjs';
 import { SessionToken } from '../models/session.model';
 import { environment } from '../../../environments/environment';
 
@@ -29,6 +29,24 @@ export class AuthService {
   private http = inject(HttpClient);
   private router = inject(Router);
 
+  private permissionsSignal = signal<string[]>([]);
+  readonly permissions = this.permissionsSignal.asReadonly();
+
+  constructor() {
+    const user = this.getCurrentUser();
+    if (user?.effective_permissions) {
+      this.permissionsSignal.set(user.effective_permissions);
+    }
+  }
+
+  refreshPermissions(): Observable<AuthUser> {
+    return this.fetchCurrentUser().pipe(
+      tap(user => {
+        this.storeSession({ user });
+      }),
+    );
+  }
+
   login(email: string, password: string): Observable<{ message: string }> {
     return this.http.post<{ message: string }>(`${environment.apiUrl}/auth/login`, {
       email,
@@ -53,6 +71,13 @@ export class AuthService {
     }
     if (data.user) {
       localStorage.setItem(CURRENT_USER_KEY, JSON.stringify(data.user));
+      const perms = data.user.effective_permissions ??
+        (data.user.permissions
+          ? (data.user.permissions as (string | AuthPermission)[]).map(p =>
+              typeof p === 'string' ? p : p.action ?? '',
+            ).filter(Boolean)
+          : []);
+      this.permissionsSignal.set(perms as string[]);
     }
   }
 
@@ -78,62 +103,16 @@ export class AuthService {
     const user = this.getCurrentUser();
     if (!user) return false;
 
-    // Super Admin has full access unconditionally
     const roleName = typeof user.role === 'string' ? user.role : user.role?.name;
     if (roleName === 'superadmin' || user.is_super_admin) {
       return true;
     }
 
-    // 1-argument signature: checks user.effective_permissions or user.permissions for a direct action name
-    if (!action) {
-      if (user.effective_permissions && Array.isArray(user.effective_permissions)) {
-        return user.effective_permissions.includes(moduleOrPermission);
-      }
-      if (user.permissions && Array.isArray(user.permissions)) {
-        return (
-          user.permissions.includes(moduleOrPermission) ||
-          user.permissions.some(
-            (p: string | AuthPermission) =>
-              typeof p === 'object' && p.action === moduleOrPermission,
-          ) ||
-          user.permissions.some(
-            (p: string | AuthPermission) =>
-              typeof p === 'object' && `${p.module_id}.${p.action}` === moduleOrPermission,
-          )
-        );
-      }
-      return false;
+    const effectivePerms = this.permissionsSignal();
+    if (action) {
+      return effectivePerms.includes(`${moduleOrPermission}.${action}`);
     }
-
-    // 2-argument signature: checks user.permissions for module/action pair
-    if (!user.permissions) return false;
-
-    // If permissions is an array of strings
-    if (Array.isArray(user.permissions) && typeof user.permissions[0] === 'string') {
-      return (
-        user.permissions.includes(`${moduleOrPermission}.${action}`) ||
-        user.permissions.includes(action)
-      );
-    }
-
-    // If permissions is an array of objects
-    if (Array.isArray(user.permissions)) {
-      const modulePerm = user.permissions.find(
-        (p: string | AuthPermission) => typeof p === 'object' && p.module_id === moduleOrPermission,
-      );
-      if (modulePerm && typeof modulePerm === 'object') {
-        return !!modulePerm[action];
-      }
-      // If it's flat permissions object array returned by akhil's service
-      return user.permissions.some(
-        (p: string | AuthPermission) =>
-          typeof p === 'object' &&
-          (p.action === `${moduleOrPermission}.${action}` ||
-            (p.module_id === moduleOrPermission && p.action === action)),
-      );
-    }
-
-    return false;
+    return effectivePerms.includes(moduleOrPermission);
   }
 
   logout(): void {

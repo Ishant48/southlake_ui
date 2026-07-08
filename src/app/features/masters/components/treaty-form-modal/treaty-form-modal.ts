@@ -10,14 +10,12 @@ import {
   ReinsurerCompany,
   RiskCompany,
   StateMaster,
-  LineOfBusiness,
-  CobMaster,
   SimpleMasterRecord,
 } from '../../models/master.model';
 
 export type TreatyFormShape = Partial<Treaty> & {
   state_ids: string[];
-  lobs: { lob_id: string; cob_ids: string[] }[];
+  products: { product_id: string }[];
   carriers: TreatyCarrier[];
   reinsurers: TreatyReinsurer[];
 };
@@ -27,8 +25,7 @@ export type TreatySelectionMap = Record<string, boolean>;
 export interface TreatySaveEvent {
   form: TreatyFormShape;
   selectedStates: TreatySelectionMap;
-  selectedLobs: TreatySelectionMap;
-  selectedCobs: TreatySelectionMap;
+  selectedProducts: TreatySelectionMap;
 }
 
 export function createBlankTreatyForm(): TreatyFormShape {
@@ -36,7 +33,6 @@ export function createBlankTreatyForm(): TreatyFormShape {
     treaty_code: '',
     name: '',
     mga_id: '',
-    reinsurer_id: null,
     risk_company_id: null,
     effective_date: '',
     expiration_date: '',
@@ -48,11 +44,12 @@ export function createBlankTreatyForm(): TreatyFormShape {
     xol_pct: 0,
     lr_cap_pct: 0,
     ibnr_pct: 0,
-    carrier_retention_pct: 100,
-    reinsurer_cession_pct: 0,
-    is_active: true,
+    lae_dcc_pct: 0,
+    lae_aoe_pct: 0,
+    treaty_type_id: '',
+    carrier_allocation_type: '',
     state_ids: [],
-    lobs: [],
+    products: [],
     carriers: [],
     reinsurers: [],
   };
@@ -71,32 +68,28 @@ export class TreatyFormModal implements OnChanges {
   @Input() isEditMode = false;
   @Input() submitting = false;
   @Input() selectedStates: TreatySelectionMap = {};
-  @Input() selectedLobs: TreatySelectionMap = {};
-  @Input() selectedCobs: TreatySelectionMap = {};
+  @Input() selectedProducts: TreatySelectionMap = {};
 
   @Input() riskCompanyOptions: RiskCompany[] = [];
   @Input() reinsurerOptions: ReinsurerCompany[] = [];
-  @Input() brokerOptions: SimpleMasterRecord[] = [];
   @Input() mgaOptions: MgaMaster[] = [];
   @Input() stateOptions: StateMaster[] = [];
-  @Input() lobOptions: LineOfBusiness[] = [];
-  @Input() cobOptions: CobMaster[] = [];
+  @Input() productOptions: SimpleMasterRecord[] = [];
+  @Input() treatyTypeOptions: SimpleMasterRecord[] = [];
 
   @Input() riskCompanyLabelFn: (item: RiskCompany) => string = () => '';
   @Input() reinsurerLabelFn: (item: ReinsurerCompany) => string = () => '';
   @Input() stateLabelFn: (item: StateMaster) => string = () => '';
-  @Input() brokerLabelFn: (item: SimpleMasterRecord) => string = () => '';
   @Input() mgaLabelFn: (item: MgaMaster) => string = () => '';
-  @Input() lobLabelFn: (item: LineOfBusiness) => string = () => '';
-  @Input() cobLabelFn: (item: CobMaster) => string = () => '';
+  @Input() productLabelFn: (item: SimpleMasterRecord) => string = () => '';
+  @Input() treatyTypeLabelFn: (item: SimpleMasterRecord) => string = () => '';
 
   @Output() closed = new EventEmitter<void>();
   @Output() save = new EventEmitter<TreatySaveEvent>();
 
   formValue: TreatyFormShape = createBlankTreatyForm();
   formSelectedStates: TreatySelectionMap = {};
-  formSelectedLobs: TreatySelectionMap = {};
-  formSelectedCobs: TreatySelectionMap = {};
+  formSelectedProducts: TreatySelectionMap = {};
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['model']) {
@@ -109,18 +102,15 @@ export class TreatyFormModal implements OnChanges {
     if (changes['selectedStates']) {
       this.formSelectedStates = { ...this.selectedStates };
     }
-    if (changes['selectedLobs']) {
-      this.formSelectedLobs = { ...this.selectedLobs };
-    }
-    if (changes['selectedCobs']) {
-      this.formSelectedCobs = { ...this.selectedCobs };
+    if (changes['selectedProducts']) {
+      this.formSelectedProducts = { ...this.selectedProducts };
     }
   }
 
   addReinsurerRow(): void {
     this.formValue.reinsurers = [
       ...this.formValue.reinsurers,
-      { reinsurer_id: '', cession_pct: 0 },
+      { reinsurer_id: '', quota_share: 0 },
     ];
   }
 
@@ -136,8 +126,7 @@ export class TreatyFormModal implements OnChanges {
     this.save.emit({
       form: this.formValue,
       selectedStates: this.formSelectedStates,
-      selectedLobs: this.formSelectedLobs,
-      selectedCobs: this.formSelectedCobs,
+      selectedProducts: this.formSelectedProducts,
     });
   }
 }

@@ -11,26 +11,30 @@ export type SimpleMode =
   | 'broker'
   | 'product'
   | 'document-type'
-  | 'sequence-prefix-counter';
+  | 'sequence-prefix-counter'
+  | 'treaty-type';
 
 export interface SimpleFormValue {
   id?: string;
-  code: string;
-  name: string;
-  is_active: boolean;
-  description: string;
-  type: string;
-  taxable: boolean;
-  priority: number;
-  fully_earned: boolean;
+  code?: string;
+  name?: string;
+  is_active?: boolean;
+  description?: string;
+  type?: string;
+  taxable?: boolean;
+  priority?: number;
+  fully_earned?: boolean;
   contact_name?: string;
   contact_email?: string;
   contact_phone?: string;
-  lob_id?: string;
-  cob_id?: string;
   prefix?: string;
-  next_value?: number;
-  padding_width?: number;
+  prefix_connector?: string;
+  seq_start?: number;
+  next_number?: number;
+  suffix?: string;
+  suffix_connector?: string;
+  lob_ids?: string[];
+  cob_ids?: string[];
 }
 
 export function createBlankSimpleForm(): SimpleFormValue {
@@ -46,11 +50,14 @@ export function createBlankSimpleForm(): SimpleFormValue {
     contact_name: '',
     contact_email: '',
     contact_phone: '',
-    lob_id: '',
-    cob_id: '',
     prefix: '',
-    next_value: 1,
-    padding_width: 4,
+    prefix_connector: '',
+    seq_start: 1,
+    next_number: 1,
+    suffix: '',
+    suffix_connector: '',
+    lob_ids: [],
+    cob_ids: [],
   };
 }
 
@@ -78,27 +85,27 @@ export class SimpleFormModal implements OnChanges {
   @Output() save = new EventEmitter<SimpleFormValue>();
 
   formValue: SimpleFormValue = createBlankSimpleForm();
+  formSelectedLobIds: Record<string, boolean> = {};
+  formSelectedCobIds: Record<string, boolean> = {};
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['model']) {
-      this.formValue = { ...this.model };
+      this.formValue = { ...this.model, lob_ids: [...(this.model.lob_ids ?? [])], cob_ids: [...(this.model.cob_ids ?? [])] };
+      this.formSelectedLobIds = {};
+      this.formSelectedCobIds = {};
+      for (const id of this.formValue.lob_ids ?? []) this.formSelectedLobIds[id] = true;
+      for (const id of this.formValue.cob_ids ?? []) this.formSelectedCobIds[id] = true;
     }
   }
 
-  onProductLobCobChange(): void {
-    const selectedLob = this.lobOptions.find(l => l.id === this.formValue.lob_id);
-    const selectedCob = this.cobOptions.find(c => c.id === this.formValue.cob_id);
+  onLobSelectionChange(selection: Record<string, boolean>): void {
+    this.formSelectedLobIds = selection;
+    this.formValue.lob_ids = Object.keys(selection).filter(k => selection[k]);
+  }
 
-    const lobCode = selectedLob ? selectedLob.lob_code : '';
-    const cobCode = selectedCob ? selectedCob.cob_code : '';
-
-    if (lobCode && cobCode) {
-      this.formValue.code = `${lobCode}-${cobCode}`;
-      this.formValue.name = `${selectedLob?.name} - ${selectedCob?.name}`;
-    } else {
-      this.formValue.code = '';
-      this.formValue.name = '';
-    }
+  onCobSelectionChange(selection: Record<string, boolean>): void {
+    this.formSelectedCobIds = selection;
+    this.formValue.cob_ids = Object.keys(selection).filter(k => selection[k]);
   }
 
   close(): void {

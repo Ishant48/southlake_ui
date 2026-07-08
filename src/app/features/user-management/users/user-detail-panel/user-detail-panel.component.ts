@@ -131,6 +131,12 @@ export class UserDetailPanelComponent implements OnChanges {
     return this.authService.hasPermission(permission);
   }
 
+  get isSelf(): boolean {
+    if (!this.user) return false;
+    const currentUser = this.authService.getCurrentUser();
+    return currentUser?.['id'] === this.user.id;
+  }
+
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['user'] && this.user) {
       this.editStatus = this.user.status;
@@ -198,8 +204,9 @@ export class UserDetailPanelComponent implements OnChanges {
     this.savingProfile = true;
     this.profileError = '';
 
+    const statusChanged = this.editStatus !== this.user.status;
     const payload: UpdateUserProfilePayload = {
-      status: this.editStatus !== this.user.status ? this.editStatus : undefined,
+      status: !this.isSelf && statusChanged ? this.editStatus : undefined,
       name: this.editName !== this.user.name ? this.editName : undefined,
       department: this.editDepartment !== this.user.department ? this.editDepartment : undefined,
       title: this.editTitle !== this.user.title ? this.editTitle : undefined,
@@ -245,6 +252,7 @@ export class UserDetailPanelComponent implements OnChanges {
       next: () => {
         this.savingPerms = false;
         this.toast.success('Permissions updated');
+        this.authService.refreshPermissions().subscribe();
         this.cdr.markForCheck();
       },
       error: err => {

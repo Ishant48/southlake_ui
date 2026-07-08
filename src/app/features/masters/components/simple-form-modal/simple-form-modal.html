@@ -1,5 +1,4 @@
 @if (open) {
-  <!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events, @angular-eslint/template/interactive-supports-focus -- backdrop click-to-dismiss, not an interactive control; keyboard dismissal is handled via Escape at the dialog level -->
   <div class="modal-overlay" (click)="$event.target === $event.currentTarget && close()">
     <div class="modal-box {{ mode === 'lob' || mode === 'cob' || mode === 'product' ? 'treaty-modal' : 'coa-modal' }}">
       <div class="panel-header">
@@ -16,19 +15,17 @@
         <div class="form-row">
           <div class="form-field">
             <label for="m-code" class="form-label">
-              {{
-                mode === "lob"
-                  ? "LOB ID *"
-                  : mode === "cob"
-                    ? "Class ID *"
-                    : mode === "broker"
-                      ? "Broker Code *"
-                      : mode === "product"
-                        ? "Product ID *"
-                        : mode === "sequence-prefix-counter"
-                          ? "Sequence Code *"
-                          : "Code ID *"
-              }}
+              @switch (mode) {
+                @case ("lob") { LOB Code * }
+                @case ("cob") { COB Code * }
+                @case ("broker") { Broker Code * }
+                @case ("product") { Product ID * }
+                @case ("document-type") { Type Code * }
+                @case ("sequence-prefix-counter") { Sequence Type * }
+                @case ("treaty-type") { Type Code * }
+                @case ("reinsurer") { Reinsurer ID * }
+                @default { Code * }
+              }
             </label>
             <input
               id="m-code"
@@ -36,26 +33,23 @@
               name="code"
               type="text"
               required
-              placeholder="e.g. TX"
-              [disabled]="isEditMode || mode === 'product'"
+              placeholder="e.g. {{ mode === 'document-type' ? 'LICENSE' : mode === 'lob' ? 'AUTO' : 'TX' }}"
+              [disabled]="isEditMode"
               class="form-input"
             />
           </div>
           <div class="form-field">
             <label for="m-name" class="form-label">
-              {{
-                mode === "lob"
-                  ? "LOB Name *"
-                  : mode === "cob"
-                    ? "Class Name *"
-                    : mode === "broker"
-                      ? "Broker Name *"
-                      : mode === "product"
-                        ? "Product Name *"
-                        : mode === "sequence-prefix-counter"
-                          ? "Sequence Name *"
-                          : "Name *"
-              }}
+              @switch (mode) {
+                @case ("lob") { LOB Name * }
+                @case ("cob") { COB Name * }
+                @case ("broker") { Broker Name * }
+                @case ("product") { Product Name * }
+                @case ("document-type") { Name * }
+                @case ("sequence-prefix-counter") { Name * }
+                @case ("treaty-type") { Name * }
+                @default { Name * }
+              }
             </label>
             <input
               id="m-name"
@@ -63,8 +57,7 @@
               name="name"
               type="text"
               required
-              placeholder="e.g. Texas"
-              [disabled]="mode === 'product'"
+              placeholder="e.g. {{ mode === 'lob' ? 'Auto' : 'Texas' }}"
               class="form-input"
             />
           </div>
@@ -113,27 +106,25 @@
         @if (mode === "product") {
           <div class="form-row form-row-spaced">
             <div class="form-field">
-              <span class="form-label">Line of Business *</span>
+              <span class="form-label">Lines of Business</span>
               <app-dropdown-search
                 [items]="lobOptions"
-                [isMultiSelect]="false"
+                [isMultiSelect]="true"
                 bindValue="id"
-                placeholder="Select LOB"
+                placeholder="Select LOBs"
                 [itemLabelFn]="lobLabelFn"
-                [selectedValue]="formValue.lob_id"
-                (selectedValueChange)="formValue.lob_id = $any($event); onProductLobCobChange()"
+                [(selectedValues)]="formSelectedLobIds"
               ></app-dropdown-search>
             </div>
             <div class="form-field">
-              <label for="m-description" class="form-label">Class of Business *</label>
+              <span class="form-label">Classes of Business</span>
               <app-dropdown-search
                 [items]="cobOptions"
-                [isMultiSelect]="false"
+                [isMultiSelect]="true"
                 bindValue="id"
-                placeholder="Select COB"
+                placeholder="Select COBs"
                 [itemLabelFn]="cobLabelFn"
-                [selectedValue]="formValue.cob_id"
-                (selectedValueChange)="formValue.cob_id = $any($event); onProductLobCobChange()"
+                [(selectedValues)]="formSelectedCobIds"
               ></app-dropdown-search>
             </div>
           </div>
@@ -141,7 +132,7 @@
             <div class="form-field">
               <label for="m-description-2" class="form-label">Description</label>
               <textarea
-                id="m-description"
+                id="m-description-2"
                 [(ngModel)]="formValue.description"
                 name="description"
                 placeholder="Product description..."
@@ -153,21 +144,21 @@
 
         @if (mode === "lob" || mode === "cob") {
           <div class="form-row form-row-spaced">
-            @if (mode === "cob") {
-              <div class="form-field">
-                <label for="m-priority" class="form-label">Class Type</label>
-                <app-dropdown-search
-                  [items]="typeOptions"
-                  [isMultiSelect]="false"
-                  bindValue="id"
-                  placeholder="Select Type"
-                  [itemLabelFn]="nameLabelFn"
-                  [(selectedValue)]="formValue.type"
-                ></app-dropdown-search>
-              </div>
-            }
             <div class="form-field">
-              <label for="m-priority-2" class="form-label">Priority</label>
+              <label for="m-type" class="form-label">
+                {{ mode === "lob" ? "LOB" : "Class" }} Type
+              </label>
+              <input
+                id="m-type"
+                [(ngModel)]="formValue.type"
+                name="type"
+                type="text"
+                placeholder="Type"
+                class="form-input"
+              />
+            </div>
+            <div class="form-field">
+              <label for="m-priority" class="form-label">Priority</label>
               <input
                 id="m-priority"
                 [(ngModel)]="formValue.priority"
@@ -241,30 +232,64 @@
                 class="form-input"
               />
             </div>
+            <div class="form-field">
+              <label for="m-prefix-connector" class="form-label">Prefix Connector</label>
+              <input
+                id="m-prefix-connector"
+                [(ngModel)]="formValue.prefix_connector"
+                name="prefix_connector"
+                type="text"
+                placeholder="e.g. -"
+                class="form-input"
+              />
+            </div>
           </div>
           <div class="form-row form-row-spaced">
             <div class="form-field">
-              <label for="m-next-value" class="form-label">Next Value *</label>
+              <label for="m-seq-start" class="form-label">Seq Start</label>
               <input
-                id="m-next-value"
-                [(ngModel)]="formValue.next_value"
-                name="next_value"
+                id="m-seq-start"
+                [(ngModel)]="formValue.seq_start"
+                name="seq_start"
+                type="number"
+                placeholder="1"
+                class="form-input"
+              />
+            </div>
+            <div class="form-field">
+              <label for="m-next-number" class="form-label">Next Number *</label>
+              <input
+                id="m-next-number"
+                [(ngModel)]="formValue.next_number"
+                name="next_number"
                 type="number"
                 placeholder="1"
                 class="form-input"
                 required
               />
             </div>
+          </div>
+          <div class="form-row form-row-spaced">
             <div class="form-field">
-              <label for="m-padding-width" class="form-label">Padding Width *</label>
+              <label for="m-suffix" class="form-label">Suffix</label>
               <input
-                id="m-padding-width"
-                [(ngModel)]="formValue.padding_width"
-                name="padding_width"
-                type="number"
-                placeholder="4"
+                id="m-suffix"
+                [(ngModel)]="formValue.suffix"
+                name="suffix"
+                type="text"
+                placeholder="e.g. CA"
                 class="form-input"
-                required
+              />
+            </div>
+            <div class="form-field">
+              <label for="m-suffix-connector" class="form-label">Suffix Connector</label>
+              <input
+                id="m-suffix-connector"
+                [(ngModel)]="formValue.suffix_connector"
+                name="suffix_connector"
+                type="text"
+                placeholder="e.g. -"
+                class="form-input"
               />
             </div>
           </div>

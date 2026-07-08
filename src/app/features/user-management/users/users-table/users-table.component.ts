@@ -26,10 +26,12 @@ export class UsersTableComponent implements OnInit {
   @Input() users: User[] = [];
   @Input() loading = false;
   @Input() showCheckboxes = true;
+  @Input() currentUserId = '';
 
   @Output() viewUser = new EventEmitter<User>();
   @Output() editUser = new EventEmitter<User>();
   @Output() deactivateUser = new EventEmitter<User>();
+  @Output() activateUser = new EventEmitter<User>();
   @Output() selectionChanged = new EventEmitter<string[]>();
 
   gridOptions!: GridOptions;
@@ -134,9 +136,14 @@ export class UsersTableComponent implements OnInit {
           buttons: (data: User) => {
             const btns: ActionButtonConfig[] = [{ label: 'View', action: 'view' }];
             if (this.hasPermission('user.edit')) {
-              btns.push({ label: 'Edit', action: 'edit' });
-              if (data.status !== 'inactive') {
-                btns.push({ label: 'Deactivate', action: 'deactivate', danger: true });
+              const isSelf = data.id === this.currentUserId;
+              if (!isSelf) {
+                btns.push({ label: 'Edit', action: 'edit' });
+                if (data.status === 'inactive') {
+                  btns.push({ label: 'Activate', action: 'activate' });
+                } else if (data.status === 'active') {
+                  btns.push({ label: 'Deactivate', action: 'deactivate', danger: true });
+                }
               }
             }
             return btns;
@@ -145,6 +152,7 @@ export class UsersTableComponent implements OnInit {
             if (action === 'view') this.viewUser.emit(data);
             if (action === 'edit') this.editUser.emit(data);
             if (action === 'deactivate') this.deactivateUser.emit(data);
+            if (action === 'activate') this.activateUser.emit(data);
           },
         },
       },

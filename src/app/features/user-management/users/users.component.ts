@@ -1,7 +1,7 @@
 import { Component, inject, OnInit, ChangeDetectorRef, HostListener } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink, RouterLinkActive } from '@angular/router';
-import { debounceTime, distinctUntilChanged, Subject } from 'rxjs';
+import { debounceTime, distinctUntilChanged, forkJoin, Subject } from 'rxjs';
 import { User, UserStats, PendingInvite } from '../models/user.model';
 import { Role } from '../models/role.model';
 import { AuthService } from '../../../core/services/auth.service';
@@ -71,7 +71,12 @@ export class UsersComponent implements OnInit {
   confirmOpen = false;
   confirmTitle = '';
   confirmMessage = '';
+  confirmLabel = '';
   pendingAction: (() => void) | null = null;
+
+  get currentUserId(): string {
+    return (this.authService.getCurrentUser()?.['id'] as string) ?? '';
+  }
 
   viewDropdownOpen = false;
 
@@ -188,6 +193,7 @@ export class UsersComponent implements OnInit {
   onDeactivateUser(user: User): void {
     this.confirmTitle = 'Deactivate User';
     this.confirmMessage = `Are you sure you want to deactivate ${user.name}? They will lose access immediately.`;
+    this.confirmLabel = 'Deactivate';
     this.pendingAction = () => {
       this.usersService.deactivateUser(user.id).subscribe({
         next: () => {
@@ -203,6 +209,25 @@ export class UsersComponent implements OnInit {
     this.confirmOpen = true;
   }
 
+  onActivateUser(user: User): void {
+    this.confirmTitle = 'Activate User';
+    this.confirmMessage = `Are you sure you want to activate ${user.name}? They will regain access immediately.`;
+    this.confirmLabel = 'Activate';
+    this.pendingAction = () => {
+      this.usersService.activateUser(user.id).subscribe({
+        next: () => {
+          this.toast.success(`${user.name} has been activated`);
+          this.loadUsers();
+          this.loadStats();
+        },
+        error: err => {
+          this.toast.error(err?.error?.message ?? 'Failed to activate user');
+        },
+      });
+    };
+    this.confirmOpen = true;
+  }
+
   onSelectionChanged(ids: string[]): void {
     this.selectedIds = ids;
   }
@@ -211,11 +236,21 @@ export class UsersComponent implements OnInit {
     this.selectedIds = [];
   }
 
+  private getFilteredSelectedIds(): string[] {
+    return this.selectedIds.filter(id => id !== this.currentUserId);
+  }
+
   openBulkDeactivate(): void {
+    const targetIds = this.getFilteredSelectedIds();
+    if (!targetIds.length) {
+      this.toast.error('No other users selected to deactivate');
+      return;
+    }
     this.confirmTitle = 'Deactivate Selected Users';
-    this.confirmMessage = `Deactivate ${this.selectedIds.length} selected user(s)? They will lose access immediately.`;
+    this.confirmMessage = `Deactivate ${targetIds.length} selected user(s)? They will lose access immediately.`;
+    this.confirmLabel = 'Deactivate';
     this.pendingAction = () => {
-      this.usersService.deactivateBulk(this.selectedIds).subscribe({
+      this.usersService.deactivateBulk(targetIds).subscribe({
         next: res => {
           this.toast.success(`${res.count} user(s) deactivated`);
           this.selectedIds = [];
@@ -224,6 +259,32 @@ export class UsersComponent implements OnInit {
         },
         error: err => {
           this.toast.error(err?.error?.message ?? 'Failed to deactivate users');
+        },
+      });
+    };
+    this.confirmOpen = true;
+  }
+
+  openBulkActivate(): void {
+    const targetIds = this.getFilteredSelectedIds();
+    if (!targetIds.length) {
+      this.toast.error('No other users selected to activate');
+      return;
+    }
+    this.confirmTitle = 'Activate Selected Users';
+    this.confirmMessage = `Activate ${targetIds.length} selected user(s)? They will regain access immediately.`;
+    this.confirmLabel = 'Activate';
+    this.pendingAction = () => {
+      const requests = targetIds.map(id => this.usersService.activateUser(id));
+      forkJoin(requests).subscribe({
+        next: () => {
+          this.toast.success(`${targetIds.length} user(s) activated`);
+          this.selectedIds = [];
+          this.loadUsers();
+          this.loadStats();
+        },
+        error: err => {
+          this.toast.error(err?.error?.message ?? 'Failed to activate users');
         },
       });
     };

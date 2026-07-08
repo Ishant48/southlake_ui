@@ -9,7 +9,6 @@ export interface DrawerDocument {
   file_url: string;
   uploaded_at: string;
   document_type?: string;
-  documentType?: string;
 }
 
 @Component({
@@ -37,7 +36,7 @@ export class DocumentDrawer {
   }
 
   docTypeLabel(doc: DrawerDocument): string | undefined {
-    return doc.document_type ?? doc.documentType;
+    return doc.document_type;
   }
 
   onFileInputChange(event: Event): void {
