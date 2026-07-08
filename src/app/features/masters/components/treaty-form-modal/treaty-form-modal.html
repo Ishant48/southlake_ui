@@ -36,6 +36,18 @@
               class="form-input"
             />
           </div>
+          <div class="form-field">
+            <label for="tr-treatytype" class="form-label">Treaty Type *</label>
+            <app-dropdown-search
+              [items]="treatyTypeOptions"
+              [isMultiSelect]="false"
+              bindValue="name"
+              placeholder="Select Treaty Type"
+              [itemLabelFn]="treatyTypeLabelFn"
+              [selectedValue]="form.controls.treaty_type.value"
+              (selectedValueChange)="form.controls.treaty_type.setValue($any($event))"
+            ></app-dropdown-search>
+          </div>
         </div>
 
         <h4 class="section-heading">

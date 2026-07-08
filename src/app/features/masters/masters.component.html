@@ -22,7 +22,8 @@
         currentTab === MasterTab.Brokers ||
         currentTab === MasterTab.Products ||
         currentTab === MasterTab.DocumentTypes ||
-        currentTab === MasterTab.SequencePrefixCounters
+        currentTab === MasterTab.SequencePrefixCounters ||
+        currentTab === MasterTab.TreatyTypes
       ) {
         <button class="btn-primary" (click)="simpleMasterTab?.openSimpleAdd()">
           Add {{ simpleMasterTab?.addLabel }}
@@ -72,6 +73,9 @@
     }
     @case (MasterTab.SequencePrefixCounters) {
       <app-simple-master-tab [mode]="SimpleMode.SequencePrefixCounter"></app-simple-master-tab>
+    }
+    @case (MasterTab.TreatyTypes) {
+      <app-simple-master-tab [mode]="SimpleMode.TreatyType"></app-simple-master-tab>
     }
   }
 </div>

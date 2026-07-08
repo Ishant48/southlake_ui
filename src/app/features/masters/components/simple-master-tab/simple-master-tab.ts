@@ -22,6 +22,7 @@ import { buildBrokersColumnDefs } from '../../grid-columns/brokers-columns';
 import { buildProductsColumnDefs } from '../../grid-columns/products-columns';
 import { buildDocumentTypesColumnDefs } from '../../grid-columns/document-types-columns';
 import { buildSequencePrefixCountersColumnDefs } from '../../grid-columns/sequence-prefix-counters-columns';
+import { buildTreatyTypesColumnDefs } from '../../grid-columns/treaty-types-columns';
 import { StatusBadgeCell } from '../../../../shared/components/grid-renderers/status-badge-cell/status-badge-cell';
 
 const ADD_LABELS: Record<SimpleMode, string> = {
@@ -32,6 +33,7 @@ const ADD_LABELS: Record<SimpleMode, string> = {
   [SimpleMode.Product]: 'Product',
   [SimpleMode.DocumentType]: 'Document Type',
   [SimpleMode.SequencePrefixCounter]: 'Sequence Counter',
+  [SimpleMode.TreatyType]: 'Treaty Type',
 };
 
 const SIMPLE_TYPE_OPTIONS = [
@@ -121,6 +123,8 @@ export class SimpleMasterTab implements OnInit {
         return buildDocumentTypesColumnDefs(this, statusCol);
       case SimpleMode.SequencePrefixCounter:
         return buildSequencePrefixCountersColumnDefs(this, statusCol);
+      case SimpleMode.TreatyType:
+        return buildTreatyTypesColumnDefs(this, statusCol);
     }
   }
 

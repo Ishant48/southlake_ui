@@ -18,6 +18,7 @@ import {
   LineOfBusiness,
   CobMaster,
   SimpleMasterRecord,
+  TreatyTypeMaster,
 } from '../../models/master.model';
 import { TreatyForm, TreatyFormModel } from '../../forms/treaty-form';
 import {
@@ -54,6 +55,7 @@ export class TreatyFormModal implements OnChanges {
   @Input() lobOptions: LineOfBusiness[] = [];
   @Input() cobOptions: CobMaster[] = [];
   @Input() productOptions: any[] = [];
+  @Input() treatyTypeOptions: TreatyTypeMaster[] = [];
 
   @Input() riskCompanyLabelFn: (item: RiskCompany) => string = () => '';
   @Input() reinsurerLabelFn: (item: ReinsurerCompany) => string = () => '';
@@ -62,6 +64,10 @@ export class TreatyFormModal implements OnChanges {
   @Input() mgaLabelFn: (item: MgaMaster) => string = () => '';
   @Input() lobLabelFn: (item: LineOfBusiness) => string = () => '';
   @Input() cobLabelFn: (item: CobMaster) => string = () => '';
+
+  treatyTypeLabelFn = (item: TreatyTypeMaster): string => {
+    return item ? `${item.name} (${item.type_code})` : '';
+  };
 
   productLabelFn = (item: any): string => {
     return item ? `${item.product_id} - ${item.name}` : '';

@@ -8,6 +8,7 @@ import { SimpleMode } from '../components/simple-form-modal/simple-form-modal';
 export function buildCobsColumnDefs(ctx: SimpleMasterTab, statusCol: ColDef): ColDef[] {
   return [
     { headerName: 'CLASS CODE', field: 'cob_code', flex: 1, minWidth: 100, maxWidth: 120 },
+    { headerName: 'ASL CODE', field: 'asl_code', flex: 1, minWidth: 100, maxWidth: 120 },
     {
       headerName: 'CLASS NAME',
       valueGetter: p => p.data.name,

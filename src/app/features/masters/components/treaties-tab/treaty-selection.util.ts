@@ -14,6 +14,7 @@ export function buildBlankTreatyForm(mgaId?: string): TreatyEditState {
     form: {
       treaty_code: '',
       name: '',
+      treaty_type: 'Quota Share',
       mga_id: mgaId ?? '',
       reinsurer_id: null,
       risk_company_id: null,
@@ -88,6 +89,7 @@ export function buildTreatyEditState(treaty: Treaty): TreatyEditState {
     id: treaty.id,
     treaty_code: treaty.treaty_code,
     name: treaty.name,
+    treaty_type: treaty.treaty_type,
     mga_id: treaty.mga_id,
     reinsurer_id: treaty.reinsurer_id,
     risk_company_id: treaty.risk_company_id,

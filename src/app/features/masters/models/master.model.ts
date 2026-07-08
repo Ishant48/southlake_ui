@@ -115,6 +115,7 @@ export interface CobMaster {
   taxable?: boolean;
   priority?: number;
   fully_earned?: boolean;
+  asl_code?: string | null;
   created_at?: string;
   updated_at?: string | null;
 }
@@ -182,6 +183,7 @@ export interface Treaty {
   ulae_type?: string | null;
   ulae_basis?: string | null;
   ulae_flat_amount?: number | null;
+  treaty_type?: string | null;
   created_at?: string;
   updated_at?: string | null;
   treaty_states?: TreatyState[];
@@ -252,4 +254,16 @@ export interface SequencePrefixCounter {
   isActive?: boolean;
   createdAt?: string;
   updatedAt?: string | null;
+}
+
+export interface TreatyTypeMaster {
+  id?: string;
+  type_code: string;
+  typeCode?: string;
+  name: string;
+  description?: string | null;
+  is_active?: boolean;
+  isActive?: boolean;
+  created_at?: string;
+  updated_at?: string | null;
 }
