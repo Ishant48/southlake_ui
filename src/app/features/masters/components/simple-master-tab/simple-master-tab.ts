@@ -66,6 +66,7 @@ export class SimpleMasterTab implements OnInit {
   showModal = false;
   modalTitle = '';
   isEditMode = false;
+  isViewMode = false;
   submitting = false;
   form: SimpleFormValue = createBlankSimpleForm();
 
@@ -154,6 +155,7 @@ export class SimpleMasterTab implements OnInit {
 
   openSimpleAdd(): void {
     this.isEditMode = false;
+    this.isViewMode = false;
     this.modalTitle = `Add New ${this.simpleMastersState.getMasterLabel(this.mode)}`;
     this.form = createBlankSimpleForm();
     this.showModal = true;
@@ -162,7 +164,43 @@ export class SimpleMasterTab implements OnInit {
 
   openSimpleEdit(mode: SimpleMode, item: SimpleEditableItem): void {
     this.isEditMode = true;
+    this.isViewMode = false;
     this.modalTitle = `Edit ${this.simpleMastersState.getMasterLabel(mode)}`;
+    const rec = item as unknown as Record<string, unknown>;
+    this.form = {
+      id: item.id,
+      code: (rec['code'] ??
+        rec['lob_code'] ??
+        rec['cob_code'] ??
+        rec['reinsurer_company_id'] ??
+        rec['product_id']) as string,
+      name: item.name ?? '',
+      is_active: item.is_active ?? false,
+      description: (rec['description'] as string) ?? '',
+      type: (rec['type'] as string) ?? '',
+      taxable: (rec['taxable'] as boolean) ?? false,
+      priority: (rec['priority'] as number) ?? 1,
+      fully_earned: (rec['fully_earned'] as boolean) ?? false,
+      contact_name: (rec['contactName'] as string) ?? '',
+      contact_email: (rec['contactEmail'] as string) ?? '',
+      contact_phone: (rec['contactPhone'] as string) ?? '',
+      lob_id: mode === SimpleMode.Product
+        ? (rec['lob_id'] ? (typeof rec['lob_id'] === 'string' ? rec['lob_id'].split(',') : rec['lob_id']) : [])
+        : (rec['lob_id'] as string) ?? '',
+      cob_id: mode === SimpleMode.Product
+        ? (rec['cob_id'] ? (typeof rec['cob_id'] === 'string' ? rec['cob_id'].split(',') : rec['cob_id']) : [])
+        : (rec['cob_id'] as string) ?? '',
+      prefix: (rec['prefix'] as string) ?? '',
+      next_value: (rec['next_value'] ?? rec['nextValue']) as number,
+      padding_width: (rec['padding_width'] ?? rec['paddingWidth']) as number,
+    };
+    this.showModal = true;
+  }
+
+  openSimpleView(mode: SimpleMode, item: SimpleEditableItem): void {
+    this.isEditMode = false;
+    this.isViewMode = true;
+    this.modalTitle = `View ${this.simpleMastersState.getMasterLabel(mode)}`;
     const rec = item as unknown as Record<string, unknown>;
     this.form = {
       id: item.id,

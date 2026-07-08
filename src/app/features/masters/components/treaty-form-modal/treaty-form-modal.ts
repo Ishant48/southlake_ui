@@ -40,6 +40,7 @@ export class TreatyFormModal implements OnChanges {
   @Input() title = '';
   @Input() model: TreatyFormShape = createBlankTreatyForm();
   @Input() isEditMode = false;
+  @Input() isViewMode = false;
   @Input() submitting = false;
   @Input() selectedStates: TreatySelectionMap = {};
   @Input() selectedLobs: TreatySelectionMap = {};
@@ -108,7 +109,12 @@ export class TreatyFormModal implements OnChanges {
     if (changes['selectedLobs'] || changes['selectedCobs'] || changes['productOptions']) {
       this.findMatchingProduct();
     }
-    if (changes['isEditMode']) {
+    if (changes['isViewMode']) {
+      if (this.isViewMode) {
+        this.form.disable();
+      }
+    }
+    if (changes['isEditMode'] && !this.isViewMode) {
       if (this.isEditMode) {
         this.form.controls.treaty_code.disable();
       } else {

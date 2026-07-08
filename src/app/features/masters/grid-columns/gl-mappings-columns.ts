@@ -25,17 +25,19 @@ export function buildGlMappingsColumnDefs(ctx: GlMappingsTab): ColDef[] {
       cellRendererParams: {
         buttons: [
           { label: 'Edit', action: 'edit' },
+          { label: 'View GL Mapping', action: 'view' },
           { label: 'Delete', action: 'delete', danger: true },
         ],
         onClick: (action: string, data: GlMapping) => {
           if (action === 'edit') ctx.openGlMappingEdit(data);
+          if (action === 'view') ctx.openGlMappingView(data);
           if (action === 'delete') ctx.deleteGlMapping(data);
         },
       },
       flex: 0,
-      width: 160,
-      minWidth: 160,
-      maxWidth: 160,
+      width: 200,
+      minWidth: 200,
+      maxWidth: 200,
     },
   ];
 }

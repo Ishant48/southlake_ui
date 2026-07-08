@@ -59,6 +59,7 @@ export class MgasTab implements OnInit {
   showModal = false;
   modalTitle = '';
   isEditMode = false;
+  isViewMode = false;
   submitting = false;
   form: MgaFormValue = createBlankMgaForm();
 
@@ -134,6 +135,7 @@ export class MgasTab implements OnInit {
   // ==========================================
   openMgaAdd(): void {
     this.isEditMode = false;
+    this.isViewMode = false;
     this.modalTitle = 'Add MGA';
     this.form = createBlankMgaForm();
     this.showModal = true;
@@ -142,7 +144,16 @@ export class MgasTab implements OnInit {
 
   openMgaEdit(mga: MgaMaster): void {
     this.isEditMode = true;
+    this.isViewMode = false;
     this.modalTitle = `Edit MGA: ${mga.name}`;
+    this.form = mapMgaToFormValue(mga);
+    this.showModal = true;
+  }
+
+  openMgaView(mga: MgaMaster): void {
+    this.isEditMode = false;
+    this.isViewMode = true;
+    this.modalTitle = `View MGA: ${mga.name}`;
     this.form = mapMgaToFormValue(mga);
     this.showModal = true;
   }

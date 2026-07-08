@@ -76,20 +76,24 @@
                 class="form-input"
               />
             </div>
-            <div class="remove-row-btn-wrap">
-              <button
-                type="button"
-                class="btn-action-outline btn-action-danger-outline remove-row-btn"
-                (click)="removeOtherNameRow($index)"
-              >
-                Remove
-              </button>
-            </div>
+            @if (!isViewMode) {
+              <div class="remove-row-btn-wrap">
+                <button
+                  type="button"
+                  class="btn-action-outline btn-action-danger-outline remove-row-btn"
+                  (click)="removeOtherNameRow($index)"
+                >
+                  Remove
+                </button>
+              </div>
+            }
           </div>
         }
-        <div class="add-row-btn-wrap">
-          <button type="button" class="btn-action-outline" (click)="addOtherNameRow()">+ Add Other Name</button>
-        </div>
+        @if (!isViewMode) {
+          <div class="add-row-btn-wrap">
+            <button type="button" class="btn-action-outline" (click)="addOtherNameRow()">+ Add Other Name</button>
+          </div>
+        }
 
         <!-- Addresses & Other -->
         <div class="form-section-title">Addresses & Other</div>
@@ -212,15 +216,19 @@
       </form>
 
       <div class="panel-footer">
-        <button type="button" class="btn-ghost" (click)="close()">Cancel</button>
-        <button type="button" class="btn-primary" [disabled]="submitting" (click)="submit()">
-          @if (submitting) {
-            <span class="spinner btn-spinner save-spinner"></span>
-            <span>Saving...</span>
-          } @else {
-            <span>Save MGA</span>
-          }
-        </button>
+        @if (isViewMode) {
+          <button type="button" class="btn-primary" (click)="close()">Close</button>
+        } @else {
+          <button type="button" class="btn-ghost" (click)="close()">Cancel</button>
+          <button type="button" class="btn-primary" [disabled]="submitting" (click)="submit()">
+            @if (submitting) {
+              <span class="spinner btn-spinner save-spinner"></span>
+              <span>Saving...</span>
+            } @else {
+              <span>Save MGA</span>
+            }
+          </button>
+        }
       </div>
     </div>
   </div>

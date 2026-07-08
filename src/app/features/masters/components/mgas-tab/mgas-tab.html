@@ -80,10 +80,11 @@
   [title]="modalTitle"
   [model]="form"
   [isEditMode]="isEditMode"
+  [isViewMode]="isViewMode"
   [submitting]="submitting"
   [stateOptions]="stateOptions"
   [stateAbbrLabelFn]="stateAbbrLabelFn"
-  (closed)="showModal = false"
+  (closed)="showModal = false; isViewMode = false"
   (save)="submitMga($event)"
 ></app-mga-form-modal>
 

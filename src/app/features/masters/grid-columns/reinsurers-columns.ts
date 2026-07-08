@@ -21,17 +21,19 @@ export function buildReinsurersColumnDefs(ctx: SimpleMasterTab, statusCol: ColDe
       cellRendererParams: {
         buttons: [
           { label: 'Edit', action: 'edit' },
+          { label: 'View Reinsurer', action: 'view' },
           { label: 'Delete', action: 'delete', danger: true },
         ],
         onClick: (action: string, data: ReinsurerCompany) => {
           if (action === 'edit') ctx.openSimpleEdit(SimpleMode.Reinsurer, data);
+          if (action === 'view') ctx.openSimpleView(SimpleMode.Reinsurer, data);
           if (action === 'delete') ctx.deleteSimple(SimpleMode.Reinsurer, data);
         },
       },
       flex: 0,
-      width: 160,
-      minWidth: 160,
-      maxWidth: 160,
+      width: 200,
+      minWidth: 200,
+      maxWidth: 200,
     },
   ];
 }

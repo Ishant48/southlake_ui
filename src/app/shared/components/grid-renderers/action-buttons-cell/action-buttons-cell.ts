@@ -37,7 +37,7 @@ export class ActionButtonsCell implements ICellRendererAngularComp {
   }
 
   isIconOnly(action: string): boolean {
-    return ['uploadExcel', 'uploadItd', 'manualItd', 'edit', 'delete'].includes(action);
+    return ['uploadExcel', 'uploadItd', 'manualItd', 'edit', 'delete', 'view'].includes(action);
   }
 
   onClick(action: string, event: Event): void {

@@ -18,17 +18,19 @@ export function buildBrokersColumnDefs(ctx: SimpleMasterTab, statusCol: ColDef):
       cellRendererParams: {
         buttons: [
           { label: 'Edit', action: 'edit' },
+          { label: 'View Broker', action: 'view' },
           { label: 'Delete', action: 'delete', danger: true },
         ],
         onClick: (action: string, data: SimpleMasterRecord) => {
           if (action === 'edit') ctx.openSimpleEdit(SimpleMode.Broker, data);
+          if (action === 'view') ctx.openSimpleView(SimpleMode.Broker, data);
           if (action === 'delete') ctx.deleteSimple(SimpleMode.Broker, data);
         },
       },
       flex: 0,
-      width: 160,
-      minWidth: 160,
-      maxWidth: 160,
+      width: 200,
+      minWidth: 200,
+      maxWidth: 200,
     },
   ];
 }

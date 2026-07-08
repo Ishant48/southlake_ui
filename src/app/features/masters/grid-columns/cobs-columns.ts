@@ -43,17 +43,19 @@ export function buildCobsColumnDefs(ctx: SimpleMasterTab, statusCol: ColDef): Co
       cellRendererParams: {
         buttons: [
           { label: 'Edit', action: 'edit' },
+          { label: 'View Class of Business', action: 'view' },
           { label: 'Delete', action: 'delete', danger: true },
         ],
         onClick: (action: string, data: CobMaster) => {
           if (action === 'edit') ctx.openSimpleEdit(SimpleMode.Cob, data);
+          if (action === 'view') ctx.openSimpleView(SimpleMode.Cob, data);
           if (action === 'delete') ctx.deleteSimple(SimpleMode.Cob, data);
         },
       },
       flex: 0,
-      width: 160,
-      minWidth: 160,
-      maxWidth: 160,
+      width: 200,
+      minWidth: 200,
+      maxWidth: 200,
     },
   ];
 }

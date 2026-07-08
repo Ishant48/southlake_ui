@@ -81,6 +81,7 @@
   [mode]="mode"
   [model]="form"
   [isEditMode]="isEditMode"
+  [isViewMode]="isViewMode"
   [submitting]="submitting"
   [lobOptions]="simpleMastersState.lobs"
   [cobOptions]="simpleMastersState.cobs"
@@ -88,7 +89,7 @@
   [cobLabelFn]="cobLabelFn"
   [typeOptions]="simpleFormTypeOptions"
   [nameLabelFn]="nameLabelFn"
-  (closed)="showModal = false"
+  (closed)="showModal = false; isViewMode = false"
   (save)="submitSimple($event)"
 ></app-simple-form-modal>
 
