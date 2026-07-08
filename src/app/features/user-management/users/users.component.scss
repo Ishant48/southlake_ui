@@ -34,11 +34,11 @@
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
-  transition: background var(--transition);
+  background-color: #0D1B4B;
   white-space: nowrap;
 
   &:hover {
-    background: var(--navy-hover);
+    background: #0D1B4B;
   }
 }
 

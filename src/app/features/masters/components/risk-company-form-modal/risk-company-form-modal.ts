@@ -30,6 +30,7 @@ export class RiskCompanyFormModal implements OnChanges {
   @Input() title = '';
   @Input() model: RiskCompanyFormValue = createBlankRiskCompanyForm();
   @Input() isEditMode = false;
+  @Input() isViewMode = false;
   @Input() submitting = false;
   @Input() stateOptions: StateMaster[] = [];
   @Input() stateAbbrLabelFn: (item: StateMaster) => string = item =>
@@ -49,6 +50,16 @@ export class RiskCompanyFormModal implements OnChanges {
         this.form.controls.company_id.disable();
       } else {
         this.form.controls.company_id.enable();
+      }
+    }
+    if (changes['isViewMode']) {
+      if (this.isViewMode) {
+        this.form.disable();
+      } else {
+        this.form.enable();
+        if (this.isEditMode) {
+          this.form.controls.company_id.disable();
+        }
       }
     }
   }
