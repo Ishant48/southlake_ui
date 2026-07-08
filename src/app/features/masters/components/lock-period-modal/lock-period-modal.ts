@@ -28,6 +28,7 @@ export class LockPeriodModal implements OnChanges {
   @Output() save = new EventEmitter<string>();
 
   form: FormGroup<LockPeriodFormModel> = this.lockPeriodForm.createForm();
+  showFormError = false;
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['period']) {
@@ -42,8 +43,10 @@ export class LockPeriodModal implements OnChanges {
   submit(): void {
     if (this.form.invalid) {
       this.form.markAllAsTouched();
+      this.showFormError = true;
       return;
     }
+    this.showFormError = false;
     this.save.emit(this.form.controls.period.value);
   }
 }

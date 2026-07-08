@@ -16,10 +16,13 @@ export class SimpleForm {
       priority: new FormControl(1, { nonNullable: true }),
       fully_earned: new FormControl(false, { nonNullable: true }),
       contact_name: new FormControl('', { nonNullable: true }),
-      contact_email: new FormControl('', { nonNullable: true }),
-      contact_phone: new FormControl('', { nonNullable: true }),
-      lob_id: new FormControl<any>(''),
-      cob_id: new FormControl<any>(''),
+      contact_email: new FormControl('', { nonNullable: true, validators: [Validators.email] }),
+      contact_phone: new FormControl('', {
+        nonNullable: true,
+        validators: [Validators.pattern(/^[0-9+()\- ]*$/)],
+      }),
+      lob_id: new FormControl<string | string[]>('', { nonNullable: true }),
+      cob_id: new FormControl<string | string[]>('', { nonNullable: true }),
       prefix: new FormControl('', { nonNullable: true }),
       next_value: new FormControl(1, { nonNullable: true }),
       padding_width: new FormControl(4, { nonNullable: true }),
@@ -49,8 +52,8 @@ export interface SimpleFormModel {
   contact_name: FormControl<string>;
   contact_email: FormControl<string>;
   contact_phone: FormControl<string>;
-  lob_id: FormControl<any>;
-  cob_id: FormControl<any>;
+  lob_id: FormControl<string | string[]>;
+  cob_id: FormControl<string | string[]>;
   prefix: FormControl<string>;
   next_value: FormControl<number>;
   padding_width: FormControl<number>;

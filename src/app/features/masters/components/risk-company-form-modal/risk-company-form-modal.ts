@@ -40,6 +40,7 @@ export class RiskCompanyFormModal implements OnChanges {
   @Output() save = new EventEmitter<RiskCompanyFormValue>();
 
   form: FormGroup<RiskCompanyFormModel> = this.riskCompanyForm.createForm();
+  showFormError = false;
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['model']) {
@@ -71,8 +72,10 @@ export class RiskCompanyFormModal implements OnChanges {
   submit(): void {
     if (this.form.invalid) {
       this.form.markAllAsTouched();
+      this.showFormError = true;
       return;
     }
+    this.showFormError = false;
     this.save.emit(this.riskCompanyForm.toFormValue(this.form));
   }
 }

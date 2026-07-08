@@ -13,6 +13,9 @@
       </div>
 
       <form [formGroup]="form" (ngSubmit)="submit()" class="panel-body scrollable-body">
+        @if (showFormError) {
+          <div class="form-error-box">Please fix the highlighted fields below before saving.</div>
+        }
         <div class="form-section-title no-top-margin">Names Info</div>
         <div class="form-row">
           <div class="form-field">
@@ -31,7 +34,17 @@
           </div>
           <div class="form-field">
             <label for="rc-name" class="form-label">Name *</label>
-            <input id="rc-name" formControlName="name" type="text" placeholder="Name" class="form-input" />
+            <input
+              id="rc-name"
+              formControlName="name"
+              type="text"
+              placeholder="Name"
+              class="form-input"
+              [class.input-error]="form.controls.name.invalid && form.controls.name.touched"
+            />
+            @if (form.controls.name.invalid && form.controls.name.touched) {
+              <span class="field-error">Name is required.</span>
+            }
           </div>
         </div>
 

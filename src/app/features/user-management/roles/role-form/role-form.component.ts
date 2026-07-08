@@ -7,6 +7,7 @@ import { Permission } from '../../models/permission.model';
 import { RolesApi } from '../../services/roles-api';
 import { PermissionsApi } from '../../services/permissions-api';
 import { ToastService } from '../../../../shared/components/toast/toast.service';
+import { AuthService } from '../../../../core/services/auth.service';
 
 const COLOR_SWATCHES = ['#e05470', '#0d1b4b', '#2e7d32', '#1565c0', '#e65100', '#7c3aed'];
 
@@ -25,6 +26,11 @@ export class RoleFormComponent implements OnInit {
   private permissionsService = inject(PermissionsApi);
   private toast = inject(ToastService);
   private cdr = inject(ChangeDetectorRef);
+  private authService = inject(AuthService);
+
+  hasPermission(permission: string): boolean {
+    return this.authService.hasPermission(permission);
+  }
 
   roleId: string | null = null;
   role: RoleDetail | null = null;
@@ -153,7 +159,8 @@ export class RoleFormComponent implements OnInit {
     for (const [prefix, perms] of Object.entries(subGroups)) {
       for (const p of perms) {
         const pClone = { ...p };
-        let subName = SUB_NAMES[prefix] ?? prefix.charAt(0).toUpperCase() + prefix.slice(1).replace(/_/g, ' ');
+        let subName =
+          SUB_NAMES[prefix] ?? prefix.charAt(0).toUpperCase() + prefix.slice(1).replace(/_/g, ' ');
 
         if (pClone.action === 'reports.view' || pClone.action === 'reports.post') {
           subName = 'Overview & KPIs';
@@ -191,7 +198,10 @@ export class RoleFormComponent implements OnInit {
             } else if (pClone.action === 'workbook.create') {
               pClone.label = 'Export Premium & Claims Exhibits';
             }
-          } else if (pClone.action === 'test_balance.view' || pClone.action === 'test_balance.create') {
+          } else if (
+            pClone.action === 'test_balance.view' ||
+            pClone.action === 'test_balance.create'
+          ) {
             subName = 'Test Balance';
             if (pClone.action === 'test_balance.view') {
               pClone.label = 'View Test Balance';
@@ -226,7 +236,10 @@ export class RoleFormComponent implements OnInit {
             if (pClone.action === 'permission.create') pClone.label = 'Create Activity Logs';
             if (pClone.action === 'permission.edit') pClone.label = 'Edit Activity Logs';
             if (pClone.action === 'permission.delete') pClone.label = 'Delete Activity Logs';
-          } else if (pClone.action === 'activity_log.view' || pClone.action === 'activity_log.export') {
+          } else if (
+            pClone.action === 'activity_log.view' ||
+            pClone.action === 'activity_log.export'
+          ) {
             subName = 'Activity Logs';
             if (pClone.action === 'activity_log.view') pClone.label = 'View Activity Logs';
             if (pClone.action === 'activity_log.export') pClone.label = 'Export Activity Logs';
@@ -316,7 +329,10 @@ export class RoleFormComponent implements OnInit {
             'masters_config.view': { sub: 'Month-End Closing', label: 'View Month-End Closing' },
             'masters_config.create': { sub: 'Month-End Closing', label: 'Close Month-End Closing' },
             'masters_config.edit': { sub: 'Month-End Closing', label: 'Reopen Month-End Closing' },
-            'masters_config.delete': { sub: 'Month-End Closing', label: 'Export Month-End Closing' },
+            'masters_config.delete': {
+              sub: 'Month-End Closing',
+              label: 'Export Month-End Closing',
+            },
 
             // GL Map: 5
             'gl_mapping.create': { sub: 'GL Map', label: 'Create GL Map' },
@@ -386,10 +402,11 @@ export class RoleFormComponent implements OnInit {
         const filteredSubs = group.subModules
           .map(sub => {
             const matchesSub = sub.name.toLowerCase().includes(search);
-            const filteredPerms = sub.permissions.filter(p =>
-              matchesSub ||
-              p.label.toLowerCase().includes(search) ||
-              p.action.toLowerCase().includes(search)
+            const filteredPerms = sub.permissions.filter(
+              p =>
+                matchesSub ||
+                p.label.toLowerCase().includes(search) ||
+                p.action.toLowerCase().includes(search),
             );
             return { ...sub, permissions: filteredPerms };
           })
@@ -397,7 +414,7 @@ export class RoleFormComponent implements OnInit {
 
         const allFilteredPerms = filteredSubs.reduce<Permission[]>(
           (acc, sub) => [...acc, ...sub.permissions],
-          []
+          [],
         );
 
         return {
@@ -527,8 +544,8 @@ export class RoleFormComponent implements OnInit {
   get footerMessage(): string {
     const nameVal = this.form.get('name')?.value;
     const labelVal = this.form.get('label')?.value;
-    const hasName = !!(nameVal && nameVal.trim());
-    const hasLabel = !!(labelVal && labelVal.trim());
+    const hasName = !!nameVal?.trim();
+    const hasLabel = !!labelVal?.trim();
     const hasPermissions = this.selectedIds.size > 0;
 
     if ((!hasName || !hasLabel) && !hasPermissions) {
@@ -560,9 +577,10 @@ export class RoleFormComponent implements OnInit {
       permissions: Array.from(this.selectedIds),
     };
 
-    const obs = this.isEditMode && this.roleId
-      ? this.rolesService.updateRole(this.roleId, payload)
-      : this.rolesService.createRole(payload);
+    const obs =
+      this.isEditMode && this.roleId
+        ? this.rolesService.updateRole(this.roleId, payload)
+        : this.rolesService.createRole(payload);
 
     obs.subscribe({
       next: () => {

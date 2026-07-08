@@ -13,6 +13,9 @@
       </div>
 
       <form [formGroup]="form" (ngSubmit)="submit()" class="panel-body scrollable-body">
+        @if (showFormError) {
+          <div class="form-error-box">Please fix the highlighted fields below before saving.</div>
+        }
         <h4 class="section-heading no-top-margin">Basic Details</h4>
 
         <div class="form-row">
@@ -24,7 +27,11 @@
               type="text"
               placeholder="e.g. TR-100"
               class="form-input"
+              [class.input-error]="form.controls.treaty_code.invalid && form.controls.treaty_code.touched"
             />
+            @if (form.controls.treaty_code.invalid && form.controls.treaty_code.touched) {
+              <span class="field-error">Treaty Code is required.</span>
+            }
           </div>
           <div class="form-field">
             <label for="tr-treatyname" class="form-label">Treaty Name *</label>
@@ -34,7 +41,11 @@
               type="text"
               placeholder="e.g. Casualty Quota Share"
               class="form-input"
+              [class.input-error]="form.controls.name.invalid && form.controls.name.touched"
             />
+            @if (form.controls.name.invalid && form.controls.name.touched) {
+              <span class="field-error">Treaty Name is required.</span>
+            }
           </div>
         </div>
 
@@ -400,19 +411,41 @@
           ></app-dropdown-search>
         </div>
 
-        <div class="form-row" style="margin-top: 15px;">
+        <div class="form-row" style="margin-top: 15px">
           <div class="form-field">
             <span class="form-label">Authorized Lines of Business (LOBs) - from Product</span>
-            <div class="form-input" style="height: auto; min-height: 38px; line-height: 1.5; padding: 8px 12px; background: var(--gray-50); border: 1.5px solid var(--gray-200); color: var(--gray-700);">
+            <div
+              class="form-input"
+              style="
+                height: auto;
+                min-height: 38px;
+                line-height: 1.5;
+                padding: 8px 12px;
+                background: var(--gray-50);
+                border: 1.5px solid var(--gray-200);
+                color: var(--gray-700);
+              "
+            >
               {{ getSelectedProductLobs() }}
             </div>
           </div>
         </div>
 
-        <div class="form-row" style="margin-top: 15px;">
+        <div class="form-row" style="margin-top: 15px">
           <div class="form-field">
             <span class="form-label">Authorized Classes of Business (COBs) - from Product</span>
-            <div class="form-input" style="height: auto; min-height: 38px; line-height: 1.5; padding: 8px 12px; background: var(--gray-50); border: 1.5px solid var(--gray-200); color: var(--gray-700);">
+            <div
+              class="form-input"
+              style="
+                height: auto;
+                min-height: 38px;
+                line-height: 1.5;
+                padding: 8px 12px;
+                background: var(--gray-50);
+                border: 1.5px solid var(--gray-200);
+                color: var(--gray-700);
+              "
+            >
               {{ getSelectedProductCobs() }}
             </div>
           </div>

@@ -17,6 +17,9 @@
       </div>
 
       <form [formGroup]="form" (ngSubmit)="submit()" class="panel-body scrollable-body">
+        @if (showFormError) {
+          <div class="form-error-box">Please fix the highlighted fields below before saving.</div>
+        }
         <div class="form-row">
           <div class="form-field">
             <label for="m-code" class="form-label">
@@ -34,7 +37,17 @@
                           : "Code ID *"
               }}
             </label>
-            <input id="m-code" formControlName="code" type="text" placeholder="e.g. TX" class="form-input" />
+            <input
+              id="m-code"
+              formControlName="code"
+              type="text"
+              placeholder="e.g. TX"
+              class="form-input"
+              [class.input-error]="form.controls.code.invalid && form.controls.code.touched"
+            />
+            @if (form.controls.code.invalid && form.controls.code.touched) {
+              <span class="field-error">This field is required.</span>
+            }
           </div>
           <div class="form-field">
             <label for="m-name" class="form-label">
@@ -52,7 +65,17 @@
                           : "Name *"
               }}
             </label>
-            <input id="m-name" formControlName="name" type="text" placeholder="e.g. Texas" class="form-input" />
+            <input
+              id="m-name"
+              formControlName="name"
+              type="text"
+              placeholder="e.g. Texas"
+              class="form-input"
+              [class.input-error]="form.controls.name.invalid && form.controls.name.touched"
+            />
+            @if (form.controls.name.invalid && form.controls.name.touched) {
+              <span class="field-error">This field is required.</span>
+            }
           </div>
         </div>
 
@@ -76,7 +99,11 @@
                 type="text"
                 placeholder="Contact Phone"
                 class="form-input"
+                [class.input-error]="form.controls.contact_phone.invalid && form.controls.contact_phone.touched"
               />
+              @if (form.controls.contact_phone.invalid && form.controls.contact_phone.touched) {
+                <span class="field-error">Phone can only contain digits, spaces, and + ( ) -.</span>
+              }
             </div>
           </div>
           <div class="form-row form-row-spaced">
@@ -88,7 +115,11 @@
                 type="email"
                 placeholder="Contact Email"
                 class="form-input"
+                [class.input-error]="form.controls.contact_email.invalid && form.controls.contact_email.touched"
               />
+              @if (form.controls.contact_email.invalid && form.controls.contact_email.touched) {
+                <span class="field-error">Enter a valid email address.</span>
+              }
             </div>
           </div>
         }

@@ -40,6 +40,17 @@
             </svg>
             <span>{{ role.user_count ?? 0 }} user{{ role.user_count !== 1 ? "s" : "" }}</span>
           </div>
+          @if (!role.is_system && hasPermission("role.manage")) {
+            <div class="status-section">
+              <span class="info-label">Role Status</span>
+              <div class="status-toggle-row">
+                <app-user-status-badge [status]="role.is_active ? UserStatus.Active : UserStatus.Inactive" />
+                <button class="toggle-btn" [class.active]="role.is_active" (click)="onToggleRoleStatus(role)">
+                  {{ role.is_active ? "Deactivate" : "Activate" }}
+                </button>
+              </div>
+            </div>
+          }
           <div class="role-actions">
             @if (hasPermission("role.manage")) {
               <button class="btn-edit-role" (click)="openEditModal(role)">Edit Permissions</button>
@@ -89,12 +100,11 @@
   }
 </div>
 
-
 <app-confirm-dialog
   [open]="confirmOpen"
-  title="Delete Role"
+  [title]="confirmTitle"
   [message]="confirmMessage"
-  confirmLabel="Delete"
-  (confirmed)="onDeleteConfirmed()"
+  [confirmLabel]="confirmLabel"
+  (confirmed)="onConfirmed()"
   (cancelled)="confirmOpen = false"
 />

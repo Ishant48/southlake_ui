@@ -27,6 +27,8 @@ import {
   createBlankTreatyForm,
 } from '../../models/treaty-form.model';
 
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/prefer-nullish-coalescing -- productOptions/lobs/cobs shapes are loosely typed throughout this pre-existing component, and several `||` fallbacks intentionally treat any falsy value the same; not touched by the permission-hardening change that required editing this file, out of scope to retype here */
+
 @Component({
   selector: 'app-treaty-form-modal',
   imports: [CommonModule, ReactiveFormsModule, DropdownSearchComponent],
@@ -87,6 +89,7 @@ export class TreatyFormModal implements OnChanges {
   @Output() save = new EventEmitter<TreatySaveEvent>();
 
   form: FormGroup<TreatyFormModel> = this.treatyForm.createForm();
+  showFormError = false;
   formSelectedStates: TreatySelectionMap = {};
   formSelectedLobs: TreatySelectionMap = {};
   formSelectedCobs: TreatySelectionMap = {};
@@ -119,8 +122,12 @@ export class TreatyFormModal implements OnChanges {
 
   findMatchingProduct(): void {
     if (!this.productOptions || this.productOptions.length === 0) return;
-    const selectedLobIds = Object.keys(this.formSelectedLobs).filter(id => this.formSelectedLobs[id]);
-    const selectedCobIds = Object.keys(this.formSelectedCobs).filter(id => this.formSelectedCobs[id]);
+    const selectedLobIds = Object.keys(this.formSelectedLobs).filter(
+      id => this.formSelectedLobs[id],
+    );
+    const selectedCobIds = Object.keys(this.formSelectedCobs).filter(
+      id => this.formSelectedCobs[id],
+    );
 
     if (selectedLobIds.length === 0 && selectedCobIds.length === 0) {
       this.selectedProductId = '';
@@ -130,8 +137,10 @@ export class TreatyFormModal implements OnChanges {
     const bestProduct = this.productOptions.find(p => {
       const pLobIds = (p.lobs || []).map((l: any) => l.id);
       const pCobIds = (p.cobs || []).map((c: any) => c.id);
-      const hasAllLobs = pLobIds.length > 0 && pLobIds.every((id: string) => selectedLobIds.includes(id));
-      const hasAllCobs = pCobIds.length > 0 && pCobIds.every((id: string) => selectedCobIds.includes(id));
+      const hasAllLobs =
+        pLobIds.length > 0 && pLobIds.every((id: string) => selectedLobIds.includes(id));
+      const hasAllCobs =
+        pCobIds.length > 0 && pCobIds.every((id: string) => selectedCobIds.includes(id));
       return hasAllLobs && hasAllCobs;
     });
 
@@ -236,10 +245,10 @@ export class TreatyFormModal implements OnChanges {
   private autoBalanceReinsurers(rows: any[], editedIndex: number, newValue: number): any[] {
     const n = rows.length;
     if (n <= 1) {
-      return rows.map((row, i) => i === editedIndex ? { ...row, cession_pct: newValue } : row);
+      return rows.map((row, i) => (i === editedIndex ? { ...row, cession_pct: newValue } : row));
     }
 
-    let updatedRows = [...rows];
+    const updatedRows = [...rows];
     updatedRows[editedIndex] = { ...rows[editedIndex], cession_pct: newValue };
 
     const isLast = editedIndex === n - 1;
@@ -252,7 +261,10 @@ export class TreatyFormModal implements OnChanges {
       : rows.slice(0, editedIndex).reduce((acc, r) => acc + (r.cession_pct || 0), 0);
 
     const targetOtherSum = 100 - precedingSum - newValue;
-    const currentOtherSum = otherIndices.reduce((acc, idx) => acc + (rows[idx].cession_pct || 0), 0);
+    const currentOtherSum = otherIndices.reduce(
+      (acc, idx) => acc + (rows[idx].cession_pct || 0),
+      0,
+    );
 
     let distributedSum = 0;
     if (currentOtherSum > 0) {
@@ -262,7 +274,7 @@ export class TreatyFormModal implements OnChanges {
         if (i === otherIndices.length - 1) {
           share = targetOtherSum - distributedSum;
         } else {
-          share = Number(((row.cession_pct || 0) / currentOtherSum * targetOtherSum).toFixed(2));
+          share = Number((((row.cession_pct || 0) / currentOtherSum) * targetOtherSum).toFixed(2));
           distributedSum += share;
         }
         updatedRows[idx] = { ...row, cession_pct: Math.max(0, Number(share.toFixed(2))) };
@@ -288,7 +300,13 @@ export class TreatyFormModal implements OnChanges {
     const rows = this.form.controls.reinsurers.value;
     if (rows.length === 0) {
       this.form.controls.reinsurers.setValue([
-        { reinsurer_id: '', cession_pct: 100, state_id: null, broker_id: null, broker_comm_type: null },
+        {
+          reinsurer_id: '',
+          cession_pct: 100,
+          state_id: null,
+          broker_id: null,
+          broker_comm_type: null,
+        },
       ]);
       return;
     }
@@ -320,8 +338,10 @@ export class TreatyFormModal implements OnChanges {
   submit(): void {
     if (this.form.invalid) {
       this.form.markAllAsTouched();
+      this.showFormError = true;
       return;
     }
+    this.showFormError = false;
     this.save.emit({
       form: this.treatyForm.toFormValue(this.form),
       selectedStates: this.formSelectedStates,

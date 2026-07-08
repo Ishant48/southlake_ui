@@ -135,8 +135,10 @@ export class UsersTableComponent implements OnInit {
             const btns: ActionButtonConfig[] = [{ label: 'View', action: 'view' }];
             if (this.hasPermission('user.edit')) {
               btns.push({ label: 'Edit', action: 'edit' });
+              // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- boolean OR: false is a meaningful value here, not a fallback case
               const isSuperAdmin = !!(data.is_super_admin || data.email === 'admin@southlake.com');
-              if (data.status !== 'inactive' && !isSuperAdmin) {
+              const isSelf = data.id === this.authService.getCurrentUser()?.id;
+              if (data.status !== 'inactive' && !isSuperAdmin && !isSelf) {
                 btns.push({ label: 'Deactivate', action: 'deactivate', danger: true });
               }
             }

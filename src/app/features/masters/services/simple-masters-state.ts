@@ -33,7 +33,7 @@ const CODE_KEYS: Record<SimpleMode, string> = {
   [SimpleMode.Lob]: 'lob_code',
   [SimpleMode.Cob]: 'cob_code',
   [SimpleMode.Reinsurer]: 'reinsurer_company_id',
-  [SimpleMode.Broker]: 'code',
+  [SimpleMode.Broker]: 'broker_code',
   [SimpleMode.Product]: 'product_id',
   [SimpleMode.DocumentType]: 'code',
   [SimpleMode.SequencePrefixCounter]: 'code',

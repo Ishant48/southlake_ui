@@ -1,15 +1,9 @@
 <div class="um-page">
-  <app-activity-header 
-    (export)="exportLogs()">
-  </app-activity-header>
+  <app-activity-header [canExport]="hasPermission('activity_log.export')" (export)="exportLogs()"></app-activity-header>
 
   <app-activity-summary-cards [stats]="stats"></app-activity-summary-cards>
 
-  <app-activity-filters 
-    [filter]="filter" 
-    [modules]="modules" 
-    (filterChange)="onFilterChange()">
-  </app-activity-filters>
+  <app-activity-filters [filter]="filter" [modules]="modules" (filterChange)="onFilterChange()"></app-activity-filters>
 
   <div class="content-card">
     <div class="table-wrapper">
@@ -33,23 +27,23 @@
             @for (i of skeletonRows; track i) {
               <tr class="skeleton-row">
                 <td>
-                  <div class="user-cell" style="display: flex; gap: 12px; align-items: center;">
-                    <div class="skel skel-avatar" style="width: 32px; height: 32px; border-radius: 50%;"></div>
+                  <div class="user-cell" style="display: flex; gap: 12px; align-items: center">
+                    <div class="skel skel-avatar" style="width: 32px; height: 32px; border-radius: 50%"></div>
                     <div class="user-cell-text">
-                      <div class="skel skel-line" style="width: 120px;"></div>
-                      <div class="skel skel-line-sm" style="width: 80px; margin-top: 4px;"></div>
+                      <div class="skel skel-line" style="width: 120px"></div>
+                      <div class="skel skel-line-sm" style="width: 80px; margin-top: 4px"></div>
                     </div>
                   </div>
                 </td>
-                <td><div class="skel skel-badge" style="width: 60px;"></div></td>
-                <td><div class="skel skel-line-sm" style="width: 100px;"></div></td>
-                <td><div class="skel skel-line-sm" style="width: 100px;"></div></td>
-                <td><div class="skel skel-line" style="width: 150px;"></div></td>
-                <td><div class="skel skel-line-sm" style="width: 100px;"></div></td>
-                <td><div class="skel skel-line-sm" style="width: 120px;"></div></td>
-                <td><div class="skel skel-line-sm" style="width: 90px;"></div></td>
-                <td><div class="skel skel-line-sm" style="width: 110px;"></div></td>
-                <td><div class="skel skel-badge" style="width: 70px;"></div></td>
+                <td><div class="skel skel-badge" style="width: 60px"></div></td>
+                <td><div class="skel skel-line-sm" style="width: 100px"></div></td>
+                <td><div class="skel skel-line-sm" style="width: 100px"></div></td>
+                <td><div class="skel skel-line" style="width: 150px"></div></td>
+                <td><div class="skel skel-line-sm" style="width: 100px"></div></td>
+                <td><div class="skel skel-line-sm" style="width: 120px"></div></td>
+                <td><div class="skel skel-line-sm" style="width: 90px"></div></td>
+                <td><div class="skel skel-line-sm" style="width: 110px"></div></td>
+                <td><div class="skel skel-badge" style="width: 70px"></div></td>
               </tr>
             }
           </tbody>
@@ -86,10 +80,6 @@
   </div>
 
   @if (selectedLog) {
-    <app-activity-drawer
-      [log]="selectedLog"
-      [isOpen]="drawerOpen"
-      (closeDrawer)="closeDrawer()">
-    </app-activity-drawer>
+    <app-activity-drawer [log]="selectedLog" [isOpen]="drawerOpen" (closeDrawer)="closeDrawer()"></app-activity-drawer>
   }
 </div>

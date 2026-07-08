@@ -13,6 +13,9 @@
       </div>
 
       <form [formGroup]="form" (ngSubmit)="submit()" class="panel-body scrollable-body">
+        @if (showFormError) {
+          <div class="form-error-box">Please fix the highlighted fields below before saving.</div>
+        }
         <!-- Names Info -->
         <div class="form-section-title no-top-margin">Names Info</div>
         <div class="form-row">
@@ -38,13 +41,27 @@
               type="text"
               placeholder="e.g. Southlake Underwriters"
               class="form-input"
+              [class.input-error]="form.controls.name.invalid && form.controls.name.touched"
             />
+            @if (form.controls.name.invalid && form.controls.name.touched) {
+              <span class="field-error">Name is required.</span>
+            }
           </div>
         </div>
         <div class="form-row">
           <div class="form-field">
             <label for="mga-code" class="form-label">MGA Code *</label>
-            <input id="mga-code" formControlName="mga_code" type="text" placeholder="e.g. MGA-100" class="form-input" />
+            <input
+              id="mga-code"
+              formControlName="mga_code"
+              type="text"
+              placeholder="e.g. MGA-100"
+              class="form-input"
+              [class.input-error]="form.controls.mga_code.invalid && form.controls.mga_code.touched"
+            />
+            @if (form.controls.mga_code.invalid && form.controls.mga_code.touched) {
+              <span class="field-error">MGA Code is required.</span>
+            }
           </div>
           <div class="form-field flex-2"></div>
         </div>
@@ -129,7 +146,17 @@
           </div>
           <div class="form-field">
             <label for="mga-phone" class="form-label">Phone</label>
-            <input id="mga-phone" formControlName="phone" type="text" placeholder="555-0199" class="form-input" />
+            <input
+              id="mga-phone"
+              formControlName="phone"
+              type="text"
+              placeholder="555-0199"
+              class="form-input"
+              [class.input-error]="form.controls.phone.invalid && form.controls.phone.touched"
+            />
+            @if (form.controls.phone.invalid && form.controls.phone.touched) {
+              <span class="field-error">Phone can only contain digits, spaces, and + ( ) -.</span>
+            }
           </div>
         </div>
 
@@ -185,7 +212,11 @@
               type="email"
               placeholder="contact@email.com"
               class="form-input"
+              [class.input-error]="form.controls.contact_email.invalid && form.controls.contact_email.touched"
             />
+            @if (form.controls.contact_email.invalid && form.controls.contact_email.touched) {
+              <span class="field-error">Enter a valid email address.</span>
+            }
           </div>
           <div class="form-field">
             <label for="mga-contactphone" class="form-label">Contact Phone</label>
@@ -195,7 +226,11 @@
               type="text"
               placeholder="Phone Number"
               class="form-input"
+              [class.input-error]="form.controls.contact_phone.invalid && form.controls.contact_phone.touched"
             />
+            @if (form.controls.contact_phone.invalid && form.controls.contact_phone.touched) {
+              <span class="field-error">Phone can only contain digits, spaces, and + ( ) -.</span>
+            }
           </div>
         </div>
 

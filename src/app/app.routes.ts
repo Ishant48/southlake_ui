@@ -1,6 +1,6 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './core/guards/auth.guard';
-import { permissionGuard } from './core/guards/permission.guard';
+import { permissionGuard, permissionGuardAny } from './core/guards/permission.guard';
 import { MainLayoutComponent } from './layout/main-layout/main-layout.component';
 
 export const routes: Routes = [
@@ -16,7 +16,13 @@ export const routes: Routes = [
     children: [
       {
         path: 'user-management',
-        canActivate: [permissionGuard('user_management')],
+        canActivate: [
+          permissionGuardAny([
+            { module: 'user', action: 'view' },
+            { module: 'role', action: 'manage' },
+            { module: 'activity_log', action: 'view' },
+          ]),
+        ],
         loadChildren: () =>
           import('./features/user-management/user-management.routes').then(
             m => m.userManagementRoutes,
@@ -45,7 +51,7 @@ export const routes: Routes = [
       },
       {
         path: 'test-balance',
-        canActivate: [permissionGuard('chart_of_accounts')],
+        canActivate: [permissionGuard('test_balance')],
         loadComponent: () =>
           import('./features/test-balance/test-balance.component').then(
             m => m.TestBalanceComponent,
@@ -61,7 +67,21 @@ export const routes: Routes = [
       },
       {
         path: 'masters',
-        canActivate: [permissionGuard('master_data')],
+        canActivate: [
+          permissionGuardAny([
+            { module: 'treaty' },
+            { module: 'mga' },
+            { module: 'lob' },
+            { module: 'cob' },
+            { module: 'state' },
+            { module: 'reinsurer' },
+            { module: 'risk_company' },
+            { module: 'broker' },
+            { module: 'product' },
+            { module: 'masters_config' },
+            { module: 'gl_mapping' },
+          ]),
+        ],
         loadChildren: () => import('./features/masters/masters.routes').then(m => m.mastersRoutes),
       },
       { path: '', redirectTo: 'user-management/users', pathMatch: 'full' },

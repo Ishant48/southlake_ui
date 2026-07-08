@@ -34,6 +34,7 @@ export class ItdFormModal implements OnChanges {
   @Output() save = new EventEmitter<ItdFormValue>();
 
   form: FormGroup<ItdFormModel> = this.itdForm.createForm();
+  showFormError = false;
   selectedStateCode = '';
   selectedMonth = '12';
   selectedYear = '2025';
@@ -79,8 +80,10 @@ export class ItdFormModal implements OnChanges {
   submit(): void {
     if (this.form.invalid) {
       this.form.markAllAsTouched();
+      this.showFormError = true;
       return;
     }
+    this.showFormError = false;
     this.save.emit(this.itdForm.toFormValue(this.form));
   }
 }

@@ -109,7 +109,7 @@
             <span class="info-label">Account Status</span>
             <div class="status-toggle-row">
               <app-user-status-badge [status]="editStatus" />
-              @if (!isSuperAdmin()) {
+              @if (hasPermission("user.edit") && !isSuperAdmin() && !isSelf()) {
                 <button
                   class="toggle-btn"
                   [class.active]="editStatus === UserStatus.Active"
@@ -163,17 +163,50 @@
                     {{ isAllSelected(group) ? "Deselect All" : "Select All" }}
                   </button>
                 </div>
-                
+
                 @if (isGroupExpanded(group.name)) {
-                  <div class="perm-submodules-list" style="display: flex; flex-direction: column; gap: 12px; padding: 12px; background: var(--gray-50);">
+                  <div
+                    class="perm-submodules-list"
+                    style="display: flex; flex-direction: column; gap: 12px; padding: 12px; background: var(--gray-50)"
+                  >
                     @for (sub of group.subModules; track sub.name) {
-                      <div class="perm-submodule-item" style="border: 1px solid var(--gray-200); border-radius: 6px; overflow: hidden; background: var(--white);">
-                        <div class="perm-submodule-header" style="display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; background: var(--white); border-bottom: 1px solid var(--gray-100);">
-                          <div style="display: flex; align-items: center; gap: 8px;">
-                            <button type="button" (click)="toggleSubModule(sub.name)" style="background: none; border: none; color: var(--gray-400); cursor: pointer; padding: 2px; display: flex; align-items: center;">
+                      <div
+                        class="perm-submodule-item"
+                        style="
+                          border: 1px solid var(--gray-200);
+                          border-radius: 6px;
+                          overflow: hidden;
+                          background: var(--white);
+                        "
+                      >
+                        <div
+                          class="perm-submodule-header"
+                          style="
+                            display: flex;
+                            justify-content: space-between;
+                            align-items: center;
+                            padding: 8px 12px;
+                            background: var(--white);
+                            border-bottom: 1px solid var(--gray-100);
+                          "
+                        >
+                          <div style="display: flex; align-items: center; gap: 8px">
+                            <button
+                              type="button"
+                              (click)="toggleSubModule(sub.name)"
+                              style="
+                                background: none;
+                                border: none;
+                                color: var(--gray-400);
+                                cursor: pointer;
+                                padding: 2px;
+                                display: flex;
+                                align-items: center;
+                              "
+                            >
                               <svg
                                 [style.transform]="isSubModuleExpanded(sub.name) ? 'rotate(90deg)' : 'none'"
-                                style="transition: transform 0.2s;"
+                                style="transition: transform 0.2s"
                                 width="12"
                                 height="12"
                                 viewBox="0 0 24 24"
@@ -184,26 +217,79 @@
                                 <polyline points="9 18 15 12 9 6" />
                               </svg>
                             </button>
-                            <span style="font-size: 13px; font-weight: 700; color: var(--gray-700); cursor: pointer;" (click)="toggleSubModule(sub.name)">{{ sub.name }}</span>
+                            <span
+                              style="font-size: 13px; font-weight: 700; color: var(--gray-700); cursor: pointer"
+                              (click)="toggleSubModule(sub.name)"
+                            >
+                              {{ sub.name }}
+                            </span>
                           </div>
-                          <button type="button" class="select-all-btn" style="font-size: 11px; font-weight: 700; color: var(--navy); border: none; background: none; cursor: pointer;" (click)="toggleSelectAllSubModule(sub)">
+                          <button
+                            type="button"
+                            class="select-all-btn"
+                            style="
+                              font-size: 11px;
+                              font-weight: 700;
+                              color: var(--navy);
+                              border: none;
+                              background: none;
+                              cursor: pointer;
+                            "
+                            (click)="toggleSelectAllSubModule(sub)"
+                          >
                             {{ isSubModuleAllSelected(sub) ? "Deselect All" : "Select All" }}
                           </button>
                         </div>
-                        
+
                         @if (isSubModuleExpanded(sub.name)) {
-                          <div class="perm-list" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); padding: 12px; gap: 8px;">
+                          <div
+                            class="perm-list"
+                            style="
+                              display: grid;
+                              grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+                              padding: 12px;
+                              gap: 8px;
+                            "
+                          >
                             @for (perm of sub.permissions; track perm.id) {
-                              <label class="perm-item" [class.checked]="selectedIds.has(perm.id)" style="display: flex; flex-direction: column; gap: 2px; padding: 6px 8px; border: 1px solid var(--gray-150); border-radius: 4px; cursor: pointer; transition: all var(--transition);">
-                                <div style="display: flex; align-items: center; gap: 8px;">
+                              <label
+                                class="perm-item"
+                                [class.checked]="selectedIds.has(perm.id)"
+                                style="
+                                  display: flex;
+                                  flex-direction: column;
+                                  gap: 2px;
+                                  padding: 6px 8px;
+                                  border: 1px solid var(--gray-150);
+                                  border-radius: 4px;
+                                  cursor: pointer;
+                                  transition: all var(--transition);
+                                "
+                              >
+                                <div style="display: flex; align-items: center; gap: 8px">
                                   <input
                                     type="checkbox"
                                     [checked]="selectedIds.has(perm.id)"
                                     (change)="togglePermission(perm.id)"
                                   />
-                                  <span class="perm-label" style="font-size: 12.5px; font-weight: 600; color: var(--gray-800);">{{ perm.label }}</span>
+                                  <span
+                                    class="perm-label"
+                                    style="font-size: 12.5px; font-weight: 600; color: var(--gray-800)"
+                                  >
+                                    {{ perm.label }}
+                                  </span>
                                 </div>
-                                <span class="perm-action" style="font-size: 10px; color: var(--gray-400); margin-left: 22px; font-family: monospace;">{{ perm.action }}</span>
+                                <span
+                                  class="perm-action"
+                                  style="
+                                    font-size: 10px;
+                                    color: var(--gray-400);
+                                    margin-left: 22px;
+                                    font-family: monospace;
+                                  "
+                                >
+                                  {{ perm.action }}
+                                </span>
                               </label>
                             }
                           </div>
@@ -224,7 +310,7 @@
 
     <div class="panel-footer">
       <button class="btn-ghost" (click)="closePanel()">Cancel</button>
-      @if (activeTab === UserDetailTab.Profile) {
+      @if (activeTab === UserDetailTab.Profile && hasPermission("user.edit")) {
         <button class="btn-primary" [disabled]="savingProfile" (click)="saveProfile()">
           @if (savingProfile) {
             Saving...

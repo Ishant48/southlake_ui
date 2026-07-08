@@ -9,6 +9,9 @@
       </div>
 
       <form [formGroup]="form" (ngSubmit)="submit()" class="panel-body itd-body">
+        @if (showFormError) {
+          <div class="form-error-box">Please fix the highlighted fields below before saving.</div>
+        }
         <!-- Select Month & Year -->
         <div class="form-row itd-row-spaced">
           <div class="form-field">

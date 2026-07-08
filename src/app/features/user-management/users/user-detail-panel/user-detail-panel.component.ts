@@ -9,6 +9,7 @@ import {
   ChangeDetectorRef,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { forkJoin, of } from 'rxjs';
 import { User, UserStatus, PanelMode, UserDetailTab } from '../../models/user.model';
 import { Permission } from '../../models/permission.model';
 import { AuthService } from '../../../../core/services/auth.service';
@@ -20,7 +21,6 @@ import { UserStatusBadgeComponent } from '../user-status-badge/user-status-badge
 import { Role } from '../../models/role.model';
 
 interface UpdateUserProfilePayload {
-  status?: UserStatus;
   name?: string;
   role_id?: string;
   department?: string | null;
@@ -118,7 +118,8 @@ export class UserDetailPanelComponent implements OnChanges {
     for (const [prefix, perms] of Object.entries(subGroups)) {
       for (const p of perms) {
         const pClone = { ...p };
-        let subName = SUB_NAMES[prefix] ?? prefix.charAt(0).toUpperCase() + prefix.slice(1).replace(/_/g, ' ');
+        let subName =
+          SUB_NAMES[prefix] ?? prefix.charAt(0).toUpperCase() + prefix.slice(1).replace(/_/g, ' ');
 
         if (pClone.action === 'reports.view' || pClone.action === 'reports.post') {
           subName = 'Overview & KPIs';
@@ -156,7 +157,10 @@ export class UserDetailPanelComponent implements OnChanges {
             } else if (pClone.action === 'workbook.create') {
               pClone.label = 'Export Premium & Claims Exhibits';
             }
-          } else if (pClone.action === 'test_balance.view' || pClone.action === 'test_balance.create') {
+          } else if (
+            pClone.action === 'test_balance.view' ||
+            pClone.action === 'test_balance.create'
+          ) {
             subName = 'Test Balance';
             if (pClone.action === 'test_balance.view') {
               pClone.label = 'View Test Balance';
@@ -191,7 +195,10 @@ export class UserDetailPanelComponent implements OnChanges {
             if (pClone.action === 'permission.create') pClone.label = 'Create Activity Logs';
             if (pClone.action === 'permission.edit') pClone.label = 'Edit Activity Logs';
             if (pClone.action === 'permission.delete') pClone.label = 'Delete Activity Logs';
-          } else if (pClone.action === 'activity_log.view' || pClone.action === 'activity_log.export') {
+          } else if (
+            pClone.action === 'activity_log.view' ||
+            pClone.action === 'activity_log.export'
+          ) {
             subName = 'Activity Logs';
             if (pClone.action === 'activity_log.view') pClone.label = 'View Activity Logs';
             if (pClone.action === 'activity_log.export') pClone.label = 'Export Activity Logs';
@@ -281,7 +288,10 @@ export class UserDetailPanelComponent implements OnChanges {
             'masters_config.view': { sub: 'Month-End Closing', label: 'View Month-End Closing' },
             'masters_config.create': { sub: 'Month-End Closing', label: 'Close Month-End Closing' },
             'masters_config.edit': { sub: 'Month-End Closing', label: 'Reopen Month-End Closing' },
-            'masters_config.delete': { sub: 'Month-End Closing', label: 'Export Month-End Closing' },
+            'masters_config.delete': {
+              sub: 'Month-End Closing',
+              label: 'Export Month-End Closing',
+            },
 
             // GL Map: 5
             'gl_mapping.create': { sub: 'GL Map', label: 'Create GL Map' },
@@ -412,7 +422,13 @@ export class UserDetailPanelComponent implements OnChanges {
 
   isSuperAdmin(): boolean {
     if (!this.user) return false;
+    // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- boolean OR: false is a meaningful value here, not a fallback case
     return !!(this.user.is_super_admin || this.user.email === 'admin@southlake.com');
+  }
+
+  isSelf(): boolean {
+    if (!this.user) return false;
+    return this.authService.getCurrentUser()?.id === this.user.id;
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -482,8 +498,9 @@ export class UserDetailPanelComponent implements OnChanges {
     this.savingProfile = true;
     this.profileError = '';
 
+    const statusChanged = this.editStatus !== this.user.status;
+
     const payload: UpdateUserProfilePayload = {
-      status: this.editStatus !== this.user.status ? this.editStatus : undefined,
       name: this.editName !== this.user.name ? this.editName : undefined,
       department: this.editDepartment !== this.user.department ? this.editDepartment : undefined,
       title: this.editTitle !== this.user.title ? this.editTitle : undefined,
@@ -509,11 +526,20 @@ export class UserDetailPanelComponent implements OnChanges {
       payload.initials = initials || null;
     }
 
-    this.usersService.updateUser(this.user.id, payload as Partial<User>).subscribe({
-      next: updated => {
+    const hasProfileChanges = Object.values(payload).some(v => v !== undefined);
+
+    const profile$ = hasProfileChanges
+      ? this.usersService.updateUser(this.user.id, payload as Partial<User>)
+      : of(this.user);
+    const status$ = statusChanged
+      ? this.usersService.updateUserStatus(this.user.id, this.editStatus)
+      : of(this.user);
+
+    forkJoin([profile$, status$]).subscribe({
+      next: ([profileResult, statusResult]) => {
         this.savingProfile = false;
         this.toast.success('User updated successfully');
-        this.updated.emit(updated);
+        this.updated.emit(statusChanged ? statusResult : profileResult);
         this.closed.emit();
         this.cdr.markForCheck();
       },

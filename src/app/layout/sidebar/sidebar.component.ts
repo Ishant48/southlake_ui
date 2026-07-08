@@ -3,11 +3,13 @@ import { RouterLink, RouterLinkActive, Router, NavigationEnd } from '@angular/ro
 import { filter } from 'rxjs/operators';
 import { AuthService } from '../../core/services/auth.service';
 import { SidebarState } from '../state/sidebar.state';
+import { NavGroup } from '../../core/models/nav.model';
+import { NavIconComponent } from './nav-icon/nav-icon.component';
 
 @Component({
   selector: 'app-sidebar',
   standalone: true,
-  imports: [RouterLink, RouterLinkActive],
+  imports: [RouterLink, RouterLinkActive, NavIconComponent],
   templateUrl: './sidebar.component.html',
   styleUrl: './sidebar.component.scss',
 })
@@ -16,10 +18,9 @@ export class SidebarComponent implements OnInit {
   private authService = inject(AuthService);
   sidebarService = inject(SidebarState);
 
+  navGroups: NavGroup[] = [];
   dashboardExpanded = true;
-  accountingExpanded = false;
-  adminExpanded = false;
-  mastersExpanded = false;
+  private expandedGroups = new Set<string>();
 
   @HostListener('window:resize')
   onResize() {
@@ -66,13 +67,9 @@ export class SidebarComponent implements OnInit {
     return name.substring(0, 2).toUpperCase();
   }
 
-  hasPermission(module: string, action: string): boolean {
-    return this.authService.hasPermission(module, action);
-  }
-
   ngOnInit(): void {
     this.checkScreenSize();
-    this.checkActiveRoute(this.router.url);
+    this.loadNavGroups();
 
     this.router.events.pipe(filter(event => event instanceof NavigationEnd)).subscribe(event => {
       const navEvent = event as NavigationEnd;
@@ -80,23 +77,33 @@ export class SidebarComponent implements OnInit {
     });
   }
 
-  private checkActiveRoute(url: string): void {
-    if (url.includes('/dashboard')) {
-      this.dashboardExpanded = true;
+  private loadNavGroups(): void {
+    this.authService.getMyModules().subscribe({
+      next: groups => {
+        this.navGroups = groups;
+        this.checkActiveRoute(this.router.url);
+      },
+      error: () => {
+        this.navGroups = [];
+      },
+    });
+  }
+
+  isExpanded(groupId: string): boolean {
+    return this.expandedGroups.has(groupId);
+  }
+
+  toggleGroup(event: Event, groupId: string): void {
+    event.preventDefault();
+    if (this.sidebarService.isCollapsed()) {
+      this.sidebarService.isCollapsed.set(false);
+      this.expandedGroups.add(groupId);
+      return;
     }
-    if (
-      url.includes('/chart-of-accounts') ||
-      url.includes('/journal-entries') ||
-      url.includes('/test-balance') ||
-      url.includes('/reinsurance-calculations')
-    ) {
-      this.accountingExpanded = true;
-    }
-    if (url.includes('/user-management')) {
-      this.adminExpanded = true;
-    }
-    if (url.includes('/masters')) {
-      this.mastersExpanded = true;
+    if (this.expandedGroups.has(groupId)) {
+      this.expandedGroups.delete(groupId);
+    } else {
+      this.expandedGroups.add(groupId);
     }
   }
 
@@ -110,34 +117,29 @@ export class SidebarComponent implements OnInit {
     this.dashboardExpanded = !this.dashboardExpanded;
   }
 
-  toggleAccounting(event: Event): void {
-    event.preventDefault();
-    if (this.sidebarService.isCollapsed()) {
-      this.sidebarService.isCollapsed.set(false);
-      this.accountingExpanded = true;
-      return;
-    }
-    this.accountingExpanded = !this.accountingExpanded;
+  routePath(route: string | null): string {
+    return route ? route.split('?')[0] : '';
   }
 
-  toggleAdmin(event: Event): void {
-    event.preventDefault();
-    if (this.sidebarService.isCollapsed()) {
-      this.sidebarService.isCollapsed.set(false);
-      this.adminExpanded = true;
-      return;
-    }
-    this.adminExpanded = !this.adminExpanded;
+  routeQueryParams(route: string | null): Record<string, string> {
+    if (!route?.includes('?')) return {};
+    const qs = route.split('?')[1];
+    return Object.fromEntries(new URLSearchParams(qs));
   }
 
-  toggleMasters(event: Event): void {
-    event.preventDefault();
-    if (this.sidebarService.isCollapsed()) {
-      this.sidebarService.isCollapsed.set(false);
-      this.mastersExpanded = true;
-      return;
+  private checkActiveRoute(url: string): void {
+    if (url.includes('/dashboard')) {
+      this.dashboardExpanded = true;
     }
-    this.mastersExpanded = !this.mastersExpanded;
+    for (const group of this.navGroups) {
+      const matches =
+        group.children.length > 0
+          ? group.children.some(c => !!c.route && url.includes(this.routePath(c.route)))
+          : !!group.route && url.includes(this.routePath(group.route));
+      if (matches) {
+        this.expandedGroups.add(group.id);
+      }
+    }
   }
 
   signOut(event: Event): void {

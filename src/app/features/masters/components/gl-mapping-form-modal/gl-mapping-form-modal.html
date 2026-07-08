@@ -13,6 +13,9 @@
       </div>
 
       <form [formGroup]="form" (ngSubmit)="submit()" class="panel-body">
+        @if (showFormError) {
+          <div class="form-error-box">Please select both a Chart of Account and a Mapping Type before saving.</div>
+        }
         <div class="form-field field-spaced">
           <span class="form-label">Chart of Account *</span>
           <app-dropdown-search

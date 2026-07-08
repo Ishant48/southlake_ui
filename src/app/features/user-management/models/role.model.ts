@@ -5,6 +5,7 @@ export interface Role {
   color: string;
   description?: string;
   is_system: boolean;
+  is_active: boolean;
   user_count?: number;
 }
 

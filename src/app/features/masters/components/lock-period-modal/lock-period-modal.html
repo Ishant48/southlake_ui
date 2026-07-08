@@ -13,6 +13,9 @@
       </div>
 
       <form [formGroup]="form" (ngSubmit)="submit()" class="panel-body">
+        @if (showFormError) {
+          <div class="form-error-box">Period Name is required.</div>
+        }
         <div class="form-field field-spaced">
           <label for="m-newperiodtolock" class="form-label">Period Name *</label>
           <input
@@ -21,6 +24,7 @@
             type="text"
             placeholder="e.g. June 2026"
             class="form-input"
+            [class.input-error]="form.controls.period.invalid && form.controls.period.touched"
           />
           <span class="field-hint">Specify the period label (e.g. Month Year format) to lock journal postings.</span>
         </div>

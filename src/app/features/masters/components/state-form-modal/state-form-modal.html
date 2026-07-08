@@ -13,6 +13,9 @@
       </div>
 
       <form [formGroup]="form" (ngSubmit)="submit()" class="panel-body">
+        @if (showFormError) {
+          <div class="form-error-box">Please fix the highlighted fields below before saving.</div>
+        }
         <div class="form-row">
           <div class="form-field">
             <label for="m-statecode" class="form-label">State Code (Numeric) *</label>
@@ -22,7 +25,11 @@
               type="number"
               placeholder="e.g. 48"
               class="form-input"
+              [class.input-error]="form.controls.state_code.invalid && form.controls.state_code.touched"
             />
+            @if (form.controls.state_code.invalid && form.controls.state_code.touched) {
+              <span class="field-error">State Code is required.</span>
+            }
           </div>
           <div class="form-field">
             <label for="m-stateabbr" class="form-label">State Abbr (2 Letters) *</label>
@@ -33,14 +40,28 @@
               maxlength="2"
               placeholder="e.g. TX"
               class="form-input"
+              [class.input-error]="form.controls.state_abbr.invalid && form.controls.state_abbr.touched"
             />
+            @if (form.controls.state_abbr.invalid && form.controls.state_abbr.touched) {
+              <span class="field-error">Enter a 2-letter state abbreviation.</span>
+            }
           </div>
         </div>
 
         <div class="form-row form-row-spaced">
           <div class="form-field">
             <label for="m-statename" class="form-label">State Name *</label>
-            <input id="m-statename" formControlName="name" type="text" placeholder="e.g. Texas" class="form-input" />
+            <input
+              id="m-statename"
+              formControlName="name"
+              type="text"
+              placeholder="e.g. Texas"
+              class="form-input"
+              [class.input-error]="form.controls.name.invalid && form.controls.name.touched"
+            />
+            @if (form.controls.name.invalid && form.controls.name.touched) {
+              <span class="field-error">State Name is required.</span>
+            }
           </div>
         </div>
 

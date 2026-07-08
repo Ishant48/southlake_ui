@@ -44,6 +44,7 @@ export class SimpleFormModal implements OnChanges {
   @Output() save = new EventEmitter<SimpleFormValue>();
 
   form: FormGroup<SimpleFormModel> = this.simpleFormService.createForm();
+  showFormError = false;
 
   selectedLobsDict: { [key: string]: boolean } = {};
   selectedCobsDict: { [key: string]: boolean } = {};
@@ -115,8 +116,10 @@ export class SimpleFormModal implements OnChanges {
   submit(): void {
     if (this.form.invalid) {
       this.form.markAllAsTouched();
+      this.showFormError = true;
       return;
     }
+    this.showFormError = false;
     this.save.emit(this.simpleFormService.toFormValue(this.form));
   }
 }

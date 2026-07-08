@@ -35,6 +35,7 @@ export class MgaFormModal implements OnChanges {
   @Output() save = new EventEmitter<MgaFormValue>();
 
   form: FormGroup<MgaFormModel> = this.mgaForm.createForm();
+  showFormError = false;
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['model']) {
@@ -86,8 +87,10 @@ export class MgaFormModal implements OnChanges {
   submit(): void {
     if (this.form.invalid) {
       this.form.markAllAsTouched();
+      this.showFormError = true;
       return;
     }
+    this.showFormError = false;
     this.save.emit(this.mgaForm.toFormValue(this.form));
   }
 }

@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { Observable } from 'rxjs';
 import { SessionToken } from '../models/session.model';
+import { NavGroup } from '../models/nav.model';
 import { environment } from '../../../environments/environment';
 
 const SESSION_TOKEN_KEY = 'sl_session_token';
@@ -15,6 +16,7 @@ interface AuthPermission {
 }
 
 interface AuthUser {
+  id?: string;
   name?: string;
   email?: string;
   role?: string | { name?: string };
@@ -45,7 +47,7 @@ export class AuthService {
         return res.json();
       })
       .then(ipData => {
-        if (ipData && ipData.ip) {
+        if (ipData?.ip) {
           const ipv4 = ipData.ip;
           // Resolve location for this IPv4
           fetch(`https://ipapi.co/${ipv4}/json/`)
@@ -55,6 +57,7 @@ export class AuthService {
             })
             .then(locData => {
               if (locData) {
+                // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- empty string from the API should also fall back to the default
                 const locStr = `${locData.city || 'Delhi'}, ${locData.region ? locData.region + ', ' : ''}${locData.country_name || 'India'}`;
                 localStorage.setItem('sl_client_ip', ipv4);
                 localStorage.setItem('sl_client_location', locStr);
@@ -68,11 +71,15 @@ export class AuthService {
         }
       })
       .catch(err => {
-        console.warn('Failed to fetch client IPv4 via ipify, falling back to ipapi.co directly...', err);
+        console.warn(
+          'Failed to fetch client IPv4 via ipify, falling back to ipapi.co directly...',
+          err,
+        );
         fetch('https://ipapi.co/json/')
           .then(res => res.json())
           .then(data => {
-            if (data && data.ip) {
+            if (data?.ip) {
+              // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- empty string from the API should also fall back to the default
               const locStr = `${data.city || 'Delhi'}, ${data.region ? data.region + ', ' : ''}${data.country_name || 'India'}`;
               localStorage.setItem('sl_client_ip', data.ip);
               localStorage.setItem('sl_client_location', locStr);
@@ -217,5 +224,9 @@ export class AuthService {
 
   fetchCurrentUser(): Observable<AuthUser> {
     return this.http.get<AuthUser>(`${environment.apiUrl}/auth/me`);
+  }
+
+  getMyModules(): Observable<NavGroup[]> {
+    return this.http.get<NavGroup[]>(`${environment.apiUrl}/permissions/my-modules`);
   }
 }

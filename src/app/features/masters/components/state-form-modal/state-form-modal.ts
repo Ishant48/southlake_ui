@@ -31,6 +31,7 @@ export class StateFormModal implements OnChanges {
   @Output() save = new EventEmitter<StateFormValue>();
 
   form: FormGroup<StateFormModel> = this.stateForm.createForm();
+  showFormError = false;
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['model']) {
@@ -49,8 +50,10 @@ export class StateFormModal implements OnChanges {
   submit(): void {
     if (this.form.invalid) {
       this.form.markAllAsTouched();
+      this.showFormError = true;
       return;
     }
+    this.showFormError = false;
     this.save.emit(this.stateForm.toFormValue(this.form));
   }
 }

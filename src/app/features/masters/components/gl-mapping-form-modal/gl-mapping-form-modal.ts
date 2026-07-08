@@ -38,6 +38,7 @@ export class GlMappingFormModal implements OnChanges {
   @Output() save = new EventEmitter<GlMappingFormValue>();
 
   form: FormGroup<GlMappingFormModel> = this.glMappingForm.createForm();
+  showFormError = false;
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['model']) {
@@ -60,8 +61,10 @@ export class GlMappingFormModal implements OnChanges {
   submit(): void {
     if (this.form.invalid) {
       this.form.markAllAsTouched();
+      this.showFormError = true;
       return;
     }
+    this.showFormError = false;
     this.save.emit(this.glMappingForm.toFormValue(this.form));
   }
 }
