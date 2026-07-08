@@ -6,11 +6,11 @@ import { SimpleMode } from '../components/simple-form-modal/simple-form-modal';
 
 export function buildBrokersColumnDefs(ctx: SimpleMasterTab, statusCol: ColDef): ColDef[] {
   return [
-    { headerName: 'BROKER CODE', field: 'brokerCode', flex: 1.5, minWidth: 120 },
+    { headerName: 'BROKER CODE', field: 'broker_code', flex: 1.5, minWidth: 120 },
     { headerName: 'NAME', field: 'name', flex: 2, minWidth: 150 },
-    { headerName: 'CONTACT NAME', field: 'contactName', flex: 1.5, minWidth: 120 },
-    { headerName: 'EMAIL', field: 'contactEmail', flex: 2, minWidth: 150 },
-    { headerName: 'PHONE', field: 'contactPhone', flex: 1.5, minWidth: 120 },
+    { headerName: 'CONTACT NAME', field: 'contact_name', flex: 1.5, minWidth: 120 },
+    { headerName: 'EMAIL', field: 'contact_email', flex: 2, minWidth: 150 },
+    { headerName: 'PHONE', field: 'contact_phone', flex: 1.5, minWidth: 120 },
     statusCol,
     {
       headerName: 'ACTIONS',

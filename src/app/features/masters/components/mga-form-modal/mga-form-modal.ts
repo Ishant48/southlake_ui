@@ -94,6 +94,11 @@ export class MgaFormModal implements OnChanges {
     this.closed.emit();
   }
 
+  isInvalid(controlName: string): boolean {
+    const control = this.form.get(controlName);
+    return !!(control && control.invalid && control.touched);
+  }
+
   submit(): void {
     if (this.form.invalid) {
       this.form.markAllAsTouched();
