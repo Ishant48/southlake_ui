@@ -23,7 +23,7 @@ export class ActionBadgeRenderer implements ICellRendererAngularComp {
   text = '';
 
   agInit(params: ICellRendererParams): void {
-    const rawAction = params.value || '';
+    const rawAction = params.value ?? '';
 
     const ACTION_MAP: Record<string, string> = {
       login: 'Login',
@@ -42,7 +42,8 @@ export class ActionBadgeRenderer implements ICellRendererAngularComp {
       approve: 'Approve',
     };
 
-    this.action = ACTION_MAP[rawAction.toLowerCase()] ?? (rawAction.charAt(0).toUpperCase() + rawAction.slice(1));
+    this.action =
+      ACTION_MAP[rawAction.toLowerCase()] ?? rawAction.charAt(0).toUpperCase() + rawAction.slice(1);
 
     const ACTION_COLORS: Record<string, { bg: string; text: string }> = {
       login: { bg: 'rgba(59, 130, 246, 0.12)', text: '#3b82f6' }, // Blue

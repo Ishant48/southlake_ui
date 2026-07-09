@@ -3,6 +3,7 @@ import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { environment } from '../../../../environments/environment';
 import { RolesApi } from './roles-api';
+import { describe, beforeEach, afterEach, it, expect } from 'vitest';
 
 describe('RolesApi', () => {
   let api: RolesApi;
@@ -37,7 +38,7 @@ describe('RolesApi', () => {
   });
 
   it('creates a role', () => {
-    const payload = { name: 'admin', label: 'Admin', color: '#000', permissions: [] };
+    const payload = { label: 'Underwriter', color: '#000', permissions: [] };
     api.createRole(payload).subscribe();
     const req = httpMock.expectOne(base);
     expect(req.request.method).toBe('POST');

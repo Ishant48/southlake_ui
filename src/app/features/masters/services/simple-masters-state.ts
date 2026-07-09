@@ -134,6 +134,7 @@ export class SimpleMastersState {
         payload['taxable'] = formValue.taxable || false;
         payload['priority'] = Number(formValue.priority || 1);
         payload['fully_earned'] = formValue.fully_earned || false;
+        // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- '' should be sent as null, not an empty string
         payload['asl_code'] = formValue.asl_code || null;
       } else if (mode === SimpleMode.Lob) {
         payload['taxable'] = formValue.taxable || false;

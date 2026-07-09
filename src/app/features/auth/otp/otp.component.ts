@@ -119,7 +119,7 @@ export class OtpComponent implements AfterViewInit {
         this.loading = false;
         if (session.token_type === SessionTokenType.Session) {
           this.auth.storeSession(session);
-          this.router.navigate(['/user-management/users']);
+          this.router.navigate(['/dashboard']);
         } else {
           this.router.navigate(['/auth/session-conflict'], {
             state: { session, email: this.email },

@@ -2,6 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { JournalEntryFormView } from './journal-entry-form-view';
 import { JournalEntryFormRow } from '../../models/journal-entry.model';
+import { describe, beforeEach, it, expect, vi } from 'vitest';
 
 describe('JournalEntryFormView', () => {
   let component: JournalEntryFormView;
@@ -77,11 +78,24 @@ describe('JournalEntryFormView', () => {
     component.localEntries = [row({ rowId: 'a' }), row({ rowId: 'b', description: 'Keep me' })];
     component.deleteRow(0);
     expect(component.localEntries.length).toBe(1);
+    expect(component.localEntries[0].rowId).toBe('b');
     expect(component.localEntries[0].description).toBe('Keep me');
 
     component.deleteRow(0);
     expect(component.localEntries.length).toBe(1);
     expect(component.localEntries[0].description).toBe('');
+  });
+
+  it('deletes only the targeted row when other rows share the same je_number', () => {
+    component.localEntries = [
+      row({ rowId: 'a', je_number: 5, description: 'Rent' }),
+      row({ rowId: 'b', je_number: 5, description: 'Utilities' }),
+      row({ rowId: 'c', je_number: 5, description: 'Payroll' }),
+    ];
+
+    component.deleteRow(1);
+
+    expect(component.localEntries.map(r => r.rowId)).toEqual(['a', 'c']);
   });
 
   it('computes totals and balanced state', () => {
@@ -114,7 +128,7 @@ describe('JournalEntryFormView', () => {
     component.cancelled.subscribe(cancelledSpy);
 
     const backBtn = (fixture.nativeElement as HTMLElement).querySelector(
-      '.btn-dark',
+      '.btn-back',
     ) as HTMLButtonElement;
     backBtn.click();
 

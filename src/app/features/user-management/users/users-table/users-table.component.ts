@@ -30,6 +30,7 @@ export class UsersTableComponent implements OnInit {
   @Output() viewUser = new EventEmitter<User>();
   @Output() editUser = new EventEmitter<User>();
   @Output() deactivateUser = new EventEmitter<User>();
+  @Output() resetPasswordUser = new EventEmitter<User>();
   @Output() selectionChanged = new EventEmitter<string[]>();
 
   gridOptions!: GridOptions;
@@ -46,6 +47,11 @@ export class UsersTableComponent implements OnInit {
 
   hasPermission(permission: string): boolean {
     return this.authService.hasPermission(permission);
+  }
+
+  isCurrentUser(data: User): boolean {
+    const currentUser = this.authService.getCurrentUser();
+    return !!currentUser?.email && currentUser.email === data.email;
   }
 
   setupColumns(): void {
@@ -135,9 +141,12 @@ export class UsersTableComponent implements OnInit {
             const btns: ActionButtonConfig[] = [{ label: 'View', action: 'view' }];
             if (this.hasPermission('user.edit')) {
               btns.push({ label: 'Edit', action: 'edit' });
-              const isSuperAdmin = !!(data.is_super_admin || data.email === 'admin@southlake.com');
+              const isSuperAdmin = !!data.is_super_admin;
               if (data.status !== 'inactive' && !isSuperAdmin) {
                 btns.push({ label: 'Deactivate', action: 'deactivate', danger: true });
+              }
+              if (!this.isCurrentUser(data)) {
+                btns.push({ label: 'Reset Password', action: 'reset-password' });
               }
             }
             return btns;
@@ -146,6 +155,7 @@ export class UsersTableComponent implements OnInit {
             if (action === 'view') this.viewUser.emit(data);
             if (action === 'edit') this.editUser.emit(data);
             if (action === 'deactivate') this.deactivateUser.emit(data);
+            if (action === 'reset-password') this.resetPasswordUser.emit(data);
           },
         },
       },

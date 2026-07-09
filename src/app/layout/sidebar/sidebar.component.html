@@ -170,8 +170,21 @@
         </div>
       }
 
-      <!-- 3. MGA Operations / Master Data collapsible -->
-      @if (hasPermission("master_data", "view")) {
+      <!-- 3. Config Tools / Master Data collapsible -->
+      @if (
+        hasPermission("treaty", "view") ||
+        hasPermission("mga", "view") ||
+        hasPermission("lob", "view") ||
+        hasPermission("cob", "view") ||
+        hasPermission("state", "view") ||
+        hasPermission("reinsurer", "view") ||
+        hasPermission("risk_company", "view") ||
+        hasPermission("broker", "view") ||
+        hasPermission("product", "view") ||
+        hasPermission("masters_config", "view") ||
+        hasPermission("treaty_type", "view") ||
+        hasPermission("gl_mapping", "view")
+      ) {
         <div class="nav-item-group" [class.expanded]="mastersExpanded">
           <a
             class="nav-item group-header"
@@ -185,7 +198,7 @@
               <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
               <polyline points="9 22 9 12 15 12 15 22" />
             </svg>
-            <span class="nav-label">MGA Operations</span>
+            <span class="nav-label">Config Tools</span>
             <svg
               class="arrow-icon"
               viewBox="0 0 24 24"
@@ -522,7 +535,7 @@
       }
 
       <!-- 4. System Admin (collapsible, wrapping User Management) -->
-      @if (hasPermission("user_management", "view")) {
+      @if (hasPermission("user", "view") || hasPermission("role", "view") || hasPermission("activity_log", "view")) {
         <div class="nav-item-group" [class.expanded]="adminExpanded">
           <a
             class="nav-item group-header"

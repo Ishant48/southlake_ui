@@ -189,12 +189,22 @@ export class SimpleMasterTab implements OnInit {
       contact_name: (rec['contactName'] as string) ?? '',
       contact_email: (rec['contactEmail'] as string) ?? '',
       contact_phone: (rec['contactPhone'] as string) ?? '',
-      lob_id: mode === SimpleMode.Product
-        ? (rec['lob_id'] ? (typeof rec['lob_id'] === 'string' ? rec['lob_id'].split(',') : rec['lob_id']) : [])
-        : (rec['lob_id'] as string) ?? '',
-      cob_id: mode === SimpleMode.Product
-        ? (rec['cob_id'] ? (typeof rec['cob_id'] === 'string' ? rec['cob_id'].split(',') : rec['cob_id']) : [])
-        : (rec['cob_id'] as string) ?? '',
+      lob_id:
+        mode === SimpleMode.Product
+          ? ((rec['lob_id']
+              ? typeof rec['lob_id'] === 'string'
+                ? rec['lob_id'].split(',')
+                : rec['lob_id']
+              : []) as string[])
+          : ((rec['lob_id'] as string) ?? ''),
+      cob_id:
+        mode === SimpleMode.Product
+          ? ((rec['cob_id']
+              ? typeof rec['cob_id'] === 'string'
+                ? rec['cob_id'].split(',')
+                : rec['cob_id']
+              : []) as string[])
+          : ((rec['cob_id'] as string) ?? ''),
       prefix: (rec['prefix'] as string) ?? '',
       next_value: (rec['next_value'] ?? rec['nextValue']) as number,
       padding_width: (rec['padding_width'] ?? rec['paddingWidth']) as number,
@@ -225,12 +235,22 @@ export class SimpleMasterTab implements OnInit {
       contact_name: (rec['contactName'] as string) ?? '',
       contact_email: (rec['contactEmail'] as string) ?? '',
       contact_phone: (rec['contactPhone'] as string) ?? '',
-      lob_id: mode === SimpleMode.Product
-        ? (rec['lob_id'] ? (typeof rec['lob_id'] === 'string' ? rec['lob_id'].split(',') : rec['lob_id']) : [])
-        : (rec['lob_id'] as string) ?? '',
-      cob_id: mode === SimpleMode.Product
-        ? (rec['cob_id'] ? (typeof rec['cob_id'] === 'string' ? rec['cob_id'].split(',') : rec['cob_id']) : [])
-        : (rec['cob_id'] as string) ?? '',
+      lob_id:
+        mode === SimpleMode.Product
+          ? ((rec['lob_id']
+              ? typeof rec['lob_id'] === 'string'
+                ? rec['lob_id'].split(',')
+                : rec['lob_id']
+              : []) as string[])
+          : ((rec['lob_id'] as string) ?? ''),
+      cob_id:
+        mode === SimpleMode.Product
+          ? ((rec['cob_id']
+              ? typeof rec['cob_id'] === 'string'
+                ? rec['cob_id'].split(',')
+                : rec['cob_id']
+              : []) as string[])
+          : ((rec['cob_id'] as string) ?? ''),
       prefix: (rec['prefix'] as string) ?? '',
       next_value: (rec['next_value'] ?? rec['nextValue']) as number,
       padding_width: (rec['padding_width'] ?? rec['paddingWidth']) as number,

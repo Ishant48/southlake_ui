@@ -19,14 +19,18 @@ import {
   CobMaster,
   SimpleMasterRecord,
   TreatyTypeMaster,
+  TreatyReinsurer,
 } from '../../models/master.model';
 import { TreatyForm, TreatyFormModel } from '../../forms/treaty-form';
 import {
   TreatyFormShape,
   TreatySelectionMap,
   TreatySaveEvent,
+  TreatyProductOption,
   createBlankTreatyForm,
 } from '../../models/treaty-form.model';
+
+type ReinsurerOrRiskCompany = ReinsurerCompany | RiskCompany;
 
 @Component({
   selector: 'app-treaty-form-modal',
@@ -54,7 +58,7 @@ export class TreatyFormModal implements OnChanges {
   @Input() stateOptions: StateMaster[] = [];
   @Input() lobOptions: LineOfBusiness[] = [];
   @Input() cobOptions: CobMaster[] = [];
-  @Input() productOptions: any[] = [];
+  @Input() productOptions: TreatyProductOption[] = [];
   @Input() treatyTypeOptions: TreatyTypeMaster[] = [];
 
   @Input() riskCompanyLabelFn: (item: RiskCompany) => string = () => '';
@@ -69,11 +73,11 @@ export class TreatyFormModal implements OnChanges {
     return item ? `${item.name} (${item.type_code})` : '';
   };
 
-  productLabelFn = (item: any): string => {
+  productLabelFn = (item: TreatyProductOption): string => {
     return item ? `${item.product_id} - ${item.name}` : '';
   };
 
-  reinsurerOrRiskCompanyLabelFn = (item: any): string => {
+  reinsurerOrRiskCompanyLabelFn = (item: ReinsurerOrRiskCompany): string => {
     if (!item) return '';
     if ('reinsurer_company_id' in item) {
       return `${item.name} (${item.reinsurer_company_id}) [Reinsurer]`;
@@ -81,10 +85,10 @@ export class TreatyFormModal implements OnChanges {
     if ('risk_company_id' in item) {
       return `${item.name} (${item.risk_company_id}) [Risk Company]`;
     }
-    return item.name || '';
+    return '';
   };
 
-  get combinedReinsurerAndRiskCompanyOptions(): any[] {
+  get combinedReinsurerAndRiskCompanyOptions(): ReinsurerOrRiskCompany[] {
     const reinsurers = this.reinsurerOptions || [];
     const riskCos = this.riskCompanyOptions || [];
     return [...reinsurers, ...riskCos];
@@ -131,8 +135,12 @@ export class TreatyFormModal implements OnChanges {
 
   findMatchingProduct(): void {
     if (!this.productOptions || this.productOptions.length === 0) return;
-    const selectedLobIds = Object.keys(this.formSelectedLobs).filter(id => this.formSelectedLobs[id]);
-    const selectedCobIds = Object.keys(this.formSelectedCobs).filter(id => this.formSelectedCobs[id]);
+    const selectedLobIds = Object.keys(this.formSelectedLobs).filter(
+      id => this.formSelectedLobs[id],
+    );
+    const selectedCobIds = Object.keys(this.formSelectedCobs).filter(
+      id => this.formSelectedCobs[id],
+    );
 
     if (selectedLobIds.length === 0 && selectedCobIds.length === 0) {
       this.selectedProductId = '';
@@ -140,10 +148,12 @@ export class TreatyFormModal implements OnChanges {
     }
 
     const bestProduct = this.productOptions.find(p => {
-      const pLobIds = (p.lobs || []).map((l: any) => l.id);
-      const pCobIds = (p.cobs || []).map((c: any) => c.id);
-      const hasAllLobs = pLobIds.length > 0 && pLobIds.every((id: string) => selectedLobIds.includes(id));
-      const hasAllCobs = pCobIds.length > 0 && pCobIds.every((id: string) => selectedCobIds.includes(id));
+      const pLobIds = (p.lobs ?? []).map(l => l.id);
+      const pCobIds = (p.cobs ?? []).map(c => c.id);
+      const hasAllLobs =
+        pLobIds.length > 0 && pLobIds.every((id: string) => selectedLobIds.includes(id));
+      const hasAllCobs =
+        pCobIds.length > 0 && pCobIds.every((id: string) => selectedCobIds.includes(id));
       return hasAllLobs && hasAllCobs;
     });
 
@@ -151,7 +161,7 @@ export class TreatyFormModal implements OnChanges {
       this.selectedProductId = bestProduct.id;
     } else {
       const fallbackProduct = this.productOptions.find(p => {
-        const pLobIds = (p.lobs || []).map((l: any) => l.id);
+        const pLobIds = (p.lobs ?? []).map(l => l.id);
         return pLobIds.some((id: string) => selectedLobIds.includes(id));
       });
       this.selectedProductId = fallbackProduct ? fallbackProduct.id : '';
@@ -167,10 +177,10 @@ export class TreatyFormModal implements OnChanges {
       this.formSelectedLobs = {};
       this.formSelectedCobs = {};
 
-      (selectedProduct.lobs || []).forEach((l: any) => {
+      (selectedProduct.lobs ?? []).forEach(l => {
         this.formSelectedLobs[l.id] = true;
       });
-      (selectedProduct.cobs || []).forEach((c: any) => {
+      (selectedProduct.cobs ?? []).forEach(c => {
         this.formSelectedCobs[c.id] = true;
       });
     } else {
@@ -182,14 +192,14 @@ export class TreatyFormModal implements OnChanges {
   getSelectedProductLobs(): string {
     const selectedProduct = this.productOptions.find(p => p.id === this.selectedProductId);
     if (!selectedProduct) return 'No Product Selected';
-    const names = (selectedProduct.lobs || []).map((l: any) => l.name);
+    const names = (selectedProduct.lobs ?? []).map(l => l.name);
     return names.length > 0 ? names.join(', ') : 'No LOBs configured';
   }
 
   getSelectedProductCobs(): string {
     const selectedProduct = this.productOptions.find(p => p.id === this.selectedProductId);
     if (!selectedProduct) return 'No Product Selected';
-    const names = (selectedProduct.cobs || []).map((c: any) => c.name);
+    const names = (selectedProduct.cobs ?? []).map(c => c.name);
     return names.length > 0 ? names.join(', ') : 'No COBs configured';
   }
 
@@ -212,10 +222,8 @@ export class TreatyFormModal implements OnChanges {
 
   updateReinsurerStateIds(index: number, value: unknown): void {
     const rows = this.form.controls.reinsurers.value;
-    const stateIds = Array.isArray(value) ? value : (value == null ? [] : [String(value)]);
-    const updated = rows.map((row, i) =>
-      i === index ? { ...row, state_ids: stateIds } : row,
-    );
+    const stateIds = Array.isArray(value) ? value : value == null ? [] : [String(value)];
+    const updated = rows.map((row, i) => (i === index ? { ...row, state_ids: stateIds } : row));
     this.form.controls.reinsurers.setValue(updated);
   }
 
@@ -246,13 +254,17 @@ export class TreatyFormModal implements OnChanges {
     this.form.controls.reinsurers.setValue(updated);
   }
 
-  private autoBalanceReinsurers(rows: any[], editedIndex: number, newValue: number): any[] {
+  private autoBalanceReinsurers(
+    rows: TreatyReinsurer[],
+    editedIndex: number,
+    newValue: number,
+  ): TreatyReinsurer[] {
     const n = rows.length;
     if (n <= 1) {
-      return rows.map((row, i) => i === editedIndex ? { ...row, cession_pct: newValue } : row);
+      return rows.map((row, i) => (i === editedIndex ? { ...row, cession_pct: newValue } : row));
     }
 
-    let updatedRows = [...rows];
+    const updatedRows = [...rows];
     updatedRows[editedIndex] = { ...rows[editedIndex], cession_pct: newValue };
 
     const isLast = editedIndex === n - 1;
@@ -265,7 +277,10 @@ export class TreatyFormModal implements OnChanges {
       : rows.slice(0, editedIndex).reduce((acc, r) => acc + (r.cession_pct || 0), 0);
 
     const targetOtherSum = 100 - precedingSum - newValue;
-    const currentOtherSum = otherIndices.reduce((acc, idx) => acc + (rows[idx].cession_pct || 0), 0);
+    const currentOtherSum = otherIndices.reduce(
+      (acc, idx) => acc + (rows[idx].cession_pct || 0),
+      0,
+    );
 
     let distributedSum = 0;
     if (currentOtherSum > 0) {
@@ -275,7 +290,7 @@ export class TreatyFormModal implements OnChanges {
         if (i === otherIndices.length - 1) {
           share = targetOtherSum - distributedSum;
         } else {
-          share = Number(((row.cession_pct || 0) / currentOtherSum * targetOtherSum).toFixed(2));
+          share = Number((((row.cession_pct || 0) / currentOtherSum) * targetOtherSum).toFixed(2));
           distributedSum += share;
         }
         updatedRows[idx] = { ...row, cession_pct: Math.max(0, Number(share.toFixed(2))) };
@@ -301,7 +316,14 @@ export class TreatyFormModal implements OnChanges {
     const rows = this.form.controls.reinsurers.value;
     if (rows.length === 0) {
       this.form.controls.reinsurers.setValue([
-        { reinsurer_id: '', cession_pct: 100, state_id: null, state_ids: [], broker_id: null, broker_comm_type: null },
+        {
+          reinsurer_id: '',
+          cession_pct: 100,
+          state_id: null,
+          state_ids: [],
+          broker_id: null,
+          broker_comm_type: null,
+        },
       ]);
       return;
     }

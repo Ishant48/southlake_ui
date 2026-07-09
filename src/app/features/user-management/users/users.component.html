@@ -176,6 +176,7 @@
       (viewUser)="onViewUser($event)"
       (editUser)="onEditUser($event)"
       (deactivateUser)="onDeactivateUser($event)"
+      (resetPasswordUser)="onResetPasswordUser($event)"
       (selectionChanged)="onSelectionChanged($event)"
     />
 
@@ -262,7 +263,8 @@
   [open]="confirmOpen"
   [title]="confirmTitle"
   [message]="confirmMessage"
-  confirmLabel="Deactivate"
+  [confirmLabel]="confirmLabel"
+  [type]="confirmType"
   (confirmed)="onConfirmed()"
   (cancelled)="confirmOpen = false"
 />

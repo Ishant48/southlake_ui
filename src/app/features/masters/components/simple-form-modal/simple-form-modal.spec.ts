@@ -48,34 +48,17 @@ describe('SimpleFormModal', () => {
     expect(component.form.getRawValue()).toEqual(sample);
   });
 
-  it('derives product code/name from the selected LOB and COB', () => {
+  it('leaves product code/name untouched, allowing manual entry, when LOB/COB change', () => {
     const lob: LineOfBusiness = { id: 'l1', lob_code: 'AUTO', name: 'Auto', is_active: true };
     const cob: CobMaster = { id: 'c1', cob_code: 'PHYS', name: 'Physical Damage', is_active: true };
     component.lobOptions = [lob];
     component.cobOptions = [cob];
-    component.model = { ...createBlankSimpleForm(), lob_id: 'l1', cob_id: 'c1' };
-    component.ngOnChanges({
-      model: {
-        currentValue: component.model,
-        previousValue: undefined,
-        firstChange: true,
-        isFirstChange: () => true,
-      },
-    });
-
-    component.onProductLobCobChange();
-
-    expect(component.form.controls.code.value).toBe('AUTO-PHYS');
-    expect(component.form.controls.name.value).toBe('Auto - Physical Damage');
-  });
-
-  it('clears product code/name when LOB or COB is unselected', () => {
-    component.lobOptions = [];
-    component.cobOptions = [];
     component.model = {
       ...createBlankSimpleForm(),
-      code: 'AUTO-PHYS',
-      name: 'Auto - Physical Damage',
+      lob_id: ['l1'],
+      cob_id: ['c1'],
+      code: 'MANUAL-CODE',
+      name: 'Manual Name',
     };
     component.ngOnChanges({
       model: {
@@ -88,8 +71,8 @@ describe('SimpleFormModal', () => {
 
     component.onProductLobCobChange();
 
-    expect(component.form.controls.code.value).toBe('');
-    expect(component.form.controls.name.value).toBe('');
+    expect(component.form.controls.code.value).toBe('MANUAL-CODE');
+    expect(component.form.controls.name.value).toBe('Manual Name');
   });
 
   it('emits save with the current form value', () => {
@@ -142,7 +125,7 @@ describe('SimpleFormModal', () => {
     expect(component.form.controls.name.disabled).toBe(false);
   });
 
-  it('disables both code and name in Product mode', () => {
+  it('keeps code and name manually editable in Product mode', () => {
     component.mode = SimpleMode.Product;
     component.ngOnChanges({
       mode: {
@@ -152,8 +135,8 @@ describe('SimpleFormModal', () => {
         isFirstChange: () => true,
       },
     });
-    expect(component.form.controls.code.disabled).toBe(true);
-    expect(component.form.controls.name.disabled).toBe(true);
+    expect(component.form.controls.code.disabled).toBe(false);
+    expect(component.form.controls.name.disabled).toBe(false);
   });
 
   it('emits closed when the close button is clicked', () => {

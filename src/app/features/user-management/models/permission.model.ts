@@ -7,13 +7,12 @@ export interface Permission {
 export interface Module {
   id: string;
   label: string;
+  is_active: boolean;
+  route: string | null;
+  sort_order: number;
+  parent_module_id: string | null;
+  permission_action: string | null;
 }
-
-export const MODULES: Module[] = [
-  { id: 'chart_of_accounts', label: 'Chart of Accounts' },
-  { id: 'user_management', label: 'User Management' },
-  { id: 'master_data', label: 'Master Data' },
-];
 
 export enum PermissionActionKey {
   View = 'view',

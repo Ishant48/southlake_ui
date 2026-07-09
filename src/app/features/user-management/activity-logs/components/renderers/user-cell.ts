@@ -41,11 +41,13 @@ export class UserCellRenderer implements ICellRendererAngularComp {
   agInit(params: ICellRendererParams): void {
     const user = params.value;
     if (user) {
+      /* eslint-disable @typescript-eslint/prefer-nullish-coalescing -- empty strings from the API should also fall back to these defaults */
       this.name = user.name || 'System';
       this.email = user.email || 'system@app.com';
       this.initials = user.initials || 'SY';
       this.avatarColor = user.avatar_color || '#94a3b8';
       this.role = user.role || 'Admin';
+      /* eslint-enable @typescript-eslint/prefer-nullish-coalescing */
     } else {
       this.name = 'System';
       this.email = 'system@app.com';

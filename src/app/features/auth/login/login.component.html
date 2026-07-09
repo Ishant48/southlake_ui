@@ -217,6 +217,7 @@
             @if (form.get("password")?.invalid && form.get("password")?.touched) {
               <span class="field-error">Password is required</span>
             }
+            <a routerLink="/auth/forgot-password" class="auth-back-link">Forgot password?</a>
           </div>
 
           @if (errorMsg) {

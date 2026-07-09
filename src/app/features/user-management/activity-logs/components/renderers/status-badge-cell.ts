@@ -23,6 +23,7 @@ export class StatusBadgeRenderer implements ICellRendererAngularComp {
   text = '';
 
   agInit(params: ICellRendererParams): void {
+    // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- an empty status string should also default to "Success"
     this.status = params.value || 'Success';
 
     const STATUS_COLORS: Record<string, { bg: string; text: string }> = {

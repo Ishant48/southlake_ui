@@ -38,6 +38,7 @@ describe('treaty-selection.util', () => {
         reinsurer_id: 're-1',
         cession_pct: 50,
         state_id: null,
+        state_ids: [],
         broker_id: null,
         broker_comm_type: null,
       },

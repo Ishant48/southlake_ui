@@ -9,6 +9,19 @@ export type TreatyFormShape = Partial<Treaty> & {
 
 export type TreatySelectionMap = Record<string, boolean>;
 
+export interface TreatyProductLobCob {
+  id: string;
+  name: string;
+}
+
+export interface TreatyProductOption {
+  id: string;
+  product_id?: string;
+  name: string;
+  lobs?: TreatyProductLobCob[];
+  cobs?: TreatyProductLobCob[];
+}
+
 export interface TreatySaveEvent {
   form: TreatyFormShape;
   selectedStates: TreatySelectionMap;

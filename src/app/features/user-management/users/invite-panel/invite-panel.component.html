@@ -37,7 +37,7 @@
       </div>
 
       <div class="form-field">
-        <label class="form-label" for="invite-name-input">Full Name *</label>
+        <label class="form-label" for="invite-name-input">Display Name *</label>
         <input
           id="invite-name-input"
           type="text"
@@ -47,7 +47,7 @@
           [class.input-error]="isInvalid('name')"
         />
         @if (isInvalid("name")) {
-          <span class="field-error">Full name is required</span>
+          <span class="field-error">Display name is required</span>
         }
       </div>
 

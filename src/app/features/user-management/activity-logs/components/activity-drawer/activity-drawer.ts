@@ -41,7 +41,7 @@ export class ActivityDrawerComponent {
       pending: { bg: '#fffbeb', text: '#f59e0b' },
       critical: { bg: '#fee2e2', text: '#b91c1c' },
     };
-    return STATUS_COLORS[(status || '').toLowerCase()] ?? { bg: '#f1f5f9', text: '#64748b' };
+    return STATUS_COLORS[(status ?? '').toLowerCase()] ?? { bg: '#f1f5f9', text: '#64748b' };
   }
 
   formatAction(action: string): string {
@@ -61,7 +61,7 @@ export class ActivityDrawerComponent {
       unlock_account: 'Unlock Account',
       approve: 'Approve',
     };
-    return ACTION_MAP[action.toLowerCase()] ?? (action.charAt(0).toUpperCase() + action.slice(1));
+    return ACTION_MAP[action.toLowerCase()] ?? action.charAt(0).toUpperCase() + action.slice(1);
   }
 
   formatModule(moduleId?: string): string {

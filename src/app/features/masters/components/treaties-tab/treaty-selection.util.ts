@@ -154,7 +154,7 @@ export function buildTreatyPayload(
       reinsurer_id: r.reinsurer_id,
       cession_pct: r.cession_pct,
       state_id: r.state_ids && r.state_ids.length > 0 ? r.state_ids[0] : null,
-      state_ids: r.state_ids || [],
+      state_ids: r.state_ids ?? [],
       broker_id: r.broker_id ?? null,
       broker_comm_type: r.broker_comm_type ?? null,
     }));

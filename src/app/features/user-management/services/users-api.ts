@@ -42,6 +42,10 @@ export class UsersApi {
     return this.http.post<{ message: string }>(`${this.base}/${id}/deactivate`, {});
   }
 
+  resetPassword(id: string): Observable<{ message: string }> {
+    return this.http.post<{ message: string }>(`${this.base}/${id}/reset-password`, {});
+  }
+
   deactivateBulk(ids: string[]): Observable<{ message: string; count: number }> {
     return this.http.post<{ message: string; count: number }>(`${this.base}/deactivate-bulk`, {
       ids,

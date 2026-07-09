@@ -1,38 +1,45 @@
 @if (isOpen) {
+  <!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events, @angular-eslint/template/interactive-supports-focus -- backdrop click-to-dismiss, not an interactive control; keyboard dismissal is handled via Escape at the dialog level -->
   <div class="drawer-overlay" (click)="close()"></div>
   <div class="drawer-panel" [class.open]="isOpen">
     <div class="drawer-header">
       <h2 class="drawer-title">Activity Detail</h2>
       <button class="btn-close" (click)="close()">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
       </button>
     </div>
 
     @if (log) {
       <div class="drawer-body">
-        
         <!-- User Section -->
         <div class="section">
           <div class="user-header">
             <div class="avatar" [style.background-color]="log.user?.avatar_color">
-              {{ log.user?.initials || 'SY' }}
+              {{ log.user?.initials || "SY" }}
             </div>
             <div class="user-info">
-              <div class="user-name">{{ log.user?.name || 'System' }}</div>
-              <div class="user-email">{{ log.user?.email || 'system@app.com' }}</div>
+              <div class="user-name">{{ log.user?.name || "System" }}</div>
+              <div class="user-email">{{ log.user?.email || "system@app.com" }}</div>
             </div>
           </div>
           <div class="badge-row">
-            <span class="role-badge">{{ log.user?.role || 'Admin' }}</span>
-            <span class="action-badge" 
-                  [style.background]="getActionStyle(log.action).bg" 
-                  [style.color]="getActionStyle(log.action).text">
+            <span class="role-badge">{{ log.user?.role || "Admin" }}</span>
+            <span
+              class="action-badge"
+              [style.background]="getActionStyle(log.action).bg"
+              [style.color]="getActionStyle(log.action).text"
+            >
               {{ formatAction(log.action) }}
             </span>
-            <span class="status-badge" 
-                  [style.background]="getStatusStyle(log.status).bg" 
-                  [style.color]="getStatusStyle(log.status).text">
-              {{ log.status || 'Success' }}
+            <span
+              class="status-badge"
+              [style.background]="getStatusStyle(log.status).bg"
+              [style.color]="getStatusStyle(log.status).text"
+            >
+              {{ log.status || "Success" }}
             </span>
           </div>
         </div>
@@ -49,16 +56,16 @@
             </div>
             <div class="info-item">
               <span class="info-label">Entity</span>
-              <span class="info-value">{{ log.entity_type || '-' }} ({{ log.entity_id || '-' }})</span>
+              <span class="info-value">{{ log.entity_type || "-" }} ({{ log.entity_id || "-" }})</span>
             </div>
             <div class="info-item">
               <span class="info-label">Timestamp</span>
-              <span class="info-value">{{ log.created_at | date:'MMM d, y, h:mm a' }}</span>
+              <span class="info-value">{{ log.created_at | date: "MMM d, y, h:mm a" }}</span>
             </div>
           </div>
           <div class="info-item mt-3">
             <span class="info-label">Description</span>
-            <span class="info-value">{{ log.description || '-' }}</span>
+            <span class="info-value">{{ log.description || "-" }}</span>
           </div>
         </div>
 
@@ -74,7 +81,9 @@
                   <div class="change-field">{{ change.field }}</div>
                   <div class="change-values">
                     <span class="old-val">{{ change.old_value }}</span>
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2">
+                      <path d="M5 12h14M12 5l7 7-7 7" />
+                    </svg>
                     <span class="new-val">{{ change.new_value }}</span>
                   </div>
                 </div>
@@ -93,35 +102,36 @@
           <div class="info-grid cols-2">
             <div class="info-item">
               <span class="info-label">IP Address</span>
-              <span class="info-value text-mono">{{ log.ip_address || '-' }}</span>
+              <span class="info-value text-mono">{{ log.ip_address || "-" }}</span>
             </div>
             <div class="info-item">
               <span class="info-label">Location</span>
-              <span class="info-value">{{ log.location || '-' }}</span>
+              <span class="info-value">{{ log.location || "-" }}</span>
             </div>
             <div class="info-item">
               <span class="info-label">Device</span>
-              <span class="info-value">{{ log.device || '-' }}</span>
+              <span class="info-value">{{ log.device || "-" }}</span>
             </div>
             <div class="info-item">
               <span class="info-label">Browser</span>
-              <span class="info-value">{{ log.browser || '-' }}</span>
+              <span class="info-value">{{ log.browser || "-" }}</span>
             </div>
             <div class="info-item">
               <span class="info-label">Operating System</span>
-              <span class="info-value">{{ log.os || '-' }}</span>
+              <span class="info-value">{{ log.os || "-" }}</span>
             </div>
             <div class="info-item">
               <span class="info-label">Session ID</span>
-              <span class="info-value text-mono text-xs truncate" [title]="log.session_id">{{ log.session_id || '-' }}</span>
+              <span class="info-value text-mono text-xs truncate" [title]="log.session_id">
+                {{ log.session_id || "-" }}
+              </span>
             </div>
           </div>
           <div class="info-item mt-3">
             <span class="info-label">Correlation ID</span>
-            <span class="info-value text-mono text-xs">{{ log.correlation_id || '-' }}</span>
+            <span class="info-value text-mono text-xs">{{ log.correlation_id || "-" }}</span>
           </div>
         </div>
-
       </div>
     }
   </div>
