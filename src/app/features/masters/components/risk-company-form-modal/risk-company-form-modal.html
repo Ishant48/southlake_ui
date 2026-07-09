@@ -43,7 +43,14 @@
           </div>
           <div class="form-field">
             <label for="rc-zip" class="form-label">Zip</label>
-            <input id="rc-zip" formControlName="zip" type="text" placeholder="Zip" class="form-input" />
+            <input
+              id="rc-zip"
+              formControlName="zip"
+              type="text"
+              placeholder="Zip"
+              class="form-input"
+              (blur)="onZipBlur()"
+            />
           </div>
           <div class="form-field">
             <label for="rc-city" class="form-label">City</label>
@@ -66,7 +73,14 @@
         <div class="form-row form-row-spaced">
           <div class="form-field">
             <label for="rc-phone" class="form-label">Phone</label>
-            <input id="rc-phone" formControlName="phone" type="text" placeholder="Phone" class="form-input" />
+            <input
+              id="rc-phone"
+              formControlName="phone"
+              type="text"
+              placeholder="(555) 019-9000"
+              class="form-input"
+              appPhoneMask
+            />
           </div>
           <div class="form-field">
             <span class="form-label">Admitted</span>

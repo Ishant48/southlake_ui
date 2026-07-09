@@ -10,6 +10,8 @@ import {
 import { CommonModule } from '@angular/common';
 import { FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { DropdownSearchComponent } from '../../../../shared/components/dropdown-search/dropdown-search.component';
+import { PhoneMaskDirective } from '../../../../shared/directives/phone-mask.directive';
+import { ZipLookupService } from '../../../../shared/services/zip-lookup.service';
 import { StateMaster } from '../../models/master.model';
 import { RiskCompanyForm, RiskCompanyFormModel } from '../../forms/risk-company-form';
 import {
@@ -19,12 +21,13 @@ import {
 
 @Component({
   selector: 'app-risk-company-form-modal',
-  imports: [CommonModule, ReactiveFormsModule, DropdownSearchComponent],
+  imports: [CommonModule, ReactiveFormsModule, DropdownSearchComponent, PhoneMaskDirective],
   templateUrl: './risk-company-form-modal.html',
   styleUrl: './risk-company-form-modal.scss',
 })
 export class RiskCompanyFormModal implements OnChanges {
   private riskCompanyForm = inject(RiskCompanyForm);
+  private zipLookup = inject(ZipLookupService);
 
   @Input() open = false;
   @Input() title = '';
@@ -66,6 +69,15 @@ export class RiskCompanyFormModal implements OnChanges {
 
   close(): void {
     this.closed.emit();
+  }
+
+  onZipBlur(): void {
+    if (this.isViewMode) return;
+    this.zipLookup.lookup(this.form.controls.zip.value).subscribe(result => {
+      if (!result) return;
+      this.form.controls.city.setValue(result.city);
+      this.form.controls.state.setValue(result.state);
+    });
   }
 
   submit(): void {

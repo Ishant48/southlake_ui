@@ -17,7 +17,7 @@
         <div class="form-section-title no-top-margin">Names Info</div>
         <div class="form-row">
           <div class="form-field">
-            <label for="mga-companyid" class="form-label">Company ID *</label>
+            <label for="mga-companyid" class="form-label">MGA Id *</label>
             <input
               id="mga-companyid"
               formControlName="company_id"
@@ -26,8 +26,8 @@
               class="form-input"
               [class.input-error]="isInvalid('company_id')"
             />
-            @if (isInvalid('company_id')) {
-              <div class="field-error">Company ID is required</div>
+            @if (isInvalid("company_id")) {
+              <div class="field-error">MGA Id is required</div>
             }
           </div>
           <div class="form-field">
@@ -40,7 +40,7 @@
               class="form-input"
               [class.input-error]="isInvalid('id_name')"
             />
-            @if (isInvalid('id_name')) {
+            @if (isInvalid("id_name")) {
               <div class="field-error">ID Name is required</div>
             }
           </div>
@@ -54,7 +54,7 @@
               class="form-input"
               [class.input-error]="isInvalid('name')"
             />
-            @if (isInvalid('name')) {
+            @if (isInvalid("name")) {
               <div class="field-error">Name is required</div>
             }
           </div>
@@ -70,7 +70,7 @@
               class="form-input"
               [class.input-error]="isInvalid('mga_code')"
             />
-            @if (isInvalid('mga_code')) {
+            @if (isInvalid("mga_code")) {
               <div class="field-error">MGA Code is required</div>
             }
           </div>
@@ -136,7 +136,7 @@
               class="form-input"
               [class.input-error]="isInvalid('address')"
             />
-            @if (isInvalid('address')) {
+            @if (isInvalid("address")) {
               <div class="field-error">Address is required</div>
             }
           </div>
@@ -149,8 +149,9 @@
               placeholder="12345"
               class="form-input"
               [class.input-error]="isInvalid('zip')"
+              (blur)="onZipBlur()"
             />
-            @if (isInvalid('zip')) {
+            @if (isInvalid("zip")) {
               <div class="field-error">Zip is required</div>
             }
           </div>
@@ -167,7 +168,7 @@
               class="form-input"
               [class.input-error]="isInvalid('city')"
             />
-            @if (isInvalid('city')) {
+            @if (isInvalid("city")) {
               <div class="field-error">City is required</div>
             }
           </div>
@@ -183,7 +184,7 @@
               (selectedValueChange)="setStateValue($event)"
               [class.input-error]="isInvalid('state')"
             ></app-dropdown-search>
-            @if (isInvalid('state')) {
+            @if (isInvalid("state")) {
               <div class="field-error">State is required</div>
             }
           </div>
@@ -193,13 +194,14 @@
               id="mga-phone"
               formControlName="phone"
               type="text"
-              placeholder="555-0199"
+              placeholder="(555) 019-9000"
               class="form-input"
+              appPhoneMask
               [class.input-error]="isInvalid('phone')"
             />
-            @if (isInvalid('phone')) {
+            @if (isInvalid("phone")) {
               <div class="field-error">
-                @if (form.controls.phone.errors?.['required']) {
+                @if (form.controls.phone.errors?.["required"]) {
                   Phone is required
                 } @else {
                   Invalid phone format
@@ -232,7 +234,7 @@
               class="form-input"
               [class.input-error]="isInvalid('op_start_date')"
             />
-            @if (isInvalid('op_start_date')) {
+            @if (isInvalid("op_start_date")) {
               <div class="field-error">Op Start Date is required</div>
             }
           </div>
@@ -249,7 +251,7 @@
               class="form-input"
               [class.input-error]="isInvalid('contact_name')"
             />
-            @if (isInvalid('contact_name')) {
+            @if (isInvalid("contact_name")) {
               <div class="field-error">Contact Name is required</div>
             }
           </div>
@@ -266,9 +268,9 @@
               class="form-input"
               [class.input-error]="isInvalid('contact_email')"
             />
-            @if (isInvalid('contact_email')) {
+            @if (isInvalid("contact_email")) {
               <div class="field-error">
-                @if (form.controls.contact_email.errors?.['required']) {
+                @if (form.controls.contact_email.errors?.["required"]) {
                   Contact Email is required
                 } @else {
                   Invalid email format
@@ -282,13 +284,14 @@
               id="mga-contactphone"
               formControlName="contact_phone"
               type="text"
-              placeholder="Phone Number"
+              placeholder="(555) 019-9000"
               class="form-input"
+              appPhoneMask
               [class.input-error]="isInvalid('contact_phone')"
             />
-            @if (isInvalid('contact_phone')) {
+            @if (isInvalid("contact_phone")) {
               <div class="field-error">
-                @if (form.controls.contact_phone.errors?.['required']) {
+                @if (form.controls.contact_phone.errors?.["required"]) {
                   Contact Phone is required
                 } @else {
                   Invalid phone format

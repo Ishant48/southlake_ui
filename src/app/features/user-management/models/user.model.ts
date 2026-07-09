@@ -63,6 +63,8 @@ export interface InviteUserPayload {
   user_type: string;
   department?: string;
   title?: string;
+  user_entity_type?: string;
+  user_entity_id?: string;
 }
 
 export interface PendingInvite {

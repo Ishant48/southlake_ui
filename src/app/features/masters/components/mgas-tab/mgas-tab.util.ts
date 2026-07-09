@@ -19,6 +19,9 @@ export function mapMgaToFormValue(mga: MgaMaster): MgaFormValue {
     open_item: mga.open_item ?? false,
     op_start_date: mga.op_start_date ? mga.op_start_date.substring(0, 10) : '',
     other_names: mga.other_names ? JSON.parse(JSON.stringify(mga.other_names)) : [],
+    contact_name: mga.contact_name ?? '',
+    contact_email: mga.contact_email ?? '',
+    contact_phone: mga.contact_phone ?? '',
   };
 }
 
