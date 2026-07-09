@@ -10,18 +10,21 @@ import {
 import { CommonModule } from '@angular/common';
 import { FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { DropdownSearchComponent } from '../../../../shared/components/dropdown-search/dropdown-search.component';
+import { PhoneMaskDirective } from '../../../../shared/directives/phone-mask.directive';
+import { ZipLookupService } from '../../../../shared/services/zip-lookup.service';
 import { StateMaster } from '../../models/master.model';
 import { MgaForm, MgaFormModel } from '../../forms/mga-form';
 import { MgaFormValue, createBlankMgaForm } from '../../models/mga-form.model';
 
 @Component({
   selector: 'app-mga-form-modal',
-  imports: [CommonModule, ReactiveFormsModule, DropdownSearchComponent],
+  imports: [CommonModule, ReactiveFormsModule, DropdownSearchComponent, PhoneMaskDirective],
   templateUrl: './mga-form-modal.html',
   styleUrl: './mga-form-modal.scss',
 })
 export class MgaFormModal implements OnChanges {
   private mgaForm = inject(MgaForm);
+  private zipLookup = inject(ZipLookupService);
 
   @Input() open = false;
   @Input() title = '';
@@ -63,6 +66,15 @@ export class MgaFormModal implements OnChanges {
 
   setStateValue(value: unknown): void {
     this.form.controls.state.setValue(value == null ? '' : String(value));
+  }
+
+  onZipBlur(): void {
+    if (this.isViewMode) return;
+    this.zipLookup.lookup(this.form.controls.zip.value).subscribe(result => {
+      if (!result) return;
+      this.form.controls.city.setValue(result.city);
+      this.form.controls.state.setValue(result.state);
+    });
   }
 
   updateOtherNameState(index: number, value: unknown): void {

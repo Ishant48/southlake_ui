@@ -10,6 +10,7 @@ import { MastersGrid } from '../masters-grid/masters-grid';
 import { ConfirmDialogComponent } from '../../../../shared/components/confirm-dialog/confirm-dialog.component';
 import { DocumentDrawer, DrawerDocument } from '../document-drawer/document-drawer';
 import { MgaFormModal } from '../mga-form-modal/mga-form-modal';
+import { MgaUsersPanel } from '../mga-users-panel/mga-users-panel';
 import { MgasState } from '../../services/mgas-state';
 import { DocumentsDrawerState } from '../../services/documents-drawer-state';
 import { StatesApi } from '../../services/states-api';
@@ -33,6 +34,7 @@ import { StatusBadgeCell } from '../../../../shared/components/grid-renderers/st
     FormsModule,
     MastersGrid,
     MgaFormModal,
+    MgaUsersPanel,
     DocumentDrawer,
     ConfirmDialogComponent,
   ],
@@ -75,6 +77,9 @@ export class MgasTab implements OnInit {
   confirmTitle = '';
   confirmMessage = '';
   pendingAction: (() => void) | null = null;
+
+  showUsersPanel = false;
+  selectedMgaForUsers: MgaMaster | null = null;
 
   ngOnInit(): void {
     this.load();
@@ -209,6 +214,11 @@ export class MgasTab implements OnInit {
   // via a shared state service, which TreatiesTab reads on init to pre-fill
   // the Add Treaty modal (no query param mutation, so sidebar/tab-bar active
   // state stays in sync).
+  openMgaUsers(mga: MgaMaster): void {
+    this.selectedMgaForUsers = mga;
+    this.showUsersPanel = true;
+  }
+
   openTreatyAdd(mgaId: string): void {
     this.treatyQuickAddState.pendingMgaId = mgaId;
     this.router.navigate([], {

@@ -2,9 +2,15 @@ import { HttpInterceptorFn } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { catchError, throwError } from 'rxjs';
 import { AuthService } from '../services/auth.service';
+import { environment } from '../../../environments/environment';
 
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const auth = inject(AuthService);
+
+  // Never attach our auth/session headers to third-party requests (e.g. the zip lookup API).
+  if (!req.url.startsWith(environment.apiUrl)) {
+    return next(req);
+  }
 
   const publicAuthPaths = [
     '/auth/login',

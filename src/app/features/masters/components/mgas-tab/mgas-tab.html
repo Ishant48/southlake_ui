@@ -107,3 +107,9 @@
   (confirmed)="onConfirm()"
   (cancelled)="onCancelConfirm()"
 />
+
+<app-mga-users-panel
+  [open]="showUsersPanel"
+  [mga]="selectedMgaForUsers"
+  (closed)="showUsersPanel = false"
+></app-mga-users-panel>
