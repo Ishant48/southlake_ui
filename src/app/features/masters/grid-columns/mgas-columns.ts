@@ -14,8 +14,10 @@ export function buildMgasColumnDefs(ctx: MgasTab, statusCol: ColDef): ColDef[] {
       cellRenderer: ActionButtonsCell,
       cellRendererParams: {
         buttons: [
-          { label: 'Add Treaties', action: 'addTreaty' },
-          { label: 'Document', action: 'doc' },
+          { label: 'Treaty', action: 'addTreaty' },
+          { label: 'Ledgers', action: 'ledgers' },
+          { label: 'Invoices', action: 'invoices' },
+          { label: 'Documents', action: 'doc' },
           { label: 'Users', action: 'users' },
           { label: 'Edit', action: 'edit' },
           { label: 'View MGA', action: 'view' },
@@ -31,9 +33,9 @@ export function buildMgasColumnDefs(ctx: MgasTab, statusCol: ColDef): ColDef[] {
         },
       },
       flex: 0,
-      width: 380,
-      minWidth: 380,
-      maxWidth: 380,
+      width: 510,
+      minWidth: 510,
+      maxWidth: 510,
     },
   ];
 }
