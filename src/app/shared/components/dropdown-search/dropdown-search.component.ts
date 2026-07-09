@@ -7,6 +7,7 @@ import {
   HostListener,
   OnInit,
   OnChanges,
+  OnDestroy,
   SimpleChanges,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
@@ -20,7 +21,7 @@ import { FormsModule } from '@angular/forms';
   styleUrl: './dropdown-search.component.scss',
 })
 export class DropdownSearchComponent<T extends object = Record<string, unknown>>
-  implements OnInit, OnChanges
+  implements OnInit, OnChanges, OnDestroy
 {
   @Input() items: T[] = [];
   @Input() isMultiSelect: boolean = false;
@@ -39,11 +40,31 @@ export class DropdownSearchComponent<T extends object = Record<string, unknown>>
   isOpen = false;
   searchText = '';
   filteredItems: T[] = [];
+  panelStyle: { top: string; left: string; width: string } = {
+    top: '0px',
+    left: '0px',
+    width: '0px',
+  };
+
+  // Scroll events don't bubble, so a scrollable ancestor (e.g. a tall modal body with
+  // overflow-y: auto) never reaches a bubble-phase listener on document. Capture-phase
+  // catches it regardless of where in the DOM the scroll originated.
+  private readonly onScrollCapture = (event: Event): void => {
+    if (!this.isOpen) return;
+    const panel = this.elementRef.nativeElement.querySelector('.dropdown-search-panel');
+    if (panel?.contains(event.target as Node)) return;
+    this.isOpen = false;
+  };
 
   constructor(private elementRef: ElementRef) {}
 
   ngOnInit() {
     this.filterItems();
+    document.addEventListener('scroll', this.onScrollCapture, true);
+  }
+
+  ngOnDestroy() {
+    document.removeEventListener('scroll', this.onScrollCapture, true);
   }
 
   ngOnChanges(changes: SimpleChanges) {
@@ -52,12 +73,31 @@ export class DropdownSearchComponent<T extends object = Record<string, unknown>>
     }
   }
 
+  // Panel is position:fixed and positioned from the trigger's viewport rect so it
+  // isn't clipped by a scrollable ancestor.
+  @HostListener('window:resize')
+  onWindowResize(): void {
+    if (this.isOpen) this.isOpen = false;
+  }
+
+  private updatePanelPosition(): void {
+    const trigger = this.elementRef.nativeElement.querySelector('.dropdown-search-trigger');
+    if (!trigger) return;
+    const rect = trigger.getBoundingClientRect();
+    this.panelStyle = {
+      top: `${rect.bottom + 4}px`,
+      left: `${rect.left}px`,
+      width: `${rect.width}px`,
+    };
+  }
+
   toggleDropdown() {
     if (this.disabled) return;
     this.isOpen = !this.isOpen;
     if (this.isOpen) {
       this.searchText = '';
       this.filterItems();
+      this.updatePanelPosition();
       // Focus the search input after small timeout
       setTimeout(() => {
         const input = this.elementRef.nativeElement.querySelector('.dropdown-search-input');

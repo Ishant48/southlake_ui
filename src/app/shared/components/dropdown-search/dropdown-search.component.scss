@@ -61,10 +61,10 @@
 }
 
 .dropdown-search-panel {
-  position: absolute;
-  top: calc(100% + 4px);
-  left: 0;
-  width: 100%;
+  // top/left/width are set inline via [ngStyle]="panelStyle", computed from the
+  // trigger's viewport rect. position: fixed (not absolute) so the panel escapes
+  // any scrollable ancestor's overflow clipping (e.g. a tall modal body).
+  position: fixed;
   background-color: #ffffff;
   border: 1.5px solid #e2e8f0;
   border-radius: 6px;

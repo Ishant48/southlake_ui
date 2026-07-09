@@ -19,7 +19,7 @@
   </div>
 
   <!-- Dropdown Content Panel -->
-  <div class="dropdown-search-panel" *ngIf="isOpen">
+  <div class="dropdown-search-panel" *ngIf="isOpen" [ngStyle]="panelStyle">
     <!-- Search Input Area -->
     <div class="dropdown-search-header">
       <input

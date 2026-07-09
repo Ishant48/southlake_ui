@@ -167,13 +167,50 @@
           </div>
         }
 
-        @if (form.controls.carriers.value.length > 0) {
-          @for (carrier of form.controls.carriers.value; track carrier.risk_company_id) {
-            <div class="empty-reinsurer-hint">
-              {{ carrierName(carrier.risk_company_id) }} — {{ computedCarrierRetentionPct }}% Quota Share
+        @for (carrier of form.controls.carriers.value; track carrier.risk_company_id; let ci = $index) {
+          <div class="form-row reinsurer-row">
+            <div class="form-field flex-2">
+              @if (ci === 0) {
+                <span class="form-label">Carrier</span>
+              }
+              <div class="form-input carrier-name-display">{{ carrierName(carrier.risk_company_id) }}</div>
             </div>
-          }
+            <div class="form-field flex-1">
+              @if (ci === 0) {
+                <label for="tr-carrier-retention-pct-{{ ci }}" class="form-label">Quota Share %</label>
+              }
+              <input
+                id="tr-carrier-retention-pct-{{ ci }}"
+                [value]="carrier.retention_pct"
+                (input)="updateCarrierRetentionPct(ci, $event)"
+                type="number"
+                step="0.01"
+                class="form-input"
+                placeholder="0.00"
+              />
+            </div>
+            <div class="remove-reinsurer-btn-wrap">
+              <button
+                type="button"
+                class="btn btn-danger remove-reinsurer-btn"
+                (click)="removeCarrierRow(ci)"
+                aria-label="Remove carrier row"
+              >
+                ✕
+              </button>
+            </div>
+          </div>
         }
+        @if (form.controls.carriers.value.length === 0) {
+          <div class="empty-reinsurer-hint">No carriers selected yet.</div>
+        }
+
+        <div class="empty-reinsurer-hint" [class.total-pct-warning]="combinedTotalPct !== 100">
+          Total Quota Share: {{ combinedTotalPct }}%
+          @if (combinedTotalPct !== 100) {
+            (must equal 100%)
+          }
+        </div>
 
         <div class="form-row">
           <div class="form-field">

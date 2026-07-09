@@ -67,6 +67,20 @@
   font-size: 12px;
   margin-bottom: 12px;
   font-style: italic;
+
+  &.total-pct-warning {
+    color: var(--red);
+    font-weight: 600;
+    font-style: normal;
+  }
+}
+
+.carrier-name-display {
+  display: flex;
+  align-items: center;
+  background: var(--gray-100);
+  color: var(--gray-700);
+  cursor: default;
 }
 
 .field-block {

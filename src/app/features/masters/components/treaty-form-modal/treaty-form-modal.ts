@@ -20,6 +20,7 @@ import {
   SimpleMasterRecord,
   TreatyTypeMaster,
   TreatyReinsurer,
+  TreatyCarrier,
 } from '../../models/master.model';
 import { TreatyForm, TreatyFormModel } from '../../forms/treaty-form';
 import {
@@ -134,14 +135,6 @@ export class TreatyFormModal implements OnChanges {
     }
   }
 
-  get computedCarrierRetentionPct(): number {
-    const sum = this.form.controls.reinsurers.value.reduce(
-      (acc, r) => acc + (r.cession_pct || 0),
-      0,
-    );
-    return Math.max(0, 100 - sum);
-  }
-
   get selectedCarrierIds(): string[] {
     return this.form.controls.carriers.value.map(c => c.risk_company_id);
   }
@@ -154,6 +147,18 @@ export class TreatyFormModal implements OnChanges {
     return map;
   }
 
+  get combinedTotalPct(): number {
+    const carrierSum = this.form.controls.carriers.value.reduce(
+      (acc, c) => acc + (c.retention_pct ?? 0),
+      0,
+    );
+    const reinsurerSum = this.form.controls.reinsurers.value.reduce(
+      (acc, r) => acc + (r.cession_pct ?? 0),
+      0,
+    );
+    return Number((carrierSum + reinsurerSum).toFixed(2));
+  }
+
   onCarrierSelectedValuesChange(values: TreatySelectionMap): void {
     const ids = Object.keys(values).filter(id => values[id]);
     this.updateSelectedCarriers(ids);
@@ -163,14 +168,21 @@ export class TreatyFormModal implements OnChanges {
     const ids = Array.isArray(selectedIds)
       ? selectedIds.filter((id): id is string => id != null).map(id => String(id))
       : [];
-    const pct = this.computedCarrierRetentionPct;
-    const updated = ids.map(id => ({
-      risk_company_id: id,
-      retention_pct: pct,
-      state_id: null,
-      broker_id: null,
-    }));
-    this.form.controls.carriers.setValue(updated);
+    const prevByCarrierId = new Map(
+      this.form.controls.carriers.value.map(c => [c.risk_company_id, c]),
+    );
+    const carriers = ids.map(
+      id =>
+        prevByCarrierId.get(id) ?? {
+          risk_company_id: id,
+          retention_pct: 0,
+          state_id: null,
+          broker_id: null,
+        },
+    );
+    const reinsurers = this.form.controls.reinsurers.value;
+    const shares = this.rescaleToHundred(this.combinedShares(reinsurers, carriers));
+    this.applyCombinedShares(reinsurers, carriers, shares);
   }
 
   carrierName(riskCompanyId: string): string {
@@ -178,12 +190,48 @@ export class TreatyFormModal implements OnChanges {
     return match ? this.riskCompanyLabelFn(match) : riskCompanyId;
   }
 
-  private applyComputedCarrierRetention(): void {
+  updateCarrierRetentionPct(index: number, event: Event): void {
+    let value = Number((event.target as HTMLInputElement).value);
+    value = Math.max(0, Math.min(100, value));
+    value = Number(value.toFixed(2));
+
+    const reinsurers = this.form.controls.reinsurers.value;
     const carriers = this.form.controls.carriers.value;
-    if (carriers.length === 0) return;
-    const pct = this.computedCarrierRetentionPct;
-    const updated = carriers.map(carrier => ({ ...carrier, retention_pct: pct }));
-    this.form.controls.carriers.setValue(updated);
+    const combinedIndex = reinsurers.length + index;
+    const shares = this.rebalanceShares(
+      this.combinedShares(reinsurers, carriers),
+      combinedIndex,
+      value,
+    );
+    this.applyCombinedShares(reinsurers, carriers, shares);
+  }
+
+  removeCarrierRow(index: number): void {
+    const carriers = this.form.controls.carriers.value.filter((_, i) => i !== index);
+    const reinsurers = this.form.controls.reinsurers.value;
+    const shares = this.rescaleToHundred(this.combinedShares(reinsurers, carriers));
+    this.applyCombinedShares(reinsurers, carriers, shares);
+  }
+
+  // Combines reinsurer cession % and carrier retention % into one ordered list (reinsurers
+  // first, then carriers) so both kinds of rows can be rebalanced against a single 100% total.
+  private combinedShares(reinsurers: TreatyReinsurer[], carriers: TreatyCarrier[]): number[] {
+    return [...reinsurers.map(r => r.cession_pct ?? 0), ...carriers.map(c => c.retention_pct ?? 0)];
+  }
+
+  private applyCombinedShares(
+    reinsurers: TreatyReinsurer[],
+    carriers: TreatyCarrier[],
+    shares: number[],
+  ): void {
+    const newReinsurerPcts = shares.slice(0, reinsurers.length);
+    const newCarrierPcts = shares.slice(reinsurers.length);
+    this.form.controls.reinsurers.setValue(
+      reinsurers.map((r, i) => ({ ...r, cession_pct: newReinsurerPcts[i] })),
+    );
+    this.form.controls.carriers.setValue(
+      carriers.map((c, i) => ({ ...c, retention_pct: newCarrierPcts[i] })),
+    );
   }
 
   updateReinsurerReinsurerId(index: number, value: unknown): void {
@@ -223,24 +271,23 @@ export class TreatyFormModal implements OnChanges {
     value = Math.max(0, Math.min(100, value));
     value = Number(value.toFixed(2));
 
-    const rows = this.form.controls.reinsurers.value;
-    const updated = this.autoBalanceReinsurers(rows, index, value);
-    this.form.controls.reinsurers.setValue(updated);
-    this.applyComputedCarrierRetention();
+    const reinsurers = this.form.controls.reinsurers.value;
+    const carriers = this.form.controls.carriers.value;
+    const shares = this.rebalanceShares(this.combinedShares(reinsurers, carriers), index, value);
+    this.applyCombinedShares(reinsurers, carriers, shares);
   }
 
-  private autoBalanceReinsurers(
-    rows: TreatyReinsurer[],
-    editedIndex: number,
-    newValue: number,
-  ): TreatyReinsurer[] {
-    const n = rows.length;
+  /** Sets shares[editedIndex] to newValue and pushes the difference onto subsequent shares
+   * (preceding shares are left untouched), except when the edited share is the last one, in
+   * which case every other share is rebalanced proportionally. Keeps the combined total at 100. */
+  private rebalanceShares(shares: number[], editedIndex: number, newValue: number): number[] {
+    const n = shares.length;
     if (n <= 1) {
-      return rows.map((row, i) => (i === editedIndex ? { ...row, cession_pct: newValue } : row));
+      return shares.map((v, i) => (i === editedIndex ? newValue : v));
     }
 
-    const updatedRows = [...rows];
-    updatedRows[editedIndex] = { ...rows[editedIndex], cession_pct: newValue };
+    const updated = [...shares];
+    updated[editedIndex] = newValue;
 
     const isLast = editedIndex === n - 1;
     const otherIndices = isLast
@@ -249,82 +296,67 @@ export class TreatyFormModal implements OnChanges {
 
     const precedingSum = isLast
       ? 0
-      : rows.slice(0, editedIndex).reduce((acc, r) => acc + (r.cession_pct || 0), 0);
+      : shares.slice(0, editedIndex).reduce((acc, v) => acc + (v || 0), 0);
 
     const targetOtherSum = 100 - precedingSum - newValue;
-    const currentOtherSum = otherIndices.reduce(
-      (acc, idx) => acc + (rows[idx].cession_pct || 0),
-      0,
-    );
+    const currentOtherSum = otherIndices.reduce((acc, idx) => acc + (shares[idx] || 0), 0);
 
     let distributedSum = 0;
-    if (currentOtherSum > 0) {
-      otherIndices.forEach((idx, i) => {
-        const row = rows[idx];
-        let share = 0;
-        if (i === otherIndices.length - 1) {
-          share = targetOtherSum - distributedSum;
-        } else {
-          share = Number((((row.cession_pct || 0) / currentOtherSum) * targetOtherSum).toFixed(2));
-          distributedSum += share;
-        }
-        updatedRows[idx] = { ...row, cession_pct: Math.max(0, Number(share.toFixed(2))) };
-      });
-    } else {
-      otherIndices.forEach((idx, i) => {
-        const row = rows[idx];
-        let share = 0;
-        if (i === otherIndices.length - 1) {
-          share = targetOtherSum - distributedSum;
-        } else {
-          share = Number((targetOtherSum / otherIndices.length).toFixed(2));
-          distributedSum += share;
-        }
-        updatedRows[idx] = { ...row, cession_pct: Math.max(0, Number(share.toFixed(2))) };
-      });
-    }
+    otherIndices.forEach((idx, i) => {
+      let share: number;
+      if (i === otherIndices.length - 1) {
+        share = targetOtherSum - distributedSum;
+      } else if (currentOtherSum > 0) {
+        share = Number((((shares[idx] || 0) / currentOtherSum) * targetOtherSum).toFixed(2));
+        distributedSum += share;
+      } else {
+        share = Number((targetOtherSum / otherIndices.length).toFixed(2));
+        distributedSum += share;
+      }
+      updated[idx] = Math.max(0, Number(share.toFixed(2)));
+    });
 
-    return updatedRows;
+    return updated;
+  }
+
+  /** Proportionally rescales all shares (or splits evenly if they're all currently 0) so
+   * they sum to exactly 100 — used after adding/removing a row or changing carrier selection. */
+  private rescaleToHundred(shares: number[]): number[] {
+    const n = shares.length;
+    if (n === 0) return shares;
+
+    const total = shares.reduce((acc, v) => acc + (v || 0), 0);
+    const raw = total > 0 ? shares.map(v => ((v || 0) / total) * 100) : shares.map(() => 100 / n);
+
+    let distributed = 0;
+    return raw.map((v, i) => {
+      if (i === n - 1) return Math.max(0, Number((100 - distributed).toFixed(2)));
+      const rounded = Math.max(0, Number(v.toFixed(2)));
+      distributed += rounded;
+      return rounded;
+    });
   }
 
   addReinsurerRow(): void {
-    const rows = this.form.controls.reinsurers.value;
-    if (rows.length === 0) {
-      this.form.controls.reinsurers.setValue([
-        {
-          reinsurer_id: '',
-          cession_pct: 100,
-          state_id: null,
-          state_ids: [],
-          broker_id: null,
-          broker_comm_type: null,
-        },
-      ]);
-      this.applyComputedCarrierRetention();
-      return;
-    }
-
-    const sum = rows.reduce((acc, r) => acc + (r.cession_pct || 0), 0);
-    const remaining = Math.max(0, 100 - sum);
-
-    this.form.controls.reinsurers.setValue([
-      ...rows,
-      {
-        reinsurer_id: '',
-        cession_pct: Number(remaining.toFixed(2)),
-        state_id: null,
-        state_ids: [],
-        broker_id: null,
-        broker_comm_type: null,
-      },
-    ]);
-    this.applyComputedCarrierRetention();
+    const carriers = this.form.controls.carriers.value;
+    const newRow: TreatyReinsurer = {
+      reinsurer_id: '',
+      cession_pct: 0,
+      state_id: null,
+      state_ids: [],
+      broker_id: null,
+      broker_comm_type: null,
+    };
+    const reinsurers = [...this.form.controls.reinsurers.value, newRow];
+    const shares = this.rescaleToHundred(this.combinedShares(reinsurers, carriers));
+    this.applyCombinedShares(reinsurers, carriers, shares);
   }
 
   removeReinsurerRow(index: number): void {
-    const rows = this.form.controls.reinsurers.value;
-    this.form.controls.reinsurers.setValue(rows.filter((_, i) => i !== index));
-    this.applyComputedCarrierRetention();
+    const reinsurers = this.form.controls.reinsurers.value.filter((_, i) => i !== index);
+    const carriers = this.form.controls.carriers.value;
+    const shares = this.rescaleToHundred(this.combinedShares(reinsurers, carriers));
+    this.applyCombinedShares(reinsurers, carriers, shares);
   }
 
   close(): void {

@@ -80,6 +80,85 @@ describe('TreatyFormModal', () => {
     expect(component.formSelectedStates).not.toBe(selectedStates);
   });
 
+  it('selecting carriers via the multi-select splits the remaining quota share evenly', () => {
+    component.model = { ...createBlankTreatyForm(), carriers: [], reinsurers: [] };
+    component.ngOnChanges({
+      model: {
+        currentValue: component.model,
+        previousValue: undefined,
+        firstChange: true,
+        isFirstChange: () => true,
+      },
+    });
+
+    component.updateSelectedCarriers(['rc-1', 'rc-2']);
+
+    expect(component.form.controls.carriers.value).toEqual([
+      { risk_company_id: 'rc-1', retention_pct: 50, state_id: null, broker_id: null },
+      { risk_company_id: 'rc-2', retention_pct: 50, state_id: null, broker_id: null },
+    ]);
+    expect(component.combinedTotalPct).toBe(100);
+  });
+
+  it('editing a carrier retention % rebalances the other carriers/reinsurers to keep the total at 100', () => {
+    component.model = {
+      ...createBlankTreatyForm(),
+      carriers: [
+        { risk_company_id: 'rc-1', retention_pct: 50, state_id: null, broker_id: null },
+        { risk_company_id: 'rc-2', retention_pct: 50, state_id: null, broker_id: null },
+      ],
+      reinsurers: [],
+    };
+    component.ngOnChanges({
+      model: {
+        currentValue: component.model,
+        previousValue: undefined,
+        firstChange: true,
+        isFirstChange: () => true,
+      },
+    });
+
+    component.updateCarrierRetentionPct(0, { target: { value: '70' } } as unknown as Event);
+
+    expect(component.form.controls.carriers.value).toEqual([
+      { risk_company_id: 'rc-1', retention_pct: 70, state_id: null, broker_id: null },
+      { risk_company_id: 'rc-2', retention_pct: 30, state_id: null, broker_id: null },
+    ]);
+    expect(component.combinedTotalPct).toBe(100);
+  });
+
+  it('removing a carrier rescales the remaining carriers/reinsurers back to a 100 total', () => {
+    component.model = {
+      ...createBlankTreatyForm(),
+      carriers: [
+        { risk_company_id: 'rc-1', retention_pct: 30, state_id: null, broker_id: null },
+        { risk_company_id: 'rc-2', retention_pct: 30, state_id: null, broker_id: null },
+      ],
+      reinsurers: [
+        {
+          reinsurer_id: 're-1',
+          cession_pct: 40,
+          state_id: null,
+          broker_id: null,
+          broker_comm_type: null,
+        },
+      ],
+    };
+    component.ngOnChanges({
+      model: {
+        currentValue: component.model,
+        previousValue: undefined,
+        firstChange: true,
+        isFirstChange: () => true,
+      },
+    });
+
+    component.removeCarrierRow(1);
+
+    expect(component.form.controls.carriers.value.length).toBe(1);
+    expect(component.combinedTotalPct).toBe(100);
+  });
+
   it('adds and removes reinsurer rows', () => {
     component.model = { ...createBlankTreatyForm(), reinsurers: [] };
     component.ngOnChanges({
