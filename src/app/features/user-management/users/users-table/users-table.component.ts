@@ -131,9 +131,9 @@ export class UsersTableComponent implements OnInit {
       {
         headerName: 'ACTIONS',
         flex: 0,
-        width: 200,
-        minWidth: 200,
-        maxWidth: 200,
+        width: 320,
+        minWidth: 320,
+        maxWidth: 320,
         sortable: false,
         cellRenderer: ActionButtonsCell,
         cellRendererParams: {
