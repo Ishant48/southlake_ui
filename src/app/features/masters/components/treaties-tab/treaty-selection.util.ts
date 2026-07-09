@@ -33,6 +33,9 @@ export function buildBlankTreatyForm(mgaId?: string): TreatyEditState {
       carrier_retention_pct: 100,
       reinsurer_cession_pct: 0,
       is_active: true,
+      is_continuous: false,
+      policy_state_connector: false,
+      claim_state_connector: false,
       state_ids: [],
       lobs: [],
       carriers: [{ risk_company_id: '', retention_pct: 100 }],
@@ -47,12 +50,10 @@ export function buildBlankTreatyForm(mgaId?: string): TreatyEditState {
 export function buildTreatyEditState(treaty: Treaty): TreatyEditState {
   let carriers: TreatyCarrier[] = [];
   if (treaty.treaty_carriers && treaty.treaty_carriers.length > 0) {
-    carriers = [
-      {
-        risk_company_id: treaty.treaty_carriers[0].risk_company_id,
-        retention_pct: treaty.treaty_carriers[0].retention_pct,
-      },
-    ];
+    carriers = treaty.treaty_carriers.map(tc => ({
+      risk_company_id: tc.risk_company_id,
+      retention_pct: tc.retention_pct,
+    }));
   } else if (treaty.risk_company_id) {
     carriers = [
       {
@@ -114,10 +115,14 @@ export function buildTreatyEditState(treaty: Treaty): TreatyEditState {
     carrier_retention_pct: treaty.carrier_retention_pct,
     reinsurer_cession_pct: treaty.reinsurer_cession_pct,
     is_active: treaty.is_active,
+    is_continuous: treaty.is_continuous ?? false,
+    policy_state_connector: treaty.policy_state_connector ?? false,
+    claim_state_connector: treaty.claim_state_connector ?? false,
     state_ids: [],
     lobs: [],
     carriers,
     reinsurers,
+    products: treaty.products ?? [],
   };
 
   const selectedStates: TreatySelectionMap = {};

@@ -12,7 +12,7 @@ export function buildTreatiesExportData(
   display: TreatyDisplayHelpers,
 ): MastersExportData {
   return {
-    headers: ['Code', 'Treaty Name', 'MGA', 'Risk Company', 'States', 'LOBs (COBs)', 'Status'],
+    headers: ['Code', 'Treaty Name', 'MGA', 'Carrier', 'States', 'LOBs (COBs)', 'Status'],
     rows: treaties.map(t => [
       t.treaty_code,
       t.name,

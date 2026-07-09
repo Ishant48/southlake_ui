@@ -108,7 +108,7 @@ export class RiskCompaniesTab implements OnInit {
         this.cdr.markForCheck();
       },
       error: () => {
-        this.toast.error('Failed to load Risk Companies');
+        this.toast.error('Failed to load Carriers');
         this.loading = false;
         this.cdr.markForCheck();
       },
@@ -127,7 +127,7 @@ export class RiskCompaniesTab implements OnInit {
   openRiskCompanyAdd(): void {
     this.isEditMode = false;
     this.isViewMode = false;
-    this.modalTitle = 'Add Risk Company';
+    this.modalTitle = 'Add Carrier';
     this.form = createBlankRiskCompanyForm();
     this.showModal = true;
     this.cdr.detectChanges();
@@ -136,7 +136,7 @@ export class RiskCompaniesTab implements OnInit {
   openRiskCompanyEdit(rc: RiskCompany): void {
     this.isEditMode = true;
     this.isViewMode = false;
-    this.modalTitle = `Edit Risk Company: ${rc.name}`;
+    this.modalTitle = `Edit Carrier: ${rc.name}`;
     this.form = mapRiskCompanyToFormValue(rc);
     this.showModal = true;
   }
@@ -160,14 +160,14 @@ export class RiskCompaniesTab implements OnInit {
 
     this.riskCompaniesState.save(this.isEditMode, this.form.id, payload).subscribe({
       next: () => {
-        this.toast.success('Risk Company saved successfully');
+        this.toast.success('Carrier saved successfully');
         this.showModal = false;
         this.submitting = false;
         this.load();
       },
       error: (err: HttpErrorLike) => {
         // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- '' should also fall back to the default message
-        this.toast.error(err.error?.message || 'Failed to save risk company');
+        this.toast.error(err.error?.message || 'Failed to save carrier');
         this.submitting = false;
         this.cdr.markForCheck();
       },
@@ -175,17 +175,17 @@ export class RiskCompaniesTab implements OnInit {
   }
 
   deleteRiskCompany(rc: RiskCompany): void {
-    this.confirmTitle = 'Delete Risk Company';
-    this.confirmMessage = `Are you sure you want to delete risk company "${rc.name}"? This action cannot be undone.`;
+    this.confirmTitle = 'Delete Carrier';
+    this.confirmMessage = `Are you sure you want to delete carrier "${rc.name}"? This action cannot be undone.`;
     this.pendingAction = () => {
       this.riskCompaniesState.delete(rc.id).subscribe({
         next: () => {
-          this.toast.success('Risk Company deleted successfully');
+          this.toast.success('Carrier deleted successfully');
           this.load();
         },
         error: (err: HttpErrorLike) => {
           // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- '' should also fall back to the default message
-          this.toast.error(err.error?.message || 'Failed to delete risk company');
+          this.toast.error(err.error?.message || 'Failed to delete carrier');
         },
       });
     };
@@ -195,7 +195,7 @@ export class RiskCompaniesTab implements OnInit {
   viewPolicy(rc: RiskCompany): void {
     this.isEditMode = false;
     this.isViewMode = true;
-    this.modalTitle = `View Risk Company: ${rc.name}`;
+    this.modalTitle = `View Carrier: ${rc.name}`;
     this.form = mapRiskCompanyToFormValue(rc);
     this.showModal = true;
   }

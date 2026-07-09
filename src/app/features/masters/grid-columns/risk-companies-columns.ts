@@ -38,8 +38,7 @@ export function buildRiskCompaniesColumnDefs(ctx: RiskCompaniesTab): ColDef[] {
         ],
         onClick: (action: string, data: RiskCompany) => {
           if (action === 'doc') ctx.openDocModal(DocumentMode.RiskCompany, data);
-          if (action === 'notes')
-            ctx.openNotesModal('Risk Company Notes: ' + data.name, data.notes);
+          if (action === 'notes') ctx.openNotesModal('Carrier Notes: ' + data.name, data.notes);
           if (action === 'policy') ctx.viewPolicy(data);
           if (action === 'edit') ctx.openRiskCompanyEdit(data);
           if (action === 'delete') ctx.deleteRiskCompany(data);
