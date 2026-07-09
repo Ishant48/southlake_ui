@@ -583,4 +583,13 @@ New dependencies may have been added by another developer.
 
 ---
 
-*Last updated: June 2026*
+---
+
+## Documentation
+
+| File | Description |
+|------|-------------|
+| [`docs/view-modal-data-flow-analysis.pdf`](./docs/view-modal-data-flow-analysis.pdf) | Complete data flow trace of the View modal feature across all 11 Masters entities (15-page PDF) |
+| [`docs/view-modal-data-flow-analysis.md`](./docs/view-modal-data-flow-analysis.md) | Same analysis in Markdown format |
+
+*Last updated: July 2026*
