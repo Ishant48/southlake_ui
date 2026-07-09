@@ -51,25 +51,23 @@
         </div>
 
         <h4 class="section-heading">
-          <span>Carrier Company (Risk Company)</span>
+          <span>Carrier Company</span>
         </h4>
 
-        @if (form.controls.carriers.value[0]) {
-          <div class="form-row carrier-row">
-            <div class="form-field flex-1">
-              <span class="form-label">Carrier Company *</span>
-              <app-dropdown-search
-                [items]="riskCompanyOptions"
-                [isMultiSelect]="false"
-                bindValue="id"
-                placeholder="Select Carrier"
-                [itemLabelFn]="riskCompanyLabelFn"
-                [selectedValue]="form.controls.carriers.value[0].risk_company_id"
-                (selectedValueChange)="updateCarrierRiskCompanyId($event)"
-              ></app-dropdown-search>
-            </div>
+        <div class="form-row carrier-row">
+          <div class="form-field flex-1">
+            <span class="form-label">Carrier Company *</span>
+            <app-dropdown-search
+              [items]="riskCompanyOptions"
+              [isMultiSelect]="true"
+              bindValue="id"
+              placeholder="Select Carrier(s)"
+              [itemLabelFn]="riskCompanyLabelFn"
+              [selectedValues]="selectedCarrierValuesMap"
+              (selectedValuesChange)="onCarrierSelectedValuesChange($event)"
+            ></app-dropdown-search>
           </div>
-        }
+        </div>
 
         <h4 class="section-heading section-heading-with-action">
           <span>Reinsurer Companies & Quota Share %</span>
@@ -82,13 +80,13 @@
           <div class="form-row reinsurer-row">
             <div class="form-field flex-2">
               @if (i === 0) {
-                <span class="form-label">Reinsurer / Risk Company</span>
+                <span class="form-label">Reinsurer / Carrier</span>
               }
               <app-dropdown-search
                 [items]="combinedReinsurerAndRiskCompanyOptions"
                 [isMultiSelect]="false"
                 bindValue="id"
-                placeholder="Select Reinsurer / Risk Company"
+                placeholder="Select Reinsurer / Carrier"
                 [itemLabelFn]="reinsurerOrRiskCompanyLabelFn"
                 [selectedValue]="reinsurer.reinsurer_id"
                 (selectedValueChange)="updateReinsurerReinsurerId(i, $event)"
@@ -169,19 +167,13 @@
           </div>
         }
 
-        <h4 class="section-heading">Authorized MGA Underwriter *</h4>
-        <div class="field-block">
-          <app-dropdown-search
-            [items]="mgaOptions"
-            [isMultiSelect]="false"
-            bindValue="id"
-            placeholder="Select MGA Underwriter"
-            [itemLabelFn]="mgaLabelFn"
-            [selectedValue]="form.controls.mga_id.value"
-            (selectedValueChange)="form.controls.mga_id.setValue($any($event))"
-            [disabled]="isEditMode || !!form.controls.mga_id.value"
-          ></app-dropdown-search>
-        </div>
+        @if (form.controls.carriers.value.length > 0) {
+          @for (carrier of form.controls.carriers.value; track carrier.risk_company_id) {
+            <div class="empty-reinsurer-hint">
+              {{ carrierName(carrier.risk_company_id) }} — {{ computedCarrierRetentionPct }}% Quota Share
+            </div>
+          }
+        }
 
         <div class="form-row">
           <div class="form-field">
@@ -189,11 +181,19 @@
             <input id="tr-effdate" formControlName="effective_date" type="date" class="form-input" />
           </div>
           <div class="form-field">
-            <label for="tr-expdate" class="form-label">
-              Expiration Date
-              <span class="continuous-hint">(Continuous)</span>
-            </label>
+            <label for="tr-expdate" class="form-label">Expiration Date</label>
             <input id="tr-expdate" formControlName="expiration_date" type="date" class="form-input" />
+          </div>
+          <div class="form-field">
+            <div class="form-checkbox-field">
+              <input
+                formControlName="is_continuous"
+                type="checkbox"
+                id="trIsContinuous"
+                (change)="onContinuousChange($any($event.target).checked)"
+              />
+              <label for="trIsContinuous" class="checkbox-label">Continuous</label>
+            </div>
           </div>
         </div>
 
@@ -220,6 +220,12 @@
             />
           </div>
           <div class="form-field">
+            <div class="form-checkbox-field">
+              <input formControlName="policy_state_connector" type="checkbox" id="trPolicyStateConnector" />
+              <label for="trPolicyStateConnector" class="checkbox-label">State Connector</label>
+            </div>
+          </div>
+          <div class="form-field">
             <label for="tr-claimseqprefix" class="form-label">Claim Seq Prefix</label>
             <input
               id="tr-claimseqprefix"
@@ -238,6 +244,12 @@
               class="form-input"
               placeholder="1"
             />
+          </div>
+          <div class="form-field">
+            <div class="form-checkbox-field">
+              <input formControlName="claim_state_connector" type="checkbox" id="trClaimStateConnector" />
+              <label for="trClaimStateConnector" class="checkbox-label">State Connector</label>
+            </div>
           </div>
         </div>
 
@@ -399,36 +411,42 @@
           ></app-dropdown-search>
         </div>
 
-        <h4 class="section-heading">Authorized Product</h4>
+        <h4 class="section-heading">Authorized LOBs</h4>
         <div class="field-block">
           <app-dropdown-search
-            [items]="productOptions"
-            [isMultiSelect]="false"
+            [items]="lobOptions"
+            [isMultiSelect]="true"
             bindValue="id"
-            placeholder="Select Product"
-            [itemLabelFn]="productLabelFn"
-            [selectedValue]="selectedProductId"
-            (selectedValueChange)="onProductChange($event)"
+            placeholder="Select LOBs"
+            [itemLabelFn]="lobLabelFn"
+            [(selectedValues)]="formSelectedLobs"
           ></app-dropdown-search>
         </div>
 
-        <div class="form-row" style="margin-top: 15px;">
-          <div class="form-field">
-            <span class="form-label">Authorized Lines of Business (LOBs) - from Product</span>
-            <div class="form-input" style="height: auto; min-height: 38px; line-height: 1.5; padding: 8px 12px; background: var(--gray-50); border: 1.5px solid var(--gray-200); color: var(--gray-700);">
-              {{ getSelectedProductLobs() }}
-            </div>
-          </div>
+        <h4 class="section-heading">Authorized COBs</h4>
+        <div class="field-block">
+          <app-dropdown-search
+            [items]="cobOptions"
+            [isMultiSelect]="true"
+            bindValue="id"
+            placeholder="Select COBs"
+            [itemLabelFn]="cobLabelFn"
+            [(selectedValues)]="formSelectedCobs"
+          ></app-dropdown-search>
         </div>
 
-        <div class="form-row" style="margin-top: 15px;">
-          <div class="form-field">
-            <span class="form-label">Authorized Classes of Business (COBs) - from Product</span>
-            <div class="form-input" style="height: auto; min-height: 38px; line-height: 1.5; padding: 8px 12px; background: var(--gray-50); border: 1.5px solid var(--gray-200); color: var(--gray-700);">
-              {{ getSelectedProductCobs() }}
-            </div>
+        @if (isEditMode || isViewMode) {
+          <h4 class="section-heading">Products</h4>
+          <div class="field-block">
+            @if (model.products && model.products.length > 0) {
+              @for (product of model.products; track product.id) {
+                <div class="empty-reinsurer-hint">{{ product.product_id }} - {{ product.name }}</div>
+              }
+            } @else {
+              <div class="empty-reinsurer-hint">Products will appear here once this treaty is saved.</div>
+            }
           </div>
-        </div>
+        }
       </form>
 
       <div class="panel-footer">

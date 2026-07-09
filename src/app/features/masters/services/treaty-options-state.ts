@@ -9,7 +9,6 @@ import { LobsApi } from './lobs-api';
 import { CobsApi } from './cobs-api';
 import { StatesApi } from './states-api';
 import { BrokersApi } from './brokers-api';
-import { ProductsApi } from './products-api';
 import { TreatyTypesApi } from './treaty-types-api';
 import {
   MgaMaster,
@@ -21,7 +20,6 @@ import {
   SimpleMasterRecord,
   TreatyTypeMaster,
 } from '../models/master.model';
-import { TreatyProductOption } from '../models/treaty-form.model';
 
 @Injectable({ providedIn: 'root' })
 export class TreatyOptionsState {
@@ -32,7 +30,6 @@ export class TreatyOptionsState {
   private cobsApi = inject(CobsApi);
   private statesApi = inject(StatesApi);
   private brokersApi = inject(BrokersApi);
-  private productsApi = inject(ProductsApi);
   private treatyTypesApi = inject(TreatyTypesApi);
 
   mgaOptions: MgaMaster[] = [];
@@ -42,7 +39,6 @@ export class TreatyOptionsState {
   lobOptions: LineOfBusiness[] = [];
   cobOptions: CobMaster[] = [];
   brokerOptions: SimpleMasterRecord[] = [];
-  productOptions: TreatyProductOption[] = [];
   treatyTypeOptions: TreatyTypeMaster[] = [];
 
   loadMgaOptions(): Observable<MgaMaster[]> {
@@ -62,9 +58,6 @@ export class TreatyOptionsState {
       this.cobsApi.getCobs(undefined, true).pipe(tap(res => (this.cobOptions = res))),
       this.statesApi.getStates(undefined, true).pipe(tap(res => (this.stateOptions = res))),
       this.brokersApi.getBrokers(undefined, true).pipe(tap(res => (this.brokerOptions = res))),
-      this.productsApi
-        .getProducts(undefined, true)
-        .pipe(tap(res => (this.productOptions = res as unknown as TreatyProductOption[]))),
       this.treatyTypesApi
         .getTreatyTypes(undefined, true)
         .pipe(tap(res => (this.treatyTypeOptions = res))),

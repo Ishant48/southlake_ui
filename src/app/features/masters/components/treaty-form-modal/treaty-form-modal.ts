@@ -26,7 +26,6 @@ import {
   TreatyFormShape,
   TreatySelectionMap,
   TreatySaveEvent,
-  TreatyProductOption,
   createBlankTreatyForm,
 } from '../../models/treaty-form.model';
 
@@ -58,7 +57,6 @@ export class TreatyFormModal implements OnChanges {
   @Input() stateOptions: StateMaster[] = [];
   @Input() lobOptions: LineOfBusiness[] = [];
   @Input() cobOptions: CobMaster[] = [];
-  @Input() productOptions: TreatyProductOption[] = [];
   @Input() treatyTypeOptions: TreatyTypeMaster[] = [];
 
   @Input() riskCompanyLabelFn: (item: RiskCompany) => string = () => '';
@@ -73,17 +71,13 @@ export class TreatyFormModal implements OnChanges {
     return item ? `${item.name} (${item.type_code})` : '';
   };
 
-  productLabelFn = (item: TreatyProductOption): string => {
-    return item ? `${item.product_id} - ${item.name}` : '';
-  };
-
   reinsurerOrRiskCompanyLabelFn = (item: ReinsurerOrRiskCompany): string => {
     if (!item) return '';
     if ('reinsurer_company_id' in item) {
       return `${item.name} (${item.reinsurer_company_id}) [Reinsurer]`;
     }
     if ('risk_company_id' in item) {
-      return `${item.name} (${item.risk_company_id}) [Risk Company]`;
+      return `${item.name} (${item.risk_company_id}) [Carrier]`;
     }
     return '';
   };
@@ -101,11 +95,11 @@ export class TreatyFormModal implements OnChanges {
   formSelectedStates: TreatySelectionMap = {};
   formSelectedLobs: TreatySelectionMap = {};
   formSelectedCobs: TreatySelectionMap = {};
-  selectedProductId: string | null = null;
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['model']) {
       this.treatyForm.patchForm(this.form, this.model);
+      this.onContinuousChange(this.form.controls.is_continuous.value);
     }
     if (changes['selectedStates']) {
       this.formSelectedStates = { ...this.selectedStates };
@@ -115,9 +109,6 @@ export class TreatyFormModal implements OnChanges {
     }
     if (changes['selectedCobs']) {
       this.formSelectedCobs = { ...this.selectedCobs };
-    }
-    if (changes['selectedLobs'] || changes['selectedCobs'] || changes['productOptions']) {
-      this.findMatchingProduct();
     }
     if (changes['isViewMode']) {
       if (this.isViewMode) {
@@ -133,82 +124,65 @@ export class TreatyFormModal implements OnChanges {
     }
   }
 
-  findMatchingProduct(): void {
-    if (!this.productOptions || this.productOptions.length === 0) return;
-    const selectedLobIds = Object.keys(this.formSelectedLobs).filter(
-      id => this.formSelectedLobs[id],
-    );
-    const selectedCobIds = Object.keys(this.formSelectedCobs).filter(
-      id => this.formSelectedCobs[id],
-    );
-
-    if (selectedLobIds.length === 0 && selectedCobIds.length === 0) {
-      this.selectedProductId = '';
-      return;
+  onContinuousChange(checked: boolean): void {
+    this.form.controls.is_continuous.setValue(checked);
+    if (checked) {
+      this.form.controls.expiration_date.setValue('');
+      this.form.controls.expiration_date.disable();
+    } else {
+      this.form.controls.expiration_date.enable();
     }
+  }
 
-    const bestProduct = this.productOptions.find(p => {
-      const pLobIds = (p.lobs ?? []).map(l => l.id);
-      const pCobIds = (p.cobs ?? []).map(c => c.id);
-      const hasAllLobs =
-        pLobIds.length > 0 && pLobIds.every((id: string) => selectedLobIds.includes(id));
-      const hasAllCobs =
-        pCobIds.length > 0 && pCobIds.every((id: string) => selectedCobIds.includes(id));
-      return hasAllLobs && hasAllCobs;
+  get computedCarrierRetentionPct(): number {
+    const sum = this.form.controls.reinsurers.value.reduce(
+      (acc, r) => acc + (r.cession_pct || 0),
+      0,
+    );
+    return Math.max(0, 100 - sum);
+  }
+
+  get selectedCarrierIds(): string[] {
+    return this.form.controls.carriers.value.map(c => c.risk_company_id);
+  }
+
+  get selectedCarrierValuesMap(): TreatySelectionMap {
+    const map: TreatySelectionMap = {};
+    this.selectedCarrierIds.forEach(id => {
+      map[id] = true;
     });
-
-    if (bestProduct) {
-      this.selectedProductId = bestProduct.id;
-    } else {
-      const fallbackProduct = this.productOptions.find(p => {
-        const pLobIds = (p.lobs ?? []).map(l => l.id);
-        return pLobIds.some((id: string) => selectedLobIds.includes(id));
-      });
-      this.selectedProductId = fallbackProduct ? fallbackProduct.id : '';
-    }
+    return map;
   }
 
-  onProductChange(productId: unknown): void {
-    const id = productId == null ? '' : String(productId);
-    this.selectedProductId = id;
-
-    const selectedProduct = this.productOptions.find(p => p.id === id);
-    if (selectedProduct) {
-      this.formSelectedLobs = {};
-      this.formSelectedCobs = {};
-
-      (selectedProduct.lobs ?? []).forEach(l => {
-        this.formSelectedLobs[l.id] = true;
-      });
-      (selectedProduct.cobs ?? []).forEach(c => {
-        this.formSelectedCobs[c.id] = true;
-      });
-    } else {
-      this.formSelectedLobs = {};
-      this.formSelectedCobs = {};
-    }
+  onCarrierSelectedValuesChange(values: TreatySelectionMap): void {
+    const ids = Object.keys(values).filter(id => values[id]);
+    this.updateSelectedCarriers(ids);
   }
 
-  getSelectedProductLobs(): string {
-    const selectedProduct = this.productOptions.find(p => p.id === this.selectedProductId);
-    if (!selectedProduct) return 'No Product Selected';
-    const names = (selectedProduct.lobs ?? []).map(l => l.name);
-    return names.length > 0 ? names.join(', ') : 'No LOBs configured';
+  updateSelectedCarriers(selectedIds: unknown): void {
+    const ids = Array.isArray(selectedIds)
+      ? selectedIds.filter((id): id is string => id != null).map(id => String(id))
+      : [];
+    const pct = this.computedCarrierRetentionPct;
+    const updated = ids.map(id => ({
+      risk_company_id: id,
+      retention_pct: pct,
+      state_id: null,
+      broker_id: null,
+    }));
+    this.form.controls.carriers.setValue(updated);
   }
 
-  getSelectedProductCobs(): string {
-    const selectedProduct = this.productOptions.find(p => p.id === this.selectedProductId);
-    if (!selectedProduct) return 'No Product Selected';
-    const names = (selectedProduct.cobs ?? []).map(c => c.name);
-    return names.length > 0 ? names.join(', ') : 'No COBs configured';
+  carrierName(riskCompanyId: string): string {
+    const match = this.riskCompanyOptions.find(rc => rc.id === riskCompanyId);
+    return match ? this.riskCompanyLabelFn(match) : riskCompanyId;
   }
 
-  updateCarrierRiskCompanyId(value: unknown): void {
+  private applyComputedCarrierRetention(): void {
     const carriers = this.form.controls.carriers.value;
-    if (!carriers[0]) return;
-    const updated = carriers.map((carrier, i) =>
-      i === 0 ? { ...carrier, risk_company_id: value == null ? '' : String(value) } : carrier,
-    );
+    if (carriers.length === 0) return;
+    const pct = this.computedCarrierRetentionPct;
+    const updated = carriers.map(carrier => ({ ...carrier, retention_pct: pct }));
     this.form.controls.carriers.setValue(updated);
   }
 
@@ -252,6 +226,7 @@ export class TreatyFormModal implements OnChanges {
     const rows = this.form.controls.reinsurers.value;
     const updated = this.autoBalanceReinsurers(rows, index, value);
     this.form.controls.reinsurers.setValue(updated);
+    this.applyComputedCarrierRetention();
   }
 
   private autoBalanceReinsurers(
@@ -325,6 +300,7 @@ export class TreatyFormModal implements OnChanges {
           broker_comm_type: null,
         },
       ]);
+      this.applyComputedCarrierRetention();
       return;
     }
 
@@ -342,11 +318,13 @@ export class TreatyFormModal implements OnChanges {
         broker_comm_type: null,
       },
     ]);
+    this.applyComputedCarrierRetention();
   }
 
   removeReinsurerRow(index: number): void {
     const rows = this.form.controls.reinsurers.value;
     this.form.controls.reinsurers.setValue(rows.filter((_, i) => i !== index));
+    this.applyComputedCarrierRetention();
   }
 
   close(): void {

@@ -84,7 +84,7 @@ export class ActivityDrawerComponent {
       cob: 'Classes of Business',
       state: 'States',
       reinsurer: 'Reinsurers',
-      risk_company: 'Risk Companies',
+      risk_company: 'Carriers',
       broker: 'Brokers',
       product: 'Products',
       masters_config: 'Masters Configuration',

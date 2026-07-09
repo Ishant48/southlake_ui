@@ -18,24 +18,24 @@
 
       <form [formGroup]="form" (ngSubmit)="submit()" class="panel-body scrollable-body">
         <div class="form-row">
-          <div class="form-field">
-            <label for="m-code" class="form-label">
-              {{
-                mode === SimpleMode.Lob
-                  ? "LOB ID *"
-                  : mode === SimpleMode.Cob
-                    ? "Class ID *"
-                    : mode === SimpleMode.Broker
-                      ? "Broker Code *"
-                      : mode === SimpleMode.Product
-                        ? "Product ID *"
+          @if (mode !== SimpleMode.Product) {
+            <div class="form-field">
+              <label for="m-code" class="form-label">
+                {{
+                  mode === SimpleMode.Lob
+                    ? "LOB ID *"
+                    : mode === SimpleMode.Cob
+                      ? "Class ID *"
+                      : mode === SimpleMode.Broker
+                        ? "Broker Code *"
                         : mode === SimpleMode.SequencePrefixCounter
                           ? "Sequence Code *"
                           : "Code ID *"
-              }}
-            </label>
-            <input id="m-code" formControlName="code" type="text" placeholder="e.g. TX" class="form-input" />
-          </div>
+                }}
+              </label>
+              <input id="m-code" formControlName="code" type="text" placeholder="e.g. TX" class="form-input" />
+            </div>
+          }
           <div class="form-field">
             <label for="m-name" class="form-label">
               {{
@@ -150,7 +150,13 @@
               </div>
               <div class="form-field">
                 <label for="m-asl-code" class="form-label">ASL Code</label>
-                <input id="m-asl-code" formControlName="asl_code" type="text" placeholder="e.g. 19.4" class="form-input" />
+                <input
+                  id="m-asl-code"
+                  formControlName="asl_code"
+                  type="text"
+                  placeholder="e.g. 19.4"
+                  class="form-input"
+                />
               </div>
             }
             <div class="form-field">

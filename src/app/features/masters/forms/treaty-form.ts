@@ -36,6 +36,9 @@ export class TreatyForm {
       carrier_retention_pct: new FormControl(100, { nonNullable: true }),
       reinsurer_cession_pct: new FormControl(0, { nonNullable: true }),
       is_active: new FormControl(true, { nonNullable: true }),
+      is_continuous: new FormControl(false, { nonNullable: true }),
+      policy_state_connector: new FormControl(false, { nonNullable: true }),
+      claim_state_connector: new FormControl(false, { nonNullable: true }),
       state_ids: new FormControl<string[]>([], { nonNullable: true }),
       lobs: new FormControl<{ lob_id: string; cob_ids: string[] }[]>([], { nonNullable: true }),
       carriers: new FormControl<TreatyCarrier[]>([], { nonNullable: true }),
@@ -67,6 +70,9 @@ export class TreatyForm {
       carrier_retention_pct: value.carrier_retention_pct ?? 100,
       reinsurer_cession_pct: value.reinsurer_cession_pct ?? 0,
       treaty_type: value.treaty_type ?? 'Quota Share',
+      is_continuous: value.is_continuous ?? false,
+      policy_state_connector: value.policy_state_connector ?? false,
+      claim_state_connector: value.claim_state_connector ?? false,
       carriers: [...(value.carriers ?? [])],
       reinsurers: [...(value.reinsurers ?? [])],
     });
@@ -108,6 +114,9 @@ export interface TreatyFormModel {
   carrier_retention_pct: FormControl<number>;
   reinsurer_cession_pct: FormControl<number>;
   is_active: FormControl<boolean>;
+  is_continuous: FormControl<boolean>;
+  policy_state_connector: FormControl<boolean>;
+  claim_state_connector: FormControl<boolean>;
   state_ids: FormControl<string[]>;
   lobs: FormControl<{ lob_id: string; cob_ids: string[] }[]>;
   carriers: FormControl<TreatyCarrier[]>;

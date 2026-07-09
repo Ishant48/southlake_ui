@@ -183,6 +183,9 @@ export interface Treaty {
   ulae_basis?: string | null;
   ulae_flat_amount?: number | null;
   treaty_type?: string | null;
+  is_continuous: boolean;
+  policy_state_connector: boolean;
+  claim_state_connector: boolean;
   created_at?: string;
   updated_at?: string | null;
   treaty_states?: TreatyState[];
@@ -190,6 +193,7 @@ export interface Treaty {
   treaty_mgas?: TreatyMga[];
   treaty_carriers?: TreatyCarrier[];
   treaty_reinsurers?: TreatyReinsurer[];
+  products?: { id: string; product_id: string; name: string }[];
 }
 
 export interface TreatyCarrier {

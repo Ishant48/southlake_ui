@@ -122,10 +122,12 @@ export class SimpleMastersState {
   save(mode: SimpleMode, isEditMode: boolean, formValue: SimpleFormValue): Observable<unknown> {
     const codeKey = CODE_KEYS[mode];
     const payload: Record<string, unknown> = {
-      [codeKey]: formValue.code,
       name: formValue.name,
       is_active: formValue.is_active,
     };
+    if (mode !== SimpleMode.Product || formValue.code || isEditMode) {
+      payload[codeKey] = formValue.code;
+    }
 
     if (mode === SimpleMode.Lob || mode === SimpleMode.Cob || mode === SimpleMode.TreatyType) {
       payload['description'] = formValue.description || null;
